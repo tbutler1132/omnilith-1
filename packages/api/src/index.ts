@@ -6,8 +6,8 @@
  */
 
 import { serve } from '@hono/node-server';
-import { createDatabase } from './db/connection.js';
 import { createContainer } from './container.js';
+import { createDatabase } from './db/connection.js';
 import { createServer } from './server.js';
 
 const port = parseInt(process.env.PORT ?? '3000', 10);

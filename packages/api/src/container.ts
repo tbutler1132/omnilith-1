@@ -5,27 +5,31 @@
  * This is the single place where the dependency graph is assembled.
  */
 
-import type {
-  ContentTypeRegistry,
-  OrganismRepository,
-  StateRepository,
-  CompositionRepository,
-  ProposalRepository,
-  EventPublisher,
-  VisibilityRepository,
-  RelationshipRepository,
-  IdentityGenerator,
-} from '@omnilith/kernel';
 import { allContentTypes } from '@omnilith/content-types';
-import type { Database } from './db/connection.js';
-import { PgOrganismRepository } from './adapters/pg-organism-repository.js';
-import { PgStateRepository } from './adapters/pg-state-repository.js';
-import { PgCompositionRepository } from './adapters/pg-composition-repository.js';
-import { PgProposalRepository } from './adapters/pg-proposal-repository.js';
-import { PgEventPublisher } from './adapters/pg-event-publisher.js';
-import { PgVisibilityRepository } from './adapters/pg-visibility-repository.js';
-import { PgRelationshipRepository } from './adapters/pg-relationship-repository.js';
+import type {
+  CompositionRepository,
+  ContentTypeRegistry,
+  EventPublisher,
+  EventRepository,
+  IdentityGenerator,
+  OrganismRepository,
+  ProposalRepository,
+  QueryPort,
+  RelationshipRepository,
+  StateRepository,
+  VisibilityRepository,
+} from '@omnilith/kernel';
 import { UuidIdentityGenerator } from './adapters/identity-generator.js';
+import { PgCompositionRepository } from './adapters/pg-composition-repository.js';
+import { PgEventPublisher } from './adapters/pg-event-publisher.js';
+import { PgEventRepository } from './adapters/pg-event-repository.js';
+import { PgOrganismRepository } from './adapters/pg-organism-repository.js';
+import { PgProposalRepository } from './adapters/pg-proposal-repository.js';
+import { PgQueryPort } from './adapters/pg-query-port.js';
+import { PgRelationshipRepository } from './adapters/pg-relationship-repository.js';
+import { PgStateRepository } from './adapters/pg-state-repository.js';
+import { PgVisibilityRepository } from './adapters/pg-visibility-repository.js';
+import type { Database } from './db/connection.js';
 
 export interface Container {
   organismRepository: OrganismRepository;
@@ -33,10 +37,12 @@ export interface Container {
   compositionRepository: CompositionRepository;
   proposalRepository: ProposalRepository;
   eventPublisher: EventPublisher;
+  eventRepository: EventRepository;
   visibilityRepository: VisibilityRepository;
   relationshipRepository: RelationshipRepository;
   contentTypeRegistry: ContentTypeRegistry;
   identityGenerator: IdentityGenerator;
+  queryPort: QueryPort;
   db: Database;
 }
 
@@ -48,10 +54,12 @@ export function createContainer(db: Database): Container {
     compositionRepository: new PgCompositionRepository(db),
     proposalRepository: new PgProposalRepository(db),
     eventPublisher: new PgEventPublisher(db),
+    eventRepository: new PgEventRepository(db),
     visibilityRepository: new PgVisibilityRepository(db),
     relationshipRepository: new PgRelationshipRepository(db),
     contentTypeRegistry,
     identityGenerator: new UuidIdentityGenerator(),
+    queryPort: new PgQueryPort(db),
     db,
   };
 }

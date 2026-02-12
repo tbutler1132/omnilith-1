@@ -2,9 +2,8 @@
  * PostgreSQL implementation of OrganismRepository.
  */
 
+import type { Organism, OrganismId, OrganismRepository, Timestamp } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
-import type { OrganismId, Timestamp } from '@omnilith/kernel';
-import type { Organism, OrganismRepository } from '@omnilith/kernel';
 import type { Database } from '../db/connection.js';
 import { organisms } from '../db/schema.js';
 

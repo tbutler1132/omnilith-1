@@ -12,6 +12,4 @@ export interface AudioPayload {
 
 export type AudioFormat = 'mp3' | 'wav' | 'flac' | 'aac' | 'ogg';
 
-export const AUDIO_FORMATS: ReadonlySet<string> = new Set([
-  'mp3', 'wav', 'flac', 'aac', 'ogg',
-]);
+export const AUDIO_FORMATS: ReadonlySet<string> = new Set(['mp3', 'wav', 'flac', 'aac', 'ogg']);

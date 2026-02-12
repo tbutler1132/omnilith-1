@@ -2,21 +2,17 @@
  * declineProposal — reject a proposal. The organism's state remains.
  */
 
-import type { ProposalId, UserId, IdentityGenerator } from '../identity.js';
-import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { RelationshipRepository } from '../relationships/relationship-repository.js';
-import type { VisibilityRepository } from '../visibility/visibility-repository.js';
-import type { ProposalRepository } from './proposal-repository.js';
-import type { Proposal } from './proposal.js';
+import { AccessDeniedError, ProposalAlreadyResolvedError, ProposalNotFoundError } from '../errors.js';
 import type { DomainEvent } from '../events/event.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { IdentityGenerator, ProposalId, UserId } from '../identity.js';
+import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
-import {
-  ProposalNotFoundError,
-  ProposalAlreadyResolvedError,
-  AccessDeniedError,
-} from '../errors.js';
+import type { VisibilityRepository } from '../visibility/visibility-repository.js';
+import type { Proposal } from './proposal.js';
+import type { ProposalRepository } from './proposal-repository.js';
 
 export interface DeclineProposalInput {
   readonly proposalId: ProposalId;
@@ -34,10 +30,7 @@ export interface DeclineProposalDeps {
   readonly identityGenerator: IdentityGenerator;
 }
 
-export async function declineProposal(
-  input: DeclineProposalInput,
-  deps: DeclineProposalDeps,
-): Promise<Proposal> {
+export async function declineProposal(input: DeclineProposalInput, deps: DeclineProposalDeps): Promise<Proposal> {
   const proposal = await deps.proposalRepository.findById(input.proposalId);
   if (!proposal) {
     throw new ProposalNotFoundError(input.proposalId);
@@ -47,24 +40,15 @@ export async function declineProposal(
     throw new ProposalAlreadyResolvedError(input.proposalId, proposal.status);
   }
 
-  const accessDecision = await checkAccess(
-    input.declinedBy,
-    proposal.organismId,
-    'decline-proposal',
-    {
-      visibilityRepository: deps.visibilityRepository,
-      relationshipRepository: deps.relationshipRepository,
-      compositionRepository: deps.compositionRepository,
-      organismRepository: deps.organismRepository,
-    },
-  );
+  const accessDecision = await checkAccess(input.declinedBy, proposal.organismId, 'decline-proposal', {
+    visibilityRepository: deps.visibilityRepository,
+    relationshipRepository: deps.relationshipRepository,
+    compositionRepository: deps.compositionRepository,
+    organismRepository: deps.organismRepository,
+  });
 
   if (!accessDecision.allowed) {
-    throw new AccessDeniedError(
-      input.declinedBy,
-      'decline-proposal',
-      proposal.organismId,
-    );
+    throw new AccessDeniedError(input.declinedBy, 'decline-proposal', proposal.organismId);
   }
 
   const now = deps.identityGenerator.timestamp();

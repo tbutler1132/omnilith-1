@@ -2,9 +2,16 @@
  * PostgreSQL implementation of StateRepository.
  */
 
-import { eq, desc } from 'drizzle-orm';
-import type { StateId, OrganismId, ContentTypeId, Timestamp, UserId } from '@omnilith/kernel';
-import type { OrganismState, StateRepository } from '@omnilith/kernel';
+import type {
+  ContentTypeId,
+  OrganismId,
+  OrganismState,
+  StateId,
+  StateRepository,
+  Timestamp,
+  UserId,
+} from '@omnilith/kernel';
+import { desc, eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { organismStates } from '../db/schema.js';
 
@@ -31,7 +38,8 @@ export class PgStateRepository implements StateRepository {
   }
 
   async findCurrentByOrganismId(organismId: OrganismId): Promise<OrganismState | undefined> {
-    const rows = await this.db.select()
+    const rows = await this.db
+      .select()
       .from(organismStates)
       .where(eq(organismStates.organismId, organismId))
       .orderBy(desc(organismStates.sequenceNumber))
@@ -41,7 +49,8 @@ export class PgStateRepository implements StateRepository {
   }
 
   async findHistoryByOrganismId(organismId: OrganismId): Promise<ReadonlyArray<OrganismState>> {
-    const rows = await this.db.select()
+    const rows = await this.db
+      .select()
       .from(organismStates)
       .where(eq(organismStates.organismId, organismId))
       .orderBy(organismStates.sequenceNumber);

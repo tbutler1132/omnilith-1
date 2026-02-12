@@ -1,4 +1,4 @@
-import type { StateId, OrganismId } from '../identity.js';
+import type { OrganismId, StateId } from '../identity.js';
 import type { OrganismState } from '../organism/organism-state.js';
 import type { StateRepository } from '../organism/state-repository.js';
 

@@ -2,9 +2,16 @@
  * PostgreSQL implementation of ProposalRepository.
  */
 
-import { eq, and } from 'drizzle-orm';
-import type { ProposalId, OrganismId, ContentTypeId, UserId, Timestamp } from '@omnilith/kernel';
-import type { Proposal, ProposalRepository } from '@omnilith/kernel';
+import type {
+  ContentTypeId,
+  OrganismId,
+  Proposal,
+  ProposalId,
+  ProposalRepository,
+  Timestamp,
+  UserId,
+} from '@omnilith/kernel';
+import { and, eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { proposals } from '../db/schema.js';
 
@@ -27,7 +34,8 @@ export class PgProposalRepository implements ProposalRepository {
   }
 
   async update(proposal: Proposal): Promise<void> {
-    await this.db.update(proposals)
+    await this.db
+      .update(proposals)
       .set({
         status: proposal.status,
         resolvedAt: proposal.resolvedAt ? new Date(proposal.resolvedAt) : null,
@@ -49,9 +57,10 @@ export class PgProposalRepository implements ProposalRepository {
   }
 
   async findOpenByOrganismId(organismId: OrganismId): Promise<ReadonlyArray<Proposal>> {
-    const rows = await this.db.select().from(proposals).where(
-      and(eq(proposals.organismId, organismId), eq(proposals.status, 'open')),
-    );
+    const rows = await this.db
+      .select()
+      .from(proposals)
+      .where(and(eq(proposals.organismId, organismId), eq(proposals.status, 'open')));
     return rows.map(toProposal);
   }
 }

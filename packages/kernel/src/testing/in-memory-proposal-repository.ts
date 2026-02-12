@@ -1,4 +1,4 @@
-import type { ProposalId, OrganismId } from '../identity.js';
+import type { OrganismId, ProposalId } from '../identity.js';
 import type { Proposal } from '../proposals/proposal.js';
 import type { ProposalRepository } from '../proposals/proposal-repository.js';
 
@@ -22,8 +22,6 @@ export class InMemoryProposalRepository implements ProposalRepository {
   }
 
   async findOpenByOrganismId(organismId: OrganismId): Promise<ReadonlyArray<Proposal>> {
-    return [...this.proposals.values()].filter(
-      (p) => p.organismId === organismId && p.status === 'open',
-    );
+    return [...this.proposals.values()].filter((p) => p.organismId === organismId && p.status === 'open');
   }
 }

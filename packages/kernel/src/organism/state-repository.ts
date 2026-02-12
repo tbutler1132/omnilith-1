@@ -4,7 +4,7 @@
  * States are append-only. The repository never modifies existing states.
  */
 
-import type { StateId, OrganismId } from '../identity.js';
+import type { OrganismId, StateId } from '../identity.js';
 import type { OrganismState } from './organism-state.js';
 
 export interface StateRepository {

@@ -2,11 +2,12 @@
  * Proposal routes — open, list, integrate, decline.
  */
 
+import type { ContentTypeId, OrganismId, ProposalId } from '@omnilith/kernel';
+import { declineProposal, integrateProposal, openProposal } from '@omnilith/kernel';
 import { Hono } from 'hono';
-import type { OrganismId, ProposalId, ContentTypeId } from '@omnilith/kernel';
-import { openProposal, integrateProposal, declineProposal } from '@omnilith/kernel';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
+import { parseJsonBody } from '../utils/parse-json.js';
 
 export function proposalRoutes(container: Container) {
   const app = new Hono<AuthEnv>();
@@ -15,10 +16,12 @@ export function proposalRoutes(container: Container) {
   app.post('/organisms/:id/proposals', async (c) => {
     const userId = c.get('userId');
     const organismId = c.req.param('id') as OrganismId;
-    const body = await c.req.json<{
+    const body = await parseJsonBody<{
       proposedContentTypeId: string;
       proposedPayload: unknown;
-    }>();
+    }>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
     try {
       const proposal = await openProposal(

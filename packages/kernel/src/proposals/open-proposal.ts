@@ -5,23 +5,14 @@
  * a proposal with 'open' status, and emits an event.
  */
 
-import type {
-  OrganismId,
-  ContentTypeId,
-  UserId,
-  IdentityGenerator,
-} from '../identity.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { OrganismRepository } from '../organism/organism-repository.js';
-import type { ProposalRepository } from './proposal-repository.js';
-import type { Proposal } from './proposal.js';
+import { ContentTypeNotRegisteredError, OrganismNotFoundError, ValidationFailedError } from '../errors.js';
 import type { DomainEvent } from '../events/event.js';
-import {
-  OrganismNotFoundError,
-  ContentTypeNotRegisteredError,
-  ValidationFailedError,
-} from '../errors.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { ContentTypeId, IdentityGenerator, OrganismId, UserId } from '../identity.js';
+import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { Proposal } from './proposal.js';
+import type { ProposalRepository } from './proposal-repository.js';
 
 export interface OpenProposalInput {
   readonly organismId: OrganismId;
@@ -38,10 +29,7 @@ export interface OpenProposalDeps {
   readonly identityGenerator: IdentityGenerator;
 }
 
-export async function openProposal(
-  input: OpenProposalInput,
-  deps: OpenProposalDeps,
-): Promise<Proposal> {
+export async function openProposal(input: OpenProposalInput, deps: OpenProposalDeps): Promise<Proposal> {
   const organism = await deps.organismRepository.findById(input.organismId);
   if (!organism) {
     throw new OrganismNotFoundError(input.organismId);

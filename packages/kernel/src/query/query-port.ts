@@ -6,7 +6,7 @@
  * should remain stable.
  */
 
-import type { OrganismId, UserId, ContentTypeId, Timestamp } from '../identity.js';
+import type { ContentTypeId, OrganismId, Timestamp, UserId } from '../identity.js';
 import type { Organism } from '../organism/organism.js';
 import type { OrganismState } from '../organism/organism-state.js';
 

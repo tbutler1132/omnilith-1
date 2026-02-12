@@ -10,7 +10,7 @@
  * points to the previous state (linear history).
  */
 
-import type { StateId, OrganismId, ContentTypeId, UserId, Timestamp } from '../identity.js';
+import type { ContentTypeId, OrganismId, StateId, Timestamp, UserId } from '../identity.js';
 
 export interface OrganismState {
   readonly id: StateId;

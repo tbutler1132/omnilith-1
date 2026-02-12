@@ -1,23 +1,23 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { checkAccess } from '../visibility/access-control.js';
-import { createOrganism } from '../organism/create-organism.js';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { composeOrganism } from '../composition/compose-organism.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
-import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import type { RelationshipId } from '../identity.js';
+import { createOrganism } from '../organism/create-organism.js';
 import { InMemoryCompositionRepository } from '../testing/in-memory-composition-repository.js';
+import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
 import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
-  createTestIdentityGenerator,
   createPassthroughContentType,
-  testUserId,
+  createTestIdentityGenerator,
+  resetIdCounter,
   testContentTypeId,
   testTimestamp,
-  resetIdCounter,
+  testUserId,
 } from '../testing/test-helpers.js';
-import type { RelationshipId } from '../identity.js';
+import { checkAccess } from '../visibility/access-control.js';
 
 describe('visibility and access control', () => {
   let organismRepository: InMemoryOrganismRepository;
@@ -175,12 +175,7 @@ describe('visibility and access control', () => {
     });
 
     // Member should NOT have integration authority on the child
-    const decision = await checkAccess(
-      member,
-      child.id,
-      'integrate-proposal',
-      accessDeps(),
-    );
+    const decision = await checkAccess(member, child.id, 'integrate-proposal', accessDeps());
     expect(decision.allowed).toBe(false);
   });
 
@@ -191,12 +186,7 @@ describe('visibility and access control', () => {
       createDeps(),
     );
 
-    const decision = await checkAccess(
-      steward,
-      organism.id,
-      'integrate-proposal',
-      accessDeps(),
-    );
+    const decision = await checkAccess(steward, organism.id, 'integrate-proposal', accessDeps());
     expect(decision.allowed).toBe(true);
   });
 
@@ -216,12 +206,7 @@ describe('visibility and access control', () => {
       createdAt: testTimestamp(),
     });
 
-    const decision = await checkAccess(
-      integrator,
-      organism.id,
-      'integrate-proposal',
-      accessDeps(),
-    );
+    const decision = await checkAccess(integrator, organism.id, 'integrate-proposal', accessDeps());
     expect(decision.allowed).toBe(true);
   });
 
@@ -233,12 +218,7 @@ describe('visibility and access control', () => {
     );
 
     const stranger = testUserId('stranger');
-    const decision = await checkAccess(
-      stranger,
-      organism.id,
-      'open-proposal',
-      accessDeps(),
-    );
+    const decision = await checkAccess(stranger, organism.id, 'open-proposal', accessDeps());
     expect(decision.allowed).toBe(true);
   });
 
@@ -249,13 +229,109 @@ describe('visibility and access control', () => {
       createDeps(),
     );
 
-    const decision = await checkAccess(
-      steward,
-      organism.id,
-      'change-visibility',
-      accessDeps(),
-    );
+    const decision = await checkAccess(steward, organism.id, 'change-visibility', accessDeps());
     expect(decision.allowed).toBe(true);
+  });
+
+  it('the founder of a parent community has integration authority over organisms composed inside it', async () => {
+    const founder = testUserId('founder');
+    const { organism: community } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      createDeps(),
+    );
+
+    const childSteward = testUserId('child-steward');
+    const { organism: child } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      createDeps(),
+    );
+
+    await composeOrganism(
+      { parentId: community.id, childId: child.id, composedBy: founder },
+      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+    );
+
+    // Add founder membership on the community
+    await relationshipRepository.save({
+      id: identityGenerator.relationshipId() as RelationshipId,
+      type: 'membership',
+      userId: founder,
+      organismId: community.id,
+      role: 'founder',
+      createdAt: testTimestamp(),
+    });
+
+    const decision = await checkAccess(founder, child.id, 'integrate-proposal', accessDeps());
+    expect(decision.allowed).toBe(true);
+  });
+
+  it('the founder of a parent community can compose and decompose organisms within it', async () => {
+    const founder = testUserId('founder');
+    const { organism: community } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      createDeps(),
+    );
+
+    const childSteward = testUserId('child-steward');
+    const { organism: child } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      createDeps(),
+    );
+
+    await composeOrganism(
+      { parentId: community.id, childId: child.id, composedBy: founder },
+      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+    );
+
+    await relationshipRepository.save({
+      id: identityGenerator.relationshipId() as RelationshipId,
+      type: 'membership',
+      userId: founder,
+      organismId: community.id,
+      role: 'founder',
+      createdAt: testTimestamp(),
+    });
+
+    const composeDecision = await checkAccess(founder, child.id, 'compose', accessDeps());
+    expect(composeDecision.allowed).toBe(true);
+
+    const decomposeDecision = await checkAccess(founder, child.id, 'decompose', accessDeps());
+    expect(decomposeDecision.allowed).toBe(true);
+  });
+
+  it('a regular member of a parent community cannot compose or decompose organisms within it', async () => {
+    const founder = testUserId('founder');
+    const { organism: community } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      createDeps(),
+    );
+
+    const childSteward = testUserId('child-steward');
+    const { organism: child } = await createOrganism(
+      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      createDeps(),
+    );
+
+    await composeOrganism(
+      { parentId: community.id, childId: child.id, composedBy: founder },
+      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+    );
+
+    const member = testUserId('member');
+    await relationshipRepository.save({
+      id: identityGenerator.relationshipId() as RelationshipId,
+      type: 'membership',
+      userId: member,
+      organismId: community.id,
+      role: 'member',
+      createdAt: testTimestamp(),
+    });
+
+    const composeDecision = await checkAccess(member, child.id, 'compose', accessDeps());
+    expect(composeDecision.allowed).toBe(false);
+
+    const decomposeDecision = await checkAccess(member, child.id, 'decompose', accessDeps());
+    expect(decomposeDecision.allowed).toBe(false);
   });
 
   it('a non-steward cannot change visibility', async () => {
@@ -266,12 +342,7 @@ describe('visibility and access control', () => {
     );
 
     const stranger = testUserId('stranger');
-    const decision = await checkAccess(
-      stranger,
-      organism.id,
-      'change-visibility',
-      accessDeps(),
-    );
+    const decision = await checkAccess(stranger, organism.id, 'change-visibility', accessDeps());
     expect(decision.allowed).toBe(false);
   });
 });

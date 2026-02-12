@@ -5,126 +5,118 @@
  * Pure TypeScript. Zero external dependencies.
  */
 
-// Identity
-export type {
-  OrganismId,
-  UserId,
-  StateId,
-  ProposalId,
-  ContentTypeId,
-  EventId,
-  RelationshipId,
-  Timestamp,
-  IdentityGenerator,
-} from './identity.js';
-
-// Errors
 export {
-  OrganismNotFoundError,
-  StateNotFoundError,
-  AccessDeniedError,
-  ValidationFailedError,
-  ContentTypeNotRegisteredError,
-  CompositionError,
-  ProposalAlreadyResolvedError,
-  ProposalNotFoundError,
-  type DomainError,
-} from './errors.js';
-
-// Organism + State
-export type { Organism } from './organism/organism.js';
-export type { OrganismState } from './organism/organism-state.js';
-export type { OrganismRepository } from './organism/organism-repository.js';
-export type { StateRepository } from './organism/state-repository.js';
-export {
-  createOrganism,
-  type CreateOrganismInput,
-  type CreateOrganismResult,
-  type CreateOrganismDeps,
-} from './organism/create-organism.js';
-export {
-  appendState,
-  type AppendStateInput,
-  type AppendStateDeps,
-} from './organism/append-state.js';
-
-// Events
-export type { DomainEvent, EventType } from './events/event.js';
-export type { EventPublisher } from './events/event-publisher.js';
-
-// Content Types
-export type {
-  ContentTypeContract,
-  ValidationResult,
-  EvaluationResult,
-  ProposalForEvaluation,
-} from './content-types/content-type-contract.js';
-export type { ContentTypeRegistry } from './content-types/content-type-registry.js';
-
+  type ComposeOrganismDeps,
+  type ComposeOrganismInput,
+  composeOrganism,
+} from './composition/compose-organism.js';
 // Composition
 export type { CompositionRecord } from './composition/composition.js';
 export type { CompositionRepository } from './composition/composition-repository.js';
 export {
-  composeOrganism,
-  type ComposeOrganismInput,
-  type ComposeOrganismDeps,
-} from './composition/compose-organism.js';
-export {
-  decomposeOrganism,
-  type DecomposeOrganismInput,
   type DecomposeOrganismDeps,
+  type DecomposeOrganismInput,
+  decomposeOrganism,
 } from './composition/decompose-organism.js';
-export { queryChildren, type QueryChildrenDeps } from './composition/query-children.js';
-export { queryParent, type QueryParentDeps } from './composition/query-parent.js';
-
-// Relationships
+export { type QueryChildrenDeps, queryChildren } from './composition/query-children.js';
+export { type QueryParentDeps, queryParent } from './composition/query-parent.js';
+// Content Types
 export type {
-  Relationship,
-  RelationshipType,
-  MembershipRole,
-} from './relationships/relationship.js';
-export type { RelationshipRepository } from './relationships/relationship-repository.js';
-
-// Visibility + Access Control
-export type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';
-export type { VisibilityRepository } from './visibility/visibility-repository.js';
+  ContentTypeContract,
+  EvaluationResult,
+  ProposalForEvaluation,
+  ValidationResult,
+} from './content-types/content-type-contract.js';
+export type { ContentTypeRegistry } from './content-types/content-type-registry.js';
+// Errors
 export {
-  checkAccess,
-  type ActionType,
-  type AccessDecision,
-  type AccessControlDeps,
-} from './visibility/access-control.js';
-export { checkAccessOrThrow } from './visibility/check-access.js';
-
+  AccessDeniedError,
+  CompositionError,
+  ContentTypeNotRegisteredError,
+  type DomainError,
+  OrganismNotFoundError,
+  ProposalAlreadyResolvedError,
+  ProposalNotFoundError,
+  StateNotFoundError,
+  ValidationFailedError,
+} from './errors.js';
+// Events
+export type { DomainEvent, EventType } from './events/event.js';
+export type { EventPublisher } from './events/event-publisher.js';
+export type { EventRepository } from './events/event-repository.js';
+// Identity
+export type {
+  ContentTypeId,
+  EventId,
+  IdentityGenerator,
+  OrganismId,
+  ProposalId,
+  RelationshipId,
+  StateId,
+  Timestamp,
+  UserId,
+} from './identity.js';
+export {
+  type AppendStateDeps,
+  type AppendStateInput,
+  appendState,
+} from './organism/append-state.js';
+export {
+  type CreateOrganismDeps,
+  type CreateOrganismInput,
+  type CreateOrganismResult,
+  createOrganism,
+} from './organism/create-organism.js';
+// Organism + State
+export type { Organism } from './organism/organism.js';
+export type { OrganismRepository } from './organism/organism-repository.js';
+export type { OrganismState } from './organism/organism-state.js';
+export type { StateRepository } from './organism/state-repository.js';
+export {
+  type DeclineProposalDeps,
+  type DeclineProposalInput,
+  declineProposal,
+} from './proposals/decline-proposal.js';
+export {
+  type EvaluateProposalDeps,
+  type EvaluationOutcome,
+  evaluateProposal,
+} from './proposals/evaluate-proposal.js';
+export {
+  type IntegrateProposalDeps,
+  type IntegrateProposalInput,
+  type IntegrateProposalResult,
+  integrateProposal,
+} from './proposals/integrate-proposal.js';
+export {
+  type OpenProposalDeps,
+  type OpenProposalInput,
+  openProposal,
+} from './proposals/open-proposal.js';
 // Proposals
 export type { Proposal, ProposalStatus } from './proposals/proposal.js';
 export type { ProposalRepository } from './proposals/proposal-repository.js';
-export {
-  openProposal,
-  type OpenProposalInput,
-  type OpenProposalDeps,
-} from './proposals/open-proposal.js';
-export {
-  evaluateProposal,
-  type EvaluateProposalDeps,
-  type EvaluationOutcome,
-} from './proposals/evaluate-proposal.js';
-export {
-  integrateProposal,
-  type IntegrateProposalInput,
-  type IntegrateProposalDeps,
-  type IntegrateProposalResult,
-} from './proposals/integrate-proposal.js';
-export {
-  declineProposal,
-  type DeclineProposalInput,
-  type DeclineProposalDeps,
-} from './proposals/decline-proposal.js';
-
 // Query
 export type {
-  QueryPort,
   OrganismWithState,
-  VitalityData,
   QueryFilters,
+  QueryPort,
+  VitalityData,
 } from './query/query-port.js';
+// Relationships
+export type {
+  MembershipRole,
+  Relationship,
+  RelationshipType,
+} from './relationships/relationship.js';
+export type { RelationshipRepository } from './relationships/relationship-repository.js';
+export {
+  type AccessControlDeps,
+  type AccessDecision,
+  type ActionType,
+  checkAccess,
+} from './visibility/access-control.js';
+export { checkAccessOrThrow } from './visibility/check-access.js';
+// Visibility + Access Control
+export type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';
+export type { VisibilityRepository } from './visibility/visibility-repository.js';

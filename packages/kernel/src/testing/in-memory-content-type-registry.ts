@@ -1,6 +1,6 @@
-import type { ContentTypeId } from '../identity.js';
 import type { ContentTypeContract } from '../content-types/content-type-contract.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
+import type { ContentTypeId } from '../identity.js';
 
 export class InMemoryContentTypeRegistry implements ContentTypeRegistry {
   private types = new Map<ContentTypeId, ContentTypeContract>();

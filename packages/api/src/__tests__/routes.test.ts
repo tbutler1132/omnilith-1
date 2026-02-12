@@ -6,31 +6,28 @@
  * route handler → kernel use case → in-memory adapter → response.
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Hono } from 'hono';
-import type {
-  UserId,
-  OrganismId,
-  ContentTypeId,
-  ContentTypeRegistry,
-} from '@omnilith/kernel';
 import { allContentTypes } from '@omnilith/content-types';
+import type { ContentTypeRegistry, UserId } from '@omnilith/kernel';
 import {
-  InMemoryOrganismRepository,
-  InMemoryStateRepository,
-  InMemoryCompositionRepository,
-  InMemoryProposalRepository,
-  InMemoryEventPublisher,
-  InMemoryVisibilityRepository,
-  InMemoryRelationshipRepository,
-  InMemoryContentTypeRegistry,
   createTestIdentityGenerator,
+  InMemoryCompositionRepository,
+  InMemoryContentTypeRegistry,
+  InMemoryEventPublisher,
+  InMemoryOrganismRepository,
+  InMemoryProposalRepository,
+  InMemoryQueryPort,
+  InMemoryRelationshipRepository,
+  InMemoryStateRepository,
+  InMemoryVisibilityRepository,
   resetIdCounter,
 } from '@omnilith/kernel/src/testing/index.js';
-import { organismRoutes } from '../routes/organisms.js';
-import { proposalRoutes } from '../routes/proposals.js';
+import { Hono } from 'hono';
+import { beforeEach, describe, expect, it } from 'vitest';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
+import { organismRoutes } from '../routes/organisms.js';
+import { proposalRoutes } from '../routes/proposals.js';
+import { userRoutes } from '../routes/users.js';
 
 function createTestContainer(): Container {
   const registry = new InMemoryContentTypeRegistry();
@@ -38,16 +35,24 @@ function createTestContainer(): Container {
     registry.register(ct);
   }
 
+  const organismRepository = new InMemoryOrganismRepository();
+  const stateRepository = new InMemoryStateRepository();
+  const compositionRepository = new InMemoryCompositionRepository();
+  const proposalRepository = new InMemoryProposalRepository();
+  const eventPublisher = new InMemoryEventPublisher();
+
   return {
-    organismRepository: new InMemoryOrganismRepository(),
-    stateRepository: new InMemoryStateRepository(),
-    compositionRepository: new InMemoryCompositionRepository(),
-    proposalRepository: new InMemoryProposalRepository(),
-    eventPublisher: new InMemoryEventPublisher(),
+    organismRepository,
+    stateRepository,
+    compositionRepository,
+    proposalRepository,
+    eventPublisher,
+    eventRepository: eventPublisher, // dual interface
     visibilityRepository: new InMemoryVisibilityRepository(),
     relationshipRepository: new InMemoryRelationshipRepository(),
     contentTypeRegistry: registry as ContentTypeRegistry,
     identityGenerator: createTestIdentityGenerator(),
+    queryPort: new InMemoryQueryPort(organismRepository, stateRepository, proposalRepository, compositionRepository),
     db: null as any, // Not used in these tests
   };
 }
@@ -62,22 +67,43 @@ function createTestApp(container: Container) {
     await next();
   });
   app.route('/organisms', organismRoutes(container));
+  app.route('/users', userRoutes(container));
   app.route('/', proposalRoutes(container));
 
+  // Session info
+  app.get('/auth/me', async (c) => {
+    const userId = c.get('userId');
+    const stewardships = await container.relationshipRepository.findByUser(userId, 'stewardship');
+    const personalOrganismId = stewardships.length > 0 ? stewardships[0].organismId : null;
+    return c.json({ userId, personalOrganismId });
+  });
+
   return { app, testUserId };
+}
+
+async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: boolean }) {
+  const res = await app.request('/organisms', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contentTypeId: 'text',
+      payload: { content: 'test', format: 'plaintext' },
+      openTrunk: options?.openTrunk,
+    }),
+  });
+  const body = await res.json();
+  return body;
 }
 
 describe('organism routes', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
-  let testUserId: UserId;
 
   beforeEach(() => {
     resetIdCounter();
     container = createTestContainer();
     const setup = createTestApp(container);
     app = setup.app;
-    testUserId = setup.testUserId;
   });
 
   it('POST /organisms creates an organism (threshold)', async () => {
@@ -211,14 +237,12 @@ describe('organism routes', () => {
 describe('proposal routes', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
-  let testUserId: UserId;
 
   beforeEach(() => {
     resetIdCounter();
     container = createTestContainer();
     const setup = createTestApp(container);
     app = setup.app;
-    testUserId = setup.testUserId;
   });
 
   it('full proposal lifecycle: open → integrate', async () => {
@@ -324,5 +348,156 @@ describe('proposal routes', () => {
     const listRes = await app.request(`/organisms/${organism.id}/proposals`);
     const { proposals } = await listRes.json();
     expect(proposals).toHaveLength(2);
+  });
+});
+
+describe('error handling', () => {
+  let container: Container;
+  let app: Hono<AuthEnv>;
+
+  beforeEach(() => {
+    resetIdCounter();
+    container = createTestContainer();
+    const setup = createTestApp(container);
+    app = setup.app;
+  });
+
+  it('malformed JSON body on organism creation returns 400', async () => {
+    const res = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{ not valid json',
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe('Invalid JSON body');
+  });
+
+  it('malformed JSON body on proposal creation returns 400', async () => {
+    // Create a valid organism first
+    const createRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'text',
+        payload: { content: 'test', format: 'plaintext' },
+      }),
+    });
+    const { organism } = await createRes.json();
+
+    const res = await app.request(`/organisms/${organism.id}/proposals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{ broken json!!!',
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toBe('Invalid JSON body');
+  });
+});
+
+describe('query and listing routes', () => {
+  let container: Container;
+  let app: Hono<AuthEnv>;
+  let testUserId: UserId;
+
+  beforeEach(() => {
+    resetIdCounter();
+    container = createTestContainer();
+    const setup = createTestApp(container);
+    app = setup.app;
+    testUserId = setup.testUserId;
+  });
+
+  it('GET /organisms lists organisms', async () => {
+    await createTestOrganism(app);
+    await createTestOrganism(app);
+
+    const res = await app.request('/organisms');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(2);
+  });
+
+  it('GET /organisms/:id/parent returns parent composition record', async () => {
+    const { organism: parent } = await createTestOrganism(app);
+    const { organism: child } = await createTestOrganism(app);
+
+    await app.request(`/organisms/${parent.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+
+    const res = await app.request(`/organisms/${child.id}/parent`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.parent).not.toBeNull();
+    expect(body.parent.parentId).toBe(parent.id);
+  });
+
+  it('GET /organisms/:id/parent returns null when no parent exists', async () => {
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request(`/organisms/${organism.id}/parent`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.parent).toBeNull();
+  });
+
+  it('GET /organisms/:id/vitality returns vitality data', async () => {
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request(`/organisms/${organism.id}/vitality`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.vitality.organismId).toBe(organism.id);
+    expect(body.vitality.recentStateChanges).toBe(1);
+    expect(body.vitality.openProposalCount).toBe(0);
+  });
+
+  it('GET /organisms/:id/events returns events for an organism', async () => {
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request(`/organisms/${organism.id}/events`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // Creating an organism emits events
+    expect(body.events.length).toBeGreaterThan(0);
+    expect(body.events[0].organismId).toBe(organism.id);
+  });
+
+  it('GET /organisms/:id/relationships returns relationships for an organism', async () => {
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request(`/organisms/${organism.id}/relationships`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // Creating an organism creates a stewardship relationship
+    expect(body.relationships.length).toBeGreaterThan(0);
+    expect(body.relationships[0].type).toBe('stewardship');
+  });
+
+  it('GET /users/me/organisms returns organisms for the current user', async () => {
+    await createTestOrganism(app);
+    await createTestOrganism(app);
+
+    const res = await app.request('/users/me/organisms');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(2);
+  });
+
+  it('GET /auth/me returns current user session info', async () => {
+    // Create an organism to generate a stewardship relationship
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request('/auth/me');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.userId).toBe(testUserId);
+    expect(body.personalOrganismId).toBe(organism.id);
   });
 });

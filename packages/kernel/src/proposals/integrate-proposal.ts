@@ -6,25 +6,21 @@
  * as integrated.
  */
 
-import type { ProposalId, UserId, IdentityGenerator } from '../identity.js';
-import type { OrganismRepository } from '../organism/organism-repository.js';
-import type { StateRepository } from '../organism/state-repository.js';
-import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { RelationshipRepository } from '../relationships/relationship-repository.js';
-import type { VisibilityRepository } from '../visibility/visibility-repository.js';
-import type { ProposalRepository } from './proposal-repository.js';
-import type { Proposal } from './proposal.js';
-import type { OrganismState } from '../organism/organism-state.js';
+import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
+import { AccessDeniedError, ProposalAlreadyResolvedError, ProposalNotFoundError } from '../errors.js';
 import type { DomainEvent } from '../events/event.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { IdentityGenerator, ProposalId, UserId } from '../identity.js';
+import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { OrganismState } from '../organism/organism-state.js';
+import type { StateRepository } from '../organism/state-repository.js';
+import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
+import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import { evaluateProposal } from './evaluate-proposal.js';
-import {
-  ProposalNotFoundError,
-  ProposalAlreadyResolvedError,
-  AccessDeniedError,
-} from '../errors.js';
+import type { Proposal } from './proposal.js';
+import type { ProposalRepository } from './proposal-repository.js';
 
 export interface IntegrateProposalInput {
   readonly proposalId: ProposalId;
@@ -62,24 +58,15 @@ export async function integrateProposal(
   }
 
   // Check integration authority
-  const accessDecision = await checkAccess(
-    input.integratedBy,
-    proposal.organismId,
-    'integrate-proposal',
-    {
-      visibilityRepository: deps.visibilityRepository,
-      relationshipRepository: deps.relationshipRepository,
-      compositionRepository: deps.compositionRepository,
-      organismRepository: deps.organismRepository,
-    },
-  );
+  const accessDecision = await checkAccess(input.integratedBy, proposal.organismId, 'integrate-proposal', {
+    visibilityRepository: deps.visibilityRepository,
+    relationshipRepository: deps.relationshipRepository,
+    compositionRepository: deps.compositionRepository,
+    organismRepository: deps.organismRepository,
+  });
 
   if (!accessDecision.allowed) {
-    throw new AccessDeniedError(
-      input.integratedBy,
-      'integrate-proposal',
-      proposal.organismId,
-    );
+    throw new AccessDeniedError(input.integratedBy, 'integrate-proposal', proposal.organismId);
   }
 
   // Evaluate against policy organisms

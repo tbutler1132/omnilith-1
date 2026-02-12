@@ -6,17 +6,17 @@
  * and a stewardship relationship is automatically established.
  */
 
-import type { ContentTypeId, UserId, IdentityGenerator } from '../identity.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { RelationshipRepository } from '../relationships/relationship-repository.js';
-import type { OrganismRepository } from './organism-repository.js';
-import type { StateRepository } from './state-repository.js';
-import type { Organism } from './organism.js';
-import type { OrganismState } from './organism-state.js';
-import type { Relationship } from '../relationships/relationship.js';
-import type { DomainEvent } from '../events/event.js';
 import { ContentTypeNotRegisteredError, ValidationFailedError } from '../errors.js';
+import type { DomainEvent } from '../events/event.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { ContentTypeId, IdentityGenerator, UserId } from '../identity.js';
+import type { Relationship } from '../relationships/relationship.js';
+import type { RelationshipRepository } from '../relationships/relationship-repository.js';
+import type { Organism } from './organism.js';
+import type { OrganismRepository } from './organism-repository.js';
+import type { OrganismState } from './organism-state.js';
+import type { StateRepository } from './state-repository.js';
 
 export interface CreateOrganismInput {
   readonly contentTypeId: ContentTypeId;

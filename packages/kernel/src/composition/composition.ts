@@ -6,7 +6,7 @@
  * a tree — each organism has at most one parent.
  */
 
-import type { OrganismId, UserId, Timestamp } from '../identity.js';
+import type { OrganismId, Timestamp, UserId } from '../identity.js';
 
 export interface CompositionRecord {
   readonly parentId: OrganismId;

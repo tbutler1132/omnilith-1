@@ -5,10 +5,10 @@
  * when access is denied, for use cases that want to fail fast.
  */
 
-import type { UserId, OrganismId } from '../identity.js';
-import type { ActionType, AccessControlDeps } from './access-control.js';
-import { checkAccess } from './access-control.js';
 import { AccessDeniedError } from '../errors.js';
+import type { OrganismId, UserId } from '../identity.js';
+import type { AccessControlDeps, ActionType } from './access-control.js';
+import { checkAccess } from './access-control.js';
 
 export async function checkAccessOrThrow(
   userId: UserId,

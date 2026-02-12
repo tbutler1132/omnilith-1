@@ -2,11 +2,11 @@
  * Authentication middleware — session-based auth for Hono.
  */
 
-import { createMiddleware } from 'hono/factory';
-import { eq, gt, and } from 'drizzle-orm';
 import type { UserId } from '@omnilith/kernel';
+import { and, eq, gt } from 'drizzle-orm';
+import { createMiddleware } from 'hono/factory';
 import type { Database } from '../db/connection.js';
-import { sessions, users } from '../db/schema.js';
+import { sessions } from '../db/schema.js';
 
 export type AuthEnv = {
   Variables: {
@@ -21,9 +21,10 @@ export function authMiddleware(db: Database) {
       return c.json({ error: 'Authentication required' }, 401);
     }
 
-    const rows = await db.select({
-      userId: sessions.userId,
-    })
+    const rows = await db
+      .select({
+        userId: sessions.userId,
+      })
       .from(sessions)
       .where(and(eq(sessions.id, sessionId), gt(sessions.expiresAt, new Date())));
 

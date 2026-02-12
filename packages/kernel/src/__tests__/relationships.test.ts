@@ -1,22 +1,22 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import type { RelationshipId } from '../identity.js';
 import { createOrganism } from '../organism/create-organism.js';
-import { checkAccess } from '../visibility/access-control.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
-import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
 import { InMemoryCompositionRepository } from '../testing/in-memory-composition-repository.js';
+import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
 import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
-  createTestIdentityGenerator,
   createPassthroughContentType,
-  testUserId,
+  createTestIdentityGenerator,
+  resetIdCounter,
   testContentTypeId,
   testTimestamp,
-  resetIdCounter,
+  testUserId,
 } from '../testing/test-helpers.js';
-import type { RelationshipId } from '../identity.js';
+import { checkAccess } from '../visibility/access-control.js';
 
 describe('relationships', () => {
   let organismRepository: InMemoryOrganismRepository;
@@ -153,14 +153,8 @@ describe('relationships', () => {
 
   it('relationships can be queried by user', async () => {
     const user = testUserId('user');
-    const { organism: org1 } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: user },
-      createDeps(),
-    );
-    const { organism: org2 } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: user },
-      createDeps(),
-    );
+    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: user }, createDeps());
+    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: user }, createDeps());
 
     const rels = await relationshipRepository.findByUser(user, 'stewardship');
     expect(rels).toHaveLength(2);

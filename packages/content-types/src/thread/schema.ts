@@ -6,7 +6,7 @@
  * to another organism or proposal for context.
  */
 
-import type { OrganismId, UserId, Timestamp } from '@omnilith/kernel';
+import type { OrganismId, Timestamp, UserId } from '@omnilith/kernel';
 
 export interface ThreadPayload {
   readonly title: string;

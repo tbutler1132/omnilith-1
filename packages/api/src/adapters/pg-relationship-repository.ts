@@ -2,9 +2,17 @@
  * PostgreSQL implementation of RelationshipRepository.
  */
 
-import { eq, and } from 'drizzle-orm';
-import type { RelationshipId, UserId, OrganismId, Timestamp } from '@omnilith/kernel';
-import type { Relationship, RelationshipRepository, RelationshipType, MembershipRole } from '@omnilith/kernel';
+import type {
+  MembershipRole,
+  OrganismId,
+  Relationship,
+  RelationshipId,
+  RelationshipRepository,
+  RelationshipType,
+  Timestamp,
+  UserId,
+} from '@omnilith/kernel';
+import { and, eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { relationships } from '../db/schema.js';
 
@@ -32,33 +40,31 @@ export class PgRelationshipRepository implements RelationshipRepository {
     return toRelationship(rows[0]);
   }
 
-  async findByUserAndOrganism(
-    userId: UserId,
-    organismId: OrganismId,
-  ): Promise<ReadonlyArray<Relationship>> {
-    const rows = await this.db.select().from(relationships).where(
-      and(eq(relationships.userId, userId), eq(relationships.organismId, organismId)),
-    );
+  async findByUserAndOrganism(userId: UserId, organismId: OrganismId): Promise<ReadonlyArray<Relationship>> {
+    const rows = await this.db
+      .select()
+      .from(relationships)
+      .where(and(eq(relationships.userId, userId), eq(relationships.organismId, organismId)));
     return rows.map(toRelationship);
   }
 
-  async findByOrganism(
-    organismId: OrganismId,
-    type?: RelationshipType,
-  ): Promise<ReadonlyArray<Relationship>> {
+  async findByOrganism(organismId: OrganismId, type?: RelationshipType): Promise<ReadonlyArray<Relationship>> {
     const conditions = [eq(relationships.organismId, organismId)];
     if (type) conditions.push(eq(relationships.type, type));
-    const rows = await this.db.select().from(relationships).where(and(...conditions));
+    const rows = await this.db
+      .select()
+      .from(relationships)
+      .where(and(...conditions));
     return rows.map(toRelationship);
   }
 
-  async findByUser(
-    userId: UserId,
-    type?: RelationshipType,
-  ): Promise<ReadonlyArray<Relationship>> {
+  async findByUser(userId: UserId, type?: RelationshipType): Promise<ReadonlyArray<Relationship>> {
     const conditions = [eq(relationships.userId, userId)];
     if (type) conditions.push(eq(relationships.type, type));
-    const rows = await this.db.select().from(relationships).where(and(...conditions));
+    const rows = await this.db
+      .select()
+      .from(relationships)
+      .where(and(...conditions));
     return rows.map(toRelationship);
   }
 }

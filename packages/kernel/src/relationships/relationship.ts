@@ -10,7 +10,7 @@
  * - stewardship: user assumed responsibility at the threshold
  */
 
-import type { RelationshipId, UserId, OrganismId, Timestamp } from '../identity.js';
+import type { OrganismId, RelationshipId, Timestamp, UserId } from '../identity.js';
 
 export type RelationshipType = 'membership' | 'integration-authority' | 'stewardship';
 export type MembershipRole = 'founder' | 'member';

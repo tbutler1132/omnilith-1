@@ -1,25 +1,25 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createOrganism } from '../organism/create-organism.js';
-import { appendState } from '../organism/append-state.js';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { composeOrganism } from '../composition/compose-organism.js';
 import { decomposeOrganism } from '../composition/decompose-organism.js';
-import { openProposal } from '../proposals/open-proposal.js';
-import { integrateProposal } from '../proposals/integrate-proposal.js';
+import { appendState } from '../organism/append-state.js';
+import { createOrganism } from '../organism/create-organism.js';
 import { declineProposal } from '../proposals/decline-proposal.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
-import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { integrateProposal } from '../proposals/integrate-proposal.js';
+import { openProposal } from '../proposals/open-proposal.js';
 import { InMemoryCompositionRepository } from '../testing/in-memory-composition-repository.js';
+import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
 import { InMemoryProposalRepository } from '../testing/in-memory-proposal-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
 import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
-  createTestIdentityGenerator,
   createPassthroughContentType,
-  testUserId,
-  testContentTypeId,
+  createTestIdentityGenerator,
   resetIdCounter,
+  testContentTypeId,
+  testUserId,
 } from '../testing/test-helpers.js';
 
 describe('events', () => {
@@ -193,8 +193,14 @@ describe('events', () => {
     await integrateProposal(
       { proposalId: proposal.id, integratedBy: steward },
       {
-        proposalRepository, organismRepository, stateRepository, contentTypeRegistry,
-        compositionRepository, eventPublisher, relationshipRepository, visibilityRepository,
+        proposalRepository,
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        compositionRepository,
+        eventPublisher,
+        relationshipRepository,
+        visibilityRepository,
         identityGenerator,
       },
     );
@@ -226,8 +232,13 @@ describe('events', () => {
     await declineProposal(
       { proposalId: proposal.id, declinedBy: steward, reason: 'No thanks' },
       {
-        proposalRepository, organismRepository, compositionRepository,
-        eventPublisher, relationshipRepository, visibilityRepository, identityGenerator,
+        proposalRepository,
+        organismRepository,
+        compositionRepository,
+        eventPublisher,
+        relationshipRepository,
+        visibilityRepository,
+        identityGenerator,
       },
     );
 
@@ -238,14 +249,8 @@ describe('events', () => {
 
   it('every event has a unique id and timestamp', async () => {
     const userId = testUserId('user');
-    await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
-      createDeps(),
-    );
-    await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
-      createDeps(),
-    );
+    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: userId }, createDeps());
+    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: userId }, createDeps());
 
     const ids = eventPublisher.published.map((e) => e.id);
     const uniqueIds = new Set(ids);

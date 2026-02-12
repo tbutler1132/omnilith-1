@@ -1,20 +1,20 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { createOrganism } from '../organism/create-organism.js';
-import { appendState } from '../organism/append-state.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
-import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
-import {
-  createTestIdentityGenerator,
-  createPassthroughContentType,
-  testUserId,
-  testContentTypeId,
-  resetIdCounter,
-} from '../testing/test-helpers.js';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { AccessDeniedError, OrganismNotFoundError } from '../errors.js';
 import type { OrganismId } from '../identity.js';
+import { appendState } from '../organism/append-state.js';
+import { createOrganism } from '../organism/create-organism.js';
+import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
+import {
+  createPassthroughContentType,
+  createTestIdentityGenerator,
+  resetIdCounter,
+  testContentTypeId,
+  testUserId,
+} from '../testing/test-helpers.js';
 
 describe('appendState', () => {
   let organismRepository: InMemoryOrganismRepository;

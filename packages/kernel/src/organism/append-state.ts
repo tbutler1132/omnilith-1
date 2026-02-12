@@ -6,19 +6,19 @@
  * This use case enforces that distinction.
  */
 
-import type { OrganismId, ContentTypeId, UserId, IdentityGenerator } from '../identity.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { OrganismRepository } from './organism-repository.js';
-import type { StateRepository } from './state-repository.js';
-import type { OrganismState } from './organism-state.js';
-import type { DomainEvent } from '../events/event.js';
 import {
-  OrganismNotFoundError,
   AccessDeniedError,
   ContentTypeNotRegisteredError,
+  OrganismNotFoundError,
   ValidationFailedError,
 } from '../errors.js';
+import type { DomainEvent } from '../events/event.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { ContentTypeId, IdentityGenerator, OrganismId, UserId } from '../identity.js';
+import type { OrganismRepository } from './organism-repository.js';
+import type { OrganismState } from './organism-state.js';
+import type { StateRepository } from './state-repository.js';
 
 export interface AppendStateInput {
   readonly organismId: OrganismId;
@@ -35,21 +35,14 @@ export interface AppendStateDeps {
   readonly identityGenerator: IdentityGenerator;
 }
 
-export async function appendState(
-  input: AppendStateInput,
-  deps: AppendStateDeps,
-): Promise<OrganismState> {
+export async function appendState(input: AppendStateInput, deps: AppendStateDeps): Promise<OrganismState> {
   const organism = await deps.organismRepository.findById(input.organismId);
   if (!organism) {
     throw new OrganismNotFoundError(input.organismId);
   }
 
   if (!organism.openTrunk) {
-    throw new AccessDeniedError(
-      input.appendedBy,
-      'append-state',
-      input.organismId,
-    );
+    throw new AccessDeniedError(input.appendedBy, 'append-state', input.organismId);
   }
 
   const contract = deps.contentTypeRegistry.get(input.contentTypeId);

@@ -1,34 +1,33 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { composeOrganism } from '../composition/compose-organism.js';
+import type {
+  ContentTypeContract,
+  EvaluationResult,
+  ProposalForEvaluation,
+  ValidationResult,
+} from '../content-types/content-type-contract.js';
+import { AccessDeniedError, ProposalAlreadyResolvedError } from '../errors.js';
+import type { ContentTypeId } from '../identity.js';
 import { createOrganism } from '../organism/create-organism.js';
-import { openProposal } from '../proposals/open-proposal.js';
-import { integrateProposal } from '../proposals/integrate-proposal.js';
 import { declineProposal } from '../proposals/decline-proposal.js';
 import { evaluateProposal } from '../proposals/evaluate-proposal.js';
-import { composeOrganism } from '../composition/compose-organism.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
-import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { integrateProposal } from '../proposals/integrate-proposal.js';
+import { openProposal } from '../proposals/open-proposal.js';
 import { InMemoryCompositionRepository } from '../testing/in-memory-composition-repository.js';
+import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
 import { InMemoryProposalRepository } from '../testing/in-memory-proposal-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
 import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
-  createTestIdentityGenerator,
   createPassthroughContentType,
-  testUserId,
-  testContentTypeId,
+  createTestIdentityGenerator,
   resetIdCounter,
+  testContentTypeId,
+  testUserId,
 } from '../testing/test-helpers.js';
-import type {
-  ContentTypeId,
-  RelationshipId,
-  UserId,
-  OrganismId,
-  Timestamp,
-} from '../identity.js';
-import type { ContentTypeContract, ValidationResult, EvaluationResult, ProposalForEvaluation } from '../content-types/content-type-contract.js';
-import { AccessDeniedError, ProposalAlreadyResolvedError } from '../errors.js';
 
 describe('proposals', () => {
   let organismRepository: InMemoryOrganismRepository;
@@ -155,10 +154,7 @@ describe('proposals', () => {
       openDeps(),
     );
 
-    const result = await integrateProposal(
-      { proposalId: proposal.id, integratedBy: steward },
-      integrateDeps(),
-    );
+    const result = await integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps());
 
     expect(result.proposal.status).toBe('integrated');
     expect(result.newState.payload).toEqual({ v: 2 });
@@ -213,10 +209,7 @@ describe('proposals', () => {
     );
 
     await expect(
-      integrateProposal(
-        { proposalId: proposal.id, integratedBy: outsider },
-        integrateDeps(),
-      ),
+      integrateProposal({ proposalId: proposal.id, integratedBy: outsider }, integrateDeps()),
     ).rejects.toThrow(AccessDeniedError);
   });
 
@@ -237,16 +230,10 @@ describe('proposals', () => {
       openDeps(),
     );
 
-    await integrateProposal(
-      { proposalId: proposal.id, integratedBy: steward },
-      integrateDeps(),
-    );
+    await integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps());
 
     await expect(
-      integrateProposal(
-        { proposalId: proposal.id, integratedBy: steward },
-        integrateDeps(),
-      ),
+      integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps()),
     ).rejects.toThrow(ProposalAlreadyResolvedError);
   });
 
@@ -265,8 +252,7 @@ describe('proposals', () => {
         }
         return { valid: false, issues: ['Invalid policy'] };
       },
-      evaluate: (proposal: ProposalForEvaluation, policyPayload: unknown): EvaluationResult => {
-        const policy = policyPayload as { integratorId: string };
+      evaluate: (_proposal: ProposalForEvaluation, _policyPayload: unknown): EvaluationResult => {
         // This evaluator doesn't check the proposer — it just passes
         // The integration authority check is in the integrate use case
         return { decision: 'pass' };
@@ -317,7 +303,7 @@ describe('proposals', () => {
     expect(evaluation.passed).toBe(true);
   });
 
-  it('a policy organism inside a parent does not affect proposals to that parent\'s children', async () => {
+  it("a policy organism inside a parent does not affect proposals to that parent's children", async () => {
     const steward = testUserId('steward');
 
     // Create a policy that always declines

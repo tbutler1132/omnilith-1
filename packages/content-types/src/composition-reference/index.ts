@@ -1,7 +1,7 @@
+export { compositionReferenceContentType } from './contract.js';
 export type {
-  CompositionReferencePayload,
-  CompositionReferenceEntry,
   ArrangementType,
+  CompositionReferenceEntry,
+  CompositionReferencePayload,
 } from './schema.js';
 export { validateCompositionReference } from './validator.js';
-export { compositionReferenceContentType } from './contract.js';

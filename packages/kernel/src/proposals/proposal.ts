@@ -10,13 +10,7 @@
  * contributor or a cross-boundary fork.
  */
 
-import type {
-  ProposalId,
-  OrganismId,
-  ContentTypeId,
-  UserId,
-  Timestamp,
-} from '../identity.js';
+import type { ContentTypeId, OrganismId, ProposalId, Timestamp, UserId } from '../identity.js';
 
 export type ProposalStatus = 'open' | 'integrated' | 'declined';
 

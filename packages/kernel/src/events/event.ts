@@ -6,7 +6,7 @@
  * data to reconstruct what happened without querying back.
  */
 
-import type { EventId, OrganismId, UserId, Timestamp } from '../identity.js';
+import type { EventId, OrganismId, Timestamp, UserId } from '../identity.js';
 
 export type EventType =
   | 'organism.created'

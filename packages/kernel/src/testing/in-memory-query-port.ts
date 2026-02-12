@@ -1,9 +1,9 @@
-import type { OrganismId, UserId, Timestamp } from '../identity.js';
-import type { QueryPort, OrganismWithState, VitalityData, QueryFilters } from '../query/query-port.js';
-import type { InMemoryOrganismRepository } from './in-memory-organism-repository.js';
-import type { InMemoryStateRepository } from './in-memory-state-repository.js';
-import type { InMemoryProposalRepository } from './in-memory-proposal-repository.js';
+import type { OrganismId, UserId } from '../identity.js';
+import type { OrganismWithState, QueryFilters, QueryPort, VitalityData } from '../query/query-port.js';
 import type { InMemoryCompositionRepository } from './in-memory-composition-repository.js';
+import type { InMemoryOrganismRepository } from './in-memory-organism-repository.js';
+import type { InMemoryProposalRepository } from './in-memory-proposal-repository.js';
+import type { InMemoryStateRepository } from './in-memory-state-repository.js';
 
 export class InMemoryQueryPort implements QueryPort {
   constructor(
@@ -14,10 +14,32 @@ export class InMemoryQueryPort implements QueryPort {
   ) {}
 
   async findOrganismsWithState(filters: QueryFilters): Promise<ReadonlyArray<OrganismWithState>> {
-    // Simple implementation — real adapter would use SQL
+    let all = this.organisms.getAll();
+
+    if (filters.createdBy) {
+      all = all.filter((o) => o.createdBy === filters.createdBy);
+    }
+
+    if (filters.parentId) {
+      const children = await this.composition.findChildren(filters.parentId);
+      const childIds = new Set(children.map((c) => c.childId));
+      all = all.filter((o) => childIds.has(o.id));
+    }
+
     const results: OrganismWithState[] = [];
-    // This is intentionally naive for testing
-    return results;
+    for (const organism of all) {
+      const currentState = await this.states.findCurrentByOrganismId(organism.id);
+
+      if (filters.contentTypeId && currentState?.contentTypeId !== filters.contentTypeId) {
+        continue;
+      }
+
+      results.push({ organism, currentState });
+    }
+
+    const offset = filters.offset ?? 0;
+    const limit = filters.limit ?? results.length;
+    return results.slice(offset, offset + limit);
   }
 
   async getVitality(organismId: OrganismId): Promise<VitalityData> {
@@ -34,7 +56,12 @@ export class InMemoryQueryPort implements QueryPort {
   }
 
   async findOrganismsByUser(userId: UserId): Promise<ReadonlyArray<OrganismWithState>> {
-    // Naive — real adapter would join tables
-    return [];
+    const all = this.organisms.getAll().filter((o) => o.createdBy === userId);
+    const results: OrganismWithState[] = [];
+    for (const organism of all) {
+      const currentState = await this.states.findCurrentByOrganismId(organism.id);
+      results.push({ organism, currentState });
+    }
+    return results;
   }
 }

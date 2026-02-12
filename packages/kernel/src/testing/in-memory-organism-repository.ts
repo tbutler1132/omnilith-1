@@ -16,4 +16,9 @@ export class InMemoryOrganismRepository implements OrganismRepository {
   async exists(id: OrganismId): Promise<boolean> {
     return this.organisms.has(id);
   }
+
+  /** Test infrastructure — not a port method. */
+  getAll(): Organism[] {
+    return [...this.organisms.values()];
+  }
 }

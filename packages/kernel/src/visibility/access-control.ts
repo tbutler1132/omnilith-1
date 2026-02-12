@@ -14,12 +14,12 @@
  * authority must be explicitly assigned per-organism.
  */
 
-import type { UserId, OrganismId } from '../identity.js';
-import type { VisibilityRepository } from './visibility-repository.js';
-import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
+import type { OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { Relationship } from '../relationships/relationship.js';
+import type { RelationshipRepository } from '../relationships/relationship-repository.js';
+import type { VisibilityRepository } from './visibility-repository.js';
 
 export type ActionType =
   | 'view'
@@ -92,10 +92,7 @@ async function checkMemberAccess(
   // Membership in the parent community grants access
   const parent = await deps.compositionRepository.findParent(organismId);
   if (parent) {
-    const parentRelationships = await deps.relationshipRepository.findByUserAndOrganism(
-      userId,
-      parent.parentId,
-    );
+    const parentRelationships = await deps.relationshipRepository.findByUserAndOrganism(userId, parent.parentId);
     return parentRelationships.some((r) => r.type === 'membership');
   }
 
@@ -150,13 +147,8 @@ async function checkActionPermission(
       // Check if user is the founder of the parent community
       const parent = await deps.compositionRepository.findParent(organismId);
       if (parent) {
-        const parentRels = await deps.relationshipRepository.findByUserAndOrganism(
-          userId,
-          parent.parentId,
-        );
-        const isFounder = parentRels.some(
-          (r) => r.type === 'membership' && r.role === 'founder',
-        );
+        const parentRels = await deps.relationshipRepository.findByUserAndOrganism(userId, parent.parentId);
+        const isFounder = parentRels.some((r) => r.type === 'membership' && r.role === 'founder');
         if (isFounder) {
           return { allowed: true };
         }
@@ -182,9 +174,7 @@ async function checkActionPermission(
           userId,
           parentForCompose.parentId,
         );
-        const isFounderForCompose = parentRelsForCompose.some(
-          (r) => r.type === 'membership' && r.role === 'founder',
-        );
+        const isFounderForCompose = parentRelsForCompose.some((r) => r.type === 'membership' && r.role === 'founder');
         if (isFounderForCompose) {
           return { allowed: true };
         }

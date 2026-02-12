@@ -1,5 +1,5 @@
 import type { ValidationResult } from '@omnilith/kernel';
-import type { TextPayload, TextFormat } from './schema.js';
+import type { TextPayload } from './schema.js';
 
 const VALID_FORMATS: ReadonlySet<string> = new Set(['plaintext', 'markdown']);
 

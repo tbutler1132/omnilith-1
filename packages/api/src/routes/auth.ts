@@ -5,13 +5,13 @@
  * with a stewardship relationship.
  */
 
-import { Hono } from 'hono';
-import { eq } from 'drizzle-orm';
-import { randomUUID, scryptSync, randomBytes, timingSafeEqual } from 'node:crypto';
-import type { UserId, ContentTypeId } from '@omnilith/kernel';
+import { randomBytes, randomUUID, scryptSync, timingSafeEqual } from 'node:crypto';
+import type { ContentTypeId, UserId } from '@omnilith/kernel';
 import { createOrganism } from '@omnilith/kernel';
+import { eq } from 'drizzle-orm';
+import { Hono } from 'hono';
 import type { Container } from '../container.js';
-import { users, sessions } from '../db/schema.js';
+import { sessions, users } from '../db/schema.js';
 
 export function authRoutes(container: Container) {
   const app = new Hono();
@@ -70,11 +70,14 @@ export function authRoutes(container: Container) {
       expiresAt,
     });
 
-    return c.json({
-      userId,
-      sessionId,
-      personalOrganismId: personalOrganism.organism.id,
-    }, 201);
+    return c.json(
+      {
+        userId,
+        sessionId,
+        personalOrganismId: personalOrganism.organism.id,
+      },
+      201,
+    );
   });
 
   app.post('/login', async (c) => {

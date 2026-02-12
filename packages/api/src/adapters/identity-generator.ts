@@ -4,14 +4,14 @@
 
 import { randomUUID } from 'node:crypto';
 import type {
+  EventId,
   IdentityGenerator,
   OrganismId,
-  UserId,
-  StateId,
   ProposalId,
-  EventId,
   RelationshipId,
+  StateId,
   Timestamp,
+  UserId,
 } from '@omnilith/kernel';
 
 export class UuidIdentityGenerator implements IdentityGenerator {

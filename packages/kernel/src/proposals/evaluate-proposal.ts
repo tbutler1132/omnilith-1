@@ -12,11 +12,11 @@
  * organism's governance is self-contained within its boundary.
  */
 
-import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
+import type { EvaluationResult, ProposalForEvaluation } from '../content-types/content-type-contract.js';
+import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
 import type { StateRepository } from '../organism/state-repository.js';
 import type { Proposal } from './proposal.js';
-import type { EvaluationResult, ProposalForEvaluation } from '../content-types/content-type-contract.js';
 
 export interface EvaluateProposalDeps {
   readonly compositionRepository: CompositionRepository;
@@ -32,10 +32,7 @@ export interface EvaluationOutcome {
   }>;
 }
 
-export async function evaluateProposal(
-  proposal: Proposal,
-  deps: EvaluateProposalDeps,
-): Promise<EvaluationOutcome> {
+export async function evaluateProposal(proposal: Proposal, deps: EvaluateProposalDeps): Promise<EvaluationOutcome> {
   // Find all direct children of the target organism
   const children = await deps.compositionRepository.findChildren(proposal.organismId);
 

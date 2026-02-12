@@ -1,23 +1,23 @@
-export type { Proposal, ProposalStatus } from './proposal.js';
-export type { ProposalRepository } from './proposal-repository.js';
 export {
-  openProposal,
-  type OpenProposalInput,
-  type OpenProposalDeps,
-} from './open-proposal.js';
+  type DeclineProposalDeps,
+  type DeclineProposalInput,
+  declineProposal,
+} from './decline-proposal.js';
 export {
-  evaluateProposal,
   type EvaluateProposalDeps,
   type EvaluationOutcome,
+  evaluateProposal,
 } from './evaluate-proposal.js';
 export {
-  integrateProposal,
-  type IntegrateProposalInput,
   type IntegrateProposalDeps,
+  type IntegrateProposalInput,
   type IntegrateProposalResult,
+  integrateProposal,
 } from './integrate-proposal.js';
 export {
-  declineProposal,
-  type DeclineProposalInput,
-  type DeclineProposalDeps,
-} from './decline-proposal.js';
+  type OpenProposalDeps,
+  type OpenProposalInput,
+  openProposal,
+} from './open-proposal.js';
+export type { Proposal, ProposalStatus } from './proposal.js';
+export type { ProposalRepository } from './proposal-repository.js';

@@ -1,9 +1,7 @@
 import type { ValidationResult } from '@omnilith/kernel';
 import type { CompositionReferencePayload } from './schema.js';
 
-const VALID_ARRANGEMENTS: ReadonlySet<string> = new Set([
-  'sequential', 'unordered', 'grouped',
-]);
+const VALID_ARRANGEMENTS: ReadonlySet<string> = new Set(['sequential', 'unordered', 'grouped']);
 
 export function validateCompositionReference(payload: unknown): ValidationResult {
   const issues: string[] = [];

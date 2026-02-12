@@ -28,8 +28,5 @@ export interface ProposalForEvaluation {
 export interface ContentTypeContract {
   readonly typeId: ContentTypeId;
   validate(payload: unknown): ValidationResult;
-  evaluate?(
-    proposal: ProposalForEvaluation,
-    policyPayload: unknown,
-  ): EvaluationResult;
+  evaluate?(proposal: ProposalForEvaluation, policyPayload: unknown): EvaluationResult;
 }

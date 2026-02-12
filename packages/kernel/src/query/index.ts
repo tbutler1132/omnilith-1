@@ -1,6 +1,6 @@
 export type {
-  QueryPort,
   OrganismWithState,
-  VitalityData,
   QueryFilters,
+  QueryPort,
+  VitalityData,
 } from './query-port.js';

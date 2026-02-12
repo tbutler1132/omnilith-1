@@ -2,9 +2,8 @@
  * PostgreSQL implementation of VisibilityRepository.
  */
 
+import type { OrganismId, Timestamp, VisibilityLevel, VisibilityRecord, VisibilityRepository } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
-import type { OrganismId, Timestamp } from '@omnilith/kernel';
-import type { VisibilityRecord, VisibilityRepository, VisibilityLevel } from '@omnilith/kernel';
 import type { Database } from '../db/connection.js';
 import { visibility } from '../db/schema.js';
 
@@ -12,7 +11,8 @@ export class PgVisibilityRepository implements VisibilityRepository {
   constructor(private readonly db: Database) {}
 
   async save(record: VisibilityRecord): Promise<void> {
-    await this.db.insert(visibility)
+    await this.db
+      .insert(visibility)
       .values({
         organismId: record.organismId,
         level: record.level,

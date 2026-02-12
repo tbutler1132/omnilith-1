@@ -2,9 +2,8 @@
  * PostgreSQL implementation of CompositionRepository.
  */
 
-import { eq, and } from 'drizzle-orm';
-import type { OrganismId, UserId, Timestamp } from '@omnilith/kernel';
-import type { CompositionRecord, CompositionRepository } from '@omnilith/kernel';
+import type { CompositionRecord, CompositionRepository, OrganismId, Timestamp, UserId } from '@omnilith/kernel';
+import { and, eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { composition } from '../db/schema.js';
 
@@ -22,9 +21,7 @@ export class PgCompositionRepository implements CompositionRepository {
   }
 
   async remove(parentId: OrganismId, childId: OrganismId): Promise<void> {
-    await this.db.delete(composition).where(
-      and(eq(composition.parentId, parentId), eq(composition.childId, childId)),
-    );
+    await this.db.delete(composition).where(and(eq(composition.parentId, parentId), eq(composition.childId, childId)));
   }
 
   async findChildren(parentId: OrganismId): Promise<ReadonlyArray<CompositionRecord>> {
@@ -39,7 +36,8 @@ export class PgCompositionRepository implements CompositionRepository {
   }
 
   async exists(parentId: OrganismId, childId: OrganismId): Promise<boolean> {
-    const rows = await this.db.select({ childId: composition.childId })
+    const rows = await this.db
+      .select({ childId: composition.childId })
       .from(composition)
       .where(and(eq(composition.parentId, parentId), eq(composition.childId, childId)));
     return rows.length > 0;

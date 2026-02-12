@@ -1,31 +1,49 @@
 /**
- * Organism routes — threshold, state, composition.
+ * Organism routes — threshold, state, composition, query.
  */
 
-import { Hono } from 'hono';
-import type { UserId, OrganismId, ContentTypeId } from '@omnilith/kernel';
+import type { ContentTypeId, EventType, OrganismId, UserId } from '@omnilith/kernel';
 import {
-  createOrganism,
   appendState,
+  checkAccess,
   composeOrganism,
+  createOrganism,
   decomposeOrganism,
   queryChildren,
-  checkAccess,
+  queryParent,
 } from '@omnilith/kernel';
+import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
+import { parseJsonBody } from '../utils/parse-json.js';
 
 export function organismRoutes(container: Container) {
   const app = new Hono<AuthEnv>();
 
+  // List organisms with query filters
+  app.get('/', async (c) => {
+    const filters = {
+      contentTypeId: c.req.query('contentTypeId') as ContentTypeId | undefined,
+      createdBy: c.req.query('createdBy') as UserId | undefined,
+      parentId: c.req.query('parentId') as OrganismId | undefined,
+      limit: c.req.query('limit') ? Number(c.req.query('limit')) : undefined,
+      offset: c.req.query('offset') ? Number(c.req.query('offset')) : undefined,
+    };
+
+    const results = await container.queryPort.findOrganismsWithState(filters);
+    return c.json({ organisms: results });
+  });
+
   // Threshold — create organism
   app.post('/', async (c) => {
     const userId = c.get('userId');
-    const body = await c.req.json<{
+    const body = await parseJsonBody<{
       contentTypeId: string;
       payload: unknown;
       openTrunk?: boolean;
-    }>();
+    }>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
     try {
       const result = await createOrganism(
@@ -45,10 +63,13 @@ export function organismRoutes(container: Container) {
         },
       );
 
-      return c.json({
-        organism: result.organism,
-        initialState: result.initialState,
-      }, 201);
+      return c.json(
+        {
+          organism: result.organism,
+          initialState: result.initialState,
+        },
+        201,
+      );
     } catch (err: any) {
       if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
       if (err.kind === 'ContentTypeNotRegisteredError') return c.json({ error: err.message }, 400);
@@ -77,7 +98,9 @@ export function organismRoutes(container: Container) {
   app.post('/:id/states', async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id') as OrganismId;
-    const body = await c.req.json<{ contentTypeId: string; payload: unknown }>();
+    const body = await parseJsonBody<{ contentTypeId: string; payload: unknown }>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
     try {
       const state = await appendState(
@@ -105,6 +128,15 @@ export function organismRoutes(container: Container) {
     }
   });
 
+  // Query parent composition record
+  app.get('/:id/parent', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const parent = await queryParent(id, {
+      compositionRepository: container.compositionRepository,
+    });
+    return c.json({ parent: parent ?? null });
+  });
+
   // Query children
   app.get('/:id/children', async (c) => {
     const id = c.req.param('id') as OrganismId;
@@ -118,7 +150,9 @@ export function organismRoutes(container: Container) {
   app.post('/:id/children', async (c) => {
     const userId = c.get('userId');
     const parentId = c.req.param('id') as OrganismId;
-    const body = await c.req.json<{ childId: string; position?: number }>();
+    const body = await parseJsonBody<{ childId: string; position?: number }>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
     try {
       const record = await composeOrganism(
@@ -167,6 +201,29 @@ export function organismRoutes(container: Container) {
     }
   });
 
+  // Vitality
+  app.get('/:id/vitality', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const vitality = await container.queryPort.getVitality(id);
+    return c.json({ vitality });
+  });
+
+  // Events
+  app.get('/:id/events', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const type = c.req.query('type') as EventType | undefined;
+    const events = await container.eventRepository.findByOrganismId(id, type);
+    return c.json({ events });
+  });
+
+  // Relationships
+  app.get('/:id/relationships', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const type = c.req.query('type') as any;
+    const relationships = await container.relationshipRepository.findByOrganism(id, type || undefined);
+    return c.json({ relationships });
+  });
+
   // Visibility
   app.get('/:id/visibility', async (c) => {
     const id = c.req.param('id') as OrganismId;
@@ -177,7 +234,9 @@ export function organismRoutes(container: Container) {
   app.put('/:id/visibility', async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id') as OrganismId;
-    const body = await c.req.json<{ level: string }>();
+    const body = await parseJsonBody<{ level: string }>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
     const decision = await checkAccess(userId, id, 'change-visibility', {
       visibilityRepository: container.visibilityRepository,

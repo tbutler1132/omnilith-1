@@ -2,7 +2,7 @@
  * ProposalRepository — outbound port for persisting proposals.
  */
 
-import type { ProposalId, OrganismId } from '../identity.js';
+import type { OrganismId, ProposalId } from '../identity.js';
 import type { Proposal } from './proposal.js';
 
 export interface ProposalRepository {

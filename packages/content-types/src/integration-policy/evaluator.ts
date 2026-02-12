@@ -13,13 +13,10 @@
  * will implement substantive evaluation logic here.
  */
 
-import type { ProposalForEvaluation, EvaluationResult } from '@omnilith/kernel';
+import type { EvaluationResult, ProposalForEvaluation } from '@omnilith/kernel';
 import type { IntegrationPolicyPayload } from './schema.js';
 
-export function evaluateIntegrationPolicy(
-  proposal: ProposalForEvaluation,
-  policyPayload: unknown,
-): EvaluationResult {
+export function evaluateIntegrationPolicy(_proposal: ProposalForEvaluation, policyPayload: unknown): EvaluationResult {
   const policy = policyPayload as IntegrationPolicyPayload;
 
   if (policy.mode !== 'single-integrator') {

@@ -1,11 +1,11 @@
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { validateAudio } from '../audio/validator.js';
-import { validateText } from '../text/validator.js';
-import { validateImage } from '../image/validator.js';
-import { validateSpatialMap } from '../spatial-map/validator.js';
 import { validateCompositionReference } from '../composition-reference/validator.js';
-import { validateThread } from '../thread/validator.js';
+import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
+import { validateSpatialMap } from '../spatial-map/validator.js';
+import { validateText } from '../text/validator.js';
+import { validateThread } from '../thread/validator.js';
 
 describe('audio validator', () => {
   it('accepts a valid audio payload', () => {

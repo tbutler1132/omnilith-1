@@ -76,12 +76,8 @@
           "name": "composition_parent_id_organisms_id_fk",
           "tableFrom": "composition",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "parent_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -89,12 +85,8 @@
           "name": "composition_child_id_organisms_id_fk",
           "tableFrom": "composition",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "child_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["child_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -102,12 +94,8 @@
           "name": "composition_composed_by_users_id_fk",
           "tableFrom": "composition",
           "tableTo": "users",
-          "columnsFrom": [
-            "composed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["composed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -294,12 +282,8 @@
           "name": "organism_states_organism_id_organisms_id_fk",
           "tableFrom": "organism_states",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "organism_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organism_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -307,12 +291,8 @@
           "name": "organism_states_created_by_users_id_fk",
           "tableFrom": "organism_states",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -320,12 +300,8 @@
           "name": "organism_states_parent_state_id_organism_states_id_fk",
           "tableFrom": "organism_states",
           "tableTo": "organism_states",
-          "columnsFrom": [
-            "parent_state_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["parent_state_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -378,12 +354,8 @@
           "name": "organisms_created_by_users_id_fk",
           "tableFrom": "organisms",
           "tableTo": "users",
-          "columnsFrom": [
-            "created_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["created_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -391,12 +363,8 @@
           "name": "organisms_forked_from_id_organisms_id_fk",
           "tableFrom": "organisms",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "forked_from_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["forked_from_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -516,12 +484,8 @@
           "name": "proposals_organism_id_organisms_id_fk",
           "tableFrom": "proposals",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "organism_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organism_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -529,12 +493,8 @@
           "name": "proposals_proposed_by_users_id_fk",
           "tableFrom": "proposals",
           "tableTo": "users",
-          "columnsFrom": [
-            "proposed_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["proposed_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -542,12 +502,8 @@
           "name": "proposals_resolved_by_users_id_fk",
           "tableFrom": "proposals",
           "tableTo": "users",
-          "columnsFrom": [
-            "resolved_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["resolved_by"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -657,12 +613,8 @@
           "name": "relationships_user_id_users_id_fk",
           "tableFrom": "relationships",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         },
@@ -670,12 +622,8 @@
           "name": "relationships_organism_id_organisms_id_fk",
           "tableFrom": "relationships",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "organism_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organism_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -722,12 +670,8 @@
           "name": "sessions_user_id_users_id_fk",
           "tableFrom": "sessions",
           "tableTo": "users",
-          "columnsFrom": [
-            "user_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["user_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -775,9 +719,7 @@
         "users_email_unique": {
           "name": "users_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -814,12 +756,8 @@
           "name": "visibility_organism_id_organisms_id_fk",
           "tableFrom": "visibility",
           "tableTo": "organisms",
-          "columnsFrom": [
-            "organism_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["organism_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }

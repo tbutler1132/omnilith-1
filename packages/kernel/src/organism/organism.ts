@@ -10,7 +10,7 @@
  * policies, maps — is an organism.
  */
 
-import type { OrganismId, UserId, Timestamp } from '../identity.js';
+import type { OrganismId, Timestamp, UserId } from '../identity.js';
 
 export interface Organism {
   readonly id: OrganismId;

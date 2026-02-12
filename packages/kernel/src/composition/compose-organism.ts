@@ -6,13 +6,13 @@
  * operation fails.
  */
 
-import type { OrganismId, UserId, IdentityGenerator } from '../identity.js';
-import type { OrganismRepository } from '../organism/organism-repository.js';
-import type { EventPublisher } from '../events/event-publisher.js';
-import type { CompositionRepository } from './composition-repository.js';
-import type { CompositionRecord } from './composition.js';
+import { CompositionError, OrganismNotFoundError } from '../errors.js';
 import type { DomainEvent } from '../events/event.js';
-import { OrganismNotFoundError, CompositionError } from '../errors.js';
+import type { EventPublisher } from '../events/event-publisher.js';
+import type { IdentityGenerator, OrganismId, UserId } from '../identity.js';
+import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { CompositionRecord } from './composition.js';
+import type { CompositionRepository } from './composition-repository.js';
 
 export interface ComposeOrganismInput {
   readonly parentId: OrganismId;
@@ -48,9 +48,16 @@ export async function composeOrganism(
 
   const existingParent = await deps.compositionRepository.findParent(input.childId);
   if (existingParent) {
-    throw new CompositionError(
-      `Organism ${input.childId} already has a parent: ${existingParent.parentId}`,
-    );
+    throw new CompositionError(`Organism ${input.childId} already has a parent: ${existingParent.parentId}`);
+  }
+
+  // Walk up ancestors from parentId to detect cycles
+  let ancestor = await deps.compositionRepository.findParent(input.parentId);
+  while (ancestor) {
+    if (ancestor.parentId === input.childId) {
+      throw new CompositionError(`Composing ${input.childId} inside ${input.parentId} would create a cycle`);
+    }
+    ancestor = await deps.compositionRepository.findParent(ancestor.parentId);
   }
 
   const now = deps.identityGenerator.timestamp();

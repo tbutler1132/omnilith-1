@@ -2,18 +2,18 @@
  * Test helpers — factory functions for creating test data with sensible defaults.
  */
 
+import type { ContentTypeContract, ValidationResult } from '../content-types/content-type-contract.js';
 import type {
-  OrganismId,
-  UserId,
-  StateId,
-  ProposalId,
   ContentTypeId,
   EventId,
-  RelationshipId,
-  Timestamp,
   IdentityGenerator,
+  OrganismId,
+  ProposalId,
+  RelationshipId,
+  StateId,
+  Timestamp,
+  UserId,
 } from '../identity.js';
-import type { ContentTypeContract, ValidationResult } from '../content-types/content-type-contract.js';
 
 let counter = 0;
 

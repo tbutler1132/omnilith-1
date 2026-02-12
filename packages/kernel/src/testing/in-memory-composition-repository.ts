@@ -1,6 +1,6 @@
-import type { OrganismId } from '../identity.js';
 import type { CompositionRecord } from '../composition/composition.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
+import type { OrganismId } from '../identity.js';
 
 export class InMemoryCompositionRepository implements CompositionRepository {
   private records: CompositionRecord[] = [];
@@ -10,9 +10,7 @@ export class InMemoryCompositionRepository implements CompositionRepository {
   }
 
   async remove(parentId: OrganismId, childId: OrganismId): Promise<void> {
-    this.records = this.records.filter(
-      (r) => !(r.parentId === parentId && r.childId === childId),
-    );
+    this.records = this.records.filter((r) => !(r.parentId === parentId && r.childId === childId));
   }
 
   async findChildren(parentId: OrganismId): Promise<ReadonlyArray<CompositionRecord>> {

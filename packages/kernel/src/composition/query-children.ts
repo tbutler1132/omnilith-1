@@ -3,8 +3,8 @@
  */
 
 import type { OrganismId } from '../identity.js';
-import type { CompositionRepository } from './composition-repository.js';
 import type { CompositionRecord } from './composition.js';
+import type { CompositionRepository } from './composition-repository.js';
 
 export interface QueryChildrenDeps {
   readonly compositionRepository: CompositionRepository;

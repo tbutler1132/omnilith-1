@@ -12,6 +12,4 @@ export interface ImagePayload {
 
 export type ImageFormat = 'png' | 'jpg' | 'jpeg' | 'gif' | 'webp' | 'svg';
 
-export const IMAGE_FORMATS: ReadonlySet<string> = new Set([
-  'png', 'jpg', 'jpeg', 'gif', 'webp', 'svg',
-]);
+export const IMAGE_FORMATS: ReadonlySet<string> = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']);

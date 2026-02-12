@@ -1,19 +1,19 @@
-import { describe, it, expect, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { ContentTypeNotRegisteredError, ValidationFailedError } from '../errors.js';
 import { createOrganism } from '../organism/create-organism.js';
-import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
-import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
-import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
-import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
 import { InMemoryContentTypeRegistry } from '../testing/in-memory-content-type-registry.js';
+import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js';
+import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
+import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
+import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
 import {
-  createTestIdentityGenerator,
   createPassthroughContentType,
   createRejectingContentType,
-  testUserId,
-  testContentTypeId,
+  createTestIdentityGenerator,
   resetIdCounter,
+  testContentTypeId,
+  testUserId,
 } from '../testing/test-helpers.js';
-import { ContentTypeNotRegisteredError, ValidationFailedError } from '../errors.js';
 
 describe('createOrganism', () => {
   let organismRepository: InMemoryOrganismRepository;
@@ -74,10 +74,7 @@ describe('createOrganism', () => {
       deps(),
     );
 
-    const relationships = await relationshipRepository.findByUserAndOrganism(
-      userId,
-      result.organism.id,
-    );
+    const relationships = await relationshipRepository.findByUserAndOrganism(userId, result.organism.id);
     expect(relationships).toHaveLength(1);
     expect(relationships[0].type).toBe('stewardship');
     expect(relationships[0].userId).toBe(userId);
