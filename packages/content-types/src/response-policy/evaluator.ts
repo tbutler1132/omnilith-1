@@ -16,10 +16,7 @@
 import type { EvaluationResult, ProposalForEvaluation } from '@omnilith/kernel';
 import type { ResponsePolicyPayload } from './schema.js';
 
-export function evaluateResponsePolicy(
-  _proposal: ProposalForEvaluation,
-  policyPayload: unknown,
-): EvaluationResult {
+export function evaluateResponsePolicy(_proposal: ProposalForEvaluation, policyPayload: unknown): EvaluationResult {
   const policy = policyPayload as ResponsePolicyPayload;
 
   if (policy.mode !== 'variable-threshold') {
@@ -38,13 +35,9 @@ export function evaluateResponsePolicy(
       : policy.currentVariableValue > policy.threshold;
 
   if (triggered) {
-    return policy.action === 'decline-all'
-      ? { decision: 'decline', reason: policy.reason }
-      : { decision: 'pass' };
+    return policy.action === 'decline-all' ? { decision: 'decline', reason: policy.reason } : { decision: 'pass' };
   }
 
   // Condition not triggered — inverse of the action
-  return policy.action === 'decline-all'
-    ? { decision: 'pass' }
-    : { decision: 'decline', reason: policy.reason };
+  return policy.action === 'decline-all' ? { decision: 'pass' } : { decision: 'decline', reason: policy.reason };
 }

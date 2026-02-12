@@ -9,6 +9,7 @@
 import type { ContentTypeId, OrganismId, Timestamp, UserId } from '../identity.js';
 import type { Organism } from '../organism/organism.js';
 import type { OrganismState } from '../organism/organism-state.js';
+import type { Proposal } from '../proposals/proposal.js';
 
 export interface OrganismWithState {
   readonly organism: Organism;
@@ -34,4 +35,5 @@ export interface QueryPort {
   findOrganismsWithState(filters: QueryFilters): Promise<ReadonlyArray<OrganismWithState>>;
   getVitality(organismId: OrganismId): Promise<VitalityData>;
   findOrganismsByUser(userId: UserId): Promise<ReadonlyArray<OrganismWithState>>;
+  findProposalsByUser(userId: UserId): Promise<ReadonlyArray<Proposal>>;
 }

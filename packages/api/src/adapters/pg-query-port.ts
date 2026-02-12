@@ -6,6 +6,9 @@ import type {
   ContentTypeId,
   OrganismId,
   OrganismWithState,
+  Proposal,
+  ProposalId,
+  ProposalStatus,
   QueryFilters,
   QueryPort,
   StateId,
@@ -13,9 +16,9 @@ import type {
   UserId,
   VitalityData,
 } from '@omnilith/kernel';
-import { and, count, desc, eq, max, sql } from 'drizzle-orm';
+import { and, count, desc, eq, max, or, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
-import { composition, organismStates, organisms, proposals } from '../db/schema.js';
+import { composition, organismStates, organisms, proposals, relationships } from '../db/schema.js';
 
 export class PgQueryPort implements QueryPort {
   constructor(private readonly db: Database) {}
@@ -117,6 +120,39 @@ export class PgQueryPort implements QueryPort {
 
     return results;
   }
+
+  async findProposalsByUser(userId: UserId): Promise<ReadonlyArray<Proposal>> {
+    const rows = await this.db
+      .select()
+      .from(proposals)
+      .where(
+        or(
+          eq(proposals.proposedBy, userId),
+          sql`${proposals.organismId} IN (
+            SELECT ${relationships.organismId} FROM ${relationships}
+            WHERE ${relationships.userId} = ${userId}
+            AND ${relationships.type} = 'integration-authority'
+          )`,
+        ),
+      );
+
+    return rows.map(toProposal);
+  }
+}
+
+function toProposal(row: typeof proposals.$inferSelect): Proposal {
+  return {
+    id: row.id as ProposalId,
+    organismId: row.organismId as OrganismId,
+    proposedContentTypeId: row.proposedContentTypeId as ContentTypeId,
+    proposedPayload: row.proposedPayload,
+    proposedBy: row.proposedBy as UserId,
+    status: row.status as ProposalStatus,
+    createdAt: row.createdAt.getTime() as Timestamp,
+    resolvedAt: row.resolvedAt ? (row.resolvedAt.getTime() as Timestamp) : undefined,
+    resolvedBy: row.resolvedBy ? (row.resolvedBy as UserId) : undefined,
+    declineReason: row.declineReason ?? undefined,
+  };
 }
 
 function toOrganism(row: typeof organisms.$inferSelect): import('@omnilith/kernel').Organism {

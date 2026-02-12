@@ -5,7 +5,7 @@
  * these tables are the Postgres implementation of those ports.
  */
 
-import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex } from 'drizzle-orm/pg-core';
+import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -141,3 +141,8 @@ export const relationships = pgTable(
     index('idx_relationships_user').on(table.userId),
   ],
 );
+
+export const platformConfig = pgTable('platform_config', {
+  key: varchar('key', { length: 255 }).primaryKey(),
+  value: text('value').notNull(),
+});

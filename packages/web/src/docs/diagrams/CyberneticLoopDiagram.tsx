@@ -24,6 +24,7 @@ export function CyberneticLoopDiagram() {
     <div className="docs-diagram" style={{ padding: '24px 0' }}>
       <div style={{ position: 'relative', width: 440, height: 340, margin: '0 auto' }}>
         <svg width="440" height="340" style={{ position: 'absolute', top: 0, left: 0 }}>
+          <title>Cybernetic loop diagram</title>
           <defs>
             <marker
               id="loop-arrow"
@@ -48,8 +49,8 @@ export function CyberneticLoopDiagram() {
             const y2 = cy + ry * Math.sin(angle2);
             // Midpoint offset for slight curve
             const midAngle = ((i + 0.5) / steps.length) * 2 * Math.PI - Math.PI / 2;
-            const midX = cx + (rx * 0.85) * Math.cos(midAngle);
-            const midY = cy + (ry * 0.85) * Math.sin(midAngle);
+            const midX = cx + rx * 0.85 * Math.cos(midAngle);
+            const midY = cy + ry * 0.85 * Math.sin(midAngle);
 
             // Shorten the line to not overlap with the boxes
             const dx = x2 - x1;
@@ -63,7 +64,7 @@ export function CyberneticLoopDiagram() {
 
             return (
               <path
-                key={i}
+                key={`arrow-${steps[i].label}`}
                 d={`M ${sx} ${sy} Q ${midX} ${midY} ${ex} ${ey}`}
                 fill="none"
                 stroke="var(--border)"
@@ -74,14 +75,7 @@ export function CyberneticLoopDiagram() {
           })}
 
           {/* Subtle animated pulse dot traveling the path */}
-          <ellipse
-            cx={cx}
-            cy={cy}
-            rx={rx}
-            ry={ry}
-            fill="none"
-            stroke="none"
-          />
+          <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill="none" stroke="none" />
           <circle r="3" fill="var(--accent)" opacity="0.6">
             <animateMotion
               dur="6s"
@@ -119,16 +113,18 @@ export function CyberneticLoopDiagram() {
         })}
       </div>
 
-      <p style={{
-        textAlign: 'center',
-        fontSize: 12,
-        color: 'var(--text-dim)',
-        maxWidth: 420,
-        margin: '8px auto 0',
-        lineHeight: 1.5,
-      }}>
-        The cybernetic loop emerges from composing sensor, variable, and response policy organisms
-        inside a parent. No special wiring — just composition.
+      <p
+        style={{
+          textAlign: 'center',
+          fontSize: 12,
+          color: 'var(--text-dim)',
+          maxWidth: 420,
+          margin: '8px auto 0',
+          lineHeight: 1.5,
+        }}
+      >
+        The cybernetic loop emerges from composing sensor, variable, and response policy organisms inside a parent. No
+        special wiring — just composition.
       </p>
     </div>
   );

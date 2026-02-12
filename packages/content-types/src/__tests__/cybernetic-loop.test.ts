@@ -14,20 +14,10 @@
  *   proposals. When health recovers, proposals flow again.
  */
 
-import type {
-  ContentTypeId,
-  OrganismId,
-  Timestamp,
-  UserId,
-} from '@omnilith/kernel';
+import type { ContentTypeId, Timestamp, UserId } from '@omnilith/kernel';
+import { appendState, composeOrganism, createOrganism, evaluateProposal, openProposal } from '@omnilith/kernel';
 import {
-  composeOrganism,
-  createOrganism,
-  evaluateProposal,
-  openProposal,
-  appendState,
-} from '@omnilith/kernel';
-import {
+  createTestIdentityGenerator,
   InMemoryCompositionRepository,
   InMemoryContentTypeRegistry,
   InMemoryEventPublisher,
@@ -35,7 +25,6 @@ import {
   InMemoryProposalRepository,
   InMemoryRelationshipRepository,
   InMemoryStateRepository,
-  createTestIdentityGenerator,
   resetIdCounter,
 } from '@omnilith/kernel/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -140,9 +129,7 @@ describe('cybernetic feedback loop', () => {
           label: 'activity-sensor',
           targetOrganismId: community.id,
           metric: 'state-changes',
-          readings: [
-            { value: 12, sampledAt: Date.now() as Timestamp },
-          ],
+          readings: [{ value: 12, sampledAt: Date.now() as Timestamp }],
         },
         createdBy: founder,
       },
@@ -186,10 +173,7 @@ describe('cybernetic feedback loop', () => {
 
     // 5. Compose all three inside the community
     for (const child of [sensor, variable, responsePolicy]) {
-      await composeOrganism(
-        { parentId: community.id, childId: child.id, composedBy: founder },
-        composeDeps(),
-      );
+      await composeOrganism({ parentId: community.id, childId: child.id, composedBy: founder }, composeDeps());
     }
 
     return { community, sensor, variable, responsePolicy };
@@ -352,10 +336,7 @@ describe('cybernetic feedback loop', () => {
       createDeps(),
     );
 
-    await composeOrganism(
-      { parentId: community.id, childId: responsePolicy.id, composedBy: founder },
-      composeDeps(),
-    );
+    await composeOrganism({ parentId: community.id, childId: responsePolicy.id, composedBy: founder }, composeDeps());
 
     const proposal = await openProposal(
       {

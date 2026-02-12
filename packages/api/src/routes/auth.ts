@@ -38,26 +38,35 @@ export function authRoutes(container: Container) {
       passwordHash,
     });
 
-    // Create personal organism
+    const createDeps = {
+      organismRepository: container.organismRepository,
+      stateRepository: container.stateRepository,
+      contentTypeRegistry: container.contentTypeRegistry,
+      eventPublisher: container.eventPublisher,
+      relationshipRepository: container.relationshipRepository,
+      identityGenerator: container.identityGenerator,
+    };
+
+    // Create personal organism (spatial-map — the user's space)
     const personalOrganism = await createOrganism(
       {
-        contentTypeId: 'text' as ContentTypeId,
-        payload: {
-          content: '',
-          format: 'markdown',
-          metadata: { isPersonalOrganism: true },
-        },
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: { entries: [], width: 2000, height: 2000 },
         createdBy: userId,
         openTrunk: true,
       },
+      createDeps,
+    );
+
+    // Create home page organism (text — the user's landing page)
+    const homePage = await createOrganism(
       {
-        organismRepository: container.organismRepository,
-        stateRepository: container.stateRepository,
-        contentTypeRegistry: container.contentTypeRegistry,
-        eventPublisher: container.eventPublisher,
-        relationshipRepository: container.relationshipRepository,
-        identityGenerator: container.identityGenerator,
+        contentTypeId: 'text' as ContentTypeId,
+        payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
+        createdBy: userId,
+        openTrunk: true,
       },
+      createDeps,
     );
 
     // Create session
@@ -75,6 +84,7 @@ export function authRoutes(container: Container) {
         userId,
         sessionId,
         personalOrganismId: personalOrganism.organism.id,
+        homePageOrganismId: homePage.organism.id,
       },
       201,
     );

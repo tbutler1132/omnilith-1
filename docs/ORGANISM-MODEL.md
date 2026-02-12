@@ -115,6 +115,20 @@ Things with identity, state history, coherence, and composability. The living th
 
 All of these are the same primitive, differently configured through content type and composition.
 
+### Platform Structural Givens
+
+The platform is general-purpose — it does not hardcode what users build. But it does define the physics users build in. Certain structures are provided by the platform because without them the shared habitat cannot exist. These are not features. They are gravity.
+
+**The world map.** A top-level spatial-map organism. This IS the platform's shared space. Users enter the space and they are on the world map. It has its own governance (initially the founder's). Communities and top-level organisms are surfaced here. Without the world map, there is no world.
+
+**Personal organisms.** Every user receives a personal organism representing their creative practice — their trajectory, commitments, body of work, and direction (see Section VIII). This is not a profile page. It is a living organism the user tends. It provides the private space where ideas are held, works in progress are tended, and contributions to communities originate. The personal organism is primarily regulatory — a workspace, not a public presence. Without a personal organism, users have no home.
+
+**Home page organisms.** Every user also receives a home page organism — their public presence in the world. Where the personal organism is private and regulatory, the home page organism is visible and expressive. It is the user's creative self-portrait, the thing they surface to join the world. Surfacing your home page onto the commons is the ritual of arrival — a deliberate act that says "I am here." Users can tend their home page however they wish: a simple bio, a rich styled page, a spatial-map of their best work. Or they can leave it minimal. It is an organism like any other — it has state history (your public presence evolves over time), vitality (active home pages feel alive), and composition (you can compose work inside it). The home page is the face you show. The personal organism is the workshop behind it.
+
+**The device.** Every user has the visor — the rendering interface through which they interact with organisms. The device is a rendering concern, not an organism (see Rendering below). It is the minimum interface for the platform to be usable.
+
+These four givens — the world, a home, a face, and a tool — are the minimum for the platform to function as a shared habitat. Everything else is composed by users.
+
 ### Relationships
 
 The connective tissue between people and organisms. Real and important, but not organisms.
@@ -125,15 +139,31 @@ The connective tissue between people and organisms. Real and important, but not 
 
 ### Rendering
 
-The perceptual interface. How organisms become visible, interactive, and beautiful to the people who tend them. Not an organism. Not infrastructure. The lens through which reality is perceived.
+The perceptual interface. How organisms become visible, interactive, and beautiful to the people who tend them. Not an organism. Not infrastructure. The lens through which reality is perceived. The device — the visor through which users interact with the platform — is a rendering concern. It is the tool you see with, not a thing you tend. It does not have identity, coherence, or evolutionary potential. User preferences for device configuration are stored as infrastructure (user settings), not as organism state.
 
-Rendering has two components:
+Rendering has two modes and three components.
 
-**Universal layer.** Every organism, regardless of content type, exposes the same set of affordances. You can always see its current state. You can always access its history. You can always see what it is composed of and what it is composed into. You can always see who or what is regulating it. You can always propose a change. This layer comes from the organism primitive itself and is consistent across the entire platform.
+**The two modes — space and device.** The rendering layer presents two fundamentally different experiences.
 
-**Content-type-specific rendering.** Each content type registers a renderer that presents the organism in the way most appropriate to its nature. Audio organisms get players and waveforms. Visual organisms get canvases and galleries. Text organisms get reading and editing interfaces. Map organisms get spatial views. Policy organisms get governance interfaces. The domain knows nothing about rendering. The rendering layer handles it entirely.
+The **space** is a 2D zoomable canvas where organisms exist with position, scale, and presence. Not a 3D virtual world — honest about being an interface while still feeling spatial. The user pans and zooms through the space. Zoom level maps to composition depth: the world map shows communities and top-level organisms; zoom into a community and you transition smoothly into its internal space; zoom into an album and you see its tracks arranged. Each level is its own spatial-map organism with its own layout. The containment hierarchy IS the zoom hierarchy. Travel between places is a smooth pan/zoom transition that gives the feeling of moving through a shared habitat with physical limits and finite space.
+
+The space shows only what has been **surfaced** — organisms deliberately placed on a map with spatial coordinates. Surfacing is the curatorial act, the equivalent of publishing. It is a compositional act: composing an organism as a child of a spatial-map organism with position data. If the map has governance, surfacing may require a proposal. The space is intentional because everything in it was deliberately placed. No auto-populating. No clutter. Every organism in the space is there because someone meant it.
+
+The **device** is a visor — the user's personal interface overlaid on the space. It has two states. The **ambient HUD** is always present at the edges: a containment breadcrumb showing where you are, subtle indicators of things that need tending, identity of whatever organism you are focused on. The **full device** fades in over the dimmed space when invoked — the space stays visible underneath, blurred. This is where all action happens: creating, composing, proposing, reviewing, structuring. Dismiss and the space comes back into focus. The transition is quick and natural.
+
+The device is the user's full inventory. All organisms they steward — surfaced or not — are accessible through the device. Ideas organisms, works in progress, things being tended privately. The device provides cross-cutting views powered by the query port: all their organisms, all open proposals, all policy organisms by content type, all organisms where they hold integration authority. These are just query results rendered as navigable lists — different lenses on the same underlying data.
+
+Both modes are pure rendering concerns. The kernel knows nothing about either.
+
+**The three components:**
+
+**Universal layer.** Every organism, regardless of content type, exposes the same set of affordances. You can always see its current state. You can always access its history. You can always see what it is composed of and what it is composed into. You can always see who or what is regulating it. You can always propose a change. This layer comes from the organism primitive itself and is consistent across the entire platform. In the space, the universal layer is accessed through a consistent gesture on any organism. In the device, it is the default view of any organism selected.
+
+**Content-type-specific rendering.** Each content type registers a renderer that presents the organism in the way most appropriate to its nature. Audio organisms get players and waveforms. Visual organisms get canvases and galleries. Text organisms get reading and editing interfaces. Map organisms get spatial views. Policy organisms get governance interfaces. The domain knows nothing about rendering. The rendering layer handles it entirely. In the space, content-type renderers determine how organisms appear and feel as you encounter them. In the device, they determine how organisms look when you are working on them.
 
 The experience is: the surface is specific and beautiful. A song looks and feels like a song. A community looks and feels like a place. But there is always a consistent deeper layer available — a universal gesture that reveals the organism's underlying reality. Its history, its composition, its governance, its relationships. This deeper layer always has the same shape, regardless of content type. The journey is inward, from the specific to the universal.
+
+**Pattern-aware rendering.** The rendering layer can also recognize composition patterns and offer appropriate affordances without those patterns being hardcoded as types. An organism containing governance policies, member relationships, creative works, and a map gets rendered with community-appropriate affordances — member lists, governance views, spatial navigation. An organism containing ordered audio organisms gets playlist or album affordances. This is not type enforcement in the infrastructure. It is the rendering layer observing what is inside an organism and responding intelligently. The result is that a "community" feels like a community and an "album" feels like an album — not because the kernel knows what those words mean, but because the rendering layer recognizes the composition and presents accordingly. If someone composes something entirely unanticipated, the universal layer still works. Specialized rendering for new patterns can be added later without infrastructure changes.
 
 ### Composition Interface
 
@@ -180,6 +210,48 @@ Building a new capability in the system does not mean writing new platform code.
 Want governance in a community? Compose governance policy organisms into it. Want a community to sense its own patterns? Compose sensor organisms into it. Want a new economic model? Design an economic policy organism and compose it in. The infrastructure handles identity, state, composition, visibility, evaluation, events, content types, and querying. Everything above that is organisms.
 
 This is where AI agents change the feasibility equation. Each new content type follows a consistent pattern — state schema, validation, rendering, diffing, possibly evaluation logic. AI agents can generate these from descriptions of desired behavior. The platform team maintains the infrastructure. The communities build everything else out of organisms, potentially with AI assistance.
+
+### Composition as Creative Practice
+
+Organism composition is not just a technical mechanism. It is itself a creative practice — a new art form native to the platform.
+
+Content types are the pigments. Audio, text, image, governance policies, sensors — these are the raw materials. The organism is the medium. Composition is the technique. A person working on the platform is an organism composer: choosing what goes inside what, how things relate, what regulatory structure to give a space, what arrangement makes an album cohere, what sensory apparatus a community needs. These are creative decisions with creative consequences. The album-organism that results from composing the right songs in the right order with the right governance is more than the sum of its parts. That surplus is the composer's contribution.
+
+This reframes the platform. Omnilith is not only where creative work comes to live — it is where the act of composing organisms together is itself creative work. The raw material (a song, a piece of writing, an image) may originate elsewhere. But the compositional act — placing organisms in relationship, designing boundaries, shaping how a living system behaves — that happens here, and it is as much an art as writing the song.
+
+Forking extends the metaphor. A fork is not just "I want my own copy." It is closer to sampling, quoting, or building on a motif. The lineage is preserved. The new organism is independent. But the creative conversation between original and fork is visible — two composers in dialogue across boundaries.
+
+The platform, then, is a community of organism composers. Some compose songs. Some compose communities. Some wire cybernetic loops. Some fork another's work and take it somewhere no one anticipated. The shared medium is the organism. The shared practice is composition. What emerges from this community of practice is not predictable from any individual's work — it is the ecology producing something none of its inhabitants could produce alone.
+
+### The General-Purpose Composition Platform
+
+Omnilith is not a creative studio with a universal kernel underneath. It IS the general-purpose organism composition platform. The creative studio is the first thing composed on it.
+
+This distinction matters. The platform does not have a music layer or an art layer or a writing layer built into its rendering or app logic. It has the composition experience — space, device, organism creation, templates, content-type renderers — and that experience is the product. What makes any particular world feel like a music studio or a writing workshop or a design collective is what its inhabitants compose, not what the platform hardcodes.
+
+The founder is user one. They compose a creative studio — threshold audio and visual work into organisms, arrange them into albums and projects, build a community with governance, curate a map. That studio becomes the initial world visitors encounter. It sets the tone and demonstrates what organism composition can produce. But it is composed ON the platform, not built INTO the platform. Another user could compose something entirely different — a research collective, a governance experiment, a spatial art installation — using the same platform, the same primitive, the same composition experience.
+
+Everything on the platform has a life. The identity threshold remains real — you do not create organisms with a keystroke the way Notion creates blocks. Creating an organism is a conscious act: "I perceive coherence here and I am willing to tend it." But the act itself is lightweight. It does not require certainty or ceremony. The threshold is low but intentional. The difference from Notion is not ease of creation — it is that everything in Omnilith was placed there by someone who meant it. The space has signal. Every organism, even the simplest, was worth introducing.
+
+Pre-threshold work does not need to happen off-platform. An ideas organism — an open-trunk organism where you freely append thoughts, sketches, and directions — is itself a meaningful thing worth tending. It represents your creative potential, your active exploration. The ideas inside it have not crossed the threshold yet. When one coheres, you threshold it into its own organism. The ideas organism is the garden bed. The ideas are seeds. When one sprouts, it gets its own life. This keeps the entire creative process on-platform without cheapening the primitive.
+
+The pitch is not "same ease as Notion." The pitch is: **when something is worth tending, giving it a life is effortless — and the life it gets is richer than anything else.** The friction is not in the creation mechanism. It is in the human decision that this thing deserves to exist. The platform trusts that decision and rewards it with identity, history, composability, and governance potential.
+
+The practical implication for the build: there is no "app layer" to design between the kernel and the rendering. The rendering layer IS the app. The space, the device, content-type renderers, templates, pattern-aware rendering — that is the product. The founder dogfoods it by composing the first creative studio. The platform proves itself by being the tool the founder uses to build the world visitors experience.
+
+### The Blank Slate and the First Composer
+
+The platform ships as infrastructure — the eight concerns, the content types, the rendering layer. A blank ecology. The founder is the first organism composer. Their initial act is to populate the world: threshold creative work into organisms, compose them into projects and communities, arrange them on maps, establish governance. This founding composition is simultaneously the platform's first artwork and its explanation. Visitors arrive and experience what the founder composed. The structure communicates what this place is without needing to explain it.
+
+This means the platform does not ship with hardcoded features like "communities" or "projects." There is no built-in community template baked into the infrastructure. Instead, the founder composes a community organism — an organism containing governance, a map, creative works, membership policies — and that living example becomes the pattern others learn from. The founder's compositional choices are suggestions, not constraints. Someone else might compose something entirely different.
+
+The nudge toward useful patterns happens through three mechanisms, none of which require kernel changes:
+
+**Living examples.** The founder's own compositions demonstrate what is possible. A visitor who explores the structure of a well-composed community through the universal layer understands the pattern and can replicate or fork it.
+
+**Templates.** Organisms whose content type describes a composition recipe — what organisms to create, how to compose them, what initial states to give them. "Start a tribe" instantiates a template: the app reads the recipe and orchestrates existing kernel operations (create organisms, compose them together). Templates are organisms, so they have state history, can receive proposals, can be forked. The founder's templates are their compositional knowledge made shareable. See Section V for the template content type.
+
+**Pattern-aware rendering.** The rendering layer recognizes composition patterns and offers appropriate affordances. An organism that contains governance + members + creative works gets community-like rendering — not because it is typed as a community, but because the renderer sees what is inside. See Section III for details.
 
 ### Real-Time Coordination
 
@@ -272,6 +344,53 @@ What makes the studio financially viable. Required when ready to generate revenu
 The creative studio needs Tier 1 plus the simplest Integration Policy from Tier 2. This gives a small collective the ability to bring in audio, text, and visual work, compose it into projects, arrange it on a map, and have integration authority over their creative organisms. That is a working studio.
 
 Each subsequent tier is added by registering new content types and composing new organisms. The infrastructure never changes.
+
+### Templates
+
+A template is a content type whose state describes a composition recipe — a pattern for creating and wiring organisms together. Templates are themselves organisms, which means they get identity, state history, proposals, forking, and vitality for free.
+
+**Template.** State: a composition recipe — a list of organisms to create, their content types, their initial states, how to compose them inside a parent, and how to wire relationships between them. Validator: ensures the recipe references valid content types and forms a valid composition. Renderer: a preview of what the template produces. Differ: shows what changed between recipe versions.
+
+When someone instantiates a template, no special kernel operation is needed. The app layer reads the template's current state (the recipe) and orchestrates existing kernel operations: create organisms, append initial states, compose them inside a parent. Every step uses the existing eight infrastructure concerns.
+
+Templates serve as the primary mechanism for sharing compositional knowledge. The founder designs templates for common patterns — "start a tribe," "start an album project," "create a governance structure" — and these become the nudge toward useful patterns without hardcoding those patterns into the infrastructure. Other composers can propose improvements to templates, fork them into variants, or ignore them entirely and compose from scratch.
+
+Templates also validate the kernel architecture. If a new capability requires kernel changes rather than a new content type, something is wrong. Templates require zero kernel changes — they are pure orchestration of existing operations. This is the test passing.
+
+### Templates as Soft Ontology
+
+The kernel's ontology is deliberately minimal: organism, state, composition. It refuses to say what kinds of things exist. But in practice, people work with recognizable patterns — communities, albums, projects, galleries. The collection of templates available in a space is a **soft ontology** — it describes the kinds of things that are meaningful here and how they are structured.
+
+This produces a two-layer ontology:
+
+**Formal ontology** (the kernel). Organism, state, composition. Universal. Fixed. The physics. This never changes.
+
+**Material ontology** (templates). The kinds of things people actually work with — communities, albums, studios, critique groups, cybernetic loops. Local to a community. Evolvable. Made of organisms. Subject to the same evolutionary process as everything else.
+
+The founder's initial templates define the world's initial material ontology — "these are the kinds of things that exist here." As the ecology grows, communities develop their own templates, which means they develop their own categories of what matters to them. A music collective's ontology (albums, tracks, setlists, collaborations) differs from a writing workshop's (essays, series, anthologies, critique groups). Same kernel. Different material ontologies. All just organisms.
+
+The material ontology is:
+
+- **Made of organisms.** Templates are organisms. The ontology itself can receive proposals, be forked, evolve. Someone proposes a new kind of thing by proposing a new template.
+- **Local.** Different communities can have entirely different ontologies. There is no global list of "types of things."
+- **Emergent.** New templates appear as people discover new useful patterns. The ontology grows organically rather than being designed top-down.
+- **Not enforced.** A user can always compose from scratch, ignoring all templates. The ontology is suggested, never required. The kernel does not know or care whether an organism was created from a template or composed by hand.
+
+The kernel says "everything is an organism." The templates say "yes, and these are the organisms we find useful." Both statements are true simultaneously. Neither constrains the other.
+
+### Rendering the Ontology
+
+The difference between a living ontology and a boring template picker is entirely in how templates are rendered. Templates are organisms with a content-type renderer, and that renderer should make the material ontology feel like a catalog of possibilities, not a dropdown menu.
+
+**Templates in the space.** Templates are organisms. They can be surfaced in the world like anything else. A workshop area, a nursery, a place where kinds-of-things are exhibited — the user encounters the ontology spatially, browsing possibilities by walking through them rather than scrolling a list.
+
+**Living previews.** The template renderer shows the compositional structure visually — a miniature view of what the template produces. A community template shows governance, a map, creative works, threads, and how they relate. An album template shows a tracklist structure with audio organisms inside. The user sees the shape of the thing before they create it.
+
+**Exemplars.** Templates can link to living instances — "a tribe like this one." The user browses real, inhabited communities and sees what template they originated from. The ontology is illustrated by living organisms, not abstract descriptions. The best explanation of what a community is, is a community that works.
+
+**Pattern recognition during composition.** A user starts composing from scratch. They add governance, a map, some creative works. The rendering layer notices the emerging pattern and offers to complete it — "this is starting to look like a community, want to pull in the rest?" The ontology meets the user where they are rather than requiring them to choose upfront. This means a user does not need to know the ontology before they start. They compose, and the rendering layer recognizes what they are building. The ontology is discovered through the act of composition, not memorized beforehand.
+
+All of this is rendering. The kernel knows nothing about template previews, exemplars, or pattern recognition. The template content-type renderer and the pattern-aware rendering layer handle it entirely.
 
 ---
 
@@ -384,6 +503,14 @@ Rendering presents each organism in the way most appropriate to its content type
 ### The Primitive Is Universal, the Rendering Is Differential
 
 Everything that crosses the threshold is technically an organism. But not everything is presented with equal prominence. The system distinguishes between active, vital organisms and quiet, structural ones — not through type, but through observed vitality. The rendering layer foregrounds what is actively alive and backgrounds what is stable and static. The space feels alive because what is actually alive is what you see first. The metaphor does not dilute because users never encounter the word "organism." They encounter living things that feel alive and structural things that feel like furniture. Same primitive underneath. Different experiential weight.
+
+### Collaborative by Default
+
+The platform's cultural default is collaborative. Communities own their organisms collectively. Members contribute through proposals, not by displaying personal work in a shared space. A community is not a gallery of individual portfolios — it is a collective that produces and tends organisms together. The community's identity is its own trajectory, shaped by what it integrates and what it declines.
+
+This is a cultural principle, not a kernel constraint. The kernel does not enforce "collaborative by default." Communities can configure however they want — that is the point of organism composition. But the founder's initial compositions, the default templates, and the way the platform presents itself all set a collaborative tone. The first communities model shared governance and collective tending. Templates for communities default to collaborative structures. The platform's culture is an organism the founder composes, not a rule the kernel enforces.
+
+Personal organisms (Section VIII) remain personal. Your ideas, your creative practice, your works in progress — these live in your device and are yours to tend. The relationship between personal and collective is contribution: when something from your personal practice is ready, you propose it to a community. The community's governance evaluates. The organism, if integrated, becomes the community's to tend collectively. The individual contributes. The community holds.
 
 ### The Architecture Must Remain Falsifiable
 

@@ -37,9 +37,19 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
     fields: [
       { name: 'fileReference', type: 'string', required: true, description: 'Reference to binary in content storage' },
       { name: 'durationSeconds', type: 'number', required: true, description: 'Length of the audio in seconds' },
-      { name: 'format', type: "'mp3' | 'wav' | 'flac' | 'aac' | 'ogg'", required: true, description: 'Audio encoding format' },
+      {
+        name: 'format',
+        type: "'mp3' | 'wav' | 'flac' | 'aac' | 'ogg'",
+        required: true,
+        description: 'Audio encoding format',
+      },
       { name: 'sampleRate', type: 'number', required: false, description: 'Sample rate in Hz' },
-      { name: 'metadata', type: 'Record<string, unknown>', required: false, description: 'Arbitrary key-value metadata' },
+      {
+        name: 'metadata',
+        type: 'Record<string, unknown>',
+        required: false,
+        description: 'Arbitrary key-value metadata',
+      },
     ],
     examplePayload: {
       fileReference: 'store://audio/abc123',
@@ -59,7 +69,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
     fields: [
       { name: 'content', type: 'string', required: true, description: 'The text content itself' },
       { name: 'format', type: "'plaintext' | 'markdown'", required: true, description: 'Text format for rendering' },
-      { name: 'metadata', type: 'Record<string, unknown>', required: false, description: 'Arbitrary key-value metadata' },
+      {
+        name: 'metadata',
+        type: 'Record<string, unknown>',
+        required: false,
+        description: 'Arbitrary key-value metadata',
+      },
     ],
     examplePayload: {
       content: '# Reflections\n\nThe garden grows whether we watch or not.',
@@ -78,8 +93,18 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
       { name: 'fileReference', type: 'string', required: true, description: 'Reference to binary in content storage' },
       { name: 'width', type: 'number', required: true, description: 'Image width in pixels' },
       { name: 'height', type: 'number', required: true, description: 'Image height in pixels' },
-      { name: 'format', type: "'png' | 'jpg' | 'jpeg' | 'gif' | 'webp' | 'svg'", required: true, description: 'Image encoding format' },
-      { name: 'metadata', type: 'Record<string, unknown>', required: false, description: 'Arbitrary key-value metadata' },
+      {
+        name: 'format',
+        type: "'png' | 'jpg' | 'jpeg' | 'gif' | 'webp' | 'svg'",
+        required: true,
+        description: 'Image encoding format',
+      },
+      {
+        name: 'metadata',
+        type: 'Record<string, unknown>',
+        required: false,
+        description: 'Arbitrary key-value metadata',
+      },
     ],
     examplePayload: {
       fileReference: 'store://image/def456',
@@ -97,7 +122,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
       'A curated arrangement of organisms in 2D space. Maps are organisms — surfacing means editing the map. Not automatic; intentionally composed.',
     hasEvaluator: false,
     fields: [
-      { name: 'entries', type: 'Array<{ organismId, x, y, size?, emphasis? }>', required: true, description: 'Positioned organism references' },
+      {
+        name: 'entries',
+        type: 'Array<{ organismId, x, y, size?, emphasis? }>',
+        required: true,
+        description: 'Positioned organism references',
+      },
       { name: 'width', type: 'number', required: true, description: 'Map canvas width' },
       { name: 'height', type: 'number', required: true, description: 'Map canvas height' },
     ],
@@ -116,11 +146,21 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
     tier: 1,
     tierLabel: 'Creative Fundamentals',
     description:
-      'Describes the arrangement of composed children. Sequential (album tracks), unordered (collection), or grouped (chapters). The parent organism\'s structural intent.',
+      "Describes the arrangement of composed children. Sequential (album tracks), unordered (collection), or grouped (chapters). The parent organism's structural intent.",
     hasEvaluator: false,
     fields: [
-      { name: 'entries', type: 'Array<{ organismId, position, grouping? }>', required: true, description: 'Ordered references to child organisms' },
-      { name: 'arrangementType', type: "'sequential' | 'unordered' | 'grouped'", required: true, description: 'How children are arranged' },
+      {
+        name: 'entries',
+        type: 'Array<{ organismId, position, grouping? }>',
+        required: true,
+        description: 'Ordered references to child organisms',
+      },
+      {
+        name: 'arrangementType',
+        type: "'sequential' | 'unordered' | 'grouped'",
+        required: true,
+        description: 'How children are arranged',
+      },
     ],
     examplePayload: {
       entries: [
@@ -161,7 +201,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
     hasEvaluator: true,
     fields: [
       { name: 'mode', type: "'single-integrator'", required: true, description: 'Policy evaluation mode' },
-      { name: 'integratorId', type: 'UserId', required: true, description: 'The user authorized to integrate proposals' },
+      {
+        name: 'integratorId',
+        type: 'UserId',
+        required: true,
+        description: 'The user authorized to integrate proposals',
+      },
     ],
     examplePayload: {
       mode: 'single-integrator',
@@ -181,7 +226,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
     fields: [
       { name: 'label', type: 'string', required: true, description: 'Human-readable sensor name' },
       { name: 'targetOrganismId', type: 'OrganismId', required: true, description: 'Organism being observed' },
-      { name: 'metric', type: "'state-changes' | 'proposals' | 'compositions'", required: true, description: 'What is being measured' },
+      {
+        name: 'metric',
+        type: "'state-changes' | 'proposals' | 'compositions'",
+        required: true,
+        description: 'What is being measured',
+      },
       { name: 'readings', type: 'Array<{ value, sampledAt }>', required: true, description: 'Time-series readings' },
     ],
     examplePayload: {
@@ -203,7 +253,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
       { name: 'label', type: 'string', required: true, description: 'Human-readable variable name' },
       { name: 'value', type: 'number', required: true, description: 'Current computed value' },
       { name: 'unit', type: 'string', required: false, description: 'Unit of measurement' },
-      { name: 'thresholds', type: '{ low?, critical? }', required: false, description: 'Warning and critical thresholds' },
+      {
+        name: 'thresholds',
+        type: '{ low?, critical? }',
+        required: false,
+        description: 'Warning and critical thresholds',
+      },
       { name: 'computedFrom', type: 'string', required: false, description: 'Formula or source description' },
       { name: 'computedAt', type: 'Timestamp', required: true, description: 'When this value was last computed' },
     ],
@@ -229,7 +284,12 @@ export const contentTypeMetadata: ReadonlyArray<ContentTypeMetadata> = [
       { name: 'condition', type: "'below' | 'above'", required: true, description: 'Threshold direction' },
       { name: 'threshold', type: 'number', required: true, description: 'Trigger threshold value' },
       { name: 'currentVariableValue', type: 'number', required: false, description: 'Last known variable value' },
-      { name: 'action', type: "'decline-all' | 'pass'", required: true, description: 'What to do when condition is met' },
+      {
+        name: 'action',
+        type: "'decline-all' | 'pass'",
+        required: true,
+        description: 'What to do when condition is met',
+      },
       { name: 'reason', type: 'string', required: true, description: 'Human-readable explanation' },
     ],
     examplePayload: {

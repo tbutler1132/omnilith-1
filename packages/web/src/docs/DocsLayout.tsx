@@ -5,7 +5,7 @@
  * with nested routes for each section. Accessible without authentication.
  */
 
-import { NavLink, Navigate, Route, Routes } from 'react-router';
+import { Navigate, NavLink, Route, Routes } from 'react-router';
 import { Architecture } from './sections/Architecture.js';
 import { ContentTypes } from './sections/ContentTypes.js';
 import { Flows } from './sections/Flows.js';
@@ -33,7 +33,14 @@ export function DocsLayout() {
 
         <a href="/" className="docs-back-link">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" style={{ marginRight: 6 }}>
-            <path d="M9 11L5 7L9 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <title>Back</title>
+            <path
+              d="M9 11L5 7L9 3"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
           </svg>
           Back to app
         </a>
@@ -43,9 +50,7 @@ export function DocsLayout() {
             <NavLink
               key={s.path}
               to={`/docs/${s.path}`}
-              className={({ isActive }) =>
-                `docs-nav-item${isActive ? ' docs-nav-item--active' : ''}`
-              }
+              className={({ isActive }) => `docs-nav-item${isActive ? ' docs-nav-item--active' : ''}`}
             >
               {s.label}
             </NavLink>

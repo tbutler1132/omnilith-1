@@ -40,6 +40,7 @@ function createTestContainer(): Container {
   const compositionRepository = new InMemoryCompositionRepository();
   const proposalRepository = new InMemoryProposalRepository();
   const eventPublisher = new InMemoryEventPublisher();
+  const relationshipRepository = new InMemoryRelationshipRepository();
 
   return {
     organismRepository,
@@ -49,10 +50,16 @@ function createTestContainer(): Container {
     eventPublisher,
     eventRepository: eventPublisher, // dual interface
     visibilityRepository: new InMemoryVisibilityRepository(),
-    relationshipRepository: new InMemoryRelationshipRepository(),
+    relationshipRepository,
     contentTypeRegistry: registry as ContentTypeRegistry,
     identityGenerator: createTestIdentityGenerator(),
-    queryPort: new InMemoryQueryPort(organismRepository, stateRepository, proposalRepository, compositionRepository),
+    queryPort: new InMemoryQueryPort(
+      organismRepository,
+      stateRepository,
+      proposalRepository,
+      compositionRepository,
+      relationshipRepository,
+    ),
     db: null as any, // Not used in these tests
   };
 }
@@ -74,8 +81,24 @@ function createTestApp(container: Container) {
   app.get('/auth/me', async (c) => {
     const userId = c.get('userId');
     const stewardships = await container.relationshipRepository.findByUser(userId, 'stewardship');
-    const personalOrganismId = stewardships.length > 0 ? stewardships[0].organismId : null;
-    return c.json({ userId, personalOrganismId });
+
+    let personalOrganismId: string | null = null;
+    let homePageOrganismId: string | null = null;
+
+    for (const rel of stewardships) {
+      const state = await container.stateRepository.findCurrentByOrganismId(rel.organismId);
+      if (!state) continue;
+      if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
+        personalOrganismId = rel.organismId;
+      } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
+        const payload = state.payload as any;
+        if (payload?.metadata?.isHomePage) {
+          homePageOrganismId = rel.organismId;
+        }
+      }
+    }
+
+    return c.json({ userId, personalOrganismId, homePageOrganismId });
   });
 
   return { app, testUserId };
@@ -490,14 +513,53 @@ describe('query and listing routes', () => {
     expect(body.organisms).toHaveLength(2);
   });
 
-  it('GET /auth/me returns current user session info', async () => {
-    // Create an organism to generate a stewardship relationship
-    const { organism } = await createTestOrganism(app);
+  it('GET /auth/me returns current user session info with personal and home page organisms', async () => {
+    // Create personal organism (spatial-map) and home page (text with isHomePage)
+    const personalRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 2000, height: 2000 },
+      }),
+    });
+    const { organism: personal } = await personalRes.json();
+
+    const homeRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'text',
+        payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
+      }),
+    });
+    const { organism: home } = await homeRes.json();
 
     const res = await app.request('/auth/me');
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.userId).toBe(testUserId);
-    expect(body.personalOrganismId).toBe(organism.id);
+    expect(body.personalOrganismId).toBe(personal.id);
+    expect(body.homePageOrganismId).toBe(home.id);
+  });
+
+  it('GET /users/me/proposals returns proposals authored by the current user', async () => {
+    // Create an organism and open a proposal on it
+    const { organism } = await createTestOrganism(app);
+
+    await app.request(`/organisms/${organism.id}/proposals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proposedContentTypeId: 'text',
+        proposedPayload: { content: 'v2', format: 'plaintext' },
+      }),
+    });
+
+    const res = await app.request('/users/me/proposals');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.proposals).toHaveLength(1);
+    expect(body.proposals[0].proposedBy).toBe(testUserId);
   });
 });

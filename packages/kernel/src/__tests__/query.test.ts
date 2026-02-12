@@ -41,7 +41,13 @@ describe('query port', () => {
     identityGenerator = createTestIdentityGenerator();
     contentTypeRegistry.register(createPassthroughContentType());
     contentTypeRegistry.register(createPassthroughContentType('other-type'));
-    queryPort = new InMemoryQueryPort(organismRepository, stateRepository, proposalRepository, compositionRepository);
+    queryPort = new InMemoryQueryPort(
+      organismRepository,
+      stateRepository,
+      proposalRepository,
+      compositionRepository,
+      relationshipRepository,
+    );
   });
 
   const createDeps = () => ({
@@ -184,6 +190,92 @@ describe('query port', () => {
       await makeOrganism('Something');
 
       const results = await queryPort.findOrganismsByUser(testUserId('ghost'));
+      expect(results).toHaveLength(0);
+    });
+  });
+
+  describe('findProposalsByUser', () => {
+    it('returns proposals authored by the user', async () => {
+      const { organism } = await makeOrganism('Song');
+      const proposer = testUserId('alice');
+
+      await openProposal(
+        {
+          organismId: organism.id,
+          proposedContentTypeId: testContentTypeId(),
+          proposedPayload: { name: 'v2' },
+          proposedBy: proposer,
+        },
+        {
+          organismRepository,
+          proposalRepository,
+          contentTypeRegistry,
+          eventPublisher,
+          identityGenerator,
+        },
+      );
+
+      const results = await queryPort.findProposalsByUser(proposer);
+      expect(results).toHaveLength(1);
+      expect(results[0].proposedBy).toBe(proposer);
+    });
+
+    it('returns proposals on organisms the user has integration authority over', async () => {
+      const { organism } = await makeOrganism('Song', { userId: 'owner' });
+      const integrator = testUserId('integrator');
+      const proposer = testUserId('someone');
+
+      // Grant integration authority
+      await relationshipRepository.save({
+        id: identityGenerator.relationshipId(),
+        type: 'integration-authority',
+        userId: integrator,
+        organismId: organism.id,
+        createdAt: identityGenerator.timestamp(),
+      });
+
+      await openProposal(
+        {
+          organismId: organism.id,
+          proposedContentTypeId: testContentTypeId(),
+          proposedPayload: { name: 'v2' },
+          proposedBy: proposer,
+        },
+        {
+          organismRepository,
+          proposalRepository,
+          contentTypeRegistry,
+          eventPublisher,
+          identityGenerator,
+        },
+      );
+
+      const results = await queryPort.findProposalsByUser(integrator);
+      expect(results).toHaveLength(1);
+      expect(results[0].organismId).toBe(organism.id);
+    });
+
+    it('does not return proposals on unrelated organisms', async () => {
+      const { organism } = await makeOrganism('Song', { userId: 'owner' });
+      const unrelated = testUserId('stranger');
+
+      await openProposal(
+        {
+          organismId: organism.id,
+          proposedContentTypeId: testContentTypeId(),
+          proposedPayload: { name: 'v2' },
+          proposedBy: testUserId('someone'),
+        },
+        {
+          organismRepository,
+          proposalRepository,
+          contentTypeRegistry,
+          eventPublisher,
+          identityGenerator,
+        },
+      );
+
+      const results = await queryPort.findProposalsByUser(unrelated);
       expect(results).toHaveLength(0);
     });
   });

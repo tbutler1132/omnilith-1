@@ -14,11 +14,7 @@ import type { OrganismId, Timestamp } from '@omnilith/kernel';
 
 export type SensorMetric = 'state-changes' | 'proposals' | 'compositions';
 
-export const SENSOR_METRICS: ReadonlySet<string> = new Set([
-  'state-changes',
-  'proposals',
-  'compositions',
-]);
+export const SENSOR_METRICS: ReadonlySet<string> = new Set(['state-changes', 'proposals', 'compositions']);
 
 export interface SensorReading {
   readonly value: number;

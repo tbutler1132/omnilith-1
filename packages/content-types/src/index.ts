@@ -27,6 +27,11 @@ export {
   sensorContentType,
 } from './sensor/index.js';
 export { type SpatialMapEntry, type SpatialMapPayload, spatialMapContentType } from './spatial-map/index.js';
+export {
+  type TemplatePayload,
+  type TemplateRecipeStep,
+  templateContentType,
+} from './template/index.js';
 export { type TextFormat, type TextPayload, textContentType } from './text/index.js';
 export { type ThreadPayload, type ThreadPostPayload, threadContentType } from './thread/index.js';
 export {
@@ -43,6 +48,7 @@ import { integrationPolicyContentType } from './integration-policy/index.js';
 import { responsePolicyContentType } from './response-policy/index.js';
 import { sensorContentType } from './sensor/index.js';
 import { spatialMapContentType } from './spatial-map/index.js';
+import { templateContentType } from './template/index.js';
 import { textContentType } from './text/index.js';
 import { threadContentType } from './thread/index.js';
 import { variableContentType } from './variable/index.js';
@@ -58,4 +64,5 @@ export const allContentTypes: ReadonlyArray<ContentTypeContract> = [
   sensorContentType,
   variableContentType,
   responsePolicyContentType,
+  templateContentType,
 ];

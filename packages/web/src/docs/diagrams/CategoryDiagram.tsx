@@ -35,13 +35,15 @@ const categories = [
 export function CategoryDiagram() {
   return (
     <div className="docs-diagram">
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: 12,
-        maxWidth: 520,
-        margin: '0 auto',
-      }}>
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: '1fr 1fr',
+          gap: 12,
+          maxWidth: 520,
+          margin: '0 auto',
+        }}
+      >
         {categories.map((cat) => (
           <div
             key={cat.name}
@@ -53,31 +55,45 @@ export function CategoryDiagram() {
               padding: '16px 18px',
             }}
           >
-            <div style={{
-              fontSize: 14,
-              fontWeight: 600,
-              color: cat.color,
-              marginBottom: 4,
-            }}>{cat.name}</div>
-            <div style={{
-              fontSize: 13,
-              color: 'var(--text)',
-              marginBottom: 6,
-              lineHeight: 1.4,
-            }}>{cat.description}</div>
-            <div style={{
-              fontSize: 11,
-              color: 'var(--text-dim)',
-            }}>{cat.examples}</div>
+            <div
+              style={{
+                fontSize: 14,
+                fontWeight: 600,
+                color: cat.color,
+                marginBottom: 4,
+              }}
+            >
+              {cat.name}
+            </div>
+            <div
+              style={{
+                fontSize: 13,
+                color: 'var(--text)',
+                marginBottom: 6,
+                lineHeight: 1.4,
+              }}
+            >
+              {cat.description}
+            </div>
+            <div
+              style={{
+                fontSize: 11,
+                color: 'var(--text-dim)',
+              }}
+            >
+              {cat.examples}
+            </div>
           </div>
         ))}
       </div>
-      <p style={{
-        textAlign: 'center',
-        fontSize: 12,
-        color: 'var(--text-dim)',
-        marginTop: 14,
-      }}>
+      <p
+        style={{
+          textAlign: 'center',
+          fontSize: 12,
+          color: 'var(--text-dim)',
+          marginTop: 14,
+        }}
+      >
         Everything is exactly one of these. Nothing spans categories.
       </p>
     </div>

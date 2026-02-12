@@ -8,6 +8,7 @@
 import { serve } from '@hono/node-server';
 import { createContainer } from './container.js';
 import { createDatabase } from './db/connection.js';
+import { seedWorldMap } from './seed.js';
 import { createServer } from './server.js';
 
 const port = parseInt(process.env.PORT ?? '3000', 10);
@@ -15,8 +16,19 @@ const databaseUrl = process.env.DATABASE_URL ?? 'postgres://localhost:5432/omnil
 
 const db = createDatabase(databaseUrl);
 const container = createContainer(db);
-const app = createServer(container);
 
-serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`Omnilith API listening on http://localhost:${info.port}`);
+async function start() {
+  const worldMapId = await seedWorldMap(container);
+  console.log(`World map seeded: ${worldMapId}`);
+
+  const app = createServer(container, { worldMapId });
+
+  serve({ fetch: app.fetch, port }, (info) => {
+    console.log(`Omnilith API listening on http://localhost:${info.port}`);
+  });
+}
+
+start().catch((err) => {
+  console.error('Failed to start:', err);
+  process.exit(1);
 });

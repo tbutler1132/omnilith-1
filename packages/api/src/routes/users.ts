@@ -16,6 +16,13 @@ export function userRoutes(container: Container) {
     return c.json({ organisms });
   });
 
+  // Current user's proposals (authored or on organisms they can integrate)
+  app.get('/me/proposals', async (c) => {
+    const userId = c.get('userId');
+    const proposals = await container.queryPort.findProposalsByUser(userId);
+    return c.json({ proposals });
+  });
+
   // Current user's relationships
   app.get('/me/relationships', async (c) => {
     const userId = c.get('userId');
