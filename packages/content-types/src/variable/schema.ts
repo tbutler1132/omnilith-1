@@ -1,0 +1,26 @@
+/**
+ * Variable content type — a derived value computed from observations.
+ *
+ * Variables are the interpretive layer of cybernetic loops. Where sensors
+ * collect raw readings, variables hold computed meanings: "community health
+ * is 0.82" or "activity trend is declining." Variables carry threshold
+ * awareness so response policies can act on them.
+ *
+ * Governance-adjacent. Schemas are strict.
+ */
+
+import type { Timestamp } from '@omnilith/kernel';
+
+export interface VariableThresholds {
+  readonly low?: number;
+  readonly critical?: number;
+}
+
+export interface VariablePayload {
+  readonly label: string;
+  readonly value: number;
+  readonly unit?: string;
+  readonly thresholds?: VariableThresholds;
+  readonly computedFrom?: string;
+  readonly computedAt: Timestamp;
+}
