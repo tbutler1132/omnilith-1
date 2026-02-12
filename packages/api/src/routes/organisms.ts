@@ -1,0 +1,203 @@
+/**
+ * Organism routes — threshold, state, composition.
+ */
+
+import { Hono } from 'hono';
+import type { UserId, OrganismId, ContentTypeId } from '@omnilith/kernel';
+import {
+  createOrganism,
+  appendState,
+  composeOrganism,
+  decomposeOrganism,
+  queryChildren,
+  checkAccess,
+} from '@omnilith/kernel';
+import type { Container } from '../container.js';
+import type { AuthEnv } from '../middleware/auth.js';
+
+export function organismRoutes(container: Container) {
+  const app = new Hono<AuthEnv>();
+
+  // Threshold — create organism
+  app.post('/', async (c) => {
+    const userId = c.get('userId');
+    const body = await c.req.json<{
+      contentTypeId: string;
+      payload: unknown;
+      openTrunk?: boolean;
+    }>();
+
+    try {
+      const result = await createOrganism(
+        {
+          contentTypeId: body.contentTypeId as ContentTypeId,
+          payload: body.payload,
+          createdBy: userId,
+          openTrunk: body.openTrunk,
+        },
+        {
+          organismRepository: container.organismRepository,
+          stateRepository: container.stateRepository,
+          contentTypeRegistry: container.contentTypeRegistry,
+          eventPublisher: container.eventPublisher,
+          relationshipRepository: container.relationshipRepository,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({
+        organism: result.organism,
+        initialState: result.initialState,
+      }, 201);
+    } catch (err: any) {
+      if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
+      if (err.kind === 'ContentTypeNotRegisteredError') return c.json({ error: err.message }, 400);
+      throw err;
+    }
+  });
+
+  // Get organism with current state
+  app.get('/:id', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const organism = await container.organismRepository.findById(id);
+    if (!organism) return c.json({ error: 'Not found' }, 404);
+
+    const currentState = await container.stateRepository.findCurrentByOrganismId(id);
+    return c.json({ organism, currentState });
+  });
+
+  // State history
+  app.get('/:id/states', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const history = await container.stateRepository.findHistoryByOrganismId(id);
+    return c.json({ states: history });
+  });
+
+  // Append state (open-trunk only)
+  app.post('/:id/states', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const body = await c.req.json<{ contentTypeId: string; payload: unknown }>();
+
+    try {
+      const state = await appendState(
+        {
+          organismId: id,
+          contentTypeId: body.contentTypeId as ContentTypeId,
+          payload: body.payload,
+          appendedBy: userId,
+        },
+        {
+          organismRepository: container.organismRepository,
+          stateRepository: container.stateRepository,
+          contentTypeRegistry: container.contentTypeRegistry,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({ state }, 201);
+    } catch (err: any) {
+      if (err.kind === 'AccessDeniedError') return c.json({ error: err.message }, 403);
+      if (err.kind === 'OrganismNotFoundError') return c.json({ error: err.message }, 404);
+      if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
+      throw err;
+    }
+  });
+
+  // Query children
+  app.get('/:id/children', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const children = await queryChildren(id, {
+      compositionRepository: container.compositionRepository,
+    });
+    return c.json({ children });
+  });
+
+  // Compose child into parent
+  app.post('/:id/children', async (c) => {
+    const userId = c.get('userId');
+    const parentId = c.req.param('id') as OrganismId;
+    const body = await c.req.json<{ childId: string; position?: number }>();
+
+    try {
+      const record = await composeOrganism(
+        {
+          parentId,
+          childId: body.childId as OrganismId,
+          composedBy: userId,
+          position: body.position,
+        },
+        {
+          organismRepository: container.organismRepository,
+          compositionRepository: container.compositionRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({ composition: record }, 201);
+    } catch (err: any) {
+      if (err.kind === 'CompositionError') return c.json({ error: err.message }, 409);
+      if (err.kind === 'OrganismNotFoundError') return c.json({ error: err.message }, 404);
+      throw err;
+    }
+  });
+
+  // Decompose
+  app.delete('/:id/children/:childId', async (c) => {
+    const userId = c.get('userId');
+    const parentId = c.req.param('id') as OrganismId;
+    const childId = c.req.param('childId') as OrganismId;
+
+    try {
+      await decomposeOrganism(
+        { parentId, childId, decomposedBy: userId },
+        {
+          compositionRepository: container.compositionRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({ ok: true });
+    } catch (err: any) {
+      if (err.kind === 'CompositionError') return c.json({ error: err.message }, 404);
+      throw err;
+    }
+  });
+
+  // Visibility
+  app.get('/:id/visibility', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const record = await container.visibilityRepository.findByOrganismId(id);
+    return c.json({ visibility: record ?? { organismId: id, level: 'public' } });
+  });
+
+  app.put('/:id/visibility', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const body = await c.req.json<{ level: string }>();
+
+    const decision = await checkAccess(userId, id, 'change-visibility', {
+      visibilityRepository: container.visibilityRepository,
+      relationshipRepository: container.relationshipRepository,
+      compositionRepository: container.compositionRepository,
+      organismRepository: container.organismRepository,
+    });
+
+    if (!decision.allowed) {
+      return c.json({ error: decision.reason }, 403);
+    }
+
+    await container.visibilityRepository.save({
+      organismId: id,
+      level: body.level as any,
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    return c.json({ ok: true });
+  });
+
+  return app;
+}

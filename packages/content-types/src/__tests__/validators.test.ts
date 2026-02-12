@@ -1,0 +1,212 @@
+import { describe, it, expect } from 'vitest';
+import { validateAudio } from '../audio/validator.js';
+import { validateText } from '../text/validator.js';
+import { validateImage } from '../image/validator.js';
+import { validateSpatialMap } from '../spatial-map/validator.js';
+import { validateCompositionReference } from '../composition-reference/validator.js';
+import { validateThread } from '../thread/validator.js';
+import { validateIntegrationPolicy } from '../integration-policy/validator.js';
+
+describe('audio validator', () => {
+  it('accepts a valid audio payload', () => {
+    const result = validateAudio({
+      fileReference: 'audio/song.mp3',
+      durationSeconds: 180,
+      format: 'mp3',
+      sampleRate: 44100,
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects missing fileReference', () => {
+    const result = validateAudio({ durationSeconds: 180, format: 'mp3' });
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('fileReference must be a non-empty string');
+  });
+
+  it('rejects invalid format', () => {
+    const result = validateAudio({
+      fileReference: 'audio/song.xyz',
+      durationSeconds: 180,
+      format: 'xyz',
+    });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects zero duration', () => {
+    const result = validateAudio({
+      fileReference: 'audio/song.mp3',
+      durationSeconds: 0,
+      format: 'mp3',
+    });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('text validator', () => {
+  it('accepts valid markdown', () => {
+    const result = validateText({
+      content: '# Hello World',
+      format: 'markdown',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('accepts valid plaintext', () => {
+    const result = validateText({ content: 'Hello', format: 'plaintext' });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects invalid format', () => {
+    const result = validateText({ content: 'Hello', format: 'html' });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects non-string content', () => {
+    const result = validateText({ content: 42, format: 'plaintext' });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('image validator', () => {
+  it('accepts a valid image payload', () => {
+    const result = validateImage({
+      fileReference: 'images/photo.jpg',
+      width: 1920,
+      height: 1080,
+      format: 'jpg',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects zero dimensions', () => {
+    const result = validateImage({
+      fileReference: 'images/photo.jpg',
+      width: 0,
+      height: 1080,
+      format: 'jpg',
+    });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('spatial-map validator', () => {
+  it('accepts a valid spatial map', () => {
+    const result = validateSpatialMap({
+      entries: [
+        { organismId: 'org-1', x: 10, y: 20 },
+        { organismId: 'org-2', x: 30, y: 40 },
+      ],
+      width: 1000,
+      height: 1000,
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects duplicate organism entries', () => {
+    const result = validateSpatialMap({
+      entries: [
+        { organismId: 'org-1', x: 10, y: 20 },
+        { organismId: 'org-1', x: 30, y: 40 },
+      ],
+      width: 1000,
+      height: 1000,
+    });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects invalid dimensions', () => {
+    const result = validateSpatialMap({
+      entries: [],
+      width: -1,
+      height: 1000,
+    });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('composition-reference validator', () => {
+  it('accepts a valid composition reference', () => {
+    const result = validateCompositionReference({
+      entries: [
+        { organismId: 'org-1', position: 0 },
+        { organismId: 'org-2', position: 1 },
+      ],
+      arrangementType: 'sequential',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects invalid arrangement type', () => {
+    const result = validateCompositionReference({
+      entries: [],
+      arrangementType: 'random',
+    });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects negative positions', () => {
+    const result = validateCompositionReference({
+      entries: [{ organismId: 'org-1', position: -1 }],
+      arrangementType: 'sequential',
+    });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('thread validator', () => {
+  it('accepts a valid thread creation payload', () => {
+    const result = validateThread({
+      title: 'Discussion about the album',
+      appendOnly: true,
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects empty title', () => {
+    const result = validateThread({ title: '', appendOnly: true });
+    expect(result.valid).toBe(false);
+  });
+
+  it('accepts a valid thread post payload', () => {
+    const result = validateThread({
+      author: 'usr-1',
+      content: 'I think we should change the intro.',
+      timestamp: Date.now(),
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects a post with missing content', () => {
+    const result = validateThread({
+      author: 'usr-1',
+      timestamp: Date.now(),
+    });
+    expect(result.valid).toBe(false);
+  });
+});
+
+describe('integration-policy validator', () => {
+  it('accepts a valid single-integrator policy', () => {
+    const result = validateIntegrationPolicy({
+      mode: 'single-integrator',
+      integratorId: 'usr-1',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects unknown mode', () => {
+    const result = validateIntegrationPolicy({
+      mode: 'multi-approver',
+      integratorId: 'usr-1',
+    });
+    expect(result.valid).toBe(false);
+  });
+
+  it('rejects missing integratorId', () => {
+    const result = validateIntegrationPolicy({
+      mode: 'single-integrator',
+    });
+    expect(result.valid).toBe(false);
+  });
+});
