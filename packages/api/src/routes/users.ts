@@ -2,6 +2,7 @@
  * User routes — user-scoped queries.
  */
 
+import type { RelationshipType } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
@@ -26,7 +27,7 @@ export function userRoutes(container: Container) {
   // Current user's relationships
   app.get('/me/relationships', async (c) => {
     const userId = c.get('userId');
-    const type = c.req.query('type') as any;
+    const type = c.req.query('type') as RelationshipType | undefined;
     const relationships = await container.relationshipRepository.findByUser(userId, type || undefined);
     return c.json({ relationships });
   });

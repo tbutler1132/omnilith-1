@@ -55,7 +55,7 @@ function createTestContainer(): Container {
       compositionRepository,
       relationshipRepository,
     ),
-    db: null as any,
+    db: null as unknown as Container['db'],
   };
 }
 
@@ -144,8 +144,8 @@ describe('template instantiation', () => {
     expect(body.organisms).toHaveLength(2);
 
     // Verify composition
-    const albumId = body.organisms.find((o: any) => o.ref === 'album').organismId;
-    const trackId = body.organisms.find((o: any) => o.ref === 'track').organismId;
+    const albumId = body.organisms.find((o: { ref: string }) => o.ref === 'album').organismId;
+    const trackId = body.organisms.find((o: { ref: string }) => o.ref === 'track').organismId;
 
     const children = await container.compositionRepository.findChildren(albumId);
     expect(children).toHaveLength(1);

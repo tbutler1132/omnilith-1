@@ -2,7 +2,7 @@
  * PostgreSQL implementation of OrganismRepository.
  */
 
-import type { Organism, OrganismId, OrganismRepository, Timestamp } from '@omnilith/kernel';
+import type { Organism, OrganismId, OrganismRepository, Timestamp, UserId } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { organisms } from '../db/schema.js';
@@ -36,7 +36,7 @@ function toOrganism(row: typeof organisms.$inferSelect): Organism {
   return {
     id: row.id as OrganismId,
     createdAt: row.createdAt.getTime() as Timestamp,
-    createdBy: row.createdBy as any,
+    createdBy: row.createdBy as UserId,
     openTrunk: row.openTrunk,
     forkedFromId: row.forkedFromId as OrganismId | undefined,
   };

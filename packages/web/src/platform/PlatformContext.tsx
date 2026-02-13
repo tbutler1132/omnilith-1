@@ -49,8 +49,6 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
       return {
         ...state,
         focusedOrganismId: action.id,
-        visorOpen: action.id !== null ? true : state.visorOpen,
-        visorSection: action.id !== null ? 'here' : state.visorSection,
       };
 
     case 'ENTER_MAP':

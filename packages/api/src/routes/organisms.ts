@@ -2,7 +2,15 @@
  * Organism routes — threshold, state, composition, query.
  */
 
-import type { ContentTypeId, EventType, OrganismId, UserId } from '@omnilith/kernel';
+import type {
+  ContentTypeId,
+  DomainError,
+  EventType,
+  OrganismId,
+  RelationshipType,
+  UserId,
+  VisibilityLevel,
+} from '@omnilith/kernel';
 import {
   appendState,
   checkAccess,
@@ -70,9 +78,10 @@ export function organismRoutes(container: Container) {
         },
         201,
       );
-    } catch (err: any) {
-      if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
-      if (err.kind === 'ContentTypeNotRegisteredError') return c.json({ error: err.message }, 400);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
+      if (e.kind === 'ContentTypeNotRegisteredError') return c.json({ error: e.message }, 400);
       throw err;
     }
   });
@@ -120,10 +129,11 @@ export function organismRoutes(container: Container) {
       );
 
       return c.json({ state }, 201);
-    } catch (err: any) {
-      if (err.kind === 'AccessDeniedError') return c.json({ error: err.message }, 403);
-      if (err.kind === 'OrganismNotFoundError') return c.json({ error: err.message }, 404);
-      if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
       throw err;
     }
   });
@@ -171,9 +181,10 @@ export function organismRoutes(container: Container) {
       );
 
       return c.json({ composition: record }, 201);
-    } catch (err: any) {
-      if (err.kind === 'CompositionError') return c.json({ error: err.message }, 409);
-      if (err.kind === 'OrganismNotFoundError') return c.json({ error: err.message }, 404);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'CompositionError') return c.json({ error: e.message }, 409);
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
       throw err;
     }
   });
@@ -195,8 +206,9 @@ export function organismRoutes(container: Container) {
       );
 
       return c.json({ ok: true });
-    } catch (err: any) {
-      if (err.kind === 'CompositionError') return c.json({ error: err.message }, 404);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'CompositionError') return c.json({ error: e.message }, 404);
       throw err;
     }
   });
@@ -219,7 +231,7 @@ export function organismRoutes(container: Container) {
   // Relationships
   app.get('/:id/relationships', async (c) => {
     const id = c.req.param('id') as OrganismId;
-    const type = c.req.query('type') as any;
+    const type = c.req.query('type') as RelationshipType | undefined;
     const relationships = await container.relationshipRepository.findByOrganism(id, type || undefined);
     return c.json({ relationships });
   });
@@ -251,7 +263,7 @@ export function organismRoutes(container: Container) {
 
     await container.visibilityRepository.save({
       organismId: id,
-      level: body.level as any,
+      level: body.level as VisibilityLevel,
       updatedAt: container.identityGenerator.timestamp(),
     });
 

@@ -60,7 +60,7 @@ function createTestContainer(): Container {
       compositionRepository,
       relationshipRepository,
     ),
-    db: null as any, // Not used in these tests
+    db: null as unknown as Container['db'], // Not used in these tests
   };
 }
 
@@ -91,8 +91,8 @@ function createTestApp(container: Container) {
       if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
         personalOrganismId = rel.organismId;
       } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
-        const payload = state.payload as any;
-        if (payload?.metadata?.isHomePage) {
+        const payload = state.payload as Record<string, unknown> | null;
+        if ((payload?.metadata as Record<string, unknown> | undefined)?.isHomePage) {
           homePageOrganismId = rel.organismId;
         }
       }

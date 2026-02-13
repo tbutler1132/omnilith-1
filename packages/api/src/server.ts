@@ -64,8 +64,8 @@ export function createServer(container: Container, config?: ServerConfig) {
       if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
         personalOrganismId = rel.organismId;
       } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
-        const payload = state.payload as any;
-        if (payload?.metadata?.isHomePage) {
+        const payload = state.payload as Record<string, unknown> | null;
+        if ((payload?.metadata as Record<string, unknown> | undefined)?.isHomePage) {
           homePageOrganismId = rel.organismId;
         }
       }

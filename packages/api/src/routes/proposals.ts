@@ -2,7 +2,7 @@
  * Proposal routes — open, list, integrate, decline.
  */
 
-import type { ContentTypeId, OrganismId, ProposalId } from '@omnilith/kernel';
+import type { ContentTypeId, DomainError, OrganismId, ProposalId } from '@omnilith/kernel';
 import { declineProposal, integrateProposal, openProposal } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
@@ -41,10 +41,11 @@ export function proposalRoutes(container: Container) {
       );
 
       return c.json({ proposal }, 201);
-    } catch (err: any) {
-      if (err.kind === 'OrganismNotFoundError') return c.json({ error: err.message }, 404);
-      if (err.kind === 'ValidationFailedError') return c.json({ error: err.message }, 400);
-      if (err.kind === 'ContentTypeNotRegisteredError') return c.json({ error: err.message }, 400);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
+      if (e.kind === 'ContentTypeNotRegisteredError') return c.json({ error: e.message }, 400);
       throw err;
     }
   });
@@ -78,10 +79,11 @@ export function proposalRoutes(container: Container) {
       );
 
       return c.json({ proposal: result.proposal, newState: result.newState });
-    } catch (err: any) {
-      if (err.kind === 'ProposalNotFoundError') return c.json({ error: err.message }, 404);
-      if (err.kind === 'ProposalAlreadyResolvedError') return c.json({ error: err.message }, 409);
-      if (err.kind === 'AccessDeniedError') return c.json({ error: err.message }, 403);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'ProposalNotFoundError') return c.json({ error: e.message }, 404);
+      if (e.kind === 'ProposalAlreadyResolvedError') return c.json({ error: e.message }, 409);
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
       throw err;
     }
   });
@@ -107,10 +109,11 @@ export function proposalRoutes(container: Container) {
       );
 
       return c.json({ proposal });
-    } catch (err: any) {
-      if (err.kind === 'ProposalNotFoundError') return c.json({ error: err.message }, 404);
-      if (err.kind === 'ProposalAlreadyResolvedError') return c.json({ error: err.message }, 409);
-      if (err.kind === 'AccessDeniedError') return c.json({ error: err.message }, 403);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'ProposalNotFoundError') return c.json({ error: e.message }, 404);
+      if (e.kind === 'ProposalAlreadyResolvedError') return c.json({ error: e.message }, 409);
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
       throw err;
     }
   });

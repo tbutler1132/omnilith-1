@@ -501,59 +501,59 @@ button.secondary:hover {
   position: absolute;
   inset: 0;
   padding-top: 52px;
-  overflow: auto;
-}
-
-.space-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 12px;
-  padding: 24px;
-}
-
-.space-entry {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.1s;
-  text-align: left;
-}
-
-.space-entry:hover {
-  border-color: var(--accent);
-  transform: translateY(-1px);
-}
-
-.space-entry--focused {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 1px var(--accent);
-}
-
-.space-entry .content-type {
-  display: inline-block;
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 1px 6px;
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  align-self: flex-start;
-}
-
-.space-entry-label {
-  font-size: 13px;
-  color: var(--text);
   overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
+}
+
+.space-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.space-viewport--panning {
+  cursor: grabbing;
+}
+
+.space-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.space-organism {
+  position: absolute;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.space-organism:hover {
+  border-color: var(--border);
+}
+
+.space-organism--focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.3);
+}
+
+.space-organism--loading,
+.space-organism--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 13px;
 }
 
 .space-empty {
@@ -573,6 +573,37 @@ button.secondary:hover {
   color: var(--text-dim);
   opacity: 0.7;
   margin-top: 8px;
+}
+
+/* ── Focus Lens ── */
+
+.focus-lens {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.focus-lens-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 15, 0.75);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.focus-lens-card {
+  position: relative;
+  width: min(80vmin, 720px);
+  max-height: 80vh;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  overflow: auto;
 }
 
 /* ── Ambient HUD ── */
@@ -641,6 +672,21 @@ button.secondary:hover {
   font-size: 11px;
   color: var(--text-dim);
   opacity: 0.7;
+}
+
+.ambient-hud-inspect {
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: 6px;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--bg);
+  font-weight: 500;
+}
+
+.ambient-hud-inspect:hover {
+  opacity: 0.85;
+  background: var(--accent);
 }
 
 .ambient-hud-toggle {

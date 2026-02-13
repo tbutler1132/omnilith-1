@@ -16,7 +16,7 @@ import type {
   UserId,
   VitalityData,
 } from '@omnilith/kernel';
-import { and, count, desc, eq, max, or, sql } from 'drizzle-orm';
+import { and, count, desc, eq, max, or, type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { composition, organismStates, organisms, proposals, relationships } from '../db/schema.js';
 
@@ -24,7 +24,7 @@ export class PgQueryPort implements QueryPort {
   constructor(private readonly db: Database) {}
 
   async findOrganismsWithState(filters: QueryFilters): Promise<ReadonlyArray<OrganismWithState>> {
-    const conditions: any[] = [];
+    const conditions: SQL[] = [];
 
     if (filters.createdBy) {
       conditions.push(eq(organisms.createdBy, filters.createdBy));
@@ -54,9 +54,8 @@ export class PgQueryPort implements QueryPort {
     const limit = filters.limit ?? 50;
     const offset = filters.offset ?? 0;
 
-    let query = this.db.select().from(organisms);
-    if (where) query = query.where(where) as any;
-    const rows = await (query as any).limit(limit).offset(offset);
+    const base = this.db.select().from(organisms);
+    const rows = where ? await base.where(where).limit(limit).offset(offset) : await base.limit(limit).offset(offset);
 
     const results: OrganismWithState[] = [];
     for (const row of rows) {

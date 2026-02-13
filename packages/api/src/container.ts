@@ -8,6 +8,7 @@
 import { allContentTypes } from '@omnilith/content-types';
 import type {
   CompositionRepository,
+  ContentTypeContract,
   ContentTypeRegistry,
   EventPublisher,
   EventRepository,
@@ -65,7 +66,7 @@ export function createContainer(db: Database): Container {
 }
 
 function createContentTypeRegistry(): ContentTypeRegistry {
-  const types = new Map<string, any>();
+  const types = new Map<string, ContentTypeContract>();
   const registry: ContentTypeRegistry = {
     register(contract) {
       types.set(contract.typeId, contract);

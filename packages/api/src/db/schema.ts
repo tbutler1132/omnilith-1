@@ -5,7 +5,18 @@
  * these tables are the Postgres implementation of those ports.
  */
 
-import { boolean, index, integer, jsonb, pgTable, text, timestamp, uniqueIndex, varchar } from 'drizzle-orm/pg-core';
+import {
+  type AnyPgColumn,
+  boolean,
+  index,
+  integer,
+  jsonb,
+  pgTable,
+  text,
+  timestamp,
+  uniqueIndex,
+  varchar,
+} from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -30,7 +41,7 @@ export const organisms = pgTable('organisms', {
     .notNull()
     .references(() => users.id),
   openTrunk: boolean('open_trunk').notNull().default(false),
-  forkedFromId: text('forked_from_id').references((): any => organisms.id),
+  forkedFromId: text('forked_from_id').references((): AnyPgColumn => organisms.id),
 });
 
 export const organismStates = pgTable(
@@ -47,7 +58,7 @@ export const organismStates = pgTable(
       .notNull()
       .references(() => users.id),
     sequenceNumber: integer('sequence_number').notNull(),
-    parentStateId: text('parent_state_id').references((): any => organismStates.id),
+    parentStateId: text('parent_state_id').references((): AnyPgColumn => organismStates.id),
   },
   (table) => [
     index('idx_organism_states_organism_id').on(table.organismId),

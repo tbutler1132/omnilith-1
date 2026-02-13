@@ -9,7 +9,7 @@ import type { ContentTypeId, OrganismId, UserId } from '@omnilith/kernel';
 import { createOrganism } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
-import { platformConfig } from './db/schema.js';
+import { platformConfig, users } from './db/schema.js';
 
 const WORLD_MAP_KEY = 'world_map_id';
 const SYSTEM_USER_ID = 'system' as UserId;
@@ -20,6 +20,16 @@ export async function seedWorldMap(container: Container): Promise<OrganismId> {
 
   if (existing.length > 0) {
     return existing[0].value as OrganismId;
+  }
+
+  // Ensure system user exists (needed as FK target for world map organism)
+  const systemUser = await container.db.select().from(users).where(eq(users.id, SYSTEM_USER_ID));
+  if (systemUser.length === 0) {
+    await container.db.insert(users).values({
+      id: SYSTEM_USER_ID,
+      email: 'system@omnilith.local',
+      passwordHash: '!locked',
+    });
   }
 
   // Create world map organism

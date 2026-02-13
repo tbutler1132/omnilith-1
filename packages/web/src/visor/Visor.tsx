@@ -23,7 +23,7 @@ interface VisorProps {
 }
 
 export function Visor({ onLogout }: VisorProps) {
-  const { state, toggleVisor, closeVisor, setVisorSection, navigateToMap } = usePlatform();
+  const { state, toggleVisor, closeVisor, setVisorSection, navigateToMap, openVisor } = usePlatform();
 
   return (
     <>
@@ -44,7 +44,11 @@ export function Visor({ onLogout }: VisorProps) {
         </nav>
 
         <div className="ambient-hud-right">
-          {state.focusedOrganismId && <span className="ambient-hud-focus">{state.focusedOrganismId.slice(0, 12)}</span>}
+          {state.focusedOrganismId && (
+            <button type="button" className="ambient-hud-inspect" onClick={() => openVisor('here')}>
+              Open in Visor
+            </button>
+          )}
           <button type="button" className="ambient-hud-toggle" onClick={toggleVisor}>
             {state.visorOpen ? 'Close' : 'Visor'}
           </button>
