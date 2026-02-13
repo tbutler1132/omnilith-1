@@ -9,6 +9,7 @@ import { serve } from '@hono/node-server';
 import { createContainer } from './container.js';
 import { createDatabase } from './db/connection.js';
 import { seedWorldMap } from './seed.js';
+import { seedDev } from './seed-dev.js';
 import { createServer } from './server.js';
 
 const port = parseInt(process.env.PORT ?? '3000', 10);
@@ -20,6 +21,9 @@ const container = createContainer(db);
 async function start() {
   const worldMapId = await seedWorldMap(container);
   console.log(`World map seeded: ${worldMapId}`);
+
+  // Dev seed — rich test data (safe to run repeatedly, skips if already applied)
+  await seedDev(container);
 
   const app = createServer(container, { worldMapId });
 
