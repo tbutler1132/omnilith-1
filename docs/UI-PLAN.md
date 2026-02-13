@@ -6,6 +6,18 @@ Phase 1 backend is complete: kernel (8 infrastructure concerns), content types (
 
 This document captures the incremental plan for building the rendering layer — the perceptual interface through which organisms become visible and interactive. It is organized as vertical slices, each delivering a complete interaction loop that works end to end.
 
+### Code Structure Convention
+
+Mirror the backend's separation of concerns. The rule: **if you can't test it without rendering a component, extract it.** Every component should be decomposable into three layers:
+
+- **Pure functions** (`.logic.ts` or `.utils.ts`) — positioning, sizing, transforms, formatting. Zero React. Fully testable.
+- **Hooks** (`use-*.ts`) — data fetching, derived state, side effects. Orchestration logic lives here, not in components.
+- **Components** (`.tsx`) — receive props, return JSX. Minimal logic. Dumb rendering.
+
+Not every component needs all three files — a 30-line presentational component is fine as-is. But when a component starts mixing data fetching, computation, and rendering, split it. Same philosophy as the backend's `(input, deps)` pattern: everything explicit, nothing hidden.
+
+Shared utilities (like preview text extraction) go in a common utils directory rather than being duplicated across components.
+
 ### Guiding Principles (from Foundation + Organism Model)
 
 - **Space is experiential, device is operational.** You encounter organisms in the space. You tend them through the visor.
