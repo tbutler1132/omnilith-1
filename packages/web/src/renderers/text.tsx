@@ -12,7 +12,7 @@ interface TextPayload {
   format: 'plaintext' | 'markdown';
 }
 
-export function TextRenderer({ state }: RendererProps) {
+export function TextRenderer({ state, zoom: _zoom, focused: _focused }: RendererProps) {
   const payload = state.payload as TextPayload;
   const content = payload?.content ?? '';
   const format = payload?.format ?? 'plaintext';

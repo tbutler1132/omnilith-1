@@ -6,7 +6,7 @@
 
 import type { RendererProps } from './registry.js';
 
-export function FallbackRenderer({ state }: RendererProps) {
+export function FallbackRenderer({ state, zoom: _zoom, focused: _focused }: RendererProps) {
   return (
     <div>
       <p>

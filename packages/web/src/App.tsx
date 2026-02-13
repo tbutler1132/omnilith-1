@@ -1,26 +1,29 @@
 import { useCallback, useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router';
-import { AuthGate } from './auth/AuthGate.js';
+import { AuthGate, type AuthSession } from './auth/AuthGate.js';
 import { DocsLayout } from './docs/index.js';
-import { Landing } from './Landing.js';
-import { OrganismView } from './organisms/OrganismView.js';
+import { Platform } from './platform/index.js';
 
 function AuthenticatedApp() {
-  const [userId, setUserId] = useState<string | null>(null);
+  const [session, setSession] = useState<AuthSession | null>(null);
 
-  const handleAuth = useCallback((id: string) => setUserId(id), []);
+  const handleAuth = useCallback((s: AuthSession) => setSession(s), []);
 
   function handleLogout() {
     localStorage.removeItem('sessionId');
-    setUserId(null);
+    setSession(null);
   }
 
   return (
     <AuthGate onAuth={handleAuth}>
-      <Routes>
-        <Route path="/" element={<Landing userId={userId ?? ''} onLogout={handleLogout} />} />
-        <Route path="/organisms/:id" element={<OrganismView />} />
-      </Routes>
+      {session && (
+        <Platform
+          userId={session.userId}
+          personalOrganismId={session.personalOrganismId}
+          homePageOrganismId={session.homePageOrganismId}
+          onLogout={handleLogout}
+        />
+      )}
     </AuthGate>
   );
 }

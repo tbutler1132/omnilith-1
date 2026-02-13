@@ -4,9 +4,10 @@
 
 import { apiFetch } from './client.js';
 
-interface SessionInfo {
+export interface SessionInfo {
   userId: string;
   personalOrganismId: string | null;
+  homePageOrganismId: string | null;
 }
 
 interface AuthResponse {

@@ -8,9 +8,15 @@
 import { useEffect, useState } from 'react';
 import { fetchSession, login, signup } from '../api/auth.js';
 
+export interface AuthSession {
+  userId: string;
+  personalOrganismId: string | null;
+  homePageOrganismId: string | null;
+}
+
 interface AuthGateProps {
   children: React.ReactNode;
-  onAuth: (userId: string) => void;
+  onAuth: (session: AuthSession) => void;
 }
 
 export function AuthGate({ children, onAuth }: AuthGateProps) {
@@ -26,7 +32,11 @@ export function AuthGate({ children, onAuth }: AuthGateProps) {
 
     fetchSession()
       .then((session) => {
-        onAuth(session.userId);
+        onAuth({
+          userId: session.userId,
+          personalOrganismId: session.personalOrganismId,
+          homePageOrganismId: session.homePageOrganismId,
+        });
         setAuthenticated(true);
       })
       .catch(() => {
@@ -46,8 +56,8 @@ export function AuthGate({ children, onAuth }: AuthGateProps) {
   if (!authenticated) {
     return (
       <AuthForm
-        onSuccess={(userId) => {
-          onAuth(userId);
+        onSuccess={(session) => {
+          onAuth(session);
           setAuthenticated(true);
         }}
       />
@@ -57,7 +67,7 @@ export function AuthGate({ children, onAuth }: AuthGateProps) {
   return <>{children}</>;
 }
 
-function AuthForm({ onSuccess }: { onSuccess: (userId: string) => void }) {
+function AuthForm({ onSuccess }: { onSuccess: (session: AuthSession) => void }) {
   const [mode, setMode] = useState<'login' | 'signup'>('signup');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -71,8 +81,13 @@ function AuthForm({ onSuccess }: { onSuccess: (userId: string) => void }) {
 
     try {
       const fn = mode === 'signup' ? signup : login;
-      const res = await fn(email, password);
-      onSuccess(res.userId);
+      await fn(email, password);
+      const session = await fetchSession();
+      onSuccess({
+        userId: session.userId,
+        personalOrganismId: session.personalOrganismId,
+        homePageOrganismId: session.homePageOrganismId,
+      });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     } finally {

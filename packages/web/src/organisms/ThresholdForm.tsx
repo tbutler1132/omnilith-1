@@ -21,9 +21,11 @@ const CONTENT_TYPES = [
 interface ThresholdFormProps {
   onCreated: (organismId: string) => void;
   onClose: () => void;
+  /** When true, renders the form directly without a modal overlay. */
+  inline?: boolean;
 }
 
-export function ThresholdForm({ onCreated, onClose }: ThresholdFormProps) {
+export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps) {
   const [contentTypeId, setContentTypeId] = useState('text');
   const [format, setFormat] = useState<'plaintext' | 'markdown'>('plaintext');
   const [textContent, setTextContent] = useState('');
@@ -55,6 +57,78 @@ export function ThresholdForm({ onCreated, onClose }: ThresholdFormProps) {
     }
   }
 
+  const formInner = (
+    <>
+      <h2>Threshold Organism</h2>
+      <p>Introduce something new to the platform.</p>
+
+      <form onSubmit={handleSubmit}>
+        <label htmlFor="tf-content-type">Content type</label>
+        <select id="tf-content-type" value={contentTypeId} onChange={(e) => setContentTypeId(e.target.value)}>
+          {CONTENT_TYPES.map((ct) => (
+            <option key={ct.id} value={ct.id}>
+              {ct.label}
+            </option>
+          ))}
+        </select>
+
+        {contentTypeId === 'text' ? (
+          <>
+            <label htmlFor="tf-format">Format</label>
+            <select
+              id="tf-format"
+              value={format}
+              onChange={(e) => setFormat(e.target.value as 'plaintext' | 'markdown')}
+            >
+              <option value="plaintext">Plaintext</option>
+              <option value="markdown">Markdown</option>
+            </select>
+
+            <label htmlFor="tf-text-content">Content</label>
+            <textarea
+              id="tf-text-content"
+              value={textContent}
+              onChange={(e) => setTextContent(e.target.value)}
+              rows={5}
+              placeholder="Write something..."
+            />
+          </>
+        ) : (
+          <>
+            <label htmlFor="tf-json-payload">Payload (JSON)</label>
+            <textarea
+              id="tf-json-payload"
+              value={jsonPayload}
+              onChange={(e) => setJsonPayload(e.target.value)}
+              rows={5}
+              placeholder='{ "key": "value" }'
+            />
+          </>
+        )}
+
+        <label className="checkbox-label">
+          <input type="checkbox" checked={openTrunk} onChange={(e) => setOpenTrunk(e.target.checked)} />
+          Open-trunk (allow direct state changes without proposals)
+        </label>
+
+        {error && <p className="error">{error}</p>}
+
+        <div className="form-actions">
+          <button type="submit" disabled={submitting}>
+            {submitting ? 'Thresholding...' : 'Threshold'}
+          </button>
+          {!inline && (
+            <button type="button" className="secondary" onClick={onClose}>
+              Cancel
+            </button>
+          )}
+        </div>
+      </form>
+    </>
+  );
+
+  if (inline) return <div className="threshold-form">{formInner}</div>;
+
   return (
     <div
       className="modal-overlay"
@@ -70,69 +144,7 @@ export function ThresholdForm({ onCreated, onClose }: ThresholdFormProps) {
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.stopPropagation()}
       >
-        <h2>Threshold Organism</h2>
-        <p>Introduce something new to the platform.</p>
-
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="tf-content-type">Content type</label>
-          <select id="tf-content-type" value={contentTypeId} onChange={(e) => setContentTypeId(e.target.value)}>
-            {CONTENT_TYPES.map((ct) => (
-              <option key={ct.id} value={ct.id}>
-                {ct.label}
-              </option>
-            ))}
-          </select>
-
-          {contentTypeId === 'text' ? (
-            <>
-              <label htmlFor="tf-format">Format</label>
-              <select
-                id="tf-format"
-                value={format}
-                onChange={(e) => setFormat(e.target.value as 'plaintext' | 'markdown')}
-              >
-                <option value="plaintext">Plaintext</option>
-                <option value="markdown">Markdown</option>
-              </select>
-
-              <label htmlFor="tf-text-content">Content</label>
-              <textarea
-                id="tf-text-content"
-                value={textContent}
-                onChange={(e) => setTextContent(e.target.value)}
-                rows={5}
-                placeholder="Write something..."
-              />
-            </>
-          ) : (
-            <>
-              <label htmlFor="tf-json-payload">Payload (JSON)</label>
-              <textarea
-                id="tf-json-payload"
-                value={jsonPayload}
-                onChange={(e) => setJsonPayload(e.target.value)}
-                rows={5}
-                placeholder='{ "key": "value" }'
-              />
-            </>
-          )}
-
-          <label className="checkbox-label">
-            <input type="checkbox" checked={openTrunk} onChange={(e) => setOpenTrunk(e.target.checked)} />
-            Open-trunk (allow direct state changes without proposals)
-          </label>
-
-          {error && <p className="error">{error}</p>}
-
-          <div className="form-actions">
-            <button type="submit" disabled={submitting}>
-              {submitting ? 'Thresholding...' : 'Threshold'}
-            </button>
-            <button type="button" className="secondary" onClick={onClose}>
-              Cancel
-            </button>
-          </div>
-        </form>
+        {formInner}
       </div>
     </div>
   );

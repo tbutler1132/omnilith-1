@@ -6,9 +6,9 @@
  */
 
 import { useState } from 'react';
-import { Link } from 'react-router';
 import { composeChild, decomposeChild } from '../api/organisms.js';
 import { useChildren, useOrganism, useParent } from '../hooks/use-organism.js';
+import { usePlatform } from '../platform/index.js';
 import { OrganismPicker } from './OrganismPicker.js';
 import { ThresholdForm } from './ThresholdForm.js';
 
@@ -16,10 +16,12 @@ function CompositionChild({
   childId,
   onRemove,
   removing,
+  onFocus,
 }: {
   childId: string;
   onRemove: () => void;
   removing: boolean;
+  onFocus: () => void;
 }) {
   const { data } = useOrganism(childId);
 
@@ -28,10 +30,10 @@ function CompositionChild({
 
   return (
     <div className="composition-child">
-      <Link to={`/organisms/${childId}`} className="composition-child-info">
+      <button type="button" className="composition-child-info" onClick={onFocus}>
         <span className="content-type">{contentType}</span>
         <span className="composition-child-preview">{preview}</span>
-      </Link>
+      </button>
       <button type="button" className="btn-danger" onClick={onRemove} disabled={removing}>
         {removing ? '...' : 'Remove'}
       </button>
@@ -52,6 +54,7 @@ function getChildPreview(state: { contentTypeId: string; payload: unknown } | un
 }
 
 export function Composition({ organismId }: { organismId: string }) {
+  const { focusOrganism } = usePlatform();
   const parent = useParent(organismId);
   const [refreshKey, setRefreshKey] = useState(0);
   const children = useChildren(organismId, refreshKey);
@@ -107,7 +110,9 @@ export function Composition({ organismId }: { organismId: string }) {
         <p>Loading...</p>
       ) : parent.data ? (
         <p>
-          <Link to={`/organisms/${parent.data.parentId}`}>{parent.data.parentId}</Link>
+          <button type="button" className="composition-link" onClick={() => focusOrganism(parent.data?.parentId ?? '')}>
+            {parent.data.parentId}
+          </button>
         </p>
       ) : (
         <p>Root organism</p>
@@ -124,6 +129,7 @@ export function Composition({ organismId }: { organismId: string }) {
               childId={child.childId}
               onRemove={() => handleDecompose(child.childId)}
               removing={removingId === child.childId}
+              onFocus={() => focusOrganism(child.childId)}
             />
           ))}
         </div>

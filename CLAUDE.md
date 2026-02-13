@@ -394,3 +394,4 @@ Major decisions and their reasoning are also captured in `docs/DECISION-LOG.md`.
 - Tests are specs — write them as domain statements
 - Don't build beyond Phase 1 scope
 - When in doubt, the answer is in the organism model or foundation docs
+- After making changes, run `pnpm run check` to verify build, lint, and tests all pass

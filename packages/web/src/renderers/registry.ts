@@ -10,6 +10,8 @@ import type { OrganismState } from '../api/organisms.js';
 
 export interface RendererProps {
   state: OrganismState;
+  zoom: number;
+  focused: boolean;
 }
 
 const renderers = new Map<string, ComponentType<RendererProps>>();
