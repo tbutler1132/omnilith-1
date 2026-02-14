@@ -407,6 +407,56 @@ The analogy: Omnilith should be a city (property taxes, maintained infrastructur
 
 See `docs/decisions/010-economic-ceiling.md` for the full decision.
 
+### Move 26: AI and the Regulatory Core — Three Zones of Human and Machine
+
+The founder articulated an insight that resolves the platform's relationship to AI without needing AI-specific policies: **the platform naturally sits at the human judgment layer.** Thresholding, integrating, declining, surfacing, and composing are inherently human acts. The architecture doesn't need to restrict AI — it's built around the things AI can't meaningfully do.
+
+This produces three concentric zones:
+
+1. **Pre-threshold (AI-welcome).** The generative space before the identity threshold. Use whatever tools you want — AI, instruments, pen and paper. The platform doesn't care how material was produced. The threshold act is what matters: a human recognizing coherence and committing to tend it. A proposal's value is judged by its quality and intentionality, not its origin.
+
+2. **The regulatory core (human judgment).** Threshold, integrate, decline, surface, compose, tend. These are the acts that constitute organism identity. AI here would be meaningless, not forbidden — an AI integrating proposals is automation, not governance. The platform's value IS human judgment applied to creative work.
+
+3. **External interface (AI-powered).** Two dimensions. First, platform development — AI generating content types, renderers, API connectors, sensor adapters. The five-part content type contract is a natural AI generation target. Second, organism periphery — AI powering the cybernetic layer's interface with the external world. Sensor organisms using AI to monitor signals, response policies adapting content for external platforms, API connectors translating between internal state and external systems. The organism lives on the platform, tended slowly by humans. Its external presence can be rapid and AI-powered.
+
+The biological analogy: conscious judgment (regulatory core) coexists with autonomic systems (AI periphery). Both are part of the organism. Neither replaces the other.
+
+Spam and quality are handled by existing mechanisms — policy organisms evaluate proposals regardless of origin, the threshold act discourages mass-generation, declined proposals are visible in contribution history. No AI detection or labeling infrastructure is needed.
+
+Critically, **nothing changes architecturally.** This decision articulates what the existing architecture already produces. The platform's relationship to AI is a consequence of building around human judgment, not a policy bolted on top.
+
+A concrete elaboration of Zone 3 was added: the **AI-powered cybernetic loop.** The existing Tier 3 content types (Sensor, Variable, Prediction, Response Policy) already describe a sensing-evaluating-acting loop. AI slots in as a component — the policy's evaluator calls a model, and the result is either direct execution (low stakes) or a generated proposal for human review (high stakes). The degree of automation is configured through governance, not hardcoded. Three specific content types would make this native: an AI evaluator (wraps a model call), a webhook action (how organisms affect the external world), and a conditional proposal generator (AI does the analysis, human makes the call). All Tier 3. All enter through the registry. The kernel doesn't change.
+
+See `docs/decisions/011-ai-and-the-regulatory-core.md` for the full decision.
+
+---
+
+## Strategic Horizons
+
+These are not decisions. They are observations about where the architecture naturally points — ideas that emerged from the sessions that produced Moves 24–26. Nothing here changes the Phase 1 build. But these threads are worth preserving because they connect into a coherent picture of the platform's longer-term potential.
+
+### The universal tending layer
+
+The organism model does not require the thing being tended to live on the platform. An organism's state is self-describing — the payload can be a reference to an external system plus metadata about decisions made about it. An "external-system" content type (state: repo reference, deployment hash, configuration) would let someone govern a standalone app through Omnilith's organism model. Proposals become deployment approvals. Sensor organisms monitor the live system. The cybernetic loop (AI evaluator + response policy) detects problems and generates rollback proposals. The organism's state history becomes a governed record of every decision made about that system — not just what changed, but why, who decided, and what was declined.
+
+This means Omnilith could function as a governance and decision-making layer for anything worth tending, not just things that live on the platform. Creative works, communities, external apps, infrastructure, processes. The organism doesn't have to contain the thing. It tends the thing. This is a natural extension of the content type system — no kernel changes, just a new content type with sensors and webhook actions as connective tissue.
+
+### Apps as organisms
+
+A sufficiently complex composition of organisms with the right content types and renderers IS an application. The architecture already provides everything an app needs: data model (organisms with content types), business logic (policy evaluators), UI (content-type renderers), permissions (visibility and integration policies), and external integrations (sensors, webhooks). Apps built as organisms would get identity, history, governance, forking, and composition for free — things no app platform currently provides. Templates would make app patterns shareable and forkable.
+
+Performance constraints (immutable state history, evaluation overhead) limit this to apps where governance, collaboration, and evolution matter more than raw throughput. That covers a lot of ground.
+
+### The scarcity of judgment
+
+As AI makes creation cheap, the scarce resource shifts from making things to recognizing what's worth keeping. Omnilith's architecture is built around exactly this scarce resource — the threshold act, integration, surfacing, governance. The platform's value proposition strengthens as generative AI improves, because the platform doesn't compete on creation speed. It competes on what happens after creation: identity, tending, composition, and the governed evolution of living things. The three-zone AI model (pre-threshold generation is cheap, the regulatory core is human, the external interface is AI-powered) positions the platform naturally in this landscape.
+
+### How these connect
+
+Identity independence (009) means organisms are verifiable regardless of where they or the things they tend live. The economic model (010) means the platform sustains itself without optimizing the activity inside it. The AI model (011) means human judgment stays at the center while AI handles generation and peripheral sensing. External tending means the platform's reach extends beyond its own infrastructure. Apps as organisms means the composition model scales to functional systems, not just creative works.
+
+Together: **Omnilith is a universal tending layer where anything worth caring about can have identity, governance, history, and composition — tended by humans, assisted by AI, sustained by a non-extractive economic model, with identity that persists independent of any single infrastructure.** That is the long-game picture. Phase 1 builds the foundation that makes all of it possible.
+
 ---
 
 ## Summary of What We're Building
