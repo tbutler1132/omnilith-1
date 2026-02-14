@@ -361,6 +361,52 @@ Schema rigidity should be strict for policy types (governance bugs are dangerous
 
 The founder has an aesthetic document that should inform the rendering layer. The organism model defines what gets rendered. The aesthetic document should define how it feels. These need to be integrated in the next phase of design work.
 
+### Move 24: Organism Identity Independence
+
+The founder identified a philosophical tension: the platform claims organisms have real, persistent identity, but if all identity lives on one server, that identity is contingent on one person's infrastructure. This contradicts the claim that organisms are genuinely alive and persistent.
+
+The question was whether blockchain or distributed technology could solve this. The answer: **the instinct is right, but the solution is not blockchain-as-feature.** The existing architecture already points toward identity independence through content-addressed storage (Git), immutable states, hash chains, port abstractions, and the event system.
+
+The decision establishes five things that belong:
+1. **Content-addressed state hashing** for all payloads (extending what Git already does for text)
+2. **Organism portability** — exportable, self-contained, verifiable packages
+3. **Optional public identity anchoring** — lightweight proofs (not content) on a public ledger
+4. **Lineage verification** — independently verifiable fork provenance
+5. **Federation** (Phase 6) as the real distributed story
+
+And four things that do not belong:
+1. State payloads on-chain (expensive, pointless)
+2. Smart contracts for governance (policy organisms are fundamentally better — evolvable, proposable, content-typed)
+3. Tokens, NFTs, or financialization (directly contradicts the viable range ceiling)
+4. Dependency on any specific chain
+
+Nothing changes in the Phase 1 build. The decision validates existing architectural choices — the `ContentStorage` port abstraction, immutable states, the event system — and records that identity independence is a design principle the architecture should continue to support.
+
+See `docs/decisions/009-organism-identity-independence.md` for the full decision.
+
+### Move 25: The Economic Ceiling — Revenue Without Optimization
+
+The founder raised a pragmatic concern: can the platform actually sustain itself while refusing to build the measurement infrastructure that most platforms use to optimize revenue?
+
+The initial position — pure subscription, no economic data for anyone — was too idealistic. The Foundation already contemplates "the platform takes a cut." And working artists need economic information about their own practice. Denying stewards their own revenue data in the name of philosophical purity is paternalistic and makes the platform unusable for anyone trying to make a living.
+
+The refined position draws a clear line: **the danger is not revenue, it's feedback loops.** Economic data flowing to stewards is a bank statement. Economic data flowing to the rendering layer is extraction.
+
+The economic model has six structural elements:
+
+1. **Base subscription** to inhabit the platform — decouples platform survival from transaction volume
+2. **Modest transaction cut** — the platform participates in upside without depending on it
+3. **Stewards see their own economic data privately** — no comparative data, no optimization tools, no analytics
+4. **No consumption metrics, structurally absent** — no play counts, no view counts, no download counts. The data does not exist. This is the immovable constraint.
+5. **No comparative economic data** — no leaderboards, no "trending," no rankings
+6. **Pricing as curatorial act** — a deliberate statement, not a variable to optimize
+
+The key architectural implication: the event system's scope must be explicitly limited to actions (state changes, proposals, integrations), never passive consumption (views, plays). The rendering layer reads vitality (creative activity) but never economic data. The query port does not support consumption queries because the underlying data doesn't exist.
+
+The analogy: Omnilith should be a city (property taxes, maintained infrastructure, what happens inside is inhabitants' business) not a mall (percentage of every sale, foot traffic optimization, tenant placement analytics).
+
+See `docs/decisions/010-economic-ceiling.md` for the full decision.
+
 ---
 
 ## Summary of What We're Building
