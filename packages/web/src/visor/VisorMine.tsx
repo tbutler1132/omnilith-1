@@ -6,6 +6,7 @@
 
 import { useUserOrganisms } from '../hooks/use-organism.js';
 import { usePlatform } from '../platform/index.js';
+import { getPreviewText } from '../utils/preview-text.js';
 
 export function VisorMine() {
   const { state, focusOrganism, setVisorSection } = usePlatform();
@@ -37,22 +38,10 @@ export function VisorMine() {
           onClick={() => handleSelect(ows.organism.id)}
         >
           <span className="content-type">{ows.currentState?.contentTypeId ?? '...'}</span>
-          <span className="visor-organism-preview">{getPreview(ows.currentState)}</span>
+          <span className="visor-organism-preview">{getPreviewText(ows.currentState)}</span>
           <span className="visor-organism-id">{ows.organism.id.slice(0, 12)}</span>
         </button>
       ))}
     </div>
   );
-}
-
-function getPreview(state: { contentTypeId: string; payload: unknown } | undefined): string {
-  if (!state) return 'No state';
-  const payload = state.payload as Record<string, unknown>;
-  if (state.contentTypeId === 'text' && typeof payload?.content === 'string') {
-    const text = payload.content;
-    return text.length > 60 ? `${text.slice(0, 60)}...` : text || 'Empty';
-  }
-  if (typeof payload?.name === 'string') return payload.name;
-  if (typeof payload?.title === 'string') return payload.title;
-  return `${state.contentTypeId} organism`;
 }

@@ -7,18 +7,7 @@
  */
 
 import { useOrganisms } from '../hooks/use-organism.js';
-
-function getPreviewText(state: { contentTypeId: string; payload: unknown } | undefined): string {
-  if (!state) return 'No state';
-  const payload = state.payload as Record<string, unknown>;
-  if (state.contentTypeId === 'text' && typeof payload?.content === 'string') {
-    const text = payload.content;
-    return text.length > 60 ? `${text.slice(0, 60)}...` : text || 'Empty';
-  }
-  if (typeof payload?.name === 'string') return payload.name;
-  if (typeof payload?.title === 'string') return payload.title;
-  return `${state.contentTypeId} organism`;
-}
+import { getPreviewText } from '../utils/preview-text.js';
 
 interface OrganismPickerProps {
   excludeIds: string[];

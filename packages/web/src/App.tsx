@@ -1,7 +1,5 @@
 import { useCallback, useState } from 'react';
-import { BrowserRouter, Route, Routes } from 'react-router';
 import { AuthGate, type AuthSession } from './auth/AuthGate.js';
-import { DocsLayout } from './docs/index.js';
 import { Platform } from './platform/index.js';
 
 function AuthenticatedApp() {
@@ -29,12 +27,5 @@ function AuthenticatedApp() {
 }
 
 export function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/docs/*" element={<DocsLayout />} />
-        <Route path="/*" element={<AuthenticatedApp />} />
-      </Routes>
-    </BrowserRouter>
-  );
+  return <AuthenticatedApp />;
 }

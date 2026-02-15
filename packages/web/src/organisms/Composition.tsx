@@ -9,6 +9,7 @@ import { useState } from 'react';
 import { composeChild, decomposeChild } from '../api/organisms.js';
 import { useChildren, useOrganism, useParent } from '../hooks/use-organism.js';
 import { usePlatform } from '../platform/index.js';
+import { getPreviewText } from '../utils/preview-text.js';
 import { OrganismPicker } from './OrganismPicker.js';
 import { ThresholdForm } from './ThresholdForm.js';
 
@@ -26,7 +27,7 @@ function CompositionChild({
   const { data } = useOrganism(childId);
 
   const contentType = data?.currentState?.contentTypeId ?? '...';
-  const preview = getChildPreview(data?.currentState);
+  const preview = getPreviewText(data?.currentState, 50);
 
   return (
     <div className="composition-child">
@@ -39,18 +40,6 @@ function CompositionChild({
       </button>
     </div>
   );
-}
-
-function getChildPreview(state: { contentTypeId: string; payload: unknown } | undefined): string {
-  if (!state) return 'No state';
-  const payload = state.payload as Record<string, unknown>;
-  if (state.contentTypeId === 'text' && typeof payload?.content === 'string') {
-    const text = payload.content;
-    return text.length > 50 ? `${text.slice(0, 50)}...` : text || 'Empty';
-  }
-  if (typeof payload?.name === 'string') return payload.name;
-  if (typeof payload?.title === 'string') return payload.title;
-  return `${state.contentTypeId} organism`;
 }
 
 export function Composition({ organismId }: { organismId: string }) {
