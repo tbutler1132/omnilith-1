@@ -1,14 +1,14 @@
 /**
- * Platform — bootstrap component for the Space + Visor paradigm.
+ * Platform — bootstrap component for the Space + HUD paradigm.
  *
- * Fetches the world map ID, then wraps Space and Visor in PlatformProvider.
+ * Fetches the world map ID, then wraps Space and Hud in PlatformProvider.
  * This is the root of the authenticated experience.
  */
 
 import { useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/organisms.js';
+import { Hud } from '../hud/index.js';
 import { Space } from '../space/index.js';
-import { Visor } from '../visor/index.js';
 import { PlatformProvider } from './PlatformContext.js';
 
 interface PlatformProps {
@@ -58,7 +58,7 @@ export function Platform({ userId, personalOrganismId, homePageOrganismId, onLog
     >
       <div className="platform">
         <Space />
-        <Visor onLogout={onLogout} />
+        <Hud onLogout={onLogout} />
       </div>
     </PlatformProvider>
   );

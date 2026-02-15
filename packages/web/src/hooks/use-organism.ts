@@ -56,35 +56,35 @@ export function useOrganisms(refreshKey = 0) {
   return useAsync(() => fetchOrganisms().then((r) => r.organisms), [refreshKey]);
 }
 
-export function useOrganism(id: string) {
+export function useOrganism(id: string, refreshKey = 0) {
   return useAsync(
     () =>
       fetchOrganism(id).then((r) => ({
         organism: r.organism,
         currentState: r.currentState ?? undefined,
       })),
-    [id],
+    [id, refreshKey],
   );
 }
 
-export function useStateHistory(id: string) {
-  return useAsync(() => fetchStateHistory(id).then((r) => r.states), [id]);
+export function useStateHistory(id: string, refreshKey = 0) {
+  return useAsync(() => fetchStateHistory(id).then((r) => r.states), [id, refreshKey]);
 }
 
 export function useChildren(id: string, refreshKey = 0) {
   return useAsync(() => fetchChildren(id).then((r) => r.children), [id, refreshKey]);
 }
 
-export function useParent(id: string) {
-  return useAsync(() => fetchParent(id).then((r) => r.parent), [id]);
+export function useParent(id: string, refreshKey = 0) {
+  return useAsync(() => fetchParent(id).then((r) => r.parent), [id, refreshKey]);
 }
 
-export function useVitality(id: string) {
-  return useAsync(() => fetchVitality(id).then((r) => r.vitality), [id]);
+export function useVitality(id: string, refreshKey = 0) {
+  return useAsync(() => fetchVitality(id).then((r) => r.vitality), [id, refreshKey]);
 }
 
-export function useProposals(id: string) {
-  return useAsync(() => fetchProposals(id).then((r) => r.proposals), [id]);
+export function useProposals(id: string, refreshKey = 0) {
+  return useAsync(() => fetchProposals(id).then((r) => r.proposals), [id, refreshKey]);
 }
 
 export function useRelationships(id: string) {

@@ -3,6 +3,9 @@
  *
  * No React, no side effects. All coordinate math for the pan/zoom
  * canvas lives here so it can be tested independently.
+ *
+ * The altitude system provides three discrete zoom levels that the
+ * viewport snaps between, replacing continuous zoom.
  */
 
 export interface ViewportState {
@@ -26,20 +29,61 @@ export interface WorldBounds {
   maxY: number;
 }
 
-/** Minimum zoom level (zoomed far out) */
-export const MIN_ZOOM = 0.1;
+// ── Altitude system ──
 
-/** Maximum zoom level (zoomed far in) */
-export const MAX_ZOOM = 4.0;
+export type Altitude = 'high' | 'mid' | 'close';
 
-/** Zoom threshold that triggers navigation back to parent map */
-export const EXIT_ZOOM = 0.15;
+interface AltitudeLevel {
+  level: Altitude;
+  zoom: number;
+}
 
-/** Zoom level where the focus lens begins fading in */
-export const LENS_FADE_START = 1.8;
+/** Ordered from highest (zoomed out) to closest (zoomed in). */
+export const ALTITUDES: readonly AltitudeLevel[] = [
+  { level: 'high', zoom: 0.25 },
+  { level: 'mid', zoom: 0.6 },
+  { level: 'close', zoom: 1.3 },
+] as const;
 
-/** Zoom level where the focus lens is fully opaque */
-export const LENS_FADE_END = 2.5;
+/**
+ * Navigate to the next altitude in a direction.
+ * Returns null if already at the boundary.
+ *
+ * 'in' = toward Close (zoom in). 'out' = toward High (zoom out).
+ */
+export function nextAltitude(current: Altitude, direction: 'in' | 'out'): Altitude | null {
+  const idx = ALTITUDES.findIndex((a) => a.level === current);
+  const next = direction === 'in' ? idx + 1 : idx - 1;
+  return ALTITUDES[next]?.level ?? null;
+}
+
+/**
+ * Snap a continuous zoom value to the nearest altitude.
+ */
+export function altitudeFromZoom(zoom: number): Altitude {
+  let closest: AltitudeLevel = ALTITUDES[0];
+  let minDist = Math.abs(zoom - closest.zoom);
+
+  for (let i = 1; i < ALTITUDES.length; i++) {
+    const dist = Math.abs(zoom - ALTITUDES[i].zoom);
+    if (dist < minDist) {
+      closest = ALTITUDES[i];
+      minDist = dist;
+    }
+  }
+
+  return closest.level;
+}
+
+/**
+ * Look up the fixed zoom value for an altitude level.
+ */
+export function zoomForAltitude(altitude: Altitude): number {
+  const found = ALTITUDES.find((a) => a.level === altitude);
+  return found ? found.zoom : ALTITUDES[0].zoom;
+}
+
+// ── Coordinate transforms ──
 
 /**
  * CSS transform string for the world container.
@@ -110,13 +154,21 @@ export function isVisible(wx: number, wy: number, size: number, bounds: WorldBou
 }
 
 /**
- * Compute viewport state that centers on an organism and zooms in so it
- * fills roughly 60% of the smaller screen dimension.
+ * Compute viewport state that centers on an organism at Close altitude.
  */
-export function frameOrganism(wx: number, wy: number, worldSize: number, screen: ScreenSize): ViewportState {
-  const fit = Math.min(screen.width, screen.height);
-  const zoom = fit > 0 ? Math.min(MAX_ZOOM, Math.max(1, (0.6 * fit) / worldSize)) : 1;
-  return { x: wx, y: wy, zoom };
+export function frameOrganism(wx: number, wy: number): ViewportState {
+  return { x: wx, y: wy, zoom: zoomForAltitude('close') };
+}
+
+/** Zoom level for the enter-organism transition (past Close, into interior). */
+export const ENTER_ZOOM = 4.0;
+
+/**
+ * Compute viewport state for entering an organism's interior.
+ * Centers on the organism and zooms past Close to ENTER_ZOOM.
+ */
+export function frameOrganismEnter(wx: number, wy: number): ViewportState {
+  return { x: wx, y: wy, zoom: ENTER_ZOOM };
 }
 
 /**
@@ -132,13 +184,33 @@ export function interpolateViewport(from: ViewportState, to: ViewportState, t: n
 }
 
 /**
- * Focus lens opacity as a pure function of zoom level.
- * Ramps linearly from 0 to 1 across the crossfade zone.
+ * Clamp viewport center so the visible area stays within map bounds.
+ * Allows some padding at edges but prevents panning into the void.
  */
-export function lensOpacity(zoom: number): number {
-  if (zoom <= LENS_FADE_START) return 0;
-  if (zoom >= LENS_FADE_END) return 1;
-  return (zoom - LENS_FADE_START) / (LENS_FADE_END - LENS_FADE_START);
+export function clampToMap(
+  viewport: ViewportState,
+  screen: ScreenSize,
+  mapWidth: number,
+  mapHeight: number,
+): ViewportState {
+  if (screen.width === 0 || screen.height === 0) return viewport;
+
+  const halfW = screen.width / 2 / viewport.zoom;
+  const halfH = screen.height / 2 / viewport.zoom;
+
+  // Allow the viewport center to go just far enough that the map edge
+  // stays at least at the screen edge (with a small padding).
+  const pad = 100;
+  const minX = Math.min(mapWidth / 2, -pad + halfW);
+  const maxX = Math.max(mapWidth / 2, mapWidth + pad - halfW);
+  const minY = Math.min(mapHeight / 2, -pad + halfH);
+  const maxY = Math.max(mapHeight / 2, mapHeight + pad - halfH);
+
+  return {
+    ...viewport,
+    x: Math.max(minX, Math.min(maxX, viewport.x)),
+    y: Math.max(minY, Math.min(maxY, viewport.y)),
+  };
 }
 
 /**
@@ -150,30 +222,5 @@ export function applyPan(viewport: ViewportState, screenDx: number, screenDy: nu
     ...viewport,
     x: viewport.x - screenDx / viewport.zoom,
     y: viewport.y - screenDy / viewport.zoom,
-  };
-}
-
-/**
- * Zoom toward a screen-space point, keeping the world point under the
- * cursor stationary. Clamps to [MIN_ZOOM, MAX_ZOOM].
- */
-export function applyZoom(
-  viewport: ViewportState,
-  screen: ScreenSize,
-  factor: number,
-  sx: number,
-  sy: number,
-): ViewportState {
-  const newZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, viewport.zoom * factor));
-
-  // World point under the cursor before zoom
-  const wx = viewport.x + (sx - screen.width / 2) / viewport.zoom;
-  const wy = viewport.y + (sy - screen.height / 2) / viewport.zoom;
-
-  // Adjust center so that (wx, wy) stays at (sx, sy) on screen
-  return {
-    x: wx - (sx - screen.width / 2) / newZoom,
-    y: wy - (sy - screen.height / 2) / newZoom,
-    zoom: newZoom,
   };
 }

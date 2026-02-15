@@ -1,30 +1,23 @@
 /**
- * SpaceViewport — CSS transform container with pan/zoom event handling.
+ * SpaceViewport — CSS transform container with pan and altitude event handling.
  *
- * Handles single-pointer pan, two-finger pinch-to-zoom, and mouse wheel
- * zoom. Applies CSS transforms for GPU-accelerated rendering.
- * Triggers onExitMap when zooming out past the exit threshold.
+ * Handles single-pointer pan, two-finger pinch (pan + accumulated altitude change),
+ * scroll wheel (accumulated altitude change), and keyboard shortcuts (+/-).
+ * Applies CSS transforms for GPU-accelerated rendering.
  */
 
-import { type ReactNode, useCallback, useRef, useState } from 'react';
-import {
-  applyPan,
-  applyZoom,
-  EXIT_ZOOM,
-  getWorldTransform,
-  type ScreenSize,
-  type ViewportState,
-} from './viewport-math.js';
+import { type ReactNode, useCallback, useEffect, useRef, useState } from 'react';
+import { applyPan, getWorldTransform, type ScreenSize, type ViewportState } from './viewport-math.js';
 
 interface SpaceViewportProps {
   viewport: ViewportState;
   screenSize: ScreenSize;
   onViewportChange: (v: ViewportState | ((prev: ViewportState) => ViewportState)) => void;
-  onExitMap: () => void;
-  /** Whether we're at the root map (exit disabled) */
-  atRoot: boolean;
+  onAltitudeChange: (direction: 'in' | 'out') => void;
   /** Called when user clicks empty space (not an organism, no drag) */
   onClearFocus?: () => void;
+  /** When true, disables all pointer interactions (pan, scroll, click) */
+  disabled?: boolean;
   children: ReactNode;
 }
 
@@ -33,7 +26,12 @@ interface PointerInfo {
   y: number;
 }
 
-const WHEEL_FACTOR = 0.92;
+/** Accumulated scroll deltaY threshold to trigger one altitude change */
+const WHEEL_THRESHOLD = 100;
+
+/** Pinch scale ratio thresholds to trigger one altitude change */
+const PINCH_IN_THRESHOLD = 1.3;
+const PINCH_OUT_THRESHOLD = 0.7;
 
 /** Minimum pointer movement (px) to consider a gesture a drag, not a click */
 const DRAG_THRESHOLD = 3;
@@ -42,9 +40,9 @@ export function SpaceViewport({
   viewport,
   screenSize,
   onViewportChange,
-  onExitMap,
-  atRoot,
+  onAltitudeChange,
   onClearFocus,
+  disabled = false,
   children,
 }: SpaceViewportProps) {
   const [panning, setPanning] = useState(false);
@@ -58,15 +56,11 @@ export function SpaceViewport({
   const pointerDownPosRef = useRef<PointerInfo | null>(null);
   const didDragRef = useRef(false);
 
-  // Use refs for viewport to avoid stale closures in event handlers
-  const viewportRef = useRef(viewport);
-  viewportRef.current = viewport;
+  // Scroll wheel accumulator
+  const wheelAccRef = useRef(0);
 
-  const screenRef = useRef(screenSize);
-  screenRef.current = screenSize;
-
-  const atRootRef = useRef(atRoot);
-  atRootRef.current = atRoot;
+  // Pinch scale accumulator
+  const pinchScaleRef = useRef(1);
 
   const handlePointerDown = useCallback((e: React.PointerEvent) => {
     // Only track primary button or touch
@@ -87,11 +81,13 @@ export function SpaceViewport({
       // Start single-pointer pan
       lastPanRef.current = { x: e.clientX, y: e.clientY };
       pinchDistRef.current = null;
+      pinchScaleRef.current = 1;
       setPanning(true);
     } else if (pointersRef.current.size === 2) {
       // Switch to pinch mode
       const [p1, p2] = Array.from(pointersRef.current.values());
       pinchDistRef.current = distance(p1, p2);
+      pinchScaleRef.current = 1;
       lastPanRef.current = midpoint(p1, p2);
     }
   }, []);
@@ -119,38 +115,50 @@ export function SpaceViewport({
 
         onViewportChange((prev) => applyPan(prev, dx, dy));
       } else if (pointersRef.current.size === 2 && pinchDistRef.current !== null && lastPanRef.current) {
-        // Pinch-to-zoom
+        // Pinch: pan from midpoint movement, accumulate scale for altitude
         const [p1, p2] = Array.from(pointersRef.current.values());
         const newDist = distance(p1, p2);
         const mid = midpoint(p1, p2);
-
-        // Zoom factor from distance change
-        const factor = newDist / pinchDistRef.current;
 
         // Pan from midpoint movement
         const dx = mid.x - lastPanRef.current.x;
         const dy = mid.y - lastPanRef.current.y;
 
+        // Accumulate scale ratio
+        const factor = newDist / pinchDistRef.current;
+        pinchScaleRef.current *= factor;
+
         pinchDistRef.current = newDist;
         lastPanRef.current = mid;
 
-        onViewportChange((prev) => {
-          const panned = applyPan(prev, dx, dy);
-          return applyZoom(panned, screenRef.current, factor, mid.x, mid.y);
-        });
+        // Apply pan
+        onViewportChange((prev) => applyPan(prev, dx, dy));
+
+        // Check if accumulated scale crossed an altitude threshold
+        if (pinchScaleRef.current >= PINCH_IN_THRESHOLD) {
+          onAltitudeChange('in');
+          pinchScaleRef.current = 1;
+        } else if (pinchScaleRef.current <= PINCH_OUT_THRESHOLD) {
+          onAltitudeChange('out');
+          pinchScaleRef.current = 1;
+        }
       }
     },
-    [onViewportChange],
+    [onViewportChange, onAltitudeChange],
   );
 
   const handlePointerUp = useCallback(
     (e: React.PointerEvent) => {
+      // If this pointer was never tracked (e.g., pointerdown was on an organism), ignore it
+      if (!pointersRef.current.has(e.pointerId)) return;
+
       pointersRef.current.delete(e.pointerId);
 
       if (pointersRef.current.size === 0) {
         // All pointers released
         lastPanRef.current = null;
         pinchDistRef.current = null;
+        pinchScaleRef.current = 1;
         setPanning(false);
 
         // Click on empty space (no drag, not on an organism) → clear focus
@@ -163,6 +171,7 @@ export function SpaceViewport({
         const [remaining] = Array.from(pointersRef.current.values());
         lastPanRef.current = remaining;
         pinchDistRef.current = null;
+        pinchScaleRef.current = 1;
       }
     },
     [onClearFocus],
@@ -171,33 +180,46 @@ export function SpaceViewport({
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
       e.preventDefault();
-      const factor = e.deltaY > 0 ? WHEEL_FACTOR : 1 / WHEEL_FACTOR;
 
-      onViewportChange((prev) => {
-        const next = applyZoom(prev, screenRef.current, factor, e.clientX, e.clientY);
+      wheelAccRef.current += e.deltaY;
 
-        // Exit map if zoomed out past threshold
-        if (next.zoom <= EXIT_ZOOM && !atRootRef.current) {
-          onExitMap();
-          return prev;
-        }
-
-        return next;
-      });
+      if (wheelAccRef.current >= WHEEL_THRESHOLD) {
+        // Scroll down = zoom out = 'out'
+        onAltitudeChange('out');
+        wheelAccRef.current = 0;
+      } else if (wheelAccRef.current <= -WHEEL_THRESHOLD) {
+        // Scroll up = zoom in = 'in'
+        onAltitudeChange('in');
+        wheelAccRef.current = 0;
+      }
     },
-    [onViewportChange, onExitMap],
+    [onAltitudeChange],
   );
+
+  // Keyboard shortcuts for altitude change
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === '+' || e.key === '=') {
+        onAltitudeChange('in');
+      } else if (e.key === '-' || e.key === '_') {
+        onAltitudeChange('out');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onAltitudeChange]);
 
   const transform = getWorldTransform(viewport, screenSize);
 
   return (
     <div
       className={`space-viewport ${panning ? 'space-viewport--panning' : ''}`}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onWheel={handleWheel}
+      style={disabled ? { pointerEvents: 'none' } : undefined}
+      onPointerDown={disabled ? undefined : handlePointerDown}
+      onPointerMove={disabled ? undefined : handlePointerMove}
+      onPointerUp={disabled ? undefined : handlePointerUp}
+      onPointerCancel={disabled ? undefined : handlePointerUp}
+      onWheel={disabled ? undefined : handleWheel}
     >
       <div
         className="space-world"

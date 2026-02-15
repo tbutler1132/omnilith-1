@@ -2,12 +2,14 @@
  * useViewport — manages pan/zoom viewport state for the 2D canvas.
  *
  * Tracks screen size via ResizeObserver and provides viewport state
- * with a setter. Resets to centered view when map dimensions change.
+ * with a setter. Derives altitude from zoom and provides changeAltitude
+ * for discrete altitude transitions. Clamps viewport to map bounds.
+ * Resets to High altitude centered view when map dimensions change.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
-import type { ScreenSize, ViewportState } from './viewport-math.js';
-import { interpolateViewport } from './viewport-math.js';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { Altitude, ScreenSize, ViewportState } from './viewport-math.js';
+import { altitudeFromZoom, clampToMap, interpolateViewport, nextAltitude, zoomForAltitude } from './viewport-math.js';
 
 interface UseViewportOptions {
   mapWidth: number;
@@ -17,9 +19,11 @@ interface UseViewportOptions {
 interface UseViewportResult {
   viewport: ViewportState;
   screenSize: ScreenSize;
+  altitude: Altitude;
   containerRef: React.RefObject<HTMLDivElement | null>;
   setViewport: (v: ViewportState | ((prev: ViewportState) => ViewportState)) => void;
-  animateTo: (target: ViewportState) => void;
+  animateTo: (target: ViewportState, options?: { duration?: number; onComplete?: () => void }) => void;
+  changeAltitude: (direction: 'in' | 'out') => void;
 }
 
 const ANIMATION_DURATION = 300;
@@ -27,13 +31,29 @@ const ANIMATION_DURATION = 300;
 export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseViewportResult {
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  const [viewport, setViewport] = useState<ViewportState>({
+  const [viewport, setViewportRaw] = useState<ViewportState>({
     x: mapWidth / 2,
     y: mapHeight / 2,
-    zoom: 0.5,
+    zoom: zoomForAltitude('high'),
   });
 
   const [screenSize, setScreenSize] = useState<ScreenSize>({ width: 0, height: 0 });
+
+  // Keep refs for clamping (avoids stale closures)
+  const screenRef = useRef(screenSize);
+  screenRef.current = screenSize;
+  const mapRef = useRef({ mapWidth, mapHeight });
+  mapRef.current = { mapWidth, mapHeight };
+
+  const altitude = useMemo(() => altitudeFromZoom(viewport.zoom), [viewport.zoom]);
+
+  // Clamped setViewport — every update stays within map bounds
+  const setViewport = useCallback((v: ViewportState | ((prev: ViewportState) => ViewportState)) => {
+    setViewportRaw((prev) => {
+      const next = typeof v === 'function' ? v(prev) : v;
+      return clampToMap(next, screenRef.current, mapRef.current.mapWidth, mapRef.current.mapHeight);
+    });
+  }, []);
 
   // Track map dimensions to reset viewport on map change
   const prevMapRef = useRef({ mapWidth, mapHeight });
@@ -42,9 +62,9 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
     const prev = prevMapRef.current;
     if (prev.mapWidth !== mapWidth || prev.mapHeight !== mapHeight) {
       prevMapRef.current = { mapWidth, mapHeight };
-      setViewport({ x: mapWidth / 2, y: mapHeight / 2, zoom: 0.5 });
+      setViewport({ x: mapWidth / 2, y: mapHeight / 2, zoom: zoomForAltitude('high') });
     }
-  }, [mapWidth, mapHeight]);
+  }, [mapWidth, mapHeight, setViewport]);
 
   // Store viewport in ref for animation reads
   const viewportRef = useRef(viewport);
@@ -71,19 +91,20 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
       cancelAnimation();
       setViewport(v);
     },
-    [cancelAnimation],
+    [cancelAnimation, setViewport],
   );
 
   const animateTo = useCallback(
-    (target: ViewportState) => {
+    (target: ViewportState, options?: { duration?: number; onComplete?: () => void }) => {
       cancelAnimation();
       const from = viewportRef.current;
+      const duration = options?.duration ?? ANIMATION_DURATION;
 
       const startTime = performance.now();
 
       const tick = (now: number) => {
         const elapsed = now - startTime;
-        const t = Math.min(elapsed / ANIMATION_DURATION, 1);
+        const t = Math.min(elapsed / duration, 1);
         // Ease-out cubic: 1 - (1-t)^3
         const eased = 1 - (1 - t) ** 3;
         setViewport(interpolateViewport(from, target, eased));
@@ -92,6 +113,7 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
           animRef.current = { id: requestAnimationFrame(tick), startTime, from, to: target };
         } else {
           animRef.current = null;
+          options?.onComplete?.();
         }
       };
 
@@ -102,7 +124,21 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
         to: target,
       };
     },
-    [cancelAnimation],
+    [cancelAnimation, setViewport],
+  );
+
+  const changeAltitude = useCallback(
+    (direction: 'in' | 'out') => {
+      const current = altitudeFromZoom(viewportRef.current.zoom);
+      const next = nextAltitude(current, direction);
+      if (!next) return;
+
+      animateTo({
+        ...viewportRef.current,
+        zoom: zoomForAltitude(next),
+      });
+    },
+    [animateTo],
   );
 
   // Clean up animation on unmount
@@ -133,5 +169,5 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
     return () => observer.disconnect();
   }, [measureCallback]);
 
-  return { viewport, screenSize, containerRef, setViewport: setViewportWrapped, animateTo };
+  return { viewport, screenSize, altitude, containerRef, setViewport: setViewportWrapped, animateTo, changeAltitude };
 }

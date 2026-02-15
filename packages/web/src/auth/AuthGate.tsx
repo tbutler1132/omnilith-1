@@ -109,7 +109,7 @@ function AuthForm({ onSuccess }: { onSuccess: (session: AuthSession) => void }) 
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
-            minLength={6}
+            minLength={3}
           />
           {error && <p className="error">{error}</p>}
           <button type="submit" disabled={loading}>

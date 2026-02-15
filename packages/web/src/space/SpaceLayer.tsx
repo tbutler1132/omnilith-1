@@ -3,13 +3,14 @@
  *
  * Computes visible bounds from the viewport and filters entries to only
  * those in view (with margin). Delegates each to SpaceOrganism.
+ * Passes the current altitude for altitude-responsive rendering.
  */
 
 import { useMemo } from 'react';
 import { usePlatform } from '../platform/index.js';
 import { SpaceOrganism } from './SpaceOrganism.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
-import { getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
+import { type Altitude, getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
 
 const BASE_SIZE = 160;
 
@@ -17,10 +18,19 @@ interface SpaceLayerProps {
   entries: SpatialMapEntry[];
   viewport: ViewportState;
   screenSize: ScreenSize;
-  animateTo: (target: ViewportState) => void;
+  altitude: Altitude;
+  onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
+  onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
 }
 
-export function SpaceLayer({ entries, viewport, screenSize, animateTo }: SpaceLayerProps) {
+export function SpaceLayer({
+  entries,
+  viewport,
+  screenSize,
+  altitude,
+  onFocusOrganism,
+  onEnterOrganism,
+}: SpaceLayerProps) {
   const { state } = usePlatform();
 
   const visibleEntries = useMemo(() => {
@@ -35,10 +45,10 @@ export function SpaceLayer({ entries, viewport, screenSize, animateTo }: SpaceLa
         <SpaceOrganism
           key={entry.organismId}
           entry={entry}
-          zoom={viewport.zoom}
+          altitude={altitude}
           focused={state.focusedOrganismId === entry.organismId}
-          screenSize={screenSize}
-          animateTo={animateTo}
+          onFocusOrganism={onFocusOrganism}
+          onEnterOrganism={onEnterOrganism}
         />
       ))}
     </>

@@ -24,8 +24,8 @@ interface SpatialMapResult {
   error: Error | undefined;
 }
 
-export function useSpatialMap(mapId: string): SpatialMapResult {
-  const { data, loading, error } = useOrganism(mapId);
+export function useSpatialMap(mapId: string, refreshKey = 0): SpatialMapResult {
+  const { data, loading, error } = useOrganism(mapId, refreshKey);
 
   if (loading || error || !data?.currentState) {
     return { entries: [], width: 2000, height: 2000, loading, error };

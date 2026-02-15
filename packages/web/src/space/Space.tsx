@@ -1,51 +1,164 @@
 /**
  * Space — the 2D zoomable canvas where organisms are experienced.
  *
- * Orchestrates the spatial-map data, viewport state, and rendering
- * layers. Organisms are positioned at world coordinates from the
- * spatial-map payload and rendered via content-type renderers.
- * The FocusLens overlays an immersive view as the viewport zooms in.
+ * Orchestrates the spatial-map data, viewport state with discrete
+ * altitude levels, and rendering layers. Manages transitions between
+ * map exploration and organism interiors via a phase state machine:
+ * map → entering → inside → exiting → map.
  */
 
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlatform } from '../platform/index.js';
-import { FocusLens } from './FocusLens.js';
+import { AltitudeControls } from './AltitudeControls.js';
+import { Compass } from './Compass.js';
+import { GroundPlane } from './GroundPlane.js';
+import { OrganismInterior } from './OrganismInterior.js';
 import { SpaceLayer } from './SpaceLayer.js';
 import { SpaceViewport } from './SpaceViewport.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
+import { frameOrganism, frameOrganismEnter, zoomForAltitude } from './viewport-math.js';
+
+type Phase = 'map' | 'entering' | 'inside' | 'exiting';
 
 export function Space() {
-  const { state, exitMap, focusOrganism } = usePlatform();
-  const { entries, width, height, loading, error } = useSpatialMap(state.currentMapId);
-  const { viewport, screenSize, containerRef, setViewport, animateTo } = useViewport({
+  const { state, focusOrganism, enterOrganism, exitOrganism, setAltitude, setViewportCenter } = usePlatform();
+  const { entries, width, height, loading, error } = useSpatialMap(state.currentMapId, state.mapRefreshKey);
+  const { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude } = useViewport({
     mapWidth: width,
     mapHeight: height,
   });
 
-  const atRoot = state.navigationStack.length <= 1;
+  // ── Transition state machine ──
+  const [phase, setPhase] = useState<Phase>('map');
+  const [interiorOpacity, setInteriorOpacity] = useState(0);
+  const [interiorOrganismId, setInteriorOrganismId] = useState<string | null>(null);
+  const fadeRef = useRef<number | null>(null);
 
-  // Zoom out to overview when focus clears
+  const cancelFade = useCallback(() => {
+    if (fadeRef.current !== null) {
+      cancelAnimationFrame(fadeRef.current);
+      fadeRef.current = null;
+    }
+  }, []);
+
+  // Clean up fade on unmount
+  useEffect(() => cancelFade, [cancelFade]);
+
+  // ── Focus flow (first click: center at Close altitude) ──
+  const handleFocusOrganism = useCallback(
+    (organismId: string, wx: number, wy: number) => {
+      if (phase !== 'map') return;
+      focusOrganism(organismId);
+      animateTo(frameOrganism(wx, wy));
+    },
+    [phase, focusOrganism, animateTo],
+  );
+
+  // ── Enter flow (second click on focused organism) ──
+  const handleEnterOrganism = useCallback(
+    (organismId: string, wx: number, wy: number) => {
+      if (phase !== 'map') return;
+
+      setPhase('entering');
+      setInteriorOrganismId(organismId);
+      setInteriorOpacity(0);
+      enterOrganism(organismId);
+
+      const duration = 700;
+
+      // Animate viewport zoom to enter target
+      animateTo(frameOrganismEnter(wx, wy), {
+        duration,
+        onComplete: () => setPhase('inside'),
+      });
+
+      // Crossfade interior opacity 0 → 1 with ease-in (t²)
+      cancelFade();
+      const startTime = performance.now();
+      const tick = (now: number) => {
+        const t = Math.min((now - startTime) / duration, 1);
+        setInteriorOpacity(t * t); // ease-in
+        if (t < 1) {
+          fadeRef.current = requestAnimationFrame(tick);
+        } else {
+          fadeRef.current = null;
+        }
+      };
+      fadeRef.current = requestAnimationFrame(tick);
+    },
+    [phase, enterOrganism, animateTo, cancelFade],
+  );
+
+  // ── Exit flow ──
+  const handleExitOrganism = useCallback(() => {
+    if (phase !== 'inside') return;
+
+    setPhase('exiting');
+
+    // Find the organism's position on the map to land at Close altitude
+    const entry = entries.find((e) => e.organismId === interiorOrganismId);
+    if (entry) {
+      setViewport(frameOrganism(entry.x, entry.y));
+    }
+
+    // Crossfade interior opacity 1 → 0 with ease-out (1 - (1-t)²)
+    cancelFade();
+    const duration = 500;
+    const startTime = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min((now - startTime) / duration, 1);
+      const eased = 1 - (1 - t) * (1 - t); // ease-out
+      setInteriorOpacity(1 - eased);
+      if (t < 1) {
+        fadeRef.current = requestAnimationFrame(tick);
+      } else {
+        fadeRef.current = null;
+        setPhase('map');
+        setInteriorOrganismId(null);
+        exitOrganism();
+      }
+    };
+    fadeRef.current = requestAnimationFrame(tick);
+  }, [phase, entries, interiorOrganismId, setViewport, exitOrganism, cancelFade]);
+
+  // ── Zoom out to High when focus clears (map phase only) ──
   const prevFocusRef = useRef(state.focusedOrganismId);
   useEffect(() => {
     const prev = prevFocusRef.current;
     prevFocusRef.current = state.focusedOrganismId;
 
-    if (prev && !state.focusedOrganismId) {
-      animateTo({ x: width / 2, y: height / 2, zoom: 0.5 });
+    if (phase === 'map' && prev && !state.focusedOrganismId) {
+      animateTo({ x: width / 2, y: height / 2, zoom: zoomForAltitude('high') });
     }
-  }, [state.focusedOrganismId, animateTo, width, height]);
+  }, [state.focusedOrganismId, animateTo, width, height, phase]);
 
-  // Escape key clears focus (unless visor is open)
+  // ── Sync altitude to PlatformContext for HUD display ──
+  useEffect(() => {
+    setAltitude(altitude);
+  }, [altitude, setAltitude]);
+
+  // ── Sync viewport center to PlatformContext for surfacing ──
+  useEffect(() => {
+    setViewportCenter(viewport.x, viewport.y);
+  }, [viewport.x, viewport.y, setViewportCenter]);
+
+  // ── Escape key ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !state.visorOpen && state.focusedOrganismId) {
+      if (e.key !== 'Escape') return;
+      if (state.visorOpen) return;
+
+      if (phase === 'inside') {
+        handleExitOrganism();
+      } else if (phase === 'map' && state.focusedOrganismId) {
         focusOrganism(null);
       }
+      // 'entering' / 'exiting' → ignore, let transition finish
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.visorOpen, state.focusedOrganismId, focusOrganism]);
+  }, [state.visorOpen, state.focusedOrganismId, phase, focusOrganism, handleExitOrganism]);
 
   if (loading) {
     return (
@@ -80,13 +193,23 @@ export function Space() {
         viewport={viewport}
         screenSize={screenSize}
         onViewportChange={setViewport}
-        onExitMap={exitMap}
-        atRoot={atRoot}
+        onAltitudeChange={changeAltitude}
         onClearFocus={() => focusOrganism(null)}
+        disabled={phase !== 'map'}
       >
-        <SpaceLayer entries={entries} viewport={viewport} screenSize={screenSize} animateTo={animateTo} />
+        <GroundPlane width={width} height={height} altitude={altitude} />
+        <SpaceLayer
+          entries={entries}
+          viewport={viewport}
+          screenSize={screenSize}
+          altitude={altitude}
+          onFocusOrganism={handleFocusOrganism}
+          onEnterOrganism={handleEnterOrganism}
+        />
       </SpaceViewport>
-      <FocusLens focusedOrganismId={state.focusedOrganismId} viewport={viewport} />
+      {interiorOrganismId && <OrganismInterior organismId={interiorOrganismId} opacity={interiorOpacity} />}
+      <Compass />
+      {phase === 'map' && <AltitudeControls altitude={altitude} onChangeAltitude={changeAltitude} />}
     </div>
   );
 }
