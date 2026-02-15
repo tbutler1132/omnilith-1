@@ -7,7 +7,6 @@
  */
 
 import { useState } from 'react';
-import { surfaceOnWorldMap } from '../api/surface.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatform } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
@@ -15,26 +14,14 @@ import { HudMyOrganisms } from './HudMyOrganisms.js';
 type ActivePanel = 'threshold' | 'mine' | null;
 
 export function HudMapActions() {
-  const { state, focusOrganism, closeVisor, bumpMapRefresh } = usePlatform();
+  const { focusOrganism, closeVisor } = usePlatform();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
 
   function togglePanel(panel: 'threshold' | 'mine') {
     setActivePanel((cur) => (cur === panel ? null : panel));
   }
 
-  async function handleThresholdCreated(organismId: string) {
-    // Surface on the world map near where the user is looking
-    const offset = () => (Math.random() - 0.5) * 200;
-    const x = state.viewportCenter.x + offset();
-    const y = state.viewportCenter.y + offset();
-
-    try {
-      await surfaceOnWorldMap(state.worldMapId, organismId, x, y);
-    } catch {
-      // Organism was still created — surfacing failure is non-fatal
-    }
-
-    bumpMapRefresh();
+  function handleThresholdCreated(organismId: string) {
     focusOrganism(organismId);
     setActivePanel(null);
     closeVisor();
