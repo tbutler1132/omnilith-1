@@ -1,9 +1,10 @@
 /**
  * HudBar — persistent floating location indicator.
  *
- * Always visible. Context-aware: on the map it shows altitude;
- * inside an organism it shows the organism name and back button.
- * No background — elements float directly over the space.
+ * Always visible. Context-aware: shows visor organism name when one is
+ * loaded, altitude when on the map, or interior name when inside an
+ * organism. Back button cascades through visor organism, interior,
+ * focus, and map stack.
  */
 
 import { useOrganism } from '../hooks/use-organism.js';
@@ -16,13 +17,17 @@ const ALTITUDE_LABELS: Record<string, string> = {
 };
 
 export function HudBar() {
-  const { state, focusOrganism, exitOrganism, exitMap } = usePlatform();
+  const { state, focusOrganism, exitOrganism, exitMap, closeVisorOrganism } = usePlatform();
   const isInside = state.enteredOrganismId !== null;
+  const visorOrganismId = state.visorOrganismId;
 
-  const showBack = isInside || state.focusedOrganismId !== null || state.navigationStack.length > 1;
+  const showBack =
+    visorOrganismId !== null || isInside || state.focusedOrganismId !== null || state.navigationStack.length > 1;
 
   function handleBack() {
-    if (isInside) {
+    if (visorOrganismId) {
+      closeVisorOrganism();
+    } else if (isInside) {
       exitOrganism();
     } else if (state.focusedOrganismId) {
       focusOrganism(null);
@@ -39,13 +44,27 @@ export function HudBar() {
             &larr;
           </button>
         )}
-        {isInside && state.enteredOrganismId ? (
+        {visorOrganismId ? (
+          <VisorLocation organismId={visorOrganismId} />
+        ) : isInside && state.enteredOrganismId ? (
           <InteriorLocation organismId={state.enteredOrganismId} />
         ) : (
           <span className="hud-location">{ALTITUDE_LABELS[state.altitude] ?? 'High'}</span>
         )}
       </div>
     </div>
+  );
+}
+
+/** Displays "Visor · [organism name]" */
+function VisorLocation({ organismId }: { organismId: string }) {
+  const { data } = useOrganism(organismId);
+  const name = data?.organism.name ?? '...';
+
+  return (
+    <span className="hud-location">
+      Visor &middot; <span className="hud-location-name">{name}</span>
+    </span>
   );
 }
 

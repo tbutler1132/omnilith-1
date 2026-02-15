@@ -2,19 +2,33 @@
  * HudMapActions — visor-up action buttons when on the map.
  *
  * Positioned bottom-left. "Threshold" opens inline form,
- * "My Organisms" opens a compact list. Each floating panel
- * is a semi-transparent box that fades in above the buttons.
+ * "My Organisms" opens a compact list. When an organism is focused
+ * on the map, a context-aware "Tend" button lets you open it
+ * directly in the Visor.
  */
 
 import { useState } from 'react';
+import { useOrganism } from '../hooks/use-organism.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatform } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
 
 type ActivePanel = 'threshold' | 'mine' | null;
 
+/** Shows focused organism name + "Tend" action */
+function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onTend: () => void }) {
+  const { data } = useOrganism(organismId);
+  const name = data?.organism.name ?? '...';
+
+  return (
+    <button type="button" className="hud-map-btn hud-map-btn--tend" onClick={onTend}>
+      Tend {name}
+    </button>
+  );
+}
+
 export function HudMapActions() {
-  const { focusOrganism, closeVisor } = usePlatform();
+  const { state, openInVisor } = usePlatform();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
 
   function togglePanel(panel: 'threshold' | 'mine') {
@@ -22,15 +36,13 @@ export function HudMapActions() {
   }
 
   function handleThresholdCreated(organismId: string) {
-    focusOrganism(organismId);
     setActivePanel(null);
-    closeVisor();
+    openInVisor(organismId);
   }
 
   function handleOrganismSelect(organismId: string) {
-    focusOrganism(organismId);
     setActivePanel(null);
-    closeVisor();
+    openInVisor(organismId);
   }
 
   return (
@@ -52,6 +64,14 @@ export function HudMapActions() {
       )}
 
       <div className="hud-map-actions">
+        {state.focusedOrganismId && (
+          <FocusedOrganismButton
+            organismId={state.focusedOrganismId}
+            onTend={() => {
+              if (state.focusedOrganismId) openInVisor(state.focusedOrganismId);
+            }}
+          />
+        )}
         <button
           type="button"
           className={`hud-map-btn ${activePanel === 'threshold' ? 'hud-map-btn--active' : ''}`}

@@ -33,6 +33,7 @@ export interface PlatformState {
 
   /** Visor */
   visorOpen: boolean;
+  visorOrganismId: string | null;
 
   /** Current altitude level (synced from Space viewport) */
   altitude: Altitude;
@@ -52,6 +53,8 @@ type PlatformAction =
   | { type: 'OPEN_VISOR' }
   | { type: 'CLOSE_VISOR' }
   | { type: 'TOGGLE_VISOR' }
+  | { type: 'OPEN_IN_VISOR'; id: string }
+  | { type: 'CLOSE_VISOR_ORGANISM' }
   | { type: 'SET_ALTITUDE'; altitude: Altitude }
   | { type: 'ENTER_ORGANISM'; id: string }
   | { type: 'EXIT_ORGANISM' }
@@ -101,10 +104,16 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
       return { ...state, visorOpen: true };
 
     case 'CLOSE_VISOR':
-      return { ...state, visorOpen: false };
+      return { ...state, visorOpen: false, visorOrganismId: null };
 
     case 'TOGGLE_VISOR':
-      return { ...state, visorOpen: !state.visorOpen };
+      return state.visorOpen ? { ...state, visorOpen: false, visorOrganismId: null } : { ...state, visorOpen: true };
+
+    case 'OPEN_IN_VISOR':
+      return { ...state, visorOrganismId: action.id, visorOpen: true };
+
+    case 'CLOSE_VISOR_ORGANISM':
+      return { ...state, visorOrganismId: null };
 
     case 'SET_ALTITUDE':
       return { ...state, altitude: action.altitude };
@@ -115,6 +124,7 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
         enteredOrganismId: action.id,
         focusedOrganismId: action.id,
         visorOpen: false,
+        visorOrganismId: null,
       };
 
     case 'EXIT_ORGANISM':
@@ -148,6 +158,8 @@ interface PlatformContextValue {
   openVisor: () => void;
   closeVisor: () => void;
   toggleVisor: () => void;
+  openInVisor: (id: string) => void;
+  closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
   setViewportCenter: (x: number, y: number) => void;
   bumpMapRefresh: () => void;
@@ -170,6 +182,8 @@ export function PlatformProvider({
   worldMapId,
   children,
 }: PlatformProviderProps) {
+  const initialOrganismId = new URLSearchParams(window.location.search).get('organism');
+
   const [state, dispatch] = useReducer(reducer, {
     userId,
     personalOrganismId,
@@ -179,7 +193,8 @@ export function PlatformProvider({
     currentMapId: worldMapId,
     focusedOrganismId: null,
     enteredOrganismId: null,
-    visorOpen: false,
+    visorOpen: initialOrganismId !== null,
+    visorOrganismId: initialOrganismId,
     altitude: 'high',
     viewportCenter: { x: 2500, y: 2500 },
     mapRefreshKey: 0,
@@ -194,6 +209,8 @@ export function PlatformProvider({
   const openVisor = useCallback(() => dispatch({ type: 'OPEN_VISOR' }), []);
   const closeVisor = useCallback(() => dispatch({ type: 'CLOSE_VISOR' }), []);
   const toggleVisor = useCallback(() => dispatch({ type: 'TOGGLE_VISOR' }), []);
+  const openInVisor = useCallback((id: string) => dispatch({ type: 'OPEN_IN_VISOR', id }), []);
+  const closeVisorOrganism = useCallback(() => dispatch({ type: 'CLOSE_VISOR_ORGANISM' }), []);
   const setAltitude = useCallback((altitude: Altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }), []);
   const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
   const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
@@ -210,6 +227,8 @@ export function PlatformProvider({
       openVisor,
       closeVisor,
       toggleVisor,
+      openInVisor,
+      closeVisorOrganism,
       setAltitude,
       setViewportCenter,
       bumpMapRefresh,
@@ -225,6 +244,8 @@ export function PlatformProvider({
       openVisor,
       closeVisor,
       toggleVisor,
+      openInVisor,
+      closeVisorOrganism,
       setAltitude,
       setViewportCenter,
       bumpMapRefresh,

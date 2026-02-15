@@ -131,16 +131,25 @@ export function Space() {
     }
   }, [state.enteredOrganismId, phase, handleExitOrganism]);
 
-  // ── Zoom out to High when focus clears (map phase only) ──
+  // ── Respond to focus changes (map phase only) ──
+  // When focus clears: zoom out to High.
+  // When focus is set externally (e.g. Visit from Visor): animate to organism position.
   const prevFocusRef = useRef(state.focusedOrganismId);
   useEffect(() => {
     const prev = prevFocusRef.current;
     prevFocusRef.current = state.focusedOrganismId;
 
-    if (phase === 'map' && prev && !state.focusedOrganismId) {
+    if (phase !== 'map') return;
+
+    if (prev && !state.focusedOrganismId) {
       animateTo({ x: width / 2, y: height / 2, zoom: zoomForAltitude('high') });
+    } else if (!prev && state.focusedOrganismId) {
+      const entry = entries.find((e) => e.organismId === state.focusedOrganismId);
+      if (entry) {
+        animateTo(frameOrganism(entry.x, entry.y));
+      }
     }
-  }, [state.focusedOrganismId, animateTo, width, height, phase]);
+  }, [state.focusedOrganismId, animateTo, width, height, phase, entries]);
 
   // ── Sync altitude to PlatformContext for HUD display ──
   useEffect(() => {

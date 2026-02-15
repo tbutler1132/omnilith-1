@@ -815,6 +815,11 @@ button.secondary:hover {
   color: var(--hud-text-bright);
 }
 
+.hud-map-btn--tend {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+}
+
 .hud-panel {
   margin-bottom: 8px;
   width: 360px;
@@ -887,20 +892,7 @@ button.secondary:hover {
   text-overflow: ellipsis;
 }
 
-/* Interior info — visor-up inside organism, right edge */
 
-.hud-interior-info {
-  position: absolute;
-  top: 56px;
-  right: 0;
-  bottom: 0;
-  width: 320px;
-  padding: 20px;
-  background: rgba(10, 10, 15, 0.25);
-  border-left: 1px solid var(--hud-border);
-  box-shadow: -4px 0 12px rgba(124, 108, 240, 0.05);
-  overflow-y: auto;
-}
 
 .hud-info-header {
   margin-bottom: 20px;
@@ -1720,8 +1712,140 @@ button.secondary:hover {
 
 /* Inline form overrides for HUD context */
 
-.hud-interior-info .threshold-form,
-.hud-interior-info .propose-form {
+/* ── Visor View ── */
+
+.visor-view {
+  position: absolute;
+  top: 44px;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: row;
+  background: rgba(10, 10, 15, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(124, 108, 240, 0.15);
+}
+
+.visor-view-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  padding: 24px;
+  min-width: 0;
+}
+
+.visor-view-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+
+.visor-view-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.visor-view-close {
+  background: transparent;
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text);
+  font-size: 18px;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  transition: all 200ms ease;
+}
+
+.visor-view-close:hover {
+  border-color: var(--hud-border-hover);
+  color: var(--hud-text-bright);
+}
+
+.visor-view-renderer {
+  flex: 1;
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto;
+  position: relative;
+}
+
+.visor-view-renderer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(124, 108, 240, 0.02) 0px,
+    transparent 1px,
+    transparent 3px
+  );
+  pointer-events: none;
+  z-index: 1;
+  border-radius: 8px;
+}
+
+.visor-view-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(124, 108, 240, 0.15);
+}
+
+/* Visor sidebar */
+
+.visor-sidebar {
+  width: 320px;
+  border-left: 1px solid rgba(124, 108, 240, 0.15);
+  padding: 20px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  transition: width 200ms ease;
+}
+
+.visor-sidebar--collapsed {
+  width: 40px;
+  overflow: hidden;
+  padding: 20px 8px;
+}
+
+.visor-sidebar-toggle {
+  background: transparent;
+  border: 1px solid var(--hud-border);
+  color: var(--hud-text);
+  font-size: 10px;
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  margin-bottom: 12px;
+  transition: all 200ms ease;
+}
+
+.visor-sidebar-toggle:hover {
+  border-color: var(--hud-border-hover);
+  color: var(--hud-text-bright);
+}
+
+/* Visor sidebar form overrides (same pattern as interior info) */
+
+.visor-sidebar .threshold-form,
+.visor-sidebar .propose-form {
   background: transparent;
   border: 1px solid var(--hud-border);
   border-radius: 6px;
@@ -1730,8 +1854,8 @@ button.secondary:hover {
   margin-top: 8px;
 }
 
-.hud-interior-info .threshold-form h2,
-.hud-interior-info .propose-form h2 {
+.visor-sidebar .threshold-form h2,
+.visor-sidebar .propose-form h2 {
   font-family: var(--hud-mono);
   font-size: 10px;
   font-weight: 600;
@@ -1741,14 +1865,14 @@ button.secondary:hover {
   margin-bottom: 8px;
 }
 
-.hud-interior-info .threshold-form > p {
+.visor-sidebar .threshold-form > p {
   display: none;
 }
 
-.hud-interior-info .threshold-form select,
-.hud-interior-info .threshold-form textarea,
-.hud-interior-info .propose-form select,
-.hud-interior-info .propose-form textarea {
+.visor-sidebar .threshold-form select,
+.visor-sidebar .threshold-form textarea,
+.visor-sidebar .propose-form select,
+.visor-sidebar .propose-form textarea {
   background: rgba(10, 10, 15, 0.5);
   border-color: var(--hud-border);
   color: var(--hud-text-bright);
@@ -1756,8 +1880,8 @@ button.secondary:hover {
   padding: 6px 10px;
 }
 
-.hud-interior-info .threshold-form label,
-.hud-interior-info .propose-form label {
+.visor-sidebar .threshold-form label,
+.visor-sidebar .propose-form label {
   font-family: var(--hud-mono);
   font-size: 9px;
   letter-spacing: 0.5px;
@@ -1765,14 +1889,15 @@ button.secondary:hover {
   color: var(--hud-text);
 }
 
-.hud-interior-info .organism-picker {
+.visor-sidebar .organism-picker {
   background: rgba(10, 10, 15, 0.5);
   border-color: var(--hud-border);
   max-height: 180px;
 }
 
-.hud-interior-info .organism-picker-item {
+.visor-sidebar .organism-picker-item {
   font-size: 11px;
   padding: 6px 10px;
   border-color: var(--hud-border);
 }
+
