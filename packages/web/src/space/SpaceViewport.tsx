@@ -177,24 +177,31 @@ export function SpaceViewport({
     [onClearFocus],
   );
 
-  const handleWheel = useCallback(
-    (e: React.WheelEvent) => {
+  // Attach wheel listener imperatively with { passive: false } so
+  // preventDefault() works (React's onWheel is passive by default).
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el || disabled) return;
+
+    const handleWheel = (e: WheelEvent) => {
       e.preventDefault();
 
       wheelAccRef.current += e.deltaY;
 
       if (wheelAccRef.current >= WHEEL_THRESHOLD) {
-        // Scroll down = zoom out = 'out'
         onAltitudeChange('out');
         wheelAccRef.current = 0;
       } else if (wheelAccRef.current <= -WHEEL_THRESHOLD) {
-        // Scroll up = zoom in = 'in'
         onAltitudeChange('in');
         wheelAccRef.current = 0;
       }
-    },
-    [onAltitudeChange],
-  );
+    };
+
+    el.addEventListener('wheel', handleWheel, { passive: false });
+    return () => el.removeEventListener('wheel', handleWheel);
+  }, [disabled, onAltitudeChange]);
 
   // Keyboard shortcuts for altitude change
   useEffect(() => {
@@ -213,13 +220,13 @@ export function SpaceViewport({
 
   return (
     <div
+      ref={containerRef}
       className={`space-viewport ${panning ? 'space-viewport--panning' : ''}`}
       style={disabled ? { pointerEvents: 'none' } : undefined}
       onPointerDown={disabled ? undefined : handlePointerDown}
       onPointerMove={disabled ? undefined : handlePointerMove}
       onPointerUp={disabled ? undefined : handlePointerUp}
       onPointerCancel={disabled ? undefined : handlePointerUp}
-      onWheel={disabled ? undefined : handleWheel}
     >
       <div
         className="space-world"

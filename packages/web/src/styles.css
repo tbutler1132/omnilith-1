@@ -1751,6 +1751,7 @@ button.secondary:hover {
 .hud-interior-info .propose-form textarea {
   background: rgba(10, 10, 15, 0.5);
   border-color: var(--hud-border);
+  color: var(--hud-text-bright);
   font-size: 12px;
   padding: 6px 10px;
 }

@@ -457,6 +457,34 @@ Identity independence (009) means organisms are verifiable regardless of where t
 
 Together: **Omnilith is a universal tending layer where anything worth caring about can have identity, governance, history, and composition — tended by humans, assisted by AI, sustained by a non-extractive economic model, with identity that persists independent of any single infrastructure.** That is the long-game picture. Phase 1 builds the foundation that makes all of it possible.
 
+### Move 27: State Transition Validation — Content Types Should Enforce Payload Continuity
+
+The current kernel treats every `appendState` call identically: validate the new payload against the content type schema, append it as a new immutable state. The kernel has no concept of the *relationship* between consecutive states — it doesn't know whether the new state is a minor edit, a complete replacement, or an additive accumulation.
+
+This is correct at the kernel level. States are complete snapshots. The kernel's job is state management, not payload semantics.
+
+However, this creates a real risk for open-trunk organisms where the state payload represents an accumulating structure. The world map is the clearest example: its spatial-map state contains an `entries` array of every surfaced organism. The application-level pattern (in `packages/web/src/api/surface.ts`) is read-modify-write — fetch current state, add the new entry, append the whole thing back. But nothing enforces this. A buggy or malicious append could replace the entire map with a single entry, wiping everything.
+
+The same risk applies to threads (append-only conversations where a bad append could erase all previous posts) and any content type where the payload is meant to grow, not replace.
+
+**Decision:** State transition validation belongs in content type validators, not in the kernel. The kernel stays simple — it appends states. Content types that need payload continuity should enforce it by accepting the previous state in their validation step and checking transition rules:
+
+- A spatial-map validator could reject appends that remove existing entries without explicit authorization.
+- A thread validator could enforce that all previous posts are preserved in the new state.
+- Creative content types (text, audio, image) would continue to allow full replacement, since each state is genuinely a new version.
+
+This is not urgent for Phase 1 with a single user, but becomes critical before multi-user scenarios where concurrent appends or accidental overwrites could cause data loss. The read-modify-write pattern is also inherently vulnerable to race conditions (two concurrent appends each read the same state, both write back, one clobbers the other).
+
+**What changes:**
+- The `ContentTypeContract.validate` signature may need access to the previous state (currently it only receives the new payload).
+- No kernel changes — this is purely a content type concern.
+- Implementation priority: before the platform goes multi-user.
+
+**What does NOT change:**
+- The kernel's state model (complete immutable snapshots, append-only history).
+- The `appendState` use case (validate, append, emit event).
+- Open-trunk semantics (still bypass proposal evaluation, still require valid payloads).
+
 ---
 
 ## Summary of What We're Building
