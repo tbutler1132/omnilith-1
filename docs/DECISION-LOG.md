@@ -457,7 +457,36 @@ Identity independence (009) means organisms are verifiable regardless of where t
 
 Together: **Omnilith is a universal tending layer where anything worth caring about can have identity, governance, history, and composition — tended by humans, assisted by AI, sustained by a non-extractive economic model, with identity that persists independent of any single infrastructure.** That is the long-game picture. Phase 1 builds the foundation that makes all of it possible.
 
-### Move 27: State Transition Validation — Content Types Should Enforce Payload Continuity
+### Move 27: The Visor as Independent Device — Universal Tending Interface
+
+The Visor is the user's personal device for tending organisms. It is completely independent of the user's position in the space — any organism can be opened in the Visor at any time, regardless of where the user is on the map and regardless of whether the organism is surfaced.
+
+**The Visor has its own consistent visual aesthetic.** Every organism viewed in the Visor gets the same digital/holographic treatment — flat, clean, slightly otherworldly. This is the "looking through a device" feel. Surfaced and unsurfaced organisms look identical in the Visor. The Visor doesn't care about surfacing status — it shows the digital representation of the organism for tending purposes.
+
+**The Visor view consists of two parts:**
+1. The content-type renderer — showing the organism's current state.
+2. A collapsible sidebar (default open) — proposals, composition, state history, governance. The universal layer for tending.
+
+**Surfacing status is communicated through contextual actions, not visual treatment:**
+- Surfaced organisms get a "Visit" button (navigate to their location on the map).
+- Unsurfaced organisms get a "Surface" button (place them in the world).
+
+**The spatial connection:** When a user is visiting a surfaced organism in the space, a small affordance (button) is available to open that specific organism in the Visor. This is a convenience shortcut — like tapping something in front of you to pull it up on your phone. But the same organism could be opened from anywhere via the device.
+
+**The distinction between space and Visor is experiential vs operational:**
+- The space is where you experience organisms — you visit them, listen, read, absorb. Surfaced organisms have physical presence, dimensionality, a place in the world. Content-type renderers respond to zoom level.
+- The Visor is where you tend organisms — propose, integrate, compose, inspect history. The digital treatment is consistent regardless of what you're looking at or where you are.
+
+This means surfacing gains real weight. An unsurfaced organism exists only in the Visor — you can tend it, but it has no place in the world. Surfacing gives it spatial presence that the Visor alone does not provide. The organism goes from existing only as data on your device to being a thing in the world that others can encounter.
+
+**What this changes for the current implementation:**
+- `ChildItem` in HudInteriorInfo currently calls `exitOrganism()` then `focusOrganism(childId)`, which tries to navigate to the child on the map. This should instead open the organism in the Visor.
+- The Visor needs to support opening arbitrary organisms independent of spatial navigation.
+- The OrganismInterior component (space rendering) and Visor rendering are separate code paths with different visual treatments but shared content-type renderers.
+
+No kernel changes. This is purely a rendering architecture decision.
+
+### Move 28: State Transition Validation — Content Types Should Enforce Payload Continuity
 
 The current kernel treats every `appendState` call identically: validate the new payload against the content type schema, append it as a new immutable state. The kernel has no concept of the *relationship* between consecutive states — it doesn't know whether the new state is a minor edit, a complete replacement, or an additive accumulation.
 
