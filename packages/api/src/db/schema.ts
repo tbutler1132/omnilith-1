@@ -36,6 +36,7 @@ export const sessions = pgTable('sessions', {
 
 export const organisms = pgTable('organisms', {
   id: text('id').primaryKey(),
+  name: text('name').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull(),
   createdBy: text('created_by')
     .notNull()

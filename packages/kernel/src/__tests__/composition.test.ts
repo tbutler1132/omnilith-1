@@ -60,6 +60,7 @@ describe('composition', () => {
     const userId = testUserId('user');
     return createOrganism(
       {
+        name,
         contentTypeId: testContentTypeId(),
         payload: { name },
         createdBy: userId,

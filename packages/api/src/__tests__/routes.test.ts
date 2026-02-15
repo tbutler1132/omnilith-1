@@ -104,11 +104,12 @@ function createTestApp(container: Container) {
   return { app, testUserId };
 }
 
-async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: boolean }) {
+async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: boolean; name?: string }) {
   const res = await app.request('/organisms', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      name: options?.name ?? 'Test Organism',
       contentTypeId: 'text',
       payload: { content: 'test', format: 'plaintext' },
       openTrunk: options?.openTrunk,
@@ -134,6 +135,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Hello World',
         contentTypeId: 'text',
         payload: { content: '# Hello World', format: 'markdown' },
       }),
@@ -152,6 +154,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test',
         contentTypeId: 'text',
         payload: { content: 'test', format: 'plaintext' },
       }),
@@ -175,6 +178,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Open Trunk Test',
         contentTypeId: 'text',
         payload: { content: 'v1', format: 'plaintext' },
         openTrunk: true,
@@ -201,6 +205,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Closed Trunk Test',
         contentTypeId: 'text',
         payload: { content: 'v1', format: 'plaintext' },
         openTrunk: false,
@@ -225,6 +230,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Album',
         contentTypeId: 'text',
         payload: { content: 'album', format: 'plaintext' },
       }),
@@ -235,6 +241,7 @@ describe('organism routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Song',
         contentTypeId: 'text',
         payload: { content: 'song', format: 'plaintext' },
       }),
@@ -274,6 +281,7 @@ describe('proposal routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test',
         contentTypeId: 'text',
         payload: { content: 'v1', format: 'plaintext' },
       }),
@@ -311,6 +319,7 @@ describe('proposal routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test',
         contentTypeId: 'text',
         payload: { content: 'v1', format: 'plaintext' },
       }),
@@ -344,6 +353,7 @@ describe('proposal routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test',
         contentTypeId: 'text',
         payload: { content: 'v1', format: 'plaintext' },
       }),
@@ -403,6 +413,7 @@ describe('error handling', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test',
         contentTypeId: 'text',
         payload: { content: 'test', format: 'plaintext' },
       }),
@@ -519,6 +530,7 @@ describe('query and listing routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'My Space',
         contentTypeId: 'spatial-map',
         payload: { entries: [], width: 2000, height: 2000 },
       }),
@@ -529,6 +541,7 @@ describe('query and listing routes', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Home',
         contentTypeId: 'text',
         payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
       }),

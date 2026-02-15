@@ -26,6 +26,7 @@ interface ThresholdFormProps {
 }
 
 export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps) {
+  const [name, setName] = useState('');
   const [contentTypeId, setContentTypeId] = useState('text');
   const [format, setFormat] = useState<'plaintext' | 'markdown'>('plaintext');
   const [textContent, setTextContent] = useState('');
@@ -48,7 +49,7 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
 
     try {
       const payload = buildPayload();
-      const result = await thresholdOrganism({ contentTypeId, payload, openTrunk });
+      const result = await thresholdOrganism({ name, contentTypeId, payload, openTrunk });
       onCreated(result.organism.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to threshold organism');
@@ -63,6 +64,16 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
       <p>Introduce something new to the platform.</p>
 
       <form onSubmit={handleSubmit}>
+        <label htmlFor="tf-name">Name</label>
+        <input
+          id="tf-name"
+          type="text"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Give it a name..."
+          required
+        />
+
         <label htmlFor="tf-content-type">Content type</label>
         <select id="tf-content-type" value={contentTypeId} onChange={(e) => setContentTypeId(e.target.value)}>
           {CONTENT_TYPES.map((ct) => (

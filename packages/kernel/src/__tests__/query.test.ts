@@ -70,6 +70,7 @@ describe('query port', () => {
     const userId = testUserId(options?.userId ?? 'user');
     return createOrganism(
       {
+        name,
         contentTypeId: testContentTypeId(options?.contentTypeId),
         payload: { name },
         createdBy: userId,

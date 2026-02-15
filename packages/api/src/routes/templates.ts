@@ -33,6 +33,7 @@ export function templateRoutes(container: Container) {
     const payload = currentState.payload as {
       recipe: ReadonlyArray<{
         ref: string;
+        name?: string;
         contentTypeId: string;
         initialPayload: unknown;
         openTrunk?: boolean;
@@ -64,6 +65,7 @@ export function templateRoutes(container: Container) {
     for (const step of payload.recipe) {
       const result = await createOrganism(
         {
+          name: step.name ?? step.ref,
           contentTypeId: step.contentTypeId as ContentTypeId,
           payload: step.initialPayload,
           createdBy: userId,

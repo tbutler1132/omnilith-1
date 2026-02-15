@@ -6,6 +6,7 @@ import { apiFetch } from './client.js';
 
 export interface Organism {
   id: string;
+  name: string;
   createdAt: number;
   createdBy: string;
   openTrunk: boolean;
@@ -114,7 +115,12 @@ export function fetchEvents(id: string) {
   return apiFetch<{ events: DomainEvent[] }>(`/organisms/${id}/events`);
 }
 
-export function thresholdOrganism(input: { contentTypeId: string; payload: unknown; openTrunk?: boolean }) {
+export function thresholdOrganism(input: {
+  name: string;
+  contentTypeId: string;
+  payload: unknown;
+  openTrunk?: boolean;
+}) {
   return apiFetch<{ organism: Organism; initialState: OrganismState }>('/organisms', {
     method: 'POST',
     body: JSON.stringify(input),

@@ -89,6 +89,7 @@ describe('template instantiation', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Test template',
         contentTypeId: 'template',
         payload: {
           name: 'Test template',
@@ -185,6 +186,7 @@ describe('template instantiation', () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        name: 'Not a Template',
         contentTypeId: 'text',
         payload: { content: 'not a template', format: 'plaintext' },
       }),

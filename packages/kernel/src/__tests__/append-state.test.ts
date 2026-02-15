@@ -65,6 +65,7 @@ describe('appendState', () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: userId,
@@ -91,6 +92,7 @@ describe('appendState', () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: userId,
@@ -116,6 +118,7 @@ describe('appendState', () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: userId,
@@ -152,6 +155,7 @@ describe('appendState', () => {
     const userId = testUserId('user');
     const { organism, initialState } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: userId,
@@ -177,6 +181,7 @@ describe('appendState', () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: userId,
@@ -207,6 +212,7 @@ describe('appendState', () => {
     const outsider = testUserId('outsider');
     const { organism } = await createOrganism(
       {
+        name: 'Test',
         contentTypeId: testContentTypeId(),
         payload: { v: 1 },
         createdBy: steward,

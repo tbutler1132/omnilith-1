@@ -19,6 +19,7 @@ import type { OrganismState } from './organism-state.js';
 import type { StateRepository } from './state-repository.js';
 
 export interface CreateOrganismInput {
+  readonly name: string;
   readonly contentTypeId: ContentTypeId;
   readonly payload: unknown;
   readonly createdBy: UserId;
@@ -58,6 +59,7 @@ export async function createOrganism(
 
   const organism: Organism = {
     id: organismId,
+    name: input.name,
     createdAt: now,
     createdBy: input.createdBy,
     openTrunk: input.openTrunk ?? false,
@@ -92,6 +94,7 @@ export async function createOrganism(
     actorId: input.createdBy,
     occurredAt: now,
     payload: {
+      name: input.name,
       contentTypeId: input.contentTypeId,
       openTrunk: organism.openTrunk,
     },

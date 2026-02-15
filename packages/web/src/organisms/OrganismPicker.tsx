@@ -7,7 +7,6 @@
  */
 
 import { useOrganisms } from '../hooks/use-organism.js';
-import { getPreviewText } from '../utils/preview-text.js';
 
 interface OrganismPickerProps {
   excludeIds: string[];
@@ -39,8 +38,7 @@ export function OrganismPicker({ excludeIds, onSelect, onCancel }: OrganismPicke
       {available.map(({ organism, currentState }) => (
         <button type="button" key={organism.id} className="organism-picker-item" onClick={() => onSelect(organism.id)}>
           {currentState && <span className="content-type">{currentState.contentTypeId}</span>}
-          <span className="organism-picker-preview">{getPreviewText(currentState)}</span>
-          <span className="organism-picker-id">{organism.id.slice(0, 12)}...</span>
+          <span className="organism-picker-preview">{organism.name}</span>
         </button>
       ))}
     </div>

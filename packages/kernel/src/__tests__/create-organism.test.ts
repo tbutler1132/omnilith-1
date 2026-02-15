@@ -48,6 +48,7 @@ describe('createOrganism', () => {
 
     const result = await createOrganism(
       {
+        name: 'First Song',
         contentTypeId: testContentTypeId(),
         payload: { title: 'First Song' },
         createdBy: userId,
@@ -55,6 +56,7 @@ describe('createOrganism', () => {
       deps(),
     );
 
+    expect(result.organism.name).toBe('First Song');
     expect(result.organism.createdBy).toBe(userId);
     expect(result.initialState.sequenceNumber).toBe(1);
     expect(result.initialState.payload).toEqual({ title: 'First Song' });
@@ -67,6 +69,7 @@ describe('createOrganism', () => {
 
     const result = await createOrganism(
       {
+        name: 'Hello',
         contentTypeId: testContentTypeId(),
         payload: { content: 'hello' },
         createdBy: userId,
@@ -87,6 +90,7 @@ describe('createOrganism', () => {
 
     const result = await createOrganism(
       {
+        name: 'Event Test',
         contentTypeId: testContentTypeId(),
         payload: {},
         createdBy: userId,
@@ -106,6 +110,7 @@ describe('createOrganism', () => {
     await expect(
       createOrganism(
         {
+          name: 'Invalid',
           contentTypeId: testContentTypeId(),
           payload: { invalid: true },
           createdBy: testUserId(),
@@ -119,6 +124,7 @@ describe('createOrganism', () => {
     await expect(
       createOrganism(
         {
+          name: 'Unknown',
           contentTypeId: testContentTypeId('unknown-type'),
           payload: {},
           createdBy: testUserId(),
@@ -133,6 +139,7 @@ describe('createOrganism', () => {
 
     const result = await createOrganism(
       {
+        name: 'Default Trunk',
         contentTypeId: testContentTypeId(),
         payload: {},
         createdBy: testUserId(),
@@ -148,6 +155,7 @@ describe('createOrganism', () => {
 
     const result = await createOrganism(
       {
+        name: 'Open Trunk',
         contentTypeId: testContentTypeId(),
         payload: {},
         createdBy: testUserId(),

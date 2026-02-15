@@ -6,7 +6,7 @@
  * through this context.
  */
 
-import { createContext, type ReactNode, useContext, useReducer } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useMemo, useReducer } from 'react';
 import type { Altitude } from '../space/viewport-math.js';
 
 interface NavigationEntry {
@@ -185,21 +185,51 @@ export function PlatformProvider({
     mapRefreshKey: 0,
   });
 
-  const value: PlatformContextValue = {
-    state,
-    focusOrganism: (id) => dispatch({ type: 'FOCUS_ORGANISM', id }),
-    enterOrganism: (id) => dispatch({ type: 'ENTER_ORGANISM', id }),
-    exitOrganism: () => dispatch({ type: 'EXIT_ORGANISM' }),
-    enterMap: (mapId, label) => dispatch({ type: 'ENTER_MAP', mapId, label }),
-    exitMap: () => dispatch({ type: 'EXIT_MAP' }),
-    navigateToMap: (mapId) => dispatch({ type: 'NAVIGATE_TO_MAP', mapId }),
-    openVisor: () => dispatch({ type: 'OPEN_VISOR' }),
-    closeVisor: () => dispatch({ type: 'CLOSE_VISOR' }),
-    toggleVisor: () => dispatch({ type: 'TOGGLE_VISOR' }),
-    setAltitude: (altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }),
-    setViewportCenter: (x, y) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }),
-    bumpMapRefresh: () => dispatch({ type: 'BUMP_MAP_REFRESH' }),
-  };
+  const focusOrganism = useCallback((id: string | null) => dispatch({ type: 'FOCUS_ORGANISM', id }), []);
+  const enterOrganism = useCallback((id: string) => dispatch({ type: 'ENTER_ORGANISM', id }), []);
+  const exitOrganism = useCallback(() => dispatch({ type: 'EXIT_ORGANISM' }), []);
+  const enterMap = useCallback((mapId: string, label: string) => dispatch({ type: 'ENTER_MAP', mapId, label }), []);
+  const exitMap = useCallback(() => dispatch({ type: 'EXIT_MAP' }), []);
+  const navigateToMap = useCallback((mapId: string) => dispatch({ type: 'NAVIGATE_TO_MAP', mapId }), []);
+  const openVisor = useCallback(() => dispatch({ type: 'OPEN_VISOR' }), []);
+  const closeVisor = useCallback(() => dispatch({ type: 'CLOSE_VISOR' }), []);
+  const toggleVisor = useCallback(() => dispatch({ type: 'TOGGLE_VISOR' }), []);
+  const setAltitude = useCallback((altitude: Altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }), []);
+  const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
+  const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
+
+  const value = useMemo<PlatformContextValue>(
+    () => ({
+      state,
+      focusOrganism,
+      enterOrganism,
+      exitOrganism,
+      enterMap,
+      exitMap,
+      navigateToMap,
+      openVisor,
+      closeVisor,
+      toggleVisor,
+      setAltitude,
+      setViewportCenter,
+      bumpMapRefresh,
+    }),
+    [
+      state,
+      focusOrganism,
+      enterOrganism,
+      exitOrganism,
+      enterMap,
+      exitMap,
+      navigateToMap,
+      openVisor,
+      closeVisor,
+      toggleVisor,
+      setAltitude,
+      setViewportCenter,
+      bumpMapRefresh,
+    ],
+  );
 
   return <Context.Provider value={value}>{children}</Context.Provider>;
 }

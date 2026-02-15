@@ -122,6 +122,15 @@ export function Space() {
     fadeRef.current = requestAnimationFrame(tick);
   }, [phase, entries, interiorOrganismId, setViewport, exitOrganism, cancelFade]);
 
+  // ── React to external exit requests (e.g. HudBar back button) ──
+  // When enteredOrganismId is cleared externally while Space is still
+  // in the 'inside' phase, trigger the proper exit animation.
+  useEffect(() => {
+    if (!state.enteredOrganismId && phase === 'inside') {
+      handleExitOrganism();
+    }
+  }, [state.enteredOrganismId, phase, handleExitOrganism]);
+
   // ── Zoom out to High when focus clears (map phase only) ──
   const prevFocusRef = useRef(state.focusedOrganismId);
   useEffect(() => {

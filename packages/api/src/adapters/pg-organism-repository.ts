@@ -13,6 +13,7 @@ export class PgOrganismRepository implements OrganismRepository {
   async save(organism: Organism): Promise<void> {
     await this.db.insert(organisms).values({
       id: organism.id,
+      name: organism.name,
       createdAt: new Date(organism.createdAt),
       createdBy: organism.createdBy,
       openTrunk: organism.openTrunk,
@@ -35,6 +36,7 @@ export class PgOrganismRepository implements OrganismRepository {
 function toOrganism(row: typeof organisms.$inferSelect): Organism {
   return {
     id: row.id as OrganismId,
+    name: row.name,
     createdAt: row.createdAt.getTime() as Timestamp,
     createdBy: row.createdBy as UserId,
     openTrunk: row.openTrunk,

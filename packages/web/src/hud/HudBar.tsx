@@ -8,7 +8,6 @@
 
 import { useOrganism } from '../hooks/use-organism.js';
 import { usePlatform } from '../platform/index.js';
-import { getPreviewText } from '../utils/preview-text.js';
 
 const ALTITUDE_LABELS: Record<string, string> = {
   high: 'High',
@@ -17,7 +16,7 @@ const ALTITUDE_LABELS: Record<string, string> = {
 };
 
 export function HudBar() {
-  const { state, focusOrganism, exitOrganism } = usePlatform();
+  const { state, focusOrganism, exitOrganism, exitMap } = usePlatform();
   const isInside = state.enteredOrganismId !== null;
 
   const showBack = isInside || state.focusedOrganismId !== null || state.navigationStack.length > 1;
@@ -27,6 +26,8 @@ export function HudBar() {
       exitOrganism();
     } else if (state.focusedOrganismId) {
       focusOrganism(null);
+    } else if (state.navigationStack.length > 1) {
+      exitMap();
     }
   }
 
@@ -51,7 +52,7 @@ export function HudBar() {
 /** Fetches organism name and displays "Inside [name]" */
 function InteriorLocation({ organismId }: { organismId: string }) {
   const { data } = useOrganism(organismId);
-  const name = data?.currentState ? getPreviewText(data.currentState, 40) : '...';
+  const name = data?.organism.name ?? '...';
 
   return (
     <span className="hud-location">

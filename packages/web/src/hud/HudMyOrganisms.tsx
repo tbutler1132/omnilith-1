@@ -7,7 +7,6 @@
 
 import { useUserOrganisms } from '../hooks/use-organism.js';
 import { usePlatform } from '../platform/index.js';
-import { getPreviewText } from '../utils/preview-text.js';
 
 interface HudMyOrganismsProps {
   onSelect: (organismId: string) => void;
@@ -33,7 +32,7 @@ export function HudMyOrganisms({ onSelect }: HudMyOrganismsProps) {
           onClick={() => onSelect(ows.organism.id)}
         >
           <span className="content-type">{ows.currentState?.contentTypeId ?? '...'}</span>
-          <span className="hud-organism-preview">{getPreviewText(ows.currentState)}</span>
+          <span className="hud-organism-preview">{ows.organism.name}</span>
         </button>
       ))}
     </div>

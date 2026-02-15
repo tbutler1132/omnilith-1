@@ -157,6 +157,7 @@ function toProposal(row: typeof proposals.$inferSelect): Proposal {
 function toOrganism(row: typeof organisms.$inferSelect): import('@omnilith/kernel').Organism {
   return {
     id: row.id as OrganismId,
+    name: row.name,
     createdAt: row.createdAt.getTime() as Timestamp,
     createdBy: row.createdBy as UserId,
     openTrunk: row.openTrunk,

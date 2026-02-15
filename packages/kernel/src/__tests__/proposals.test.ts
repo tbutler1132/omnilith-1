@@ -96,7 +96,7 @@ describe('proposals', () => {
   it('a proposal is created with open status', async () => {
     const userId = testUserId('proposer');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
       createDeps(),
     );
 
@@ -117,7 +117,7 @@ describe('proposals', () => {
   it('opening a proposal emits a proposal.opened event', async () => {
     const userId = testUserId('proposer');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
       createDeps(),
     );
 
@@ -140,7 +140,7 @@ describe('proposals', () => {
   it('integrating a proposal advances the organism state', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
       createDeps(),
     );
 
@@ -167,7 +167,7 @@ describe('proposals', () => {
   it('declining a proposal leaves the organism state unchanged', async () => {
     const steward = testUserId('steward');
     const { organism, initialState } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
       createDeps(),
     );
 
@@ -197,7 +197,7 @@ describe('proposals', () => {
     const steward = testUserId('steward');
     const outsider = testUserId('outsider');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
       createDeps(),
     );
 
@@ -219,7 +219,7 @@ describe('proposals', () => {
   it('an already resolved proposal cannot be integrated again', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
       createDeps(),
     );
 
@@ -265,13 +265,14 @@ describe('proposals', () => {
 
     // Create an album organism
     const { organism: album } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { title: 'Album' }, createdBy: steward },
+      { name: 'Album', contentTypeId: testContentTypeId(), payload: { title: 'Album' }, createdBy: steward },
       createDeps(),
     );
 
     // Create a policy organism and compose it inside the album
     const { organism: policy } = await createOrganism(
       {
+        name: 'Integration Policy',
         contentTypeId: policyTypeId,
         payload: { mode: 'single-integrator', integratorId: integrator },
         createdBy: steward,
@@ -320,17 +321,17 @@ describe('proposals', () => {
 
     // Create album → song hierarchy with policy on album
     const { organism: album } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { title: 'Album' }, createdBy: steward },
+      { name: 'Album', contentTypeId: testContentTypeId(), payload: { title: 'Album' }, createdBy: steward },
       createDeps(),
     );
 
     const { organism: song } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { title: 'Song' }, createdBy: steward },
+      { name: 'Song', contentTypeId: testContentTypeId(), payload: { title: 'Song' }, createdBy: steward },
       createDeps(),
     );
 
     const { organism: policy } = await createOrganism(
-      { contentTypeId: strictPolicyTypeId, payload: {}, createdBy: steward },
+      { name: 'Strict Policy', contentTypeId: strictPolicyTypeId, payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -381,12 +382,12 @@ describe('proposals', () => {
     contentTypeRegistry.register(rejectPolicyContract);
 
     const { organism: parent } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
       createDeps(),
     );
 
     const { organism: policy } = await createOrganism(
-      { contentTypeId: rejectPolicyTypeId, payload: {}, createdBy: steward },
+      { name: 'Reject Policy', contentTypeId: rejectPolicyTypeId, payload: {}, createdBy: steward },
       createDeps(),
     );
 

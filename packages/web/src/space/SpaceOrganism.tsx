@@ -10,7 +10,6 @@
 import { useOrganism } from '../hooks/use-organism.js';
 import { usePlatform } from '../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
-import { getPreviewText } from '../utils/preview-text.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, zoomForAltitude } from './viewport-math.js';
 
@@ -54,12 +53,7 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (data?.currentState?.contentTypeId === 'spatial-map') {
-      const payload = data.currentState.payload as Record<string, unknown> | null;
-      const label =
-        (payload && typeof payload.name === 'string' && payload.name) ||
-        (payload && typeof payload.title === 'string' && payload.title) ||
-        entry.organismId.slice(0, 8);
-      enterMap(entry.organismId, label);
+      enterMap(entry.organismId, data.organism.name);
     }
   };
 
@@ -108,9 +102,8 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
     );
   }
 
-  // Mid altitude: type badge + organism label
+  // Mid altitude: type badge + organism name
   if (altitude === 'mid') {
-    const label = getOrganismLabel(data.currentState);
     return (
       <button
         type="button"
@@ -120,7 +113,7 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
         onDoubleClick={handleDoubleClick}
       >
         <span className="organism-type-badge">{data.currentState.contentTypeId}</span>
-        <span className="organism-label">{label}</span>
+        <span className="organism-label">{data.organism.name}</span>
       </button>
     );
   }
@@ -133,8 +126,4 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
       <Renderer state={data.currentState} zoom={zoomForAltitude('close')} focused={focused} />
     </button>
   );
-}
-
-function getOrganismLabel(state: { contentTypeId: string; payload: unknown }): string {
-  return getPreviewText(state, 40);
 }

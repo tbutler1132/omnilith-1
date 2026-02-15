@@ -59,7 +59,7 @@ describe('events', () => {
   it('creating an organism emits organism.created with correct data', async () => {
     const userId = testUserId('creator');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId },
       createDeps(),
     );
 
@@ -73,7 +73,7 @@ describe('events', () => {
   it('appending state emits state.appended with correct data', async () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId, openTrunk: true },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: userId, openTrunk: true },
       createDeps(),
     );
 
@@ -107,11 +107,11 @@ describe('events', () => {
   it('composing emits organism.composed with parent and child data', async () => {
     const userId = testUserId('user');
     const { organism: parent } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
       createDeps(),
     );
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
       createDeps(),
     );
 
@@ -131,11 +131,11 @@ describe('events', () => {
   it('decomposing emits organism.decomposed', async () => {
     const userId = testUserId('user');
     const { organism: parent } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
       createDeps(),
     );
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
       createDeps(),
     );
 
@@ -159,7 +159,7 @@ describe('events', () => {
   it('opening a proposal emits proposal.opened', async () => {
     const userId = testUserId('user');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
       createDeps(),
     );
 
@@ -183,7 +183,7 @@ describe('events', () => {
   it('integrating a proposal emits proposal.integrated', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -222,7 +222,7 @@ describe('events', () => {
   it('declining a proposal emits proposal.declined', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -258,8 +258,14 @@ describe('events', () => {
 
   it('every event has a unique id and timestamp', async () => {
     const userId = testUserId('user');
-    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: userId }, createDeps());
-    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: userId }, createDeps());
+    await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      createDeps(),
+    );
+    await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: userId },
+      createDeps(),
+    );
 
     const ids = eventPublisher.published.map((e) => e.id);
     const uniqueIds = new Set(ids);

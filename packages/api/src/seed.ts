@@ -35,6 +35,7 @@ export async function seedWorldMap(container: Container): Promise<OrganismId> {
   // Create world map organism
   const worldMap = await createOrganism(
     {
+      name: 'World Map',
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: { entries: [], width: 5000, height: 5000 },
       createdBy: SYSTEM_USER_ID,

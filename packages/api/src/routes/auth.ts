@@ -50,6 +50,7 @@ export function authRoutes(container: Container) {
     // Create personal organism (spatial-map — the user's space)
     const personalOrganism = await createOrganism(
       {
+        name: `${body.email.split('@')[0]}'s Space`,
         contentTypeId: 'spatial-map' as ContentTypeId,
         payload: { entries: [], width: 2000, height: 2000 },
         createdBy: userId,
@@ -61,6 +62,7 @@ export function authRoutes(container: Container) {
     // Create home page organism (text — the user's landing page)
     const homePage = await createOrganism(
       {
+        name: 'Home',
         contentTypeId: 'text' as ContentTypeId,
         payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
         createdBy: userId,

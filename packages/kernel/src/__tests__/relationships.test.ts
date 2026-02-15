@@ -60,7 +60,7 @@ describe('relationships', () => {
   it('stewardship is established at the threshold', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -72,7 +72,7 @@ describe('relationships', () => {
   it('stewardship grants compose and decompose authority', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -86,7 +86,7 @@ describe('relationships', () => {
   it('membership does not grant integration authority', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -107,7 +107,7 @@ describe('relationships', () => {
   it('integration-authority grants the ability to integrate proposals', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -127,7 +127,7 @@ describe('relationships', () => {
   it('each relationship type is handled with distinct logic', async () => {
     const user = testUserId('user');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: testUserId('other') },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: testUserId('other') },
       createDeps(),
     );
 
@@ -153,8 +153,14 @@ describe('relationships', () => {
 
   it('relationships can be queried by user', async () => {
     const user = testUserId('user');
-    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: user }, createDeps());
-    await createOrganism({ contentTypeId: testContentTypeId(), payload: {}, createdBy: user }, createDeps());
+    await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: user },
+      createDeps(),
+    );
+    await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: user },
+      createDeps(),
+    );
 
     const rels = await relationshipRepository.findByUser(user, 'stewardship');
     expect(rels).toHaveLength(2);

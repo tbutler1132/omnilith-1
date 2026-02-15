@@ -21,7 +21,6 @@ import { OrganismPicker } from '../organisms/OrganismPicker.js';
 import { ProposeForm } from '../organisms/ProposeForm.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatform } from '../platform/PlatformContext.js';
-import { getPreviewText } from '../utils/preview-text.js';
 
 interface HudInteriorInfoProps {
   organismId: string;
@@ -75,7 +74,6 @@ function ChildItem({
   const { exitOrganism, focusOrganism } = usePlatform();
 
   const contentType = data?.currentState?.contentTypeId ?? '...';
-  const preview = data?.currentState ? getPreviewText(data.currentState, 30) : '...';
 
   function handleClick() {
     exitOrganism();
@@ -86,7 +84,7 @@ function ChildItem({
     <div className="hud-info-child-row">
       <button type="button" className="hud-info-child" onClick={handleClick}>
         <span className="hud-info-child-badge">{contentType}</span>
-        <span className="hud-info-child-name">{preview}</span>
+        <span className="hud-info-child-name">{data?.organism.name ?? '...'}</span>
       </button>
       <button
         type="button"
@@ -395,7 +393,7 @@ export function HudInteriorInfo({ organismId }: HudInteriorInfoProps) {
 
   const { data: organism } = useOrganism(organismId, refreshKey);
 
-  const name = organism?.currentState ? getPreviewText(organism.currentState, 40) : '...';
+  const name = organism?.organism.name ?? '...';
   const contentType = organism?.currentState?.contentTypeId ?? '...';
   const openTrunk = organism?.organism.openTrunk ?? false;
 

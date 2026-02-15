@@ -46,16 +46,19 @@ export function organismRoutes(container: Container) {
   app.post('/', async (c) => {
     const userId = c.get('userId');
     const body = await parseJsonBody<{
+      name: string;
       contentTypeId: string;
       payload: unknown;
       openTrunk?: boolean;
     }>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (!body.name || typeof body.name !== 'string') return c.json({ error: 'Name is required' }, 400);
 
     try {
       const result = await createOrganism(
         {
+          name: body.name,
           contentTypeId: body.contentTypeId as ContentTypeId,
           payload: body.payload,
           createdBy: userId,

@@ -117,6 +117,7 @@ describe('cybernetic feedback loop', () => {
     // 1. Create the community organism
     const { organism: community } = await createOrganism(
       {
+        name: 'Creative Studio',
         contentTypeId: 'community' as ContentTypeId,
         payload: { name: 'Creative Studio' },
         createdBy: founder,
@@ -127,6 +128,7 @@ describe('cybernetic feedback loop', () => {
     // 2. Create the sensor — watching the community for state changes
     const { organism: sensor } = await createOrganism(
       {
+        name: 'Activity Sensor',
         contentTypeId: 'sensor' as ContentTypeId,
         payload: {
           label: 'activity-sensor',
@@ -142,6 +144,7 @@ describe('cybernetic feedback loop', () => {
     // 3. Create the variable — community health derived from sensor
     const { organism: variable } = await createOrganism(
       {
+        name: 'Community Health',
         contentTypeId: 'variable' as ContentTypeId,
         payload: {
           label: 'community-health',
@@ -158,6 +161,7 @@ describe('cybernetic feedback loop', () => {
     // 4. Create the response policy — decline proposals when health is low
     const { organism: responsePolicy } = await createOrganism(
       {
+        name: 'Health Response Policy',
         contentTypeId: 'response-policy' as ContentTypeId,
         payload: {
           mode: 'variable-threshold',
@@ -321,6 +325,7 @@ describe('cybernetic feedback loop', () => {
     // Create a community with a response policy that has no currentVariableValue
     const { organism: community } = await createOrganism(
       {
+        name: 'New Community',
         contentTypeId: 'community' as ContentTypeId,
         payload: { name: 'New Community' },
         createdBy: founder,
@@ -330,6 +335,7 @@ describe('cybernetic feedback loop', () => {
 
     const { organism: responsePolicy } = await createOrganism(
       {
+        name: 'Health Response Policy',
         contentTypeId: 'response-policy' as ContentTypeId,
         payload: {
           mode: 'variable-threshold',

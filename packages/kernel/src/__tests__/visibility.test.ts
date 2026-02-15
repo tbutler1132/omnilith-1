@@ -61,7 +61,7 @@ describe('visibility and access control', () => {
   it('a public organism is visible to anyone', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -73,7 +73,7 @@ describe('visibility and access control', () => {
   it('a private organism is not visible to users without a relationship', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -91,7 +91,7 @@ describe('visibility and access control', () => {
   it('a private organism is visible to users with a relationship', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -109,12 +109,12 @@ describe('visibility and access control', () => {
   it('a members-only organism is visible to community members', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      { name: 'Community', contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
       createDeps(),
     );
 
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: founder },
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: founder },
       createDeps(),
     );
 
@@ -147,14 +147,14 @@ describe('visibility and access control', () => {
   it('a member of a community does not automatically have integration authority over organisms inside it', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      { name: 'Community', contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
       createDeps(),
     );
 
     // Create a child organism with a different steward
     const childSteward = testUserId('child-steward');
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
       createDeps(),
     );
 
@@ -182,7 +182,7 @@ describe('visibility and access control', () => {
   it('the steward of an organism can integrate proposals', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -193,7 +193,7 @@ describe('visibility and access control', () => {
   it('a user with explicit integration authority can integrate proposals', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -213,7 +213,7 @@ describe('visibility and access control', () => {
   it('any user who can view an organism can open a proposal', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -225,7 +225,7 @@ describe('visibility and access control', () => {
   it('the steward can change visibility', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -236,13 +236,13 @@ describe('visibility and access control', () => {
   it('the founder of a parent community has integration authority over organisms composed inside it', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      { name: 'Community', contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
       createDeps(),
     );
 
     const childSteward = testUserId('child-steward');
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
       createDeps(),
     );
 
@@ -268,13 +268,13 @@ describe('visibility and access control', () => {
   it('the founder of a parent community can compose and decompose organisms within it', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      { name: 'Community', contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
       createDeps(),
     );
 
     const childSteward = testUserId('child-steward');
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
       createDeps(),
     );
 
@@ -302,13 +302,13 @@ describe('visibility and access control', () => {
   it('a regular member of a parent community cannot compose or decompose organisms within it', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
+      { name: 'Community', contentTypeId: testContentTypeId(), payload: { name: 'Community' }, createdBy: founder },
       createDeps(),
     );
 
     const childSteward = testUserId('child-steward');
     const { organism: child } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { name: 'Child' }, createdBy: childSteward },
       createDeps(),
     );
 
@@ -337,7 +337,7 @@ describe('visibility and access control', () => {
   it('a non-steward cannot change visibility', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 

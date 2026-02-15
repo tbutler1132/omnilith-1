@@ -106,6 +106,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 1. A poem (text/markdown)
   const poem = await createOrganism(
     {
+      name: 'The Garden at Night',
       contentTypeId: 'text' as ContentTypeId,
       payload: {
         content: [
@@ -130,6 +131,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 2. An essay (text/markdown, with state history)
   const essay = await createOrganism(
     {
+      name: 'On Tending',
       contentTypeId: 'text' as ContentTypeId,
       payload: {
         content: [
@@ -180,6 +182,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 3. An audio organism (a track)
   const track1 = await createOrganism(
     {
+      name: 'Morning Field Recording',
       contentTypeId: 'audio' as ContentTypeId,
       payload: {
         fileReference: 'dev/audio/morning-field-recording.flac',
@@ -197,6 +200,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 4. Another audio organism
   const track2 = await createOrganism(
     {
+      name: 'Dusk Variations',
       contentTypeId: 'audio' as ContentTypeId,
       payload: {
         fileReference: 'dev/audio/dusk-variations.mp3',
@@ -213,6 +217,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 5. A third audio organism
   const track3 = await createOrganism(
     {
+      name: 'Concrete and Moss',
       contentTypeId: 'audio' as ContentTypeId,
       payload: {
         fileReference: 'dev/audio/concrete-and-moss.wav',
@@ -230,6 +235,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 6. An album (composition-reference containing the tracks)
   const album = await createOrganism(
     {
+      name: 'Field Studies',
       contentTypeId: 'composition-reference' as ContentTypeId,
       payload: {
         entries: [
@@ -262,6 +268,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 7. An image organism
   const photograph = await createOrganism(
     {
+      name: 'Overgrown Wall',
       contentTypeId: 'image' as ContentTypeId,
       payload: {
         fileReference: 'dev/images/overgrown-wall.jpg',
@@ -279,6 +286,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 8. Another image
   const sketch = await createOrganism(
     {
+      name: 'Topology Sketch',
       contentTypeId: 'image' as ContentTypeId,
       payload: {
         fileReference: 'dev/images/topology-sketch.png',
@@ -296,6 +304,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 9. A regulated organism with an integration policy
   const regulatedWork = await createOrganism(
     {
+      name: 'Collaborative Manifesto',
       contentTypeId: 'text' as ContentTypeId,
       payload: {
         content: [
@@ -314,6 +323,7 @@ export async function seedDev(container: Container): Promise<void> {
 
   const policy = await createOrganism(
     {
+      name: 'Integration Policy',
       contentTypeId: 'integration-policy' as ContentTypeId,
       payload: {
         mode: 'single-integrator',
@@ -359,6 +369,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 11. A thread (open-trunk conversation)
   const thread = await createOrganism(
     {
+      name: 'What does tending mean to you?',
       contentTypeId: 'thread' as ContentTypeId,
       payload: {
         title: 'What does tending mean to you?',
@@ -374,6 +385,7 @@ export async function seedDev(container: Container): Promise<void> {
   // 12. A dormant text organism (no recent activity)
   const dormantNote = await createOrganism(
     {
+      name: 'Unfinished Thought',
       contentTypeId: 'text' as ContentTypeId,
       payload: {
         content: 'A half-finished thought from long ago.',
