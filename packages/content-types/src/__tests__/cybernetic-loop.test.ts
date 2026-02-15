@@ -25,6 +25,7 @@ import {
   InMemoryProposalRepository,
   InMemoryRelationshipRepository,
   InMemoryStateRepository,
+  InMemoryVisibilityRepository,
   resetIdCounter,
 } from '@omnilith/kernel/testing';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -51,6 +52,7 @@ describe('cybernetic feedback loop', () => {
   let proposalRepository: InMemoryProposalRepository;
   let eventPublisher: InMemoryEventPublisher;
   let relationshipRepository: InMemoryRelationshipRepository;
+  let visibilityRepository: InMemoryVisibilityRepository;
   let contentTypeRegistry: InMemoryContentTypeRegistry;
   let identityGenerator: ReturnType<typeof createTestIdentityGenerator>;
 
@@ -65,6 +67,7 @@ describe('cybernetic feedback loop', () => {
     proposalRepository = new InMemoryProposalRepository();
     eventPublisher = new InMemoryEventPublisher();
     relationshipRepository = new InMemoryRelationshipRepository();
+    visibilityRepository = new InMemoryVisibilityRepository();
     contentTypeRegistry = new InMemoryContentTypeRegistry();
     identityGenerator = createTestIdentityGenerator();
 
@@ -228,6 +231,9 @@ describe('cybernetic feedback loop', () => {
         contentTypeRegistry,
         eventPublisher,
         identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
       },
     );
 
@@ -290,6 +296,9 @@ describe('cybernetic feedback loop', () => {
         contentTypeRegistry,
         eventPublisher,
         identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
       },
     );
 

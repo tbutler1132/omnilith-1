@@ -156,9 +156,12 @@ describe('proposals', () => {
 
     const result = await integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps());
 
+    expect(result.outcome).toBe('integrated');
     expect(result.proposal.status).toBe('integrated');
-    expect(result.newState.payload).toEqual({ v: 2 });
-    expect(result.newState.sequenceNumber).toBe(2);
+    if (result.outcome === 'integrated') {
+      expect(result.newState.payload).toEqual({ v: 2 });
+      expect(result.newState.sequenceNumber).toBe(2);
+    }
   });
 
   it('declining a proposal leaves the organism state unchanged', async () => {

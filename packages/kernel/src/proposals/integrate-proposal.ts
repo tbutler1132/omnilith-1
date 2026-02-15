@@ -39,10 +39,9 @@ export interface IntegrateProposalDeps {
   readonly identityGenerator: IdentityGenerator;
 }
 
-export interface IntegrateProposalResult {
-  readonly proposal: Proposal;
-  readonly newState: OrganismState;
-}
+export type IntegrateProposalResult =
+  | { readonly outcome: 'integrated'; readonly proposal: Proposal; readonly newState: OrganismState }
+  | { readonly outcome: 'policy-declined'; readonly proposal: Proposal };
 
 export async function integrateProposal(
   input: IntegrateProposalInput,
@@ -107,7 +106,7 @@ export async function integrateProposal(
     };
     await deps.eventPublisher.publish(declineEvent);
 
-    return { proposal: declinedProposal, newState: undefined as never };
+    return { outcome: 'policy-declined', proposal: declinedProposal };
   }
 
   // Advance state
@@ -150,5 +149,5 @@ export async function integrateProposal(
   };
   await deps.eventPublisher.publish(event);
 
-  return { proposal: integratedProposal, newState };
+  return { outcome: 'integrated', proposal: integratedProposal, newState };
 }

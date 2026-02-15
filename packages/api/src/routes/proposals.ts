@@ -78,6 +78,9 @@ export function proposalRoutes(container: Container) {
         },
       );
 
+      if (result.outcome === 'policy-declined') {
+        return c.json({ proposal: result.proposal, policyDeclined: true });
+      }
       return c.json({ proposal: result.proposal, newState: result.newState });
     } catch (err) {
       const e = err as DomainError;

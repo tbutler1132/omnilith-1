@@ -86,7 +86,16 @@ describe('events', () => {
         payload: { v: 2 },
         appendedBy: userId,
       },
-      { organismRepository, stateRepository, contentTypeRegistry, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
+      },
     );
 
     const events = eventPublisher.findByType('state.appended');

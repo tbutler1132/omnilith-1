@@ -125,6 +125,9 @@ export function organismRoutes(container: Container) {
           contentTypeRegistry: container.contentTypeRegistry,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
         },
       );
 
