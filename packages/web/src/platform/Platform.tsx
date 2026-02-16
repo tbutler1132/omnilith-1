@@ -9,21 +9,21 @@ import { useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/organisms.js';
 import { Hud } from '../hud/index.js';
 import { Space } from '../space/index.js';
-import { PlatformProvider, usePlatform } from './PlatformContext.js';
+import { PlatformProvider, usePlatformVisorState } from './PlatformContext.js';
 
 /** Syncs visorOrganismId to the URL so organism links are shareable */
 function UrlSync() {
-  const { state } = usePlatform();
+  const { visorOrganismId } = usePlatformVisorState();
 
   useEffect(() => {
     const url = new URL(window.location.href);
-    if (state.visorOrganismId) {
-      url.searchParams.set('organism', state.visorOrganismId);
+    if (visorOrganismId) {
+      url.searchParams.set('organism', visorOrganismId);
     } else {
       url.searchParams.delete('organism');
     }
     window.history.replaceState(null, '', url);
-  }, [state.visorOrganismId]);
+  }, [visorOrganismId]);
 
   return null;
 }

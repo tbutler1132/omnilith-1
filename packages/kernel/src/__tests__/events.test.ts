@@ -172,7 +172,16 @@ describe('events', () => {
         proposedPayload: { v: 2 },
         proposedBy: userId,
       },
-      { organismRepository, proposalRepository, contentTypeRegistry, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        proposalRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
+      },
     );
 
     const events = eventPublisher.findByType('proposal.opened');
@@ -194,7 +203,16 @@ describe('events', () => {
         proposedPayload: { v: 2 },
         proposedBy: testUserId('contributor'),
       },
-      { organismRepository, proposalRepository, contentTypeRegistry, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        proposalRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
+      },
     );
 
     eventPublisher.clear();
@@ -233,7 +251,16 @@ describe('events', () => {
         proposedPayload: { v: 2 },
         proposedBy: testUserId('contributor'),
       },
-      { organismRepository, proposalRepository, contentTypeRegistry, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        proposalRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        identityGenerator,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
+      },
     );
 
     eventPublisher.clear();

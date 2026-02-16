@@ -8,12 +8,17 @@
     "build": "tsc && vite build",
     "lint": "biome check src/",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "profile:lighthouse": "node scripts/profile-lighthouse.mjs",
+    "profile:baseline": "node scripts/profile-lighthouse.mjs --save-baseline",
+    "profile:compare": "node scripts/profile-lighthouse.mjs --compare tmp/profiling/baseline-summary.json"
   },
   "devDependencies": {
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
+    "lighthouse": "^13.0.3",
+    "playwright": "^1.58.2",
     "typescript": "^5.7.0",
     "vite": "^7.3.1",
     "vitest": "^3.2.4"

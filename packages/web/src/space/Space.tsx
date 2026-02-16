@@ -8,7 +8,12 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { usePlatform } from '../platform/index.js';
+import {
+  usePlatformActions,
+  usePlatformMapState,
+  usePlatformViewportMeta,
+  usePlatformVisorState,
+} from '../platform/index.js';
 import { AltitudeControls } from './AltitudeControls.js';
 import { Compass } from './Compass.js';
 import { GroundPlane } from './GroundPlane.js';
@@ -22,8 +27,11 @@ import { frameOrganism, frameOrganismEnter, zoomForAltitude } from './viewport-m
 type Phase = 'map' | 'entering' | 'inside' | 'exiting';
 
 export function Space() {
-  const { state, focusOrganism, enterOrganism, exitOrganism, setAltitude, setViewportCenter } = usePlatform();
-  const { entries, width, height, loading, error } = useSpatialMap(state.currentMapId, state.mapRefreshKey);
+  const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
+  const { visorOpen } = usePlatformVisorState();
+  const { mapRefreshKey } = usePlatformViewportMeta();
+  const { focusOrganism, enterMap, enterOrganism, exitOrganism, setAltitude, setViewportCenter } = usePlatformActions();
+  const { entries, width, height, loading, error } = useSpatialMap(currentMapId, mapRefreshKey);
   const { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude } = useViewport({
     mapWidth: width,
     mapHeight: height,
@@ -126,30 +134,30 @@ export function Space() {
   // When enteredOrganismId is cleared externally while Space is still
   // in the 'inside' phase, trigger the proper exit animation.
   useEffect(() => {
-    if (!state.enteredOrganismId && phase === 'inside') {
+    if (!enteredOrganismId && phase === 'inside') {
       handleExitOrganism();
     }
-  }, [state.enteredOrganismId, phase, handleExitOrganism]);
+  }, [enteredOrganismId, phase, handleExitOrganism]);
 
   // ── Respond to focus changes (map phase only) ──
   // When focus clears: zoom out to High.
   // When focus is set externally (e.g. Visit from Visor): animate to organism position.
-  const prevFocusRef = useRef(state.focusedOrganismId);
+  const prevFocusRef = useRef(focusedOrganismId);
   useEffect(() => {
     const prev = prevFocusRef.current;
-    prevFocusRef.current = state.focusedOrganismId;
+    prevFocusRef.current = focusedOrganismId;
 
     if (phase !== 'map') return;
 
-    if (prev && !state.focusedOrganismId) {
+    if (prev && !focusedOrganismId) {
       animateTo({ x: width / 2, y: height / 2, zoom: zoomForAltitude('high') });
-    } else if (!prev && state.focusedOrganismId) {
-      const entry = entries.find((e) => e.organismId === state.focusedOrganismId);
+    } else if (!prev && focusedOrganismId) {
+      const entry = entries.find((e) => e.organismId === focusedOrganismId);
       if (entry) {
         animateTo(frameOrganism(entry.x, entry.y));
       }
     }
-  }, [state.focusedOrganismId, animateTo, width, height, phase, entries]);
+  }, [focusedOrganismId, animateTo, width, height, phase, entries]);
 
   // ── Sync altitude to PlatformContext for HUD display ──
   useEffect(() => {
@@ -165,18 +173,18 @@ export function Space() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (state.visorOpen) return;
+      if (visorOpen) return;
 
       if (phase === 'inside') {
         handleExitOrganism();
-      } else if (phase === 'map' && state.focusedOrganismId) {
+      } else if (phase === 'map' && focusedOrganismId) {
         focusOrganism(null);
       }
       // 'entering' / 'exiting' → ignore, let transition finish
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [state.visorOpen, state.focusedOrganismId, phase, focusOrganism, handleExitOrganism]);
+  }, [visorOpen, focusedOrganismId, phase, focusOrganism, handleExitOrganism]);
 
   if (loading) {
     return (
@@ -221,8 +229,10 @@ export function Space() {
           viewport={viewport}
           screenSize={screenSize}
           altitude={altitude}
+          focusedOrganismId={focusedOrganismId}
           onFocusOrganism={handleFocusOrganism}
           onEnterOrganism={handleEnterOrganism}
+          onEnterMap={enterMap}
         />
       </SpaceViewport>
       {interiorOrganismId && <OrganismInterior organismId={interiorOrganismId} opacity={interiorOpacity} />}

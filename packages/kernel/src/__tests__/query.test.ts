@@ -10,6 +10,7 @@ import { InMemoryProposalRepository } from '../testing/in-memory-proposal-reposi
 import { InMemoryQueryPort } from '../testing/in-memory-query-port.js';
 import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
 import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
+import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
   createPassthroughContentType,
   createTestIdentityGenerator,
@@ -26,6 +27,7 @@ describe('query port', () => {
   let contentTypeRegistry: InMemoryContentTypeRegistry;
   let compositionRepository: InMemoryCompositionRepository;
   let proposalRepository: InMemoryProposalRepository;
+  let visibilityRepository: InMemoryVisibilityRepository;
   let queryPort: InMemoryQueryPort;
   let identityGenerator: ReturnType<typeof createTestIdentityGenerator>;
 
@@ -38,6 +40,7 @@ describe('query port', () => {
     contentTypeRegistry = new InMemoryContentTypeRegistry();
     compositionRepository = new InMemoryCompositionRepository();
     proposalRepository = new InMemoryProposalRepository();
+    visibilityRepository = new InMemoryVisibilityRepository();
     identityGenerator = createTestIdentityGenerator();
     contentTypeRegistry.register(createPassthroughContentType());
     contentTypeRegistry.register(createPassthroughContentType('other-type'));
@@ -155,6 +158,9 @@ describe('query port', () => {
           contentTypeRegistry,
           eventPublisher,
           identityGenerator,
+          visibilityRepository,
+          relationshipRepository,
+          compositionRepository,
         },
       );
 
@@ -213,6 +219,9 @@ describe('query port', () => {
           contentTypeRegistry,
           eventPublisher,
           identityGenerator,
+          visibilityRepository,
+          relationshipRepository,
+          compositionRepository,
         },
       );
 
@@ -248,6 +257,9 @@ describe('query port', () => {
           contentTypeRegistry,
           eventPublisher,
           identityGenerator,
+          visibilityRepository,
+          relationshipRepository,
+          compositionRepository,
         },
       );
 
@@ -273,6 +285,9 @@ describe('query port', () => {
           contentTypeRegistry,
           eventPublisher,
           identityGenerator,
+          visibilityRepository,
+          relationshipRepository,
+          compositionRepository,
         },
       );
 

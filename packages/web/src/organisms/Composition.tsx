@@ -8,7 +8,7 @@
 import { useState } from 'react';
 import { composeChild, decomposeChild } from '../api/organisms.js';
 import { useChildren, useOrganism, useParent } from '../hooks/use-organism.js';
-import { usePlatform } from '../platform/index.js';
+import { usePlatformActions } from '../platform/index.js';
 import { getPreviewText } from '../utils/preview-text.js';
 import { OrganismPicker } from './OrganismPicker.js';
 import { ThresholdForm } from './ThresholdForm.js';
@@ -43,7 +43,7 @@ function CompositionChild({
 }
 
 export function Composition({ organismId }: { organismId: string }) {
-  const { focusOrganism } = usePlatform();
+  const { focusOrganism } = usePlatformActions();
   const parent = useParent(organismId);
   const [refreshKey, setRefreshKey] = useState(0);
   const children = useChildren(organismId, refreshKey);

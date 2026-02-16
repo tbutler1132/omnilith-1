@@ -60,6 +60,9 @@ export async function seedDev(container: Container): Promise<void> {
     contentTypeRegistry: container.contentTypeRegistry,
     eventPublisher: container.eventPublisher,
     identityGenerator: container.identityGenerator,
+    visibilityRepository: container.visibilityRepository,
+    relationshipRepository: container.relationshipRepository,
+    compositionRepository: container.compositionRepository,
   };
 
   const appendDeps = {

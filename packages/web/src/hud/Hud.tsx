@@ -15,7 +15,7 @@
 
 import { useEffect } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
-import { usePlatform } from '../platform/index.js';
+import { usePlatformActions, usePlatformMapState, usePlatformVisorState } from '../platform/index.js';
 import { HudBar } from './HudBar.js';
 import { HudMapActions } from './HudMapActions.js';
 import { VisorView } from './VisorView.js';
@@ -26,7 +26,7 @@ interface HudProps {
 
 /** Bottom-left action when inside an organism — opens it in the Visor */
 function HudInteriorActions({ organismId }: { organismId: string }) {
-  const { openInVisor } = usePlatform();
+  const { openInVisor } = usePlatformActions();
   const { data } = useOrganism(organismId);
   const name = data?.organism.name ?? '...';
 
@@ -42,10 +42,11 @@ function HudInteriorActions({ organismId }: { organismId: string }) {
 }
 
 export function Hud({ onLogout }: HudProps) {
-  const { state, closeVisor, toggleVisor, closeVisorOrganism } = usePlatform();
-  const isInside = state.enteredOrganismId !== null;
-  const expanded = state.visorOpen;
-  const visorOrganismId = state.visorOrganismId;
+  const { enteredOrganismId } = usePlatformMapState();
+  const { visorOpen, visorOrganismId } = usePlatformVisorState();
+  const { closeVisor, toggleVisor, closeVisorOrganism } = usePlatformActions();
+  const isInside = enteredOrganismId !== null;
+  const expanded = visorOpen;
 
   // V key toggles expanded mode, Escape dismisses organism then collapses
   useEffect(() => {
@@ -96,7 +97,7 @@ export function Hud({ onLogout }: HudProps) {
 
       {/* Expanded inside organism: tend button */}
       <div className={`hud-fade ${isInside && expanded && !visorOrganismId ? 'hud-fade--visible' : ''}`}>
-        {state.enteredOrganismId && <HudInteriorActions organismId={state.enteredOrganismId} />}
+        {enteredOrganismId && <HudInteriorActions organismId={enteredOrganismId} />}
       </div>
     </div>
   );

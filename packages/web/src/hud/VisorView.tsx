@@ -12,7 +12,7 @@ import { surfaceOnWorldMap } from '../api/surface.js';
 import { useIsSurfaced } from '../hooks/use-is-surfaced.js';
 import { useOrganism } from '../hooks/use-organism.js';
 import { ProposeForm } from '../organisms/ProposeForm.js';
-import { usePlatform } from '../platform/PlatformContext.js';
+import { usePlatformActions, usePlatformStaticState, usePlatformViewportMeta } from '../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import {
   CompositionSection,
@@ -26,12 +26,31 @@ interface VisorViewProps {
   organismId: string;
 }
 
+type SidebarSectionId = 'vitality' | 'composition' | 'proposals' | 'history' | 'governance';
+
+const SECTION_LABELS: Record<SidebarSectionId, string> = {
+  vitality: 'Vitality',
+  composition: 'Composition',
+  proposals: 'Proposals',
+  history: 'State history',
+  governance: 'Governance',
+};
+
 export function VisorView({ organismId }: VisorViewProps) {
-  const { state, closeVisor, closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatform();
+  const { worldMapId } = usePlatformStaticState();
+  const { viewportCenter } = usePlatformViewportMeta();
+  const { closeVisor, closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showProposeForm, setShowProposeForm] = useState(false);
   const [surfacing, setSurfacing] = useState(false);
+  const [openSections, setOpenSections] = useState<Record<SidebarSectionId, boolean>>({
+    vitality: true,
+    composition: true,
+    proposals: false,
+    history: false,
+    governance: false,
+  });
 
   const { data: organism } = useOrganism(organismId, refreshKey);
   const { surfaced, loading: surfaceLoading } = useIsSurfaced(organismId);
@@ -48,7 +67,7 @@ export function VisorView({ organismId }: VisorViewProps) {
   async function handleSurface() {
     setSurfacing(true);
     try {
-      await surfaceOnWorldMap(state.worldMapId, organismId, state.viewportCenter.x, state.viewportCenter.y);
+      await surfaceOnWorldMap(worldMapId, organismId, viewportCenter.x, viewportCenter.y);
       bumpMapRefresh();
     } finally {
       setSurfacing(false);
@@ -58,6 +77,10 @@ export function VisorView({ organismId }: VisorViewProps) {
   function handleProposed() {
     setRefreshKey((k) => k + 1);
     setShowProposeForm(false);
+  }
+
+  function toggleSection(id: SidebarSectionId) {
+    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
   }
 
   const proposeLabel = openTrunk ? 'Append State' : 'Open Proposal';
@@ -126,19 +149,36 @@ export function VisorView({ organismId }: VisorViewProps) {
               />
             )}
 
-            <VitalitySection organismId={organismId} refreshKey={refreshKey} />
-            <CompositionSection
-              organismId={organismId}
-              refreshKey={refreshKey}
-              onMutate={() => setRefreshKey((k) => k + 1)}
-            />
-            <ProposalsSection
-              organismId={organismId}
-              refreshKey={refreshKey}
-              onMutate={() => setRefreshKey((k) => k + 1)}
-            />
-            <StateHistorySection organismId={organismId} refreshKey={refreshKey} />
-            <GovernanceSection organismId={organismId} />
+            <div className="hud-section-toggles">
+              {(Object.keys(SECTION_LABELS) as SidebarSectionId[]).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`hud-section-toggle ${openSections[id] ? 'hud-section-toggle--active' : ''}`}
+                  onClick={() => toggleSection(id)}
+                >
+                  {openSections[id] ? 'Hide' : 'Show'} {SECTION_LABELS[id]}
+                </button>
+              ))}
+            </div>
+
+            {openSections.vitality && <VitalitySection organismId={organismId} refreshKey={refreshKey} />}
+            {openSections.composition && (
+              <CompositionSection
+                organismId={organismId}
+                refreshKey={refreshKey}
+                onMutate={() => setRefreshKey((k) => k + 1)}
+              />
+            )}
+            {openSections.proposals && (
+              <ProposalsSection
+                organismId={organismId}
+                refreshKey={refreshKey}
+                onMutate={() => setRefreshKey((k) => k + 1)}
+              />
+            )}
+            {openSections.history && <StateHistorySection organismId={organismId} refreshKey={refreshKey} />}
+            {openSections.governance && <GovernanceSection organismId={organismId} />}
           </>
         )}
       </div>

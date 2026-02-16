@@ -9,8 +9,17 @@ export class InMemoryProposalRepository implements ProposalRepository {
     this.proposals.set(proposal.id, proposal);
   }
 
-  async update(proposal: Proposal): Promise<void> {
+  async update(proposal: Proposal): Promise<boolean> {
+    const current = this.proposals.get(proposal.id);
+    if (!current) return false;
+
+    // Enforce compare-and-swap semantics for resolution transitions.
+    if (proposal.status !== 'open' && current.status !== 'open') {
+      return false;
+    }
+
     this.proposals.set(proposal.id, proposal);
+    return true;
   }
 
   async findById(id: ProposalId): Promise<Proposal | undefined> {

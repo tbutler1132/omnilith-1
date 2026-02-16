@@ -24,6 +24,15 @@ interface AsyncState<T> {
   error: Error | undefined;
 }
 
+type OrganismData = {
+  organism: Awaited<ReturnType<typeof fetchOrganism>>['organism'];
+  currentState: Awaited<ReturnType<typeof fetchOrganism>>['currentState'] | undefined;
+};
+
+const organismCache = new Map<string, OrganismData>();
+const organismInflight = new Map<string, Promise<OrganismData>>();
+const ORGANISM_BATCH_CONCURRENCY = 4;
+
 function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({
     data: undefined,
@@ -52,19 +61,65 @@ function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncState<T> 
   return state;
 }
 
+async function fetchOrganismData(id: string): Promise<OrganismData> {
+  const res = await fetchOrganism(id);
+  return {
+    organism: res.organism,
+    currentState: res.currentState ?? undefined,
+  };
+}
+
+function fetchOrganismCached(id: string, refreshKey: number): Promise<OrganismData> {
+  // refreshKey=0 uses cache; non-zero refreshes bypass cache while still deduping in-flight.
+  const inflightKey = refreshKey > 0 ? `${id}:${refreshKey}` : id;
+
+  if (refreshKey === 0) {
+    const cached = organismCache.get(id);
+    if (cached) return Promise.resolve(cached);
+  }
+
+  const inFlight = organismInflight.get(inflightKey);
+  if (inFlight) return inFlight;
+
+  const request = fetchOrganismData(id)
+    .then((data) => {
+      organismCache.set(id, data);
+      return data;
+    })
+    .finally(() => {
+      organismInflight.delete(inflightKey);
+    });
+
+  organismInflight.set(inflightKey, request);
+  return request;
+}
+
+async function fetchOrganismBatch(ids: string[], refreshKey: number): Promise<Record<string, OrganismData>> {
+  const out: Record<string, OrganismData> = {};
+  const uniqueIds = Array.from(new Set(ids));
+
+  for (let i = 0; i < uniqueIds.length; i += ORGANISM_BATCH_CONCURRENCY) {
+    const chunk = uniqueIds.slice(i, i + ORGANISM_BATCH_CONCURRENCY);
+    const data = await Promise.all(chunk.map((id) => fetchOrganismCached(id, refreshKey)));
+    chunk.forEach((id, idx) => {
+      out[id] = data[idx];
+    });
+  }
+
+  return out;
+}
+
 export function useOrganisms(refreshKey = 0) {
   return useAsync(() => fetchOrganisms().then((r) => r.organisms), [refreshKey]);
 }
 
 export function useOrganism(id: string, refreshKey = 0) {
-  return useAsync(
-    () =>
-      fetchOrganism(id).then((r) => ({
-        organism: r.organism,
-        currentState: r.currentState ?? undefined,
-      })),
-    [id, refreshKey],
-  );
+  return useAsync(() => fetchOrganismCached(id, refreshKey), [id, refreshKey]);
+}
+
+export function useOrganismsByIds(ids: string[], refreshKey = 0) {
+  const key = ids.join(',');
+  return useAsync(() => fetchOrganismBatch(ids, refreshKey), [key, refreshKey]);
 }
 
 export function useStateHistory(id: string, refreshKey = 0) {

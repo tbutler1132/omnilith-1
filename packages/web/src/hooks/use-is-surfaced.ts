@@ -5,12 +5,12 @@
  * organism ID appears in the entries array.
  */
 
-import { usePlatform } from '../platform/PlatformContext.js';
+import { usePlatformMapState } from '../platform/index.js';
 import { useOrganism } from './use-organism.js';
 
 export function useIsSurfaced(organismId: string): { surfaced: boolean; loading: boolean } {
-  const { state } = usePlatform();
-  const { data, loading } = useOrganism(state.currentMapId);
+  const { currentMapId } = usePlatformMapState();
+  const { data, loading } = useOrganism(currentMapId);
 
   if (loading || !data?.currentState) {
     return { surfaced: false, loading };

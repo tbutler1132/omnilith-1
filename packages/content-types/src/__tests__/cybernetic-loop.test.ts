@@ -101,6 +101,9 @@ describe('cybernetic feedback loop', () => {
     contentTypeRegistry,
     eventPublisher,
     identityGenerator,
+    visibilityRepository,
+    relationshipRepository,
+    compositionRepository,
   });
 
   const evaluateDeps = () => ({

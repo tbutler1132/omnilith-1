@@ -1610,6 +1610,37 @@ button.secondary:hover {
   cursor: not-allowed;
 }
 
+.hud-section-toggles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.hud-section-toggle {
+  background: transparent;
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  padding: 4px 9px;
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--hud-text);
+  cursor: pointer;
+  transition: all 200ms ease;
+}
+
+.hud-section-toggle:hover {
+  border-color: var(--hud-border-hover);
+  color: var(--hud-text-bright);
+}
+
+.hud-section-toggle--active {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+}
+
 /* Remove button on child items */
 
 .hud-info-child-row {
@@ -1947,3 +1978,102 @@ button.secondary:hover {
   border-color: var(--hud-border);
 }
 
+/* ── Responsive ── */
+
+@media (max-width: 1024px) {
+  .hud-panel {
+    width: min(360px, calc(100vw - 32px));
+  }
+
+  .visor-sidebar {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .hud-bar {
+    padding: 0 10px;
+  }
+
+  .hud-logout {
+    top: 10px;
+    right: 10px;
+  }
+
+  .compass {
+    top: 52px;
+    right: 10px;
+  }
+
+  .altitude-controls {
+    right: 10px;
+    bottom: 72px;
+  }
+
+  .hud-map-actions-container {
+    left: 10px;
+    right: 10px;
+    bottom: 72px;
+  }
+
+  .hud-map-actions {
+    flex-wrap: wrap;
+  }
+
+  .hud-panel {
+    width: calc(100vw - 20px);
+    max-height: 55vh;
+  }
+
+  .hud-panel-inner {
+    max-height: 55vh;
+  }
+
+  .visor-view {
+    flex-direction: column;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .visor-view-content {
+    padding: 16px;
+  }
+
+  .visor-sidebar {
+    width: 100%;
+    max-height: 38vh;
+    border-left: none;
+    border-top: 1px solid rgba(124, 108, 240, 0.15);
+    padding: 12px;
+  }
+
+  .visor-sidebar--collapsed {
+    width: 100%;
+    max-height: 44px;
+    padding: 10px 12px;
+  }
+}
+
+@media (max-width: 560px) {
+  .hud-map-btn {
+    padding: 7px 12px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .hud-pill {
+    bottom: 14px;
+  }
+
+  .visor-view {
+    top: 40px;
+  }
+
+  .visor-view-header {
+    margin-bottom: 14px;
+  }
+
+  .visor-view-actions {
+    margin-top: 14px;
+    padding-top: 10px;
+  }
+}

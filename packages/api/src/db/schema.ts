@@ -64,6 +64,7 @@ export const organismStates = pgTable(
   (table) => [
     index('idx_organism_states_organism_id').on(table.organismId),
     index('idx_organism_states_sequence').on(table.organismId, table.sequenceNumber),
+    uniqueIndex('organism_states_organism_sequence_unique').on(table.organismId, table.sequenceNumber),
   ],
 );
 

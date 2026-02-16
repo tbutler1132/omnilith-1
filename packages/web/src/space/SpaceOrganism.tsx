@@ -7,8 +7,8 @@
  * double-click (enter map for spatial-map organisms).
  */
 
+import { memo } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
-import { usePlatform } from '../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, zoomForAltitude } from './viewport-math.js';
@@ -21,10 +21,17 @@ interface SpaceOrganismProps {
   focused: boolean;
   onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
+  onEnterMap: (mapId: string, label: string) => void;
 }
 
-export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnterOrganism }: SpaceOrganismProps) {
-  const { enterMap } = usePlatform();
+function SpaceOrganismImpl({
+  entry,
+  altitude,
+  focused,
+  onFocusOrganism,
+  onEnterOrganism,
+  onEnterMap,
+}: SpaceOrganismProps) {
   const { data, loading, error } = useOrganism(entry.organismId);
 
   // Fixed world-space size — never changes with altitude.
@@ -46,7 +53,7 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
     if (focused) {
       if (data?.currentState?.contentTypeId === 'community') {
         const payload = data.currentState.payload as { mapOrganismId: string };
-        enterMap(payload.mapOrganismId, data.organism.name);
+        onEnterMap(payload.mapOrganismId, data.organism.name);
       } else {
         onEnterOrganism(entry.organismId, entry.x, entry.y);
       }
@@ -58,10 +65,10 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (data?.currentState?.contentTypeId === 'spatial-map') {
-      enterMap(entry.organismId, data.organism.name);
+      onEnterMap(entry.organismId, data.organism.name);
     } else if (data?.currentState?.contentTypeId === 'community') {
       const payload = data.currentState.payload as { mapOrganismId: string };
-      enterMap(payload.mapOrganismId, data.organism.name);
+      onEnterMap(payload.mapOrganismId, data.organism.name);
     }
   };
 
@@ -138,3 +145,5 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
     </button>
   );
 }
+
+export const SpaceOrganism = memo(SpaceOrganismImpl);

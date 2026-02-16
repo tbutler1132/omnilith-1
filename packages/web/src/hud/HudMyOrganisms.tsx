@@ -6,14 +6,14 @@
  */
 
 import { useUserOrganisms } from '../hooks/use-organism.js';
-import { usePlatform } from '../platform/index.js';
+import { usePlatformMapState } from '../platform/index.js';
 
 interface HudMyOrganismsProps {
   onSelect: (organismId: string) => void;
 }
 
 export function HudMyOrganisms({ onSelect }: HudMyOrganismsProps) {
-  const { state } = usePlatform();
+  const { focusedOrganismId } = usePlatformMapState();
   const { data: organisms, loading, error } = useUserOrganisms();
 
   if (loading) return <div className="hud-panel-empty">Loading...</div>;
@@ -28,7 +28,7 @@ export function HudMyOrganisms({ onSelect }: HudMyOrganismsProps) {
         <button
           key={ows.organism.id}
           type="button"
-          className={`hud-organism-item ${state.focusedOrganismId === ows.organism.id ? 'hud-organism-item--focused' : ''}`}
+          className={`hud-organism-item ${focusedOrganismId === ows.organism.id ? 'hud-organism-item--focused' : ''}`}
           onClick={() => onSelect(ows.organism.id)}
         >
           <span className="content-type">{ows.currentState?.contentTypeId ?? '...'}</span>

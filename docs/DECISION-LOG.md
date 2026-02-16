@@ -299,6 +299,24 @@ Key distinction: the personal organism is about regulation (where you work, wher
 
 Signup now creates both from templates: a personal organism (private spatial-map) and a home page organism (starter template, any content type). Onboarding guides the user to surface their home page, completing their arrival.
 
+### Move 24: Contract Boundary Clarification (Kernel as Source of Shared Types)
+
+As implementation progressed, a practical boundary question surfaced: should the web layer import shared types from `@omnilith/kernel`, or should it avoid kernel imports entirely?
+
+The resolution is a boundary split, not a prohibition:
+
+- **Kernel remains the canonical source for stable shared contracts** (API request/response DTOs and cross-package identifiers that define the shared language of the system).
+- **Domain internals stay internal** (use-case wiring types, repository internals, testing types, and implementation-specific structures should not become frontend dependencies).
+- **Web should import contract types only** from the stable contract surface, not from kernel internals.
+
+This preserves the architecture's intent while keeping delivery practical at the current stage:
+
+- It avoids duplicating type definitions across packages.
+- It keeps the frontend aligned with backend contract changes.
+- It prevents accidental coupling to domain implementation details.
+
+If contract surface area grows significantly, a dedicated `contracts` package remains a valid future extraction path. Until then, keeping shared contracts in kernel is acceptable as long as the public contract boundary is explicit and enforced.
+
 ---
 
 ## Open Questions

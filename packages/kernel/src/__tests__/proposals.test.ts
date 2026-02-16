@@ -69,6 +69,9 @@ describe('proposals', () => {
     contentTypeRegistry,
     eventPublisher,
     identityGenerator,
+    visibilityRepository,
+    relationshipRepository,
+    compositionRepository,
   });
 
   const integrateDeps = () => ({
@@ -112,6 +115,33 @@ describe('proposals', () => {
 
     expect(proposal.status).toBe('open');
     expect(proposal.proposedPayload).toEqual({ v: 2 });
+  });
+
+  it('opening a proposal requires view access', async () => {
+    const steward = testUserId('steward');
+    const outsider = testUserId('outsider');
+    const { organism } = await createOrganism(
+      { name: 'Private', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      createDeps(),
+    );
+
+    await visibilityRepository.save({
+      organismId: organism.id,
+      level: 'private',
+      updatedAt: identityGenerator.timestamp(),
+    });
+
+    await expect(
+      openProposal(
+        {
+          organismId: organism.id,
+          proposedContentTypeId: testContentTypeId(),
+          proposedPayload: { v: 2 },
+          proposedBy: outsider,
+        },
+        openDeps(),
+      ),
+    ).rejects.toThrow(AccessDeniedError);
   });
 
   it('opening a proposal emits a proposal.opened event', async () => {

@@ -7,7 +7,7 @@
  */
 
 import { allContentTypes } from '@omnilith/content-types';
-import type { ContentTypeRegistry, UserId } from '@omnilith/kernel';
+import type { ContentTypeRegistry, RelationshipId, UserId } from '@omnilith/kernel';
 import {
   createTestIdentityGenerator,
   InMemoryCompositionRepository,
@@ -64,9 +64,7 @@ function createTestContainer(): Container {
   };
 }
 
-function createTestApp(container: Container) {
-  const testUserId = 'test-user' as UserId;
-
+function createTestApp(container: Container, testUserId: UserId = 'test-user' as UserId) {
   // Create app with a mock auth middleware that injects a fixed userId
   const app = new Hono<AuthEnv>();
   app.use('*', async (c, next) => {
@@ -574,5 +572,140 @@ describe('query and listing routes', () => {
     const body = await res.json();
     expect(body.proposals).toHaveLength(1);
     expect(body.proposals[0].proposedBy).toBe(testUserId);
+  });
+});
+
+describe('authorization enforcement', () => {
+  let container: Container;
+  let ownerApp: Hono<AuthEnv>;
+  let outsiderApp: Hono<AuthEnv>;
+  let memberApp: Hono<AuthEnv>;
+  let ownerUserId: UserId;
+  let outsiderUserId: UserId;
+  let memberUserId: UserId;
+
+  beforeEach(() => {
+    resetIdCounter();
+    container = createTestContainer();
+    ownerUserId = 'owner-user' as UserId;
+    outsiderUserId = 'outsider-user' as UserId;
+    memberUserId = 'member-user' as UserId;
+    ownerApp = createTestApp(container, ownerUserId).app;
+    outsiderApp = createTestApp(container, outsiderUserId).app;
+    memberApp = createTestApp(container, memberUserId).app;
+  });
+
+  it('private organism endpoints deny unrelated users', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+    await container.visibilityRepository.save({
+      organismId: organism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const deniedPaths = [
+      `/organisms/${organism.id}`,
+      `/organisms/${organism.id}/states`,
+      `/organisms/${organism.id}/parent`,
+      `/organisms/${organism.id}/children`,
+      `/organisms/${organism.id}/vitality`,
+      `/organisms/${organism.id}/events`,
+      `/organisms/${organism.id}/relationships`,
+      `/organisms/${organism.id}/visibility`,
+      `/organisms/${organism.id}/proposals`,
+    ];
+
+    for (const path of deniedPaths) {
+      const res = await outsiderApp.request(path);
+      expect(res.status).toBe(403);
+    }
+  });
+
+  it('members-only organisms are visible to parent-community members and denied to non-members', async () => {
+    const { organism: community } = await createTestOrganism(ownerApp, { name: 'Community' });
+    const { organism: child } = await createTestOrganism(ownerApp, { name: 'Child' });
+
+    await ownerApp.request(`/organisms/${community.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+
+    await container.visibilityRepository.save({
+      organismId: child.id,
+      level: 'members',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    await container.relationshipRepository.save({
+      id: container.identityGenerator.relationshipId() as RelationshipId,
+      type: 'membership',
+      userId: memberUserId,
+      organismId: community.id,
+      role: 'member',
+      createdAt: container.identityGenerator.timestamp(),
+    });
+
+    const denied = await outsiderApp.request(`/organisms/${child.id}`);
+    expect(denied.status).toBe(403);
+
+    const allowed = await memberApp.request(`/organisms/${child.id}`);
+    expect(allowed.status).toBe(200);
+  });
+
+  it('compose and decompose require permission on parent organism', async () => {
+    const { organism: parent } = await createTestOrganism(ownerApp, { name: 'Parent' });
+    const { organism: child } = await createTestOrganism(ownerApp, { name: 'Child' });
+
+    const composeDenied = await outsiderApp.request(`/organisms/${parent.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+    expect(composeDenied.status).toBe(403);
+
+    const composeOk = await ownerApp.request(`/organisms/${parent.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+    expect(composeOk.status).toBe(201);
+
+    const decomposeDenied = await outsiderApp.request(`/organisms/${parent.id}/children/${child.id}`, {
+      method: 'DELETE',
+    });
+    expect(decomposeDenied.status).toBe(403);
+  });
+
+  it('opening and listing proposals require organism access', async () => {
+    const { organism } = await createTestOrganism(ownerApp, { name: 'Private Draft' });
+    await container.visibilityRepository.save({
+      organismId: organism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const openDenied = await outsiderApp.request(`/organisms/${organism.id}/proposals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proposedContentTypeId: 'text',
+        proposedPayload: { content: 'unauthorized', format: 'plaintext' },
+      }),
+    });
+    expect(openDenied.status).toBe(403);
+
+    const openOk = await ownerApp.request(`/organisms/${organism.id}/proposals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        proposedContentTypeId: 'text',
+        proposedPayload: { content: 'authorized', format: 'plaintext' },
+      }),
+    });
+    expect(openOk.status).toBe(201);
+
+    const listDenied = await outsiderApp.request(`/organisms/${organism.id}/proposals`);
+    expect(listDenied.status).toBe(403);
   });
 });

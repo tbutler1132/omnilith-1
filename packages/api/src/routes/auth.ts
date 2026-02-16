@@ -10,14 +10,23 @@ import type { ContentTypeId, UserId } from '@omnilith/kernel';
 import { createOrganism } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
+import { PgEventPublisher } from '../adapters/pg-event-publisher.js';
+import { PgOrganismRepository } from '../adapters/pg-organism-repository.js';
+import { PgRelationshipRepository } from '../adapters/pg-relationship-repository.js';
+import { PgStateRepository } from '../adapters/pg-state-repository.js';
 import type { Container } from '../container.js';
 import { sessions, users } from '../db/schema.js';
+import { parseJsonBody } from '../utils/parse-json.js';
 
 export function authRoutes(container: Container) {
   const app = new Hono();
 
   app.post('/signup', async (c) => {
-    const body = await c.req.json<{ email: string; password: string }>();
+    const body = await parseJsonBody<{ email: string; password: string }>(c);
+
+    if (!body) {
+      return c.json({ error: 'Invalid JSON body' }, 400);
+    }
 
     if (!body.email || !body.password) {
       return c.json({ error: 'Email and password are required' }, 400);
@@ -32,68 +41,79 @@ export function authRoutes(container: Container) {
     const userId = randomUUID() as UserId;
     const passwordHash = hashPassword(body.password);
 
-    await container.db.insert(users).values({
-      id: userId,
-      email: body.email,
-      passwordHash,
-    });
+    const signupResult = await container.db.transaction(async (tx) => {
+      const txDb = tx as unknown as Container['db'];
+      const txCreateDeps = {
+        organismRepository: new PgOrganismRepository(txDb),
+        stateRepository: new PgStateRepository(txDb),
+        contentTypeRegistry: container.contentTypeRegistry,
+        eventPublisher: new PgEventPublisher(txDb),
+        relationshipRepository: new PgRelationshipRepository(txDb),
+        identityGenerator: container.identityGenerator,
+      };
 
-    const createDeps = {
-      organismRepository: container.organismRepository,
-      stateRepository: container.stateRepository,
-      contentTypeRegistry: container.contentTypeRegistry,
-      eventPublisher: container.eventPublisher,
-      relationshipRepository: container.relationshipRepository,
-      identityGenerator: container.identityGenerator,
-    };
+      await tx.insert(users).values({
+        id: userId,
+        email: body.email,
+        passwordHash,
+      });
 
-    // Create personal organism (spatial-map — the user's space)
-    const personalOrganism = await createOrganism(
-      {
-        name: `${body.email.split('@')[0]}'s Space`,
-        contentTypeId: 'spatial-map' as ContentTypeId,
-        payload: { entries: [], width: 2000, height: 2000 },
-        createdBy: userId,
-        openTrunk: true,
-      },
-      createDeps,
-    );
+      // Create personal organism (spatial-map — the user's space)
+      const personalOrganism = await createOrganism(
+        {
+          name: `${body.email.split('@')[0]}'s Space`,
+          contentTypeId: 'spatial-map' as ContentTypeId,
+          payload: { entries: [], width: 2000, height: 2000 },
+          createdBy: userId,
+          openTrunk: true,
+        },
+        txCreateDeps,
+      );
 
-    // Create home page organism (text — the user's landing page)
-    const homePage = await createOrganism(
-      {
-        name: 'Home',
-        contentTypeId: 'text' as ContentTypeId,
-        payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
-        createdBy: userId,
-        openTrunk: true,
-      },
-      createDeps,
-    );
+      // Create home page organism (text — the user's landing page)
+      const homePage = await createOrganism(
+        {
+          name: 'Home',
+          contentTypeId: 'text' as ContentTypeId,
+          payload: { content: '', format: 'markdown', metadata: { isHomePage: true } },
+          createdBy: userId,
+          openTrunk: true,
+        },
+        txCreateDeps,
+      );
 
-    // Create session
-    const sessionId = randomUUID();
-    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      // Create session
+      const sessionId = randomUUID();
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+      await tx.insert(sessions).values({
+        id: sessionId,
+        userId,
+        expiresAt,
+      });
 
-    await container.db.insert(sessions).values({
-      id: sessionId,
-      userId,
-      expiresAt,
+      return {
+        sessionId,
+        personalOrganismId: personalOrganism.organism.id,
+        homePageOrganismId: homePage.organism.id,
+      };
     });
 
     return c.json(
       {
         userId,
-        sessionId,
-        personalOrganismId: personalOrganism.organism.id,
-        homePageOrganismId: homePage.organism.id,
+        sessionId: signupResult.sessionId,
+        personalOrganismId: signupResult.personalOrganismId,
+        homePageOrganismId: signupResult.homePageOrganismId,
       },
       201,
     );
   });
 
   app.post('/login', async (c) => {
-    const body = await c.req.json<{ email: string; password: string }>();
+    const body = await parseJsonBody<{ email: string; password: string }>(c);
+    if (!body) {
+      return c.json({ error: 'Invalid JSON body' }, 400);
+    }
 
     const rows = await container.db.select().from(users).where(eq(users.email, body.email));
     if (rows.length === 0) {

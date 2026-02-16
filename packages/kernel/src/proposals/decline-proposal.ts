@@ -61,7 +61,10 @@ export async function declineProposal(input: DeclineProposalInput, deps: Decline
     declineReason: input.reason,
   };
 
-  await deps.proposalRepository.update(declinedProposal);
+  const updated = await deps.proposalRepository.update(declinedProposal);
+  if (!updated) {
+    throw new ProposalAlreadyResolvedError(input.proposalId, 'declined');
+  }
 
   const event: DomainEvent = {
     id: deps.identityGenerator.eventId(),

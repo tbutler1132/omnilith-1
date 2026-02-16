@@ -15,6 +15,7 @@ import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
 import { parseJsonBody } from '../utils/parse-json.js';
+import { requireOrganismAccess } from './access.js';
 
 export function proposalRoutes(container: Container) {
   const app = new Hono<AuthEnv>();
@@ -26,6 +27,8 @@ export function proposalRoutes(container: Container) {
     const body = await parseJsonBody<OpenProposalRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    const accessError = await requireOrganismAccess(c, container, userId, organismId, 'open-proposal');
+    if (accessError) return accessError;
 
     try {
       const proposal = await openProposal(
@@ -41,6 +44,9 @@ export function proposalRoutes(container: Container) {
           contentTypeRegistry: container.contentTypeRegistry,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
         },
       );
 
@@ -56,7 +62,11 @@ export function proposalRoutes(container: Container) {
 
   // List proposals for organism
   app.get('/organisms/:id/proposals', async (c) => {
+    const userId = c.get('userId');
     const organismId = c.req.param('id') as OrganismId;
+    const accessError = await requireOrganismAccess(c, container, userId, organismId, 'view');
+    if (accessError) return accessError;
+
     const proposals = await container.proposalRepository.findByOrganismId(organismId);
     return c.json({ proposals });
   });

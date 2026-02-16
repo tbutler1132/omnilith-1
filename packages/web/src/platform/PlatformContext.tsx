@@ -45,6 +45,31 @@ export interface PlatformState {
   mapRefreshKey: number;
 }
 
+export interface PlatformStaticState {
+  userId: string;
+  personalOrganismId: string | null;
+  homePageOrganismId: string | null;
+  worldMapId: string;
+}
+
+export interface PlatformMapState {
+  navigationStack: NavigationEntry[];
+  currentMapId: string;
+  focusedOrganismId: string | null;
+  enteredOrganismId: string | null;
+}
+
+export interface PlatformVisorState {
+  visorOpen: boolean;
+  visorOrganismId: string | null;
+}
+
+export interface PlatformViewportMetaState {
+  altitude: Altitude;
+  viewportCenter: { x: number; y: number };
+  mapRefreshKey: number;
+}
+
 type PlatformAction =
   | { type: 'FOCUS_ORGANISM'; id: string | null }
   | { type: 'ENTER_MAP'; mapId: string; label: string }
@@ -60,6 +85,8 @@ type PlatformAction =
   | { type: 'EXIT_ORGANISM' }
   | { type: 'SET_VIEWPORT_CENTER'; x: number; y: number }
   | { type: 'BUMP_MAP_REFRESH' };
+
+const VIEWPORT_CENTER_EPSILON = 24;
 
 function reducer(state: PlatformState, action: PlatformAction): PlatformState {
   switch (action.type) {
@@ -116,6 +143,7 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
       return { ...state, visorOrganismId: null };
 
     case 'SET_ALTITUDE':
+      if (state.altitude === action.altitude) return state;
       return { ...state, altitude: action.altitude };
 
     case 'ENTER_ORGANISM':
@@ -134,6 +162,12 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
       };
 
     case 'SET_VIEWPORT_CENTER':
+      if (
+        Math.abs(state.viewportCenter.x - action.x) < VIEWPORT_CENTER_EPSILON &&
+        Math.abs(state.viewportCenter.y - action.y) < VIEWPORT_CENTER_EPSILON
+      ) {
+        return state;
+      }
       return {
         ...state,
         viewportCenter: { x: action.x, y: action.y },
@@ -165,7 +199,28 @@ interface PlatformContextValue {
   bumpMapRefresh: () => void;
 }
 
-const Context = createContext<PlatformContextValue | null>(null);
+export interface PlatformActions {
+  focusOrganism: (id: string | null) => void;
+  enterMap: (mapId: string, label: string) => void;
+  exitMap: () => void;
+  navigateToMap: (mapId: string) => void;
+  enterOrganism: (id: string) => void;
+  exitOrganism: () => void;
+  openVisor: () => void;
+  closeVisor: () => void;
+  toggleVisor: () => void;
+  openInVisor: (id: string) => void;
+  closeVisorOrganism: () => void;
+  setAltitude: (altitude: Altitude) => void;
+  setViewportCenter: (x: number, y: number) => void;
+  bumpMapRefresh: () => void;
+}
+
+const StaticStateContext = createContext<PlatformStaticState | null>(null);
+const MapStateContext = createContext<PlatformMapState | null>(null);
+const VisorStateContext = createContext<PlatformVisorState | null>(null);
+const ViewportMetaStateContext = createContext<PlatformViewportMetaState | null>(null);
+const ActionsContext = createContext<PlatformActions | null>(null);
 
 interface PlatformProviderProps {
   userId: string;
@@ -215,9 +270,45 @@ export function PlatformProvider({
   const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
   const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
 
-  const value = useMemo<PlatformContextValue>(
+  const staticState = useMemo<PlatformStaticState>(
     () => ({
-      state,
+      userId: state.userId,
+      personalOrganismId: state.personalOrganismId,
+      homePageOrganismId: state.homePageOrganismId,
+      worldMapId: state.worldMapId,
+    }),
+    [state.userId, state.personalOrganismId, state.homePageOrganismId, state.worldMapId],
+  );
+
+  const mapState = useMemo<PlatformMapState>(
+    () => ({
+      navigationStack: state.navigationStack,
+      currentMapId: state.currentMapId,
+      focusedOrganismId: state.focusedOrganismId,
+      enteredOrganismId: state.enteredOrganismId,
+    }),
+    [state.navigationStack, state.currentMapId, state.focusedOrganismId, state.enteredOrganismId],
+  );
+
+  const visorState = useMemo<PlatformVisorState>(
+    () => ({
+      visorOpen: state.visorOpen,
+      visorOrganismId: state.visorOrganismId,
+    }),
+    [state.visorOpen, state.visorOrganismId],
+  );
+
+  const viewportMetaState = useMemo<PlatformViewportMetaState>(
+    () => ({
+      altitude: state.altitude,
+      viewportCenter: state.viewportCenter,
+      mapRefreshKey: state.mapRefreshKey,
+    }),
+    [state.altitude, state.viewportCenter, state.mapRefreshKey],
+  );
+
+  const actions = useMemo<PlatformActions>(
+    () => ({
       focusOrganism,
       enterOrganism,
       exitOrganism,
@@ -234,7 +325,6 @@ export function PlatformProvider({
       bumpMapRefresh,
     }),
     [
-      state,
       focusOrganism,
       enterOrganism,
       exitOrganism,
@@ -252,11 +342,71 @@ export function PlatformProvider({
     ],
   );
 
-  return <Context.Provider value={value}>{children}</Context.Provider>;
+  return (
+    <StaticStateContext.Provider value={staticState}>
+      <MapStateContext.Provider value={mapState}>
+        <VisorStateContext.Provider value={visorState}>
+          <ViewportMetaStateContext.Provider value={viewportMetaState}>
+            <ActionsContext.Provider value={actions}>{children}</ActionsContext.Provider>
+          </ViewportMetaStateContext.Provider>
+        </VisorStateContext.Provider>
+      </MapStateContext.Provider>
+    </StaticStateContext.Provider>
+  );
+}
+
+export function usePlatformStaticState(): PlatformStaticState {
+  const ctx = useContext(StaticStateContext);
+  if (!ctx) throw new Error('usePlatformStaticState must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformMapState(): PlatformMapState {
+  const ctx = useContext(MapStateContext);
+  if (!ctx) throw new Error('usePlatformMapState must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformVisorState(): PlatformVisorState {
+  const ctx = useContext(VisorStateContext);
+  if (!ctx) throw new Error('usePlatformVisorState must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformViewportMeta(): PlatformViewportMetaState {
+  const ctx = useContext(ViewportMetaStateContext);
+  if (!ctx) throw new Error('usePlatformViewportMeta must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformActions(): PlatformActions {
+  const ctx = useContext(ActionsContext);
+  if (!ctx) throw new Error('usePlatformActions must be used within PlatformProvider');
+  return ctx;
 }
 
 export function usePlatform(): PlatformContextValue {
-  const ctx = useContext(Context);
-  if (!ctx) throw new Error('usePlatform must be used within PlatformProvider');
-  return ctx;
+  const staticState = usePlatformStaticState();
+  const mapState = usePlatformMapState();
+  const visorState = usePlatformVisorState();
+  const viewportMeta = usePlatformViewportMeta();
+  const actions = usePlatformActions();
+
+  const state = useMemo<PlatformState>(
+    () => ({
+      ...staticState,
+      ...mapState,
+      ...visorState,
+      ...viewportMeta,
+    }),
+    [staticState, mapState, visorState, viewportMeta],
+  );
+
+  return useMemo(
+    () => ({
+      state,
+      ...actions,
+    }),
+    [state, actions],
+  );
 }

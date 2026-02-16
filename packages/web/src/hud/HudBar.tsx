@@ -8,7 +8,12 @@
  */
 
 import { useOrganism } from '../hooks/use-organism.js';
-import { usePlatform } from '../platform/index.js';
+import {
+  usePlatformActions,
+  usePlatformMapState,
+  usePlatformViewportMeta,
+  usePlatformVisorState,
+} from '../platform/index.js';
 
 const ALTITUDE_LABELS: Record<string, string> = {
   high: 'High',
@@ -17,21 +22,22 @@ const ALTITUDE_LABELS: Record<string, string> = {
 };
 
 export function HudBar() {
-  const { state, focusOrganism, exitOrganism, exitMap, closeVisorOrganism } = usePlatform();
-  const isInside = state.enteredOrganismId !== null;
-  const visorOrganismId = state.visorOrganismId;
+  const { navigationStack, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
+  const { visorOrganismId } = usePlatformVisorState();
+  const { altitude } = usePlatformViewportMeta();
+  const { focusOrganism, exitOrganism, exitMap, closeVisorOrganism } = usePlatformActions();
+  const isInside = enteredOrganismId !== null;
 
-  const showBack =
-    visorOrganismId !== null || isInside || state.focusedOrganismId !== null || state.navigationStack.length > 1;
+  const showBack = visorOrganismId !== null || isInside || focusedOrganismId !== null || navigationStack.length > 1;
 
   function handleBack() {
     if (visorOrganismId) {
       closeVisorOrganism();
     } else if (isInside) {
       exitOrganism();
-    } else if (state.focusedOrganismId) {
+    } else if (focusedOrganismId) {
       focusOrganism(null);
-    } else if (state.navigationStack.length > 1) {
+    } else if (navigationStack.length > 1) {
       exitMap();
     }
   }
@@ -46,10 +52,10 @@ export function HudBar() {
         )}
         {visorOrganismId ? (
           <VisorLocation organismId={visorOrganismId} />
-        ) : isInside && state.enteredOrganismId ? (
-          <InteriorLocation organismId={state.enteredOrganismId} />
+        ) : isInside && enteredOrganismId ? (
+          <InteriorLocation organismId={enteredOrganismId} />
         ) : (
-          <span className="hud-location">{ALTITUDE_LABELS[state.altitude] ?? 'High'}</span>
+          <span className="hud-location">{ALTITUDE_LABELS[altitude] ?? 'High'}</span>
         )}
       </div>
     </div>

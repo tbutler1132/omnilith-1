@@ -8,10 +8,10 @@
 
 import { useState } from 'react';
 import { composeChild, decomposeChild } from '../../api/organisms.js';
-import { useChildren, useOrganism, useParent } from '../../hooks/use-organism.js';
+import { useChildren, useOrganismsByIds, useParent } from '../../hooks/use-organism.js';
 import { OrganismPicker } from '../../organisms/OrganismPicker.js';
 import { ThresholdForm } from '../../organisms/ThresholdForm.js';
-import { usePlatform } from '../../platform/PlatformContext.js';
+import { usePlatformActions } from '../../platform/index.js';
 
 interface CompositionSectionProps {
   organismId: string;
@@ -21,50 +21,13 @@ interface CompositionSectionProps {
 
 type ComposeAction = 'compose' | 'create' | null;
 
-function ChildItem({
-  childId,
-  onRemove,
-  removing,
-}: {
-  childId: string;
-  onRemove: (childId: string) => void;
-  removing: boolean;
-}) {
-  const { data } = useOrganism(childId);
-  const { openInVisor } = usePlatform();
-
-  const contentType = data?.currentState?.contentTypeId ?? '...';
-
-  function handleClick() {
-    openInVisor(childId);
-  }
-
-  return (
-    <div className="hud-info-child-row">
-      <button type="button" className="hud-info-child" onClick={handleClick}>
-        <span className="hud-info-child-badge">{contentType}</span>
-        <span className="hud-info-child-name">{data?.organism.name ?? '...'}</span>
-      </button>
-      <button
-        type="button"
-        className="hud-info-child-remove"
-        onClick={() => onRemove(childId)}
-        disabled={removing}
-        title="Decompose"
-      >
-        &times;
-      </button>
-    </div>
-  );
-}
-
 export function CompositionSection({ organismId, refreshKey: parentRefresh, onMutate }: CompositionSectionProps) {
   const [localRefresh, setLocalRefresh] = useState(0);
   const combinedRefresh = parentRefresh + localRefresh;
 
   const { data: parent } = useParent(organismId, combinedRefresh);
   const { data: children } = useChildren(organismId, combinedRefresh);
-  const { openInVisor } = usePlatform();
+  const { openInVisor } = usePlatformActions();
 
   const [action, setAction] = useState<ComposeAction>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
@@ -72,6 +35,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
 
   const childIds = (children ?? []).slice(0, 10).map((c) => c.childId);
   const totalChildren = children?.length ?? 0;
+  const { data: childDataById } = useOrganismsByIds(childIds, combinedRefresh);
 
   function handleParentClick() {
     if (!parent) return;
@@ -134,9 +98,26 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
           <span className="hud-info-row-label" style={{ marginTop: 8 }}>
             Contains
           </span>
-          {childIds.map((id) => (
-            <ChildItem key={id} childId={id} onRemove={handleDecompose} removing={removingId === id} />
-          ))}
+          {childIds.map((id) => {
+            const child = childDataById?.[id];
+            return (
+              <div key={id} className="hud-info-child-row">
+                <button type="button" className="hud-info-child" onClick={() => openInVisor(id)}>
+                  <span className="hud-info-child-badge">{child?.currentState?.contentTypeId ?? '...'}</span>
+                  <span className="hud-info-child-name">{child?.organism.name ?? '...'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="hud-info-child-remove"
+                  onClick={() => handleDecompose(id)}
+                  disabled={removingId === id}
+                  title="Decompose"
+                >
+                  &times;
+                </button>
+              </div>
+            );
+          })}
           {totalChildren > 10 && <span className="hud-info-dim">+{totalChildren - 10} more</span>}
         </>
       )}

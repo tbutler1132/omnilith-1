@@ -10,7 +10,7 @@
 import { useState } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
-import { usePlatform } from '../platform/index.js';
+import { usePlatformActions, usePlatformMapState } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
 
 type ActivePanel = 'threshold' | 'mine' | null;
@@ -28,7 +28,8 @@ function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onT
 }
 
 export function HudMapActions() {
-  const { state, openInVisor } = usePlatform();
+  const { focusedOrganismId } = usePlatformMapState();
+  const { openInVisor } = usePlatformActions();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
 
   function togglePanel(panel: 'threshold' | 'mine') {
@@ -64,11 +65,11 @@ export function HudMapActions() {
       )}
 
       <div className="hud-map-actions">
-        {state.focusedOrganismId && (
+        {focusedOrganismId && (
           <FocusedOrganismButton
-            organismId={state.focusedOrganismId}
+            organismId={focusedOrganismId}
             onTend={() => {
-              if (state.focusedOrganismId) openInVisor(state.focusedOrganismId);
+              if (focusedOrganismId) openInVisor(focusedOrganismId);
             }}
           />
         )}

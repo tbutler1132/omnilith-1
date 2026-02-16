@@ -7,7 +7,6 @@
  */
 
 import { useMemo } from 'react';
-import { usePlatform } from '../platform/index.js';
 import { SpaceOrganism } from './SpaceOrganism.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
@@ -19,8 +18,10 @@ interface SpaceLayerProps {
   viewport: ViewportState;
   screenSize: ScreenSize;
   altitude: Altitude;
+  focusedOrganismId: string | null;
   onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
+  onEnterMap: (mapId: string, label: string) => void;
 }
 
 export function SpaceLayer({
@@ -28,11 +29,11 @@ export function SpaceLayer({
   viewport,
   screenSize,
   altitude,
+  focusedOrganismId,
   onFocusOrganism,
   onEnterOrganism,
+  onEnterMap,
 }: SpaceLayerProps) {
-  const { state } = usePlatform();
-
   const visibleEntries = useMemo(() => {
     if (screenSize.width === 0 || screenSize.height === 0) return entries;
     const bounds = getVisibleBounds(viewport, screenSize);
@@ -46,9 +47,10 @@ export function SpaceLayer({
           key={entry.organismId}
           entry={entry}
           altitude={altitude}
-          focused={state.focusedOrganismId === entry.organismId}
+          focused={focusedOrganismId === entry.organismId}
           onFocusOrganism={onFocusOrganism}
           onEnterOrganism={onEnterOrganism}
+          onEnterMap={onEnterMap}
         />
       ))}
     </>

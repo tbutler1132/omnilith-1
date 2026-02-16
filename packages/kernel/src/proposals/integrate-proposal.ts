@@ -90,7 +90,10 @@ export async function integrateProposal(
       resolvedBy: input.integratedBy,
       declineReason: `Policy evaluation failed: ${declineReasons}`,
     };
-    await deps.proposalRepository.update(declinedProposal);
+    const declined = await deps.proposalRepository.update(declinedProposal);
+    if (!declined) {
+      throw new ProposalAlreadyResolvedError(input.proposalId, 'integrated');
+    }
 
     const declineEvent: DomainEvent = {
       id: deps.identityGenerator.eventId(),
@@ -133,7 +136,10 @@ export async function integrateProposal(
     resolvedAt: now,
     resolvedBy: input.integratedBy,
   };
-  await deps.proposalRepository.update(integratedProposal);
+  const integrated = await deps.proposalRepository.update(integratedProposal);
+  if (!integrated) {
+    throw new ProposalAlreadyResolvedError(input.proposalId, 'integrated');
+  }
 
   const event: DomainEvent = {
     id: deps.identityGenerator.eventId(),

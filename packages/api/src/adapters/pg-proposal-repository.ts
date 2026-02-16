@@ -33,16 +33,31 @@ export class PgProposalRepository implements ProposalRepository {
     });
   }
 
-  async update(proposal: Proposal): Promise<void> {
-    await this.db
-      .update(proposals)
-      .set({
-        status: proposal.status,
-        resolvedAt: proposal.resolvedAt ? new Date(proposal.resolvedAt) : null,
-        resolvedBy: proposal.resolvedBy ?? null,
-        declineReason: proposal.declineReason ?? null,
-      })
-      .where(eq(proposals.id, proposal.id));
+  async update(proposal: Proposal): Promise<boolean> {
+    const result =
+      proposal.status === 'open'
+        ? await this.db
+            .update(proposals)
+            .set({
+              status: proposal.status,
+              resolvedAt: proposal.resolvedAt ? new Date(proposal.resolvedAt) : null,
+              resolvedBy: proposal.resolvedBy ?? null,
+              declineReason: proposal.declineReason ?? null,
+            })
+            .where(eq(proposals.id, proposal.id))
+            .returning({ id: proposals.id })
+        : await this.db
+            .update(proposals)
+            .set({
+              status: proposal.status,
+              resolvedAt: proposal.resolvedAt ? new Date(proposal.resolvedAt) : null,
+              resolvedBy: proposal.resolvedBy ?? null,
+              declineReason: proposal.declineReason ?? null,
+            })
+            .where(and(eq(proposals.id, proposal.id), eq(proposals.status, 'open')))
+            .returning({ id: proposals.id });
+
+    return result.length > 0;
   }
 
   async findById(id: ProposalId): Promise<Proposal | undefined> {

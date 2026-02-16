@@ -206,6 +206,12 @@ export function SpaceViewport({
   // Keyboard shortcuts for altitude change
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement | null;
+      const tag = target?.tagName;
+      if (target?.isContentEditable || tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') {
+        return;
+      }
+
       if (e.key === '+' || e.key === '=') {
         onAltitudeChange('in');
       } else if (e.key === '-' || e.key === '_') {
