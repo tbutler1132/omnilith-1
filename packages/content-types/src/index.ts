@@ -6,6 +6,7 @@
  */
 
 export { type AudioFormat, type AudioPayload, audioContentType } from './audio/index.js';
+export { type CommunityPayload, communityContentType } from './community/index.js';
 export {
   type ArrangementType,
   type CompositionReferenceEntry,
@@ -42,6 +43,7 @@ export {
 
 import type { ContentTypeContract } from '@omnilith/kernel';
 import { audioContentType } from './audio/index.js';
+import { communityContentType } from './community/index.js';
 import { compositionReferenceContentType } from './composition-reference/index.js';
 import { imageContentType } from './image/index.js';
 import { integrationPolicyContentType } from './integration-policy/index.js';
@@ -54,6 +56,7 @@ import { threadContentType } from './thread/index.js';
 import { variableContentType } from './variable/index.js';
 
 export const allContentTypes: ReadonlyArray<ContentTypeContract> = [
+  communityContentType,
   audioContentType,
   textContentType,
   imageContentType,

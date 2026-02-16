@@ -44,7 +44,12 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (focused) {
-      onEnterOrganism(entry.organismId, entry.x, entry.y);
+      if (data?.currentState?.contentTypeId === 'community') {
+        const payload = data.currentState.payload as { mapOrganismId: string };
+        enterMap(payload.mapOrganismId, data.organism.name);
+      } else {
+        onEnterOrganism(entry.organismId, entry.x, entry.y);
+      }
     } else {
       onFocusOrganism(entry.organismId, entry.x, entry.y);
     }
@@ -54,6 +59,9 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
     e.stopPropagation();
     if (data?.currentState?.contentTypeId === 'spatial-map') {
       enterMap(entry.organismId, data.organism.name);
+    } else if (data?.currentState?.contentTypeId === 'community') {
+      const payload = data.currentState.payload as { mapOrganismId: string };
+      enterMap(payload.mapOrganismId, data.organism.name);
     }
   };
 

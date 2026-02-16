@@ -6,6 +6,7 @@ export { FallbackRenderer } from './fallback.js';
 export { getRenderer } from './registry.js';
 
 import { AudioRenderer } from './audio.js';
+import { CommunityRenderer } from './community.js';
 import { CompositionReferenceRenderer } from './composition-reference.js';
 import { ImageRenderer } from './image.js';
 import { registerRenderer } from './registry.js';
@@ -16,4 +17,5 @@ export function registerAllRenderers() {
   registerRenderer('audio', AudioRenderer);
   registerRenderer('image', ImageRenderer);
   registerRenderer('composition-reference', CompositionReferenceRenderer);
+  registerRenderer('community', CommunityRenderer);
 }

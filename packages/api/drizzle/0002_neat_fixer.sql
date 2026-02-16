@@ -1,0 +1,1 @@
+ALTER TABLE "organisms" ADD COLUMN "name" text NOT NULL;

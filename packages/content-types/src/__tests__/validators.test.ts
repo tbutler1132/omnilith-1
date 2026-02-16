@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { validateAudio } from '../audio/validator.js';
+import { validateCommunity } from '../community/validator.js';
 import { validateCompositionReference } from '../composition-reference/validator.js';
 import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
@@ -183,6 +184,34 @@ describe('thread validator', () => {
       timestamp: Date.now(),
     });
     expect(result.valid).toBe(false);
+  });
+});
+
+describe('community validator', () => {
+  it('accepts a valid community payload', () => {
+    const result = validateCommunity({
+      description: 'A collective of field recordists.',
+      mapOrganismId: 'org-1',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects missing description', () => {
+    const result = validateCommunity({ mapOrganismId: 'org-1' });
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('description must be a non-empty string');
+  });
+
+  it('rejects missing mapOrganismId', () => {
+    const result = validateCommunity({ description: 'A community.' });
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('mapOrganismId must be a non-empty string');
+  });
+
+  it('rejects non-object payload', () => {
+    const result = validateCommunity('not an object');
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('Payload must be an object');
   });
 });
 

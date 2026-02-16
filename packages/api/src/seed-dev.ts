@@ -398,6 +398,116 @@ export async function seedDev(container: Container): Promise<void> {
   );
   console.log(`  Dormant note: ${dormantNote.organism.id}`);
 
+  // --- Community: The Undergrowth ---
+
+  // Community spatial map — the navigable surface inside the community
+  const undergrowthMap = await createOrganism(
+    {
+      name: 'The Undergrowth Map',
+      contentTypeId: 'spatial-map' as ContentTypeId,
+      payload: {
+        entries: [],
+        width: 2000,
+        height: 2000,
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  // The community organism itself
+  const undergrowth = await createOrganism(
+    {
+      name: 'The Undergrowth',
+      contentTypeId: 'community' as ContentTypeId,
+      payload: {
+        description:
+          'A collective of field recordists exploring the sonic edges of landscape, weather, and forgetting.',
+        mapOrganismId: undergrowthMap.organism.id,
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  // Compose the map inside the community
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: undergrowthMap.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+
+  // Community-specific organisms
+  const communityText = await createOrganism(
+    {
+      name: 'Listening Practice',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Listening Practice',
+          '',
+          'Go outside. Close your eyes.',
+          'Count the layers of sound.',
+          'The ones you can name. The ones you cannot.',
+          '',
+          'Come back and write down what you heard.',
+        ].join('\n'),
+        format: 'markdown',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityAudio = await createOrganism(
+    {
+      name: 'Rain on Tin',
+      contentTypeId: 'audio' as ContentTypeId,
+      payload: {
+        fileReference: 'dev/audio/rain-on-tin.flac',
+        durationSeconds: 423,
+        format: 'flac',
+        sampleRate: 48000,
+        metadata: { title: 'Rain on Tin', artist: 'Member Recording' },
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  // Compose organisms inside the community boundary
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: communityText.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: communityAudio.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+
+  // Surface organisms on the community's map
+  await appendState(
+    {
+      organismId: undergrowthMap.organism.id,
+      contentTypeId: 'spatial-map' as ContentTypeId,
+      payload: {
+        entries: [
+          { organismId: communityText.organism.id, x: 800, y: 900, size: 1.0, emphasis: 0.8 },
+          { organismId: communityAudio.organism.id, x: 1200, y: 1100, size: 1.1, emphasis: 0.9 },
+        ],
+        width: 2000,
+        height: 2000,
+      },
+      appendedBy: devUserId,
+    },
+    appendDeps,
+  );
+
+  console.log(`  Community "The Undergrowth": ${undergrowth.organism.id}`);
+  console.log(`    Map: ${undergrowthMap.organism.id}`);
+  console.log(`    Children: ${communityText.organism.id}, ${communityAudio.organism.id}`);
+
   // --- Surface organisms on the world map ---
 
   const worldMapRow = await container.db.select().from(platformConfig).where(eq(platformConfig.key, 'world_map_id'));
@@ -430,6 +540,9 @@ export async function seedDev(container: Container): Promise<void> {
     // Periphery
     { organismId: sketch.organism.id, x: 1500, y: 3000, size: 0.8 },
     { organismId: dormantNote.organism.id, x: 3500, y: 3200, size: 0.6, emphasis: 0.2 },
+
+    // Community
+    { organismId: undergrowth.organism.id, x: 1900, y: 2800, size: 1.5, emphasis: 0.95 },
   ];
 
   await appendState(
