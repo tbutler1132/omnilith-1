@@ -4,7 +4,7 @@
  * Shows recent state changes, open proposal count, and last activity date.
  */
 
-import { useVitality } from '../../hooks/use-organism.js';
+import { useVitality } from '../../../../hooks/use-organism.js';
 import { formatDate } from './format-date.js';
 
 interface VitalitySectionProps {

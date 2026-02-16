@@ -6,7 +6,7 @@
  */
 
 import { type FormEvent, useMemo, useState } from 'react';
-import { thresholdOrganism } from '../api/organisms.js';
+import { thresholdOrganism } from '../../../api/organisms.js';
 
 interface ContentTypeOption {
   id: string;

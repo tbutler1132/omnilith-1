@@ -12,7 +12,7 @@ export type VisorTemplateId = 'map-core' | 'organism-core' | 'interior-core';
 export type VisorCollapsedRailPlacement = 'inline' | 'viewport-bottom-left';
 export type VisorMainSlotPresentation = 'inline' | 'centered-overlay';
 export type VisorReservedAnchor = 'hud-bar' | 'compass' | 'logout' | 'altitude-controls' | 'policy-badge';
-export type VisorWidgetId = 'map-actions' | 'history-navigation';
+export type VisorWidgetId = 'map-actions' | 'history-navigation' | 'compass' | 'vitality';
 
 export interface VisorTemplatePanelSlots {
   main: {
@@ -80,7 +80,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
     },
     widgetSlots: {
-      allowedWidgets: ['map-actions', 'history-navigation'],
+      allowedWidgets: ['map-actions', 'history-navigation', 'compass'],
     },
     cueSlots: {
       enabled: true,
@@ -95,7 +95,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
     panelSlots: {
       main: {
         enabled: true,
-        allowEmpty: false,
+        allowEmpty: true,
         presentation: 'centered-overlay',
       },
       secondary: {
@@ -109,7 +109,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
     },
     widgetSlots: {
-      allowedWidgets: ['history-navigation'],
+      allowedWidgets: ['history-navigation', 'vitality'],
     },
     cueSlots: {
       enabled: true,

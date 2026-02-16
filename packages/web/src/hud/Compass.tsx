@@ -1,8 +1,7 @@
 /**
- * Compass — fixed-position HUD element for spatial orientation.
+ * Compass — spatial orientation widget.
  *
- * Simple north arrow with "N" label. Always visible regardless of
- * altitude or visor state. Positioned top-right, below the ambient HUD bar.
+ * Rendered in the adaptive widget lane for map context.
  */
 
 export function Compass() {

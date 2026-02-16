@@ -6,8 +6,8 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import { instantiateTemplate } from '../api/organisms.js';
-import type { SongStatus, TemplateSongCustomization } from './template-values.js';
+import { instantiateTemplate } from '../../../api/organisms.js';
+import type { SongStatus, TemplateSongCustomization } from '../../template-values.js';
 
 interface HudTemplateValuesPanelProps {
   customization: TemplateSongCustomization;

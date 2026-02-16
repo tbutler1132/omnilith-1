@@ -6,8 +6,8 @@
  */
 
 import { useState } from 'react';
-import { declineProposal, integrateProposal } from '../../api/organisms.js';
-import { useProposals } from '../../hooks/use-organism.js';
+import { declineProposal, integrateProposal } from '../../../../api/organisms.js';
+import { useProposals } from '../../../../hooks/use-organism.js';
 import { formatDate } from './format-date.js';
 
 interface ProposalsSectionProps {
@@ -53,46 +53,41 @@ export function ProposalsSection({ organismId, refreshKey: parentRefresh, canWri
     }
   }
 
-  if (!proposals || proposals.length === 0) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">Proposals</span>
-        <span className="hud-info-dim">No proposals</span>
-      </div>
-    );
-  }
-
   return (
     <div className="hud-info-section">
       <span className="hud-info-label">Proposals</span>
-      {proposals.map((p) => (
-        <div key={p.id} className="hud-info-proposal">
-          <span className={`hud-info-proposal-status hud-info-proposal-status--${p.status}`}>{p.status}</span>
-          <span className="hud-info-proposal-detail">
-            {p.proposedContentTypeId} by {p.proposedBy.slice(0, 8)}, {formatDate(p.createdAt)}
-          </span>
-          {canWrite && p.status === 'open' && (
-            <span className="hud-proposal-actions">
-              <button
-                type="button"
-                className="hud-proposal-btn hud-proposal-btn--integrate"
-                onClick={() => handleIntegrate(p.id)}
-                disabled={actionInProgress === p.id}
-              >
-                Integrate
-              </button>
-              <button
-                type="button"
-                className="hud-proposal-btn hud-proposal-btn--decline"
-                onClick={() => handleDecline(p.id)}
-                disabled={actionInProgress === p.id}
-              >
-                Decline
-              </button>
+      {proposals && proposals.length > 0 ? (
+        proposals.map((p) => (
+          <div key={p.id} className="hud-info-proposal">
+            <span className={`hud-info-proposal-status hud-info-proposal-status--${p.status}`}>{p.status}</span>
+            <span className="hud-info-proposal-detail">
+              {p.proposedContentTypeId} by {p.proposedBy.slice(0, 8)}, {formatDate(p.createdAt)}
             </span>
-          )}
-        </div>
-      ))}
+            {canWrite && p.status === 'open' && (
+              <span className="hud-proposal-actions">
+                <button
+                  type="button"
+                  className="hud-proposal-btn hud-proposal-btn--integrate"
+                  onClick={() => handleIntegrate(p.id)}
+                  disabled={actionInProgress === p.id}
+                >
+                  Integrate
+                </button>
+                <button
+                  type="button"
+                  className="hud-proposal-btn hud-proposal-btn--decline"
+                  onClick={() => handleDecline(p.id)}
+                  disabled={actionInProgress === p.id}
+                >
+                  Decline
+                </button>
+              </span>
+            )}
+          </div>
+        ))
+      ) : (
+        <span className="hud-info-dim">No proposals</span>
+      )}
       {!canWrite && <span className="hud-info-dim">Log in to integrate or decline proposals.</span>}
       {error && <span className="hud-info-error">{error}</span>}
     </div>

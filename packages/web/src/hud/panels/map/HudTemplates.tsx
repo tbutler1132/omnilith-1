@@ -6,8 +6,8 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { fetchOrganisms, instantiateTemplate } from '../api/organisms.js';
-import type { SongPayloadDraft, SongStatus, TemplateSongCustomization } from './template-values.js';
+import { fetchOrganisms, instantiateTemplate } from '../../../api/organisms.js';
+import type { SongPayloadDraft, SongStatus, TemplateSongCustomization } from '../../template-values.js';
 
 interface TemplateRecipeStep {
   readonly ref: string;

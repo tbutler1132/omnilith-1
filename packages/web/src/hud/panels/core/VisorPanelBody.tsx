@@ -6,12 +6,13 @@
  */
 
 import {
+  AppendSection,
   CompositionSection,
   GovernanceSection,
   ProposalsSection,
+  ProposeSection,
   StateHistorySection,
-  VitalitySection,
-} from '../sections/index.js';
+} from '../organism/sections/index.js';
 import type { VisorHudPanelId } from './panel-schema.js';
 
 type UniversalVisorHudPanelId = Exclude<VisorHudPanelId, 'organism'>;
@@ -25,16 +26,19 @@ interface VisorPanelBodyProps {
 }
 
 export function VisorPanelBody({ panelId, organismId, refreshKey, canWrite, onMutate }: VisorPanelBodyProps) {
-  if (panelId === 'vitality') {
-    return <VitalitySection organismId={organismId} refreshKey={refreshKey} />;
-  }
   if (panelId === 'composition') {
     return (
       <CompositionSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />
     );
   }
+  if (panelId === 'propose') {
+    return <ProposeSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />;
+  }
   if (panelId === 'proposals') {
     return <ProposalsSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />;
+  }
+  if (panelId === 'append') {
+    return <AppendSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />;
   }
   if (panelId === 'history') {
     return <StateHistorySection organismId={organismId} refreshKey={refreshKey} />;

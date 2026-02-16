@@ -5,7 +5,7 @@
  * and shows whether the organism is open or regulated.
  */
 
-import { useChildren, useOrganismsByIds } from '../../hooks/use-organism.js';
+import { useChildren, useOrganismsByIds } from '../../../../hooks/use-organism.js';
 
 interface GovernanceSectionProps {
   organismId: string;

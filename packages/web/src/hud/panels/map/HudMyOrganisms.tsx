@@ -6,8 +6,8 @@
  */
 
 import { useMemo, useState } from 'react';
-import { useUserOrganisms } from '../hooks/use-organism.js';
-import { usePlatformMapState } from '../platform/index.js';
+import { useUserOrganisms } from '../../../hooks/use-organism.js';
+import { usePlatformMapState } from '../../../platform/index.js';
 
 interface HudMyOrganismsProps {
   onSelect: (organismId: string) => void;

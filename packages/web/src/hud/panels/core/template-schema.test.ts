@@ -8,17 +8,18 @@ describe('resolveVisorTemplate', () => {
     expect(template.id).toBe('map-core');
     expect(template.panelSlots.main.allowEmpty).toBe(true);
     expect(template.panelSlots.collapsed.placement).toBe('viewport-bottom-left');
-    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions', 'history-navigation']);
+    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
   });
 
-  it('returns the organism template with non-empty main and collapsed rail capacity', () => {
+  it('returns the organism template with empty-main support and collapsed rail capacity', () => {
     const template = resolveVisorTemplate('visor-organism');
 
     expect(template.id).toBe('organism-core');
-    expect(template.panelSlots.main.allowEmpty).toBe(false);
+    expect(template.panelSlots.main.allowEmpty).toBe(true);
     expect(template.panelSlots.secondary.maxPanels).toBe(0);
     expect(template.panelSlots.collapsed.maxPanels).toBeNull();
     expect(template.widgetSlots.allowedWidgets).toContain('history-navigation');
+    expect(template.widgetSlots.allowedWidgets).toContain('vitality');
   });
 
   it('registers a template for each adaptive context class', () => {

@@ -30,6 +30,16 @@ function renderDeck(input: {
 }
 
 describe('VisorPanelDeck', () => {
+  it('an organism template starts with only the tend chip collapsed', () => {
+    const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: null });
+
+    expect(html).toContain('Tend');
+    expect(html).not.toContain('Composition');
+    expect(html).not.toContain('Open proposal');
+    expect(html).not.toContain('State history');
+    expect(html).not.toContain('visor-panel-main-slot');
+  });
+
   it('an interior template renders collapsed tend actions through slot placement classes', () => {
     const html = renderDeck({ templateContext: 'interior', preferredMainPanelId: null });
 

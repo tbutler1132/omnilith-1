@@ -5,7 +5,7 @@
  * in reverse chronological order.
  */
 
-import { useStateHistory } from '../../hooks/use-organism.js';
+import { useStateHistory } from '../../../../hooks/use-organism.js';
 import { formatDate } from './format-date.js';
 
 interface StateHistorySectionProps {

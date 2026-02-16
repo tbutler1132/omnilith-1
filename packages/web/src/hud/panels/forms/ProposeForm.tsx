@@ -7,7 +7,7 @@
  */
 
 import { type FormEvent, useState } from 'react';
-import { appendState, openProposal } from '../api/organisms.js';
+import { appendState, openProposal } from '../../../api/organisms.js';
 
 interface ContentTypeOption {
   id: string;

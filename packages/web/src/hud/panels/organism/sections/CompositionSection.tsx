@@ -7,11 +7,11 @@
  */
 
 import { useState } from 'react';
-import { composeChild, decomposeChild } from '../../api/organisms.js';
-import { useChildren, useOrganismsByIds, useParent } from '../../hooks/use-organism.js';
-import { OrganismPicker } from '../../organisms/OrganismPicker.js';
-import { ThresholdForm } from '../../organisms/ThresholdForm.js';
-import { usePlatformActions } from '../../platform/index.js';
+import { composeChild, decomposeChild } from '../../../../api/organisms.js';
+import { useChildren, useOrganismsByIds, useParent } from '../../../../hooks/use-organism.js';
+import { OrganismPicker } from '../../../../organisms/OrganismPicker.js';
+import { usePlatformActions } from '../../../../platform/index.js';
+import { ThresholdForm } from '../../forms/ThresholdForm.js';
 
 interface CompositionSectionProps {
   organismId: string;

@@ -7,7 +7,7 @@ const mapSlots = resolveVisorTemplate('map').panelSlots;
 const interiorSlots = resolveVisorTemplate('interior').panelSlots;
 
 describe('resolveVisorPanelLayout', () => {
-  it('a surfaced regulated organism resolves deterministic main secondary collapsed roles', () => {
+  it('a regulated organism starts with collapsed tend and no main panel', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -20,12 +20,29 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.mainPanelId).toBe('organism');
+    expect(layout.mainPanelId).toBeNull();
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['composition', 'vitality', 'proposals', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
 
-  it('an open-trunk organism omits proposals from available panels', () => {
+  it('opening tend reveals universal regulated panels as collapsed alternatives', () => {
+    const layout = resolveVisorPanelLayout({
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
+      preferredMainPanelId: 'organism',
+      slots: organismSlots,
+    });
+
+    expect(layout.mainPanelId).toBe('organism');
+    expect(layout.collapsedPanelIds).toEqual(['composition', 'propose', 'proposals', 'governance', 'history']);
+  });
+
+  it('an open-trunk organism exposes append and omits regulated proposal panels', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -38,12 +55,28 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['organism', 'composition', 'vitality', 'history', 'governance']);
+    expect(layout.availablePanelIds).toEqual(['organism', 'composition', 'append', 'history', 'governance']);
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).not.toContain('proposals');
+    expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
 
-  it('an organism context defaults to tend as the main panel', () => {
+  it('opening tend on open-trunk reveals append alongside other universal panels', () => {
+    const layout = resolveVisorPanelLayout({
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: true,
+        templateValuesReady: false,
+        canWrite: true,
+      },
+      preferredMainPanelId: 'organism',
+      slots: organismSlots,
+    });
+
+    expect(layout.collapsedPanelIds).toEqual(['composition', 'append', 'governance', 'history']);
+  });
+
+  it('an organism context keeps main empty until a panel is promoted', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -56,7 +89,7 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.mainPanelId).toBe('organism');
+    expect(layout.mainPanelId).toBeNull();
   });
 
   it('preferred main panel is preserved when still available', () => {
@@ -76,7 +109,7 @@ describe('resolveVisorPanelLayout', () => {
   });
 
   it('fallback main panel chooses the highest ranked panel deterministically', () => {
-    expect(fallbackMainPanel(['governance', 'history', 'vitality'])).toBe('vitality');
+    expect(fallbackMainPanel(['governance', 'history', 'propose'])).toBe('propose');
   });
 
   it('map context supports panel availability with empty main until promoted', () => {

@@ -5,6 +5,7 @@
  * and which remain collapsed. Output is deterministic from context + intent.
  */
 
+import { mainPriorityDelta, resolveIntentMatrixRule, secondaryPriorityDelta } from './intent-matrix.js';
 import {
   getHudPanelDefinition,
   HUD_PANEL_REGISTRY,
@@ -44,44 +45,11 @@ function findAvailablePanels(context: HudPanelContext): HudPanelDefinition[] {
 }
 
 function contextualMainPriority(panel: HudPanelDefinition, context: HudPanelContext): number {
-  let score = panel.defaultMainPriority;
-  if (context.contextClass === 'map') {
-    if (panel.id === 'templates') score += 4;
-    if (panel.id === 'threshold') score += 2;
-    if (panel.id === 'template-values') score += 7;
-    return score;
-  }
-
-  if (panel.id === 'organism') score += 30;
-
-  if (context.surfaced) {
-    if (panel.id === 'composition') score += 10;
-    if (panel.id === 'proposals') score += 7;
-    if (panel.id === 'vitality') score += 5;
-  } else {
-    if (panel.id === 'vitality') score += 9;
-    if (panel.id === 'history') score += 6;
-  }
-  return score;
+  return panel.defaultMainPriority + mainPriorityDelta(context, panel.id);
 }
 
 function contextualSecondaryPriority(panel: HudPanelDefinition, context: HudPanelContext): number {
-  let score = panel.defaultSecondaryPriority;
-  if (context.contextClass === 'map') {
-    if (panel.id === 'mine') score += 4;
-    if (panel.id === 'templates') score += 3;
-    if (panel.id === 'threshold') score += 2;
-    return score;
-  }
-
-  if (context.surfaced) {
-    if (panel.id === 'proposals') score += 3;
-    if (panel.id === 'composition') score += 3;
-  } else {
-    if (panel.id === 'history') score += 4;
-    if (panel.id === 'governance') score += 2;
-  }
-  return score;
+  return panel.defaultSecondaryPriority + secondaryPriorityDelta(context, panel.id);
 }
 
 function chooseMainPanel(
@@ -125,9 +93,20 @@ function chooseCollapsedPanels(
   availablePanels: HudPanelDefinition[],
   mainPanelId: HudPanelId | null,
   secondaryPanelIds: HudPanelId[],
+  context: HudPanelContext,
   slots: VisorTemplatePanelSlots,
 ): HudPanelId[] {
   if (!slots.collapsed.enabled) return [];
+
+  const intentRule = resolveIntentMatrixRule(context);
+
+  // Context-specific intent matrix can start from one collapsed entry point.
+  if (mainPanelId == null && intentRule.initialCollapsedOnlyPanelId) {
+    const entryPanel = availablePanels.find(
+      (panel) => panel.id === intentRule.initialCollapsedOnlyPanelId && panel.roleSupport.collapsed,
+    );
+    return entryPanel ? [entryPanel.id] : [];
+  }
 
   const blockedIds = new Set<HudPanelId>([...(mainPanelId ? [mainPanelId] : []), ...secondaryPanelIds]);
   const candidates = availablePanels.filter((panel) => !blockedIds.has(panel.id) && panel.roleSupport.collapsed);
@@ -140,7 +119,13 @@ export function resolveVisorPanelLayout(input: VisorPanelLayoutInput): VisorPane
   const availablePanels = findAvailablePanels(input.context);
   const mainPanelId = chooseMainPanel(availablePanels, input.preferredMainPanelId, input.context, input.slots);
   const secondaryPanelIds = chooseSecondaryPanels(availablePanels, mainPanelId, input.context, input.slots);
-  const collapsedPanelIds = chooseCollapsedPanels(availablePanels, mainPanelId, secondaryPanelIds, input.slots);
+  const collapsedPanelIds = chooseCollapsedPanels(
+    availablePanels,
+    mainPanelId,
+    secondaryPanelIds,
+    input.context,
+    input.slots,
+  );
 
   return {
     availablePanelIds: availablePanels.map((panel) => panel.id),
