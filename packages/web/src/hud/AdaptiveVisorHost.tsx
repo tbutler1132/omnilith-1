@@ -14,6 +14,7 @@ import {
   usePlatformAdaptiveVisorActions,
   usePlatformAdaptiveVisorState,
   usePlatformMapState,
+  usePlatformStaticState,
   usePlatformVisorState,
 } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
@@ -40,6 +41,7 @@ function isInteriorPanelId(panelId: HudPanelId): panelId is InteriorPanelId {
 export function AdaptiveVisorHost() {
   const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
+  const { canWrite } = usePlatformStaticState();
   const { openInVisor, bumpMapRefresh } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
   const adaptiveActions = usePlatformAdaptiveVisorActions();
@@ -99,6 +101,7 @@ export function AdaptiveVisorHost() {
           template={mapTemplate}
           surfaced={false}
           openTrunk={false}
+          canWrite={canWrite}
           templateValuesReady={templateCustomization !== null}
           preferredMainPanelId={activeMapPanel}
           extraCollapsedChips={
@@ -176,6 +179,7 @@ export function AdaptiveVisorHost() {
           template={interiorTemplate}
           surfaced={false}
           openTrunk={false}
+          canWrite={canWrite}
           preferredMainPanelId={null}
           onPromotePanel={(panelId) => {
             if (!isInteriorPanelId(panelId)) return;

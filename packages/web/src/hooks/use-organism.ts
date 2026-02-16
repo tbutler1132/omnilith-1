@@ -33,6 +33,11 @@ const organismCache = new Map<string, OrganismData>();
 const organismInflight = new Map<string, Promise<OrganismData>>();
 const ORGANISM_BATCH_CONCURRENCY = 4;
 
+export function clearOrganismCache(): void {
+  organismCache.clear();
+  organismInflight.clear();
+}
+
 function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({
     data: undefined,

@@ -70,6 +70,45 @@ describe('visibility and access control', () => {
     expect(decision.allowed).toBe(true);
   });
 
+  it('a guest caller can view a public organism', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Public Work', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    const decision = await checkAccess(null, organism.id, 'view', accessDeps());
+    expect(decision.allowed).toBe(true);
+  });
+
+  it('a guest caller cannot view a non-public organism', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Members Work', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    await visibilityRepository.save({
+      organismId: organism.id,
+      level: 'members',
+      updatedAt: testTimestamp(),
+    });
+
+    const decision = await checkAccess(null, organism.id, 'view', accessDeps());
+    expect(decision.allowed).toBe(false);
+  });
+
+  it('a guest caller cannot perform write actions', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Public Work', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    const decision = await checkAccess(null, organism.id, 'open-proposal', accessDeps());
+    expect(decision.allowed).toBe(false);
+  });
+
   it('a private organism is not visible to users without a relationship', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(

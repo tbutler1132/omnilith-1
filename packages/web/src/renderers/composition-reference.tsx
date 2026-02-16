@@ -13,13 +13,13 @@ interface CompositionEntry {
 }
 
 interface CompositionPayload {
-  arrangement?: 'sequential' | 'unordered';
+  arrangementType?: 'sequential' | 'unordered' | 'grouped';
   entries?: CompositionEntry[];
 }
 
 export function CompositionReferenceRenderer({ state, zoom: _zoom, focused: _focused }: RendererProps) {
   const payload = state.payload as CompositionPayload;
-  const arrangement = payload?.arrangement ?? 'unordered';
+  const arrangement = payload?.arrangementType ?? 'unordered';
   const entries = payload?.entries ?? [];
 
   return (

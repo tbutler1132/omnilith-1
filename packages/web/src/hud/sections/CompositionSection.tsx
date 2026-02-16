@@ -16,12 +16,18 @@ import { usePlatformActions } from '../../platform/index.js';
 interface CompositionSectionProps {
   organismId: string;
   refreshKey: number;
+  canWrite: boolean;
   onMutate?: () => void;
 }
 
 type ComposeAction = 'compose' | 'create' | null;
 
-export function CompositionSection({ organismId, refreshKey: parentRefresh, onMutate }: CompositionSectionProps) {
+export function CompositionSection({
+  organismId,
+  refreshKey: parentRefresh,
+  canWrite,
+  onMutate,
+}: CompositionSectionProps) {
   const [localRefresh, setLocalRefresh] = useState(0);
   const combinedRefresh = parentRefresh + localRefresh;
 
@@ -106,15 +112,17 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
                   <span className="hud-info-child-badge">{child?.currentState?.contentTypeId ?? '...'}</span>
                   <span className="hud-info-child-name">{child?.organism.name ?? '...'}</span>
                 </button>
-                <button
-                  type="button"
-                  className="hud-info-child-remove"
-                  onClick={() => handleDecompose(id)}
-                  disabled={removingId === id}
-                  title="Decompose"
-                >
-                  &times;
-                </button>
+                {canWrite && (
+                  <button
+                    type="button"
+                    className="hud-info-child-remove"
+                    onClick={() => handleDecompose(id)}
+                    disabled={removingId === id}
+                    title="Decompose"
+                  >
+                    &times;
+                  </button>
+                )}
               </div>
             );
           })}
@@ -124,7 +132,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
       {childIds.length === 0 && !parent && <span className="hud-info-dim">No children</span>}
 
       {/* Compose actions */}
-      {action === null && (
+      {canWrite && action === null && (
         <div className="hud-compose-actions">
           <button type="button" className="hud-compose-btn" onClick={() => setAction('compose')}>
             + Compose existing
@@ -135,7 +143,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
         </div>
       )}
 
-      {action === 'compose' && (
+      {canWrite && action === 'compose' && (
         <OrganismPicker
           excludeIds={[organismId, ...childIds]}
           onSelect={handleComposePick}
@@ -143,9 +151,10 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh, onMu
         />
       )}
 
-      {action === 'create' && (
+      {canWrite && action === 'create' && (
         <ThresholdForm inline onCreated={handleCreateAndCompose} onClose={() => setAction(null)} />
       )}
+      {!canWrite && <span className="hud-info-dim">Log in to compose or decompose.</span>}
 
       {error && <span className="hud-info-error">{error}</span>}
     </div>

@@ -18,6 +18,7 @@ export interface HudPanelContext {
   surfaced: boolean;
   openTrunk: boolean;
   templateValuesReady: boolean;
+  canWrite: boolean;
 }
 
 export interface HudPanelRoleSupport {
@@ -42,7 +43,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   {
     id: 'templates',
     label: 'Templates',
-    availableIn: (context) => context.contextClass === 'map',
+    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 86,
@@ -51,7 +52,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   {
     id: 'threshold',
     label: 'Threshold',
-    availableIn: (context) => context.contextClass === 'map',
+    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 86,
     defaultSecondaryPriority: 84,
@@ -60,7 +61,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   {
     id: 'mine',
     label: 'My organisms',
-    availableIn: (context) => context.contextClass === 'map',
+    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 84,
     defaultSecondaryPriority: 83,
@@ -69,7 +70,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   {
     id: 'template-values',
     label: 'Template values',
-    availableIn: (context) => context.contextClass === 'map' && context.templateValuesReady,
+    availableIn: (context) => context.contextClass === 'map' && context.templateValuesReady && context.canWrite,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 95,
     defaultSecondaryPriority: 90,

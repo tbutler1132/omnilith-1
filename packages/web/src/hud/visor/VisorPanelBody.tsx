@@ -20,18 +20,21 @@ interface VisorPanelBodyProps {
   panelId: UniversalVisorHudPanelId;
   organismId: string;
   refreshKey: number;
+  canWrite: boolean;
   onMutate: () => void;
 }
 
-export function VisorPanelBody({ panelId, organismId, refreshKey, onMutate }: VisorPanelBodyProps) {
+export function VisorPanelBody({ panelId, organismId, refreshKey, canWrite, onMutate }: VisorPanelBodyProps) {
   if (panelId === 'vitality') {
     return <VitalitySection organismId={organismId} refreshKey={refreshKey} />;
   }
   if (panelId === 'composition') {
-    return <CompositionSection organismId={organismId} refreshKey={refreshKey} onMutate={onMutate} />;
+    return (
+      <CompositionSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />
+    );
   }
   if (panelId === 'proposals') {
-    return <ProposalsSection organismId={organismId} refreshKey={refreshKey} onMutate={onMutate} />;
+    return <ProposalsSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />;
   }
   if (panelId === 'history') {
     return <StateHistorySection organismId={organismId} refreshKey={refreshKey} />;

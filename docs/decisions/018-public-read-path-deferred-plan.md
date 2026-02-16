@@ -1,5 +1,9 @@
 # 018 — Public Read Path for Unauthenticated Users (Deferred Plan)
 
+## Status
+
+Superseded by `020-public-read-path-enabled.md`.
+
 ## Context
 
 The current rendering and API flow is effectively authenticated-first:

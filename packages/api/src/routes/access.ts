@@ -26,3 +26,22 @@ export async function requireOrganismAccess(
 
   return c.json({ error: decision.reason ?? 'Forbidden' }, 403);
 }
+
+export async function requirePublicOrganismView(
+  c: Context,
+  container: Container,
+  organismId: OrganismId,
+): Promise<Response | null> {
+  const decision = await checkAccess(null, organismId, 'view', {
+    visibilityRepository: container.visibilityRepository,
+    relationshipRepository: container.relationshipRepository,
+    compositionRepository: container.compositionRepository,
+    organismRepository: container.organismRepository,
+  });
+
+  if (decision.allowed) {
+    return null;
+  }
+
+  return c.json({ error: 'Not found' }, 404);
+}

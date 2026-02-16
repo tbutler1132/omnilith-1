@@ -13,10 +13,11 @@ import { formatDate } from './format-date.js';
 interface ProposalsSectionProps {
   organismId: string;
   refreshKey: number;
+  canWrite: boolean;
   onMutate?: () => void;
 }
 
-export function ProposalsSection({ organismId, refreshKey: parentRefresh, onMutate }: ProposalsSectionProps) {
+export function ProposalsSection({ organismId, refreshKey: parentRefresh, canWrite, onMutate }: ProposalsSectionProps) {
   const [localRefresh, setLocalRefresh] = useState(0);
   const combinedRefresh = parentRefresh + localRefresh;
 
@@ -70,7 +71,7 @@ export function ProposalsSection({ organismId, refreshKey: parentRefresh, onMuta
           <span className="hud-info-proposal-detail">
             {p.proposedContentTypeId} by {p.proposedBy.slice(0, 8)}, {formatDate(p.createdAt)}
           </span>
-          {p.status === 'open' && (
+          {canWrite && p.status === 'open' && (
             <span className="hud-proposal-actions">
               <button
                 type="button"
@@ -92,6 +93,7 @@ export function ProposalsSection({ organismId, refreshKey: parentRefresh, onMuta
           )}
         </div>
       ))}
+      {!canWrite && <span className="hud-info-dim">Log in to integrate or decline proposals.</span>}
       {error && <span className="hud-info-error">{error}</span>}
     </div>
   );

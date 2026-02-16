@@ -2,13 +2,14 @@
  * Platform — bootstrap component for the Space + HUD paradigm.
  *
  * Fetches the world map ID, then wraps Space and Hud in PlatformProvider.
- * This is the root of the authenticated experience.
+ * This is the root of both guest read and authenticated tending flows.
  */
 
 import { useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/organisms.js';
 import { Hud } from '../hud/index.js';
 import { Space, SpaceNavBar } from '../space/index.js';
+import type { AuthMode } from './PlatformContext.js';
 import { PlatformProvider, usePlatformVisorState } from './PlatformContext.js';
 
 /** Syncs visorOrganismId to the URL so organism links are shareable */
@@ -29,13 +30,14 @@ function UrlSync() {
 }
 
 interface PlatformProps {
+  authMode: AuthMode;
   userId: string;
   personalOrganismId: string | null;
   homePageOrganismId: string | null;
-  onLogout: () => void;
+  onLogoutOrLogin: () => void;
 }
 
-export function Platform({ userId, personalOrganismId, homePageOrganismId, onLogout }: PlatformProps) {
+export function Platform({ authMode, userId, personalOrganismId, homePageOrganismId, onLogoutOrLogin }: PlatformProps) {
   const [worldMapId, setWorldMapId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,8 +52,8 @@ export function Platform({ userId, personalOrganismId, homePageOrganismId, onLog
       <div className="platform">
         <div className="platform-error">
           <p>{error}</p>
-          <button type="button" onClick={onLogout}>
-            Log out
+          <button type="button" onClick={onLogoutOrLogin}>
+            {authMode === 'authenticated' ? 'Log out' : 'Log in'}
           </button>
         </div>
       </div>
@@ -68,6 +70,7 @@ export function Platform({ userId, personalOrganismId, homePageOrganismId, onLog
 
   return (
     <PlatformProvider
+      authMode={authMode}
       userId={userId}
       personalOrganismId={personalOrganismId}
       homePageOrganismId={homePageOrganismId}
@@ -76,7 +79,7 @@ export function Platform({ userId, personalOrganismId, homePageOrganismId, onLog
       <div className="platform">
         <Space />
         <SpaceNavBar />
-        <Hud onLogout={onLogout} />
+        <Hud onLogoutOrLogin={onLogoutOrLogin} />
         <UrlSync />
       </div>
     </PlatformProvider>

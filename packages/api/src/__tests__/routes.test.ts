@@ -27,6 +27,7 @@ import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
 import { organismRoutes } from '../routes/organisms.js';
 import { proposalRoutes } from '../routes/proposals.js';
+import { publicOrganismRoutes } from '../routes/public-organisms.js';
 import { userRoutes } from '../routes/users.js';
 
 function createTestContainer(): Container {
@@ -100,6 +101,12 @@ function createTestApp(container: Container, testUserId: UserId = 'test-user' as
   });
 
   return { app, testUserId };
+}
+
+function createPublicReadApp(container: Container) {
+  const app = new Hono();
+  app.route('/public/organisms', publicOrganismRoutes(container));
+  return app;
 }
 
 async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: boolean; name?: string }) {
@@ -771,5 +778,42 @@ describe('authorization enforcement', () => {
 
     const listDenied = await outsiderApp.request(`/organisms/${organism.id}/proposals`);
     expect(listDenied.status).toBe(403);
+  });
+});
+
+describe('public read routes', () => {
+  let container: Container;
+  let ownerApp: Hono<AuthEnv>;
+  let publicApp: Hono;
+
+  beforeEach(() => {
+    resetIdCounter();
+    container = createTestContainer();
+    ownerApp = createTestApp(container, 'owner-user' as UserId).app;
+    publicApp = createPublicReadApp(container);
+  });
+
+  it('guest can read a public organism via /public routes', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+
+    const organismRes = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(organismRes.status).toBe(200);
+
+    const statesRes = await publicApp.request(`/public/organisms/${organism.id}/states`);
+    expect(statesRes.status).toBe(200);
+    const statesBody = await statesRes.json();
+    expect(statesBody.states.length).toBe(1);
+  });
+
+  it('guest receives 404 for non-public organisms via /public routes', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+    await container.visibilityRepository.save({
+      organismId: organism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const res = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(res.status).toBe(404);
   });
 });

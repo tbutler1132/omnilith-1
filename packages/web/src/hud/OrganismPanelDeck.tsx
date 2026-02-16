@@ -42,7 +42,7 @@ function isUniversalVisorPanelId(panelId: VisorHudPanelId): panelId is Exclude<V
 }
 
 export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
-  const { worldMapId } = usePlatformStaticState();
+  const { worldMapId, canWrite } = usePlatformStaticState();
   const { viewportCenter } = usePlatformViewportMeta();
   const { closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
@@ -93,6 +93,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
       template={organismTemplate}
       surfaced={surfaced}
       openTrunk={openTrunk}
+      canWrite={canWrite}
       preferredMainPanelId={preferredPanelId}
       onPromotePanel={(panelId) => {
         if (!isVisorHudPanelId(panelId)) return;
@@ -118,7 +119,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
                 </div>
 
                 <div className="visor-organism-panel-controls">
-                  {!showProposeForm && (
+                  {canWrite && !showProposeForm && (
                     <button type="button" className="hud-action-btn" onClick={() => setShowProposeForm(true)}>
                       {proposeLabel}
                     </button>
@@ -138,7 +139,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
                 </div>
               </div>
 
-              {showProposeForm && organism?.currentState && (
+              {canWrite && showProposeForm && organism?.currentState && (
                 <div className="visor-organism-panel-propose">
                   <ProposeForm
                     organismId={organismId}
@@ -164,11 +165,12 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
                   </button>
                 )}
 
-                {!surfaceLoading && !surfaced && (
+                {canWrite && !surfaceLoading && !surfaced && (
                   <button type="button" className="hud-action-btn" onClick={handleSurface} disabled={surfacing}>
                     {surfacing ? 'Surfacing...' : 'Surface'}
                   </button>
                 )}
+                {!canWrite && <span className="hud-info-dim">Log in to tend this organism.</span>}
               </div>
             </div>
           );
@@ -180,6 +182,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
               panelId={panelId}
               organismId={organismId}
               refreshKey={refreshKey}
+              canWrite={canWrite}
               onMutate={() => {
                 setRefreshKey((k) => k + 1);
                 bumpMutationToken();

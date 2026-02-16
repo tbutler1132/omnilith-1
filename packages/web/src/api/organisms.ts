@@ -45,6 +45,16 @@ interface InstantiateTemplateRequest {
   readonly overrides?: Readonly<Record<string, InstantiateTemplateStepOverride>>;
 }
 
+function hasSession(): boolean {
+  if (typeof localStorage === 'undefined') return false;
+  return Boolean(localStorage.getItem('sessionId'));
+}
+
+function readPath(path: string): string {
+  if (hasSession()) return path;
+  return `/public${path}`;
+}
+
 export function fetchOrganisms(filters?: { contentTypeId?: string; limit?: number }) {
   const params = new URLSearchParams();
   if (filters?.contentTypeId) params.set('contentTypeId', filters.contentTypeId);
@@ -54,35 +64,35 @@ export function fetchOrganisms(filters?: { contentTypeId?: string; limit?: numbe
 }
 
 export function fetchOrganism(id: string) {
-  return apiFetch<FetchOrganismResponse>(`/organisms/${id}`);
+  return apiFetch<FetchOrganismResponse>(readPath(`/organisms/${id}`));
 }
 
 export function fetchStateHistory(id: string) {
-  return apiFetch<FetchStateHistoryResponse>(`/organisms/${id}/states`);
+  return apiFetch<FetchStateHistoryResponse>(readPath(`/organisms/${id}/states`));
 }
 
 export function fetchChildren(id: string) {
-  return apiFetch<FetchChildrenResponse>(`/organisms/${id}/children`);
+  return apiFetch<FetchChildrenResponse>(readPath(`/organisms/${id}/children`));
 }
 
 export function fetchParent(id: string) {
-  return apiFetch<FetchParentResponse>(`/organisms/${id}/parent`);
+  return apiFetch<FetchParentResponse>(readPath(`/organisms/${id}/parent`));
 }
 
 export function fetchVitality(id: string) {
-  return apiFetch<FetchVitalityResponse>(`/organisms/${id}/vitality`);
+  return apiFetch<FetchVitalityResponse>(readPath(`/organisms/${id}/vitality`));
 }
 
 export function fetchProposals(id: string) {
-  return apiFetch<FetchProposalsResponse>(`/organisms/${id}/proposals`);
+  return apiFetch<FetchProposalsResponse>(readPath(`/organisms/${id}/proposals`));
 }
 
 export function fetchRelationships(id: string) {
-  return apiFetch<FetchRelationshipsResponse>(`/organisms/${id}/relationships`);
+  return apiFetch<FetchRelationshipsResponse>(readPath(`/organisms/${id}/relationships`));
 }
 
 export function fetchEvents(id: string) {
-  return apiFetch<FetchEventsResponse>(`/organisms/${id}/events`);
+  return apiFetch<FetchEventsResponse>(readPath(`/organisms/${id}/events`));
 }
 
 export function thresholdOrganism(input: ThresholdOrganismRequest) {

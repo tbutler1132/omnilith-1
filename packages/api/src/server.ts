@@ -10,6 +10,7 @@ import { type AuthEnv, authMiddleware } from './middleware/auth.js';
 import { authRoutes } from './routes/auth.js';
 import { organismRoutes } from './routes/organisms.js';
 import { proposalRoutes } from './routes/proposals.js';
+import { publicOrganismRoutes } from './routes/public-organisms.js';
 import { templateRoutes } from './routes/templates.js';
 import { userRoutes } from './routes/users.js';
 
@@ -41,6 +42,9 @@ export function createServer(container: Container, config?: ServerConfig) {
     const worldMapId = config?.worldMapId ?? null;
     return c.json({ worldMapId });
   });
+
+  // Public read-only organism routes
+  app.route('/public/organisms', publicOrganismRoutes(container));
 
   // Authenticated routes
   const authenticated = new Hono<AuthEnv>();

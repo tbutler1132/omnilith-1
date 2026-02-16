@@ -9,6 +9,7 @@ function renderDeck(input: {
   templateContext: 'map' | 'interior' | 'visor-organism';
   preferredMainPanelId: HudPanelId | null;
   templateValuesReady?: boolean;
+  canWrite?: boolean;
 }) {
   const template = resolvePanelVisorTemplate(input.templateContext);
 
@@ -18,6 +19,7 @@ function renderDeck(input: {
       template,
       surfaced: false,
       openTrunk: false,
+      canWrite: input.canWrite ?? true,
       templateValuesReady: input.templateValuesReady ?? false,
       preferredMainPanelId: input.preferredMainPanelId,
       onPromotePanel: () => {},

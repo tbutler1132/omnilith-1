@@ -61,8 +61,8 @@ const CONTENT_TYPES: ContentTypeOption[] = [
   {
     id: 'composition-reference',
     label: 'Composition Reference',
-    summary: 'A pointer to another organism in composition work.',
-    payloadExample: '{\n  "targetOrganismId": "org_123"\n}',
+    summary: 'A playlist or collection arranged from organism references.',
+    payloadExample: '{\n  "entries": [],\n  "arrangementType": "sequential"\n}',
   },
   {
     id: 'integration-policy',

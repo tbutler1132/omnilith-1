@@ -9,7 +9,13 @@ const interiorSlots = resolveVisorTemplate('interior').panelSlots;
 describe('resolveVisorPanelLayout', () => {
   it('a surfaced regulated organism resolves deterministic main secondary collapsed roles', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'visor-organism', surfaced: true, openTrunk: false, templateValuesReady: false },
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: null,
       slots: organismSlots,
     });
@@ -21,7 +27,13 @@ describe('resolveVisorPanelLayout', () => {
 
   it('an open-trunk organism omits proposals from available panels', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'visor-organism', surfaced: true, openTrunk: true, templateValuesReady: false },
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: true,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: null,
       slots: organismSlots,
     });
@@ -33,7 +45,13 @@ describe('resolveVisorPanelLayout', () => {
 
   it('an organism context defaults to tend as the main panel', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'visor-organism', surfaced: false, openTrunk: false, templateValuesReady: false },
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: false,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: null,
       slots: organismSlots,
     });
@@ -43,7 +61,13 @@ describe('resolveVisorPanelLayout', () => {
 
   it('preferred main panel is preserved when still available', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'visor-organism', surfaced: false, openTrunk: false, templateValuesReady: false },
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: false,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: 'history',
       slots: organismSlots,
     });
@@ -57,7 +81,7 @@ describe('resolveVisorPanelLayout', () => {
 
   it('map context supports panel availability with empty main until promoted', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'map', surfaced: false, openTrunk: false, templateValuesReady: false },
+      context: { contextClass: 'map', surfaced: false, openTrunk: false, templateValuesReady: false, canWrite: true },
       preferredMainPanelId: null,
       slots: mapSlots,
     });
@@ -70,7 +94,13 @@ describe('resolveVisorPanelLayout', () => {
 
   it('secondary slot count is template-driven and can enable secondary cards', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'visor-organism', surfaced: true, openTrunk: false, templateValuesReady: false },
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: 'organism',
       slots: {
         ...organismSlots,
@@ -83,7 +113,13 @@ describe('resolveVisorPanelLayout', () => {
 
   it('an interior context uses the same policy path with collapsed-only tend actions', () => {
     const layout = resolveVisorPanelLayout({
-      context: { contextClass: 'interior', surfaced: false, openTrunk: false, templateValuesReady: false },
+      context: {
+        contextClass: 'interior',
+        surfaced: false,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
       preferredMainPanelId: null,
       slots: interiorSlots,
     });
@@ -91,5 +127,16 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.mainPanelId).toBeNull();
     expect(layout.secondaryPanelIds).toEqual([]);
     expect(layout.collapsedPanelIds).toEqual(['interior-actions']);
+  });
+
+  it('a guest map context has no write panels available', () => {
+    const layout = resolveVisorPanelLayout({
+      context: { contextClass: 'map', surfaced: false, openTrunk: false, templateValuesReady: false, canWrite: false },
+      preferredMainPanelId: null,
+      slots: mapSlots,
+    });
+
+    expect(layout.availablePanelIds).toEqual([]);
+    expect(layout.collapsedPanelIds).toEqual([]);
   });
 });

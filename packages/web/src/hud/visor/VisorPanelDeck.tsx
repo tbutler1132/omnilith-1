@@ -31,6 +31,7 @@ interface VisorPanelDeckProps {
   template: VisorPanelDeckTemplate;
   surfaced: boolean;
   openTrunk: boolean;
+  canWrite: boolean;
   templateValuesReady?: boolean;
   preferredMainPanelId: HudPanelId | null;
   extraCollapsedChips?: ExtraCollapsedChip[];
@@ -67,6 +68,7 @@ export function VisorPanelDeck({
   template,
   surfaced,
   openTrunk,
+  canWrite,
   templateValuesReady = false,
   preferredMainPanelId,
   extraCollapsedChips = [],
@@ -87,11 +89,11 @@ export function VisorPanelDeck({
   const layout = useMemo(
     () =>
       resolveVisorPanelLayout({
-        context: { contextClass: template.contextClass, surfaced, openTrunk, templateValuesReady },
+        context: { contextClass: template.contextClass, surfaced, openTrunk, templateValuesReady, canWrite },
         preferredMainPanelId,
         slots: template.panelSlots,
       }),
-    [template, surfaced, openTrunk, templateValuesReady, preferredMainPanelId],
+    [template, surfaced, openTrunk, canWrite, templateValuesReady, preferredMainPanelId],
   );
   const historyWidgetEnabled = template.widgetSlots.allowedWidgets.includes('history-navigation');
   const previousMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, -1), [mainNav, layout]);
