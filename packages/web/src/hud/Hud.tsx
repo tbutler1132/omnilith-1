@@ -16,6 +16,7 @@
 import { useEffect } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
 import { usePlatformActions, usePlatformMapState, usePlatformVisorState } from '../platform/index.js';
+import { Compass } from './Compass.js';
 import { HudBar } from './HudBar.js';
 import { HudMapActions } from './HudMapActions.js';
 import { VisorView } from './VisorView.js';
@@ -74,6 +75,7 @@ export function Hud({ onLogout }: HudProps) {
   return (
     <div className="hud">
       <HudBar />
+      <Compass />
 
       {/* Floating logout — top-right, always visible */}
       <button type="button" className="hud-logout" onClick={onLogout}>

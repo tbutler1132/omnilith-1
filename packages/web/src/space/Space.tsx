@@ -15,7 +15,6 @@ import {
   usePlatformVisorState,
 } from '../platform/index.js';
 import { AltitudeControls } from './AltitudeControls.js';
-import { Compass } from './Compass.js';
 import { GroundPlane } from './GroundPlane.js';
 import { OrganismInterior } from './OrganismInterior.js';
 import { SpaceLayer } from './SpaceLayer.js';
@@ -236,7 +235,6 @@ export function Space() {
         />
       </SpaceViewport>
       {interiorOrganismId && <OrganismInterior organismId={interiorOrganismId} opacity={interiorOpacity} />}
-      <Compass />
       {phase === 'map' && <AltitudeControls altitude={altitude} onChangeAltitude={changeAltitude} />}
     </div>
   );
