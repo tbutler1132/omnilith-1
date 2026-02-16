@@ -13,8 +13,10 @@ import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatformActions, usePlatformMapState } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
 import { HudTemplates } from './HudTemplates.js';
+import { HudTemplateValuesPanel } from './HudTemplateValuesPanel.js';
+import type { TemplateSongCustomization } from './template-values.js';
 
-type ActivePanel = 'threshold' | 'mine' | 'templates' | null;
+type ActivePanel = 'threshold' | 'mine' | 'templates' | 'template-values' | null;
 
 /** Shows focused organism name + "Tend" action */
 function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onTend: () => void }) {
@@ -32,6 +34,7 @@ export function HudMapActions() {
   const { focusedOrganismId } = usePlatformMapState();
   const { openInVisor } = usePlatformActions();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+  const [templateCustomization, setTemplateCustomization] = useState<TemplateSongCustomization | null>(null);
 
   function togglePanel(panel: 'threshold' | 'mine' | 'templates') {
     setActivePanel((cur) => (cur === panel ? null : panel));
@@ -48,14 +51,26 @@ export function HudMapActions() {
   }
 
   function handleTemplateInstantiated(organismId: string) {
+    setTemplateCustomization(null);
     setActivePanel(null);
     openInVisor(organismId);
+  }
+
+  function handleTemplateValuesRequested(customization: TemplateSongCustomization) {
+    setTemplateCustomization(customization);
+    setActivePanel('template-values');
+  }
+
+  function closeTemplateValues() {
+    setTemplateCustomization(null);
+    setActivePanel('templates');
   }
 
   const panelHint = useMemo(() => {
     if (activePanel === 'threshold') return 'Define identity, choose state type, and threshold in one flow.';
     if (activePanel === 'mine') return 'Jump directly into tending organisms you already steward.';
     if (activePanel === 'templates') return 'Instantiate a recipe to create a composed organism bundle.';
+    if (activePanel === 'template-values') return 'Set initial values, then threshold the composed bundle.';
     if (focusedOrganismId) return 'Focused organism is ready to tend.';
     return 'Threshold a new organism or open one you already steward.';
   }, [activePanel, focusedOrganismId]);
@@ -81,7 +96,22 @@ export function HudMapActions() {
       {activePanel === 'templates' && (
         <div className="hud-panel hud-panel--templates hud-fade hud-fade--visible">
           <div className="hud-panel-inner">
-            <HudTemplates onTemplateInstantiated={handleTemplateInstantiated} />
+            <HudTemplates
+              onTemplateInstantiated={handleTemplateInstantiated}
+              onTemplateValuesRequested={handleTemplateValuesRequested}
+            />
+          </div>
+        </div>
+      )}
+
+      {activePanel === 'template-values' && templateCustomization && (
+        <div className="hud-panel hud-panel--template-values hud-fade hud-fade--visible">
+          <div className="hud-panel-inner">
+            <HudTemplateValuesPanel
+              customization={templateCustomization}
+              onCancel={closeTemplateValues}
+              onTemplateInstantiated={handleTemplateInstantiated}
+            />
           </div>
         </div>
       )}

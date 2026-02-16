@@ -238,6 +238,67 @@ describe('template instantiation', () => {
     expect(children).toHaveLength(4);
   });
 
+  it('instantiation applies initialPayload override for a recipe step', async () => {
+    const template = await createTemplateOrganism([
+      {
+        ref: 'song',
+        contentTypeId: 'song',
+        initialPayload: {
+          title: 'Untitled Song',
+          artistCredit: 'Test Artist',
+          status: 'draft',
+        },
+      },
+    ]);
+
+    const res = await app.request(`/templates/${template.id}/instantiate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        overrides: {
+          song: {
+            initialPayload: {
+              title: 'New Title',
+              artistCredit: 'Guest Artist',
+              status: 'mixing',
+            },
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    const songId = body.organisms.find((o: { ref: string }) => o.ref === 'song')?.organismId as OrganismId;
+    const state = await container.stateRepository.findCurrentByOrganismId(songId);
+
+    expect(state?.payload).toEqual({
+      title: 'New Title',
+      artistCredit: 'Guest Artist',
+      status: 'mixing',
+    });
+  });
+
+  it('returns 400 when override references unknown recipe ref', async () => {
+    const template = await createTemplateOrganism([
+      { ref: 'page', contentTypeId: 'text', initialPayload: { content: '# Home', format: 'markdown' } },
+    ]);
+
+    const res = await app.request(`/templates/${template.id}/instantiate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        overrides: {
+          unknown: {
+            initialPayload: { content: 'x', format: 'plaintext' },
+          },
+        },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+  });
+
   it('returns 404 for nonexistent template organism', async () => {
     const res = await app.request('/templates/nonexistent/instantiate', {
       method: 'POST',

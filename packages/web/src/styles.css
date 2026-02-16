@@ -1185,6 +1185,22 @@ button.secondary:hover {
   max-height: 78vh;
 }
 
+.hud-panel--template-values {
+  width: min(860px, calc(100vw - 32px));
+  max-height: 82vh;
+  background: rgba(10, 10, 15, 0.74);
+  border-color: var(--hud-border-active);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(124, 108, 240, 0.14);
+  backdrop-filter: blur(7px);
+}
+
+.hud-panel--template-values .hud-panel-inner {
+  padding: 20px;
+  max-height: 82vh;
+}
+
 .hud-panel-inner .threshold-form--inline {
   max-height: none;
   overflow: visible;
@@ -1255,6 +1271,13 @@ button.secondary:hover {
   min-width: 0;
 }
 
+.hud-template-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+}
+
 .hud-template-name {
   font-size: 14px;
   font-weight: 600;
@@ -1286,6 +1309,72 @@ button.secondary:hover {
 .hud-templates-state p {
   margin-top: 8px;
   color: rgba(224, 224, 232, 0.62);
+}
+
+.hud-template-values {
+  border-radius: 14px;
+  border: 1px solid var(--hud-border);
+  background: linear-gradient(170deg, rgba(23, 26, 36, 0.96), rgba(15, 17, 25, 0.98));
+  box-shadow: 0 24px 56px rgba(5, 7, 11, 0.35);
+  padding: 18px;
+}
+
+.hud-template-values-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.hud-template-values-header h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--hud-text-bright);
+}
+
+.hud-template-values-header p {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.64);
+}
+
+.hud-template-values-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hud-template-values-form label {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+  color: rgba(224, 224, 232, 0.7);
+}
+
+.hud-template-values-form input,
+.hud-template-values-form select,
+.hud-template-values-form textarea {
+  background: rgba(8, 10, 15, 0.78);
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: var(--hud-text-bright);
+  font-size: 14px;
+  outline: none;
+}
+
+.hud-template-values-form textarea {
+  resize: vertical;
+}
+
+.hud-template-values-form input:focus,
+.hud-template-values-form select:focus,
+.hud-template-values-form textarea:focus {
+  border-color: rgba(124, 108, 240, 0.72);
 }
 
 /* HUD organism list (My Organisms panel) */
@@ -2883,6 +2972,16 @@ button.secondary:hover {
   .hud-panel--templates .hud-panel-inner {
     max-height: 74vh;
     padding: 12px;
+  }
+
+  .hud-panel--template-values {
+    width: calc(100vw - 20px);
+    max-height: 78vh;
+  }
+
+  .hud-panel--template-values .hud-panel-inner {
+    max-height: 78vh;
+    padding: 14px;
   }
 
   .hud-panel-inner {

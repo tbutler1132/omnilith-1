@@ -35,6 +35,16 @@ import type {
 } from '@omnilith/kernel';
 import { apiFetch } from './client.js';
 
+interface InstantiateTemplateStepOverride {
+  readonly name?: string;
+  readonly initialPayload?: unknown;
+  readonly openTrunk?: boolean;
+}
+
+interface InstantiateTemplateRequest {
+  readonly overrides?: Readonly<Record<string, InstantiateTemplateStepOverride>>;
+}
+
 export function fetchOrganisms(filters?: { contentTypeId?: string; limit?: number }) {
   const params = new URLSearchParams();
   if (filters?.contentTypeId) params.set('contentTypeId', filters.contentTypeId);
@@ -108,9 +118,10 @@ export function fetchUserProposals() {
   return apiFetch<FetchUserProposalsResponse>('/users/me/proposals');
 }
 
-export function instantiateTemplate(templateId: string) {
+export function instantiateTemplate(templateId: string, input?: InstantiateTemplateRequest) {
   return apiFetch<InstantiateTemplateResponse>(`/templates/${templateId}/instantiate`, {
     method: 'POST',
+    body: input ? JSON.stringify(input) : undefined,
   });
 }
 

@@ -12,12 +12,32 @@ import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
 
+interface InstantiateTemplateStepOverride {
+  readonly name?: string;
+  readonly initialPayload?: unknown;
+  readonly openTrunk?: boolean;
+}
+
+interface InstantiateTemplateRequest {
+  readonly overrides?: Readonly<Record<string, InstantiateTemplateStepOverride>>;
+}
+
 export function templateRoutes(container: Container) {
   const app = new Hono<AuthEnv>();
 
   app.post('/:id/instantiate', async (c) => {
     const templateId = c.req.param('id') as OrganismId;
     const userId = c.get('userId');
+    const rawBody = await c.req.text();
+
+    let body: InstantiateTemplateRequest = {};
+    if (rawBody.trim().length > 0) {
+      try {
+        body = JSON.parse(rawBody) as InstantiateTemplateRequest;
+      } catch {
+        return c.json({ error: 'Invalid JSON body' }, 400);
+      }
+    }
 
     // Load template organism
     const organism = await container.organismRepository.findById(templateId);
@@ -42,6 +62,20 @@ export function templateRoutes(container: Container) {
       }>;
     };
 
+    const overrides = body.overrides;
+    if (overrides !== undefined) {
+      if (!overrides || typeof overrides !== 'object' || Array.isArray(overrides)) {
+        return c.json({ error: 'overrides must be an object keyed by recipe ref' }, 400);
+      }
+
+      const knownRefs = new Set(payload.recipe.map((step) => step.ref));
+      for (const ref of Object.keys(overrides)) {
+        if (!knownRefs.has(ref)) {
+          return c.json({ error: `Override references unknown recipe ref '${ref}'` }, 400);
+        }
+      }
+    }
+
     const createDeps = {
       organismRepository: container.organismRepository,
       stateRepository: container.stateRepository,
@@ -63,13 +97,16 @@ export function templateRoutes(container: Container) {
     const results: Array<{ ref: string; organismId: OrganismId }> = [];
 
     for (const step of payload.recipe) {
+      const override = overrides?.[step.ref] as InstantiateTemplateStepOverride | undefined;
+      const hasInitialPayloadOverride = !!override && Object.hasOwn(override, 'initialPayload');
+
       const result = await createOrganism(
         {
-          name: step.name ?? step.ref,
+          name: override?.name ?? step.name ?? step.ref,
           contentTypeId: step.contentTypeId as ContentTypeId,
-          payload: step.initialPayload,
+          payload: hasInitialPayloadOverride ? override.initialPayload : step.initialPayload,
           createdBy: userId,
-          openTrunk: step.openTrunk,
+          openTrunk: override?.openTrunk ?? step.openTrunk,
         },
         createDeps,
       );
