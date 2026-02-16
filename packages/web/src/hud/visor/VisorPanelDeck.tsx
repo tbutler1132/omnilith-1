@@ -7,7 +7,7 @@
 
 import type { ReactNode } from 'react';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { fallbackMainPanel, resolveVisorPanelLayout } from './panel-layout-policy.js';
+import { resolveVisorPanelLayout } from './panel-layout-policy.js';
 import { getHudPanelDefinition, type HudContextClass, type HudPanelId } from './panel-schema.js';
 import type { VisorTemplateDefinition } from './template-schema.js';
 
@@ -21,8 +21,13 @@ interface ExtraCollapsedChip {
 
 type VisorPanelDeckTemplate = VisorTemplateDefinition & { contextClass: HudContextClass };
 
+interface VisorHistoryTarget {
+  index: number;
+  panelId: HudPanelId;
+}
+
 interface VisorPanelDeckProps {
-  title: string;
+  title?: string;
   template: VisorPanelDeckTemplate;
   surfaced: boolean;
   openTrunk: boolean;
@@ -30,9 +35,31 @@ interface VisorPanelDeckProps {
   preferredMainPanelId: HudPanelId | null;
   extraCollapsedChips?: ExtraCollapsedChip[];
   onPromotePanel: (panelId: HudPanelId) => void;
-  onCollapseMainPanel: (panelId: HudPanelId, fallbackPanelId: HudPanelId | null) => void;
+  onCollapseMainPanel: (panelId: HudPanelId) => void;
   renderPanelBody: (panelId: HudPanelId) => ReactNode;
   renderSecondaryPreview?: (panelId: HudPanelId) => ReactNode;
+}
+
+interface MainNavState {
+  history: HudPanelId[];
+  index: number;
+}
+
+function findHistoryTarget(
+  navState: MainNavState,
+  availablePanelIds: HudPanelId[],
+  direction: -1 | 1,
+): VisorHistoryTarget | null {
+  const available = new Set(availablePanelIds);
+  let idx = navState.index + direction;
+
+  while (idx >= 0 && idx < navState.history.length) {
+    const panelId = navState.history[idx];
+    if (available.has(panelId)) return { index: idx, panelId };
+    idx += direction;
+  }
+
+  return null;
 }
 
 export function VisorPanelDeck({
@@ -51,9 +78,11 @@ export function VisorPanelDeck({
   const SWAP_EXIT_MS = 180;
   const SWAP_ENTER_MS = 260;
   const [displayedMainPanelId, setDisplayedMainPanelId] = useState<HudPanelId | null>(null);
+  const [mainNav, setMainNav] = useState<MainNavState>({ history: [], index: -1 });
   const [swapPhase, setSwapPhase] = useState<'idle' | 'exiting' | 'entering'>('idle');
   const exitTimerRef = useRef<number | null>(null);
   const enterTimerRef = useRef<number | null>(null);
+  const contextClassRef = useRef(template.contextClass);
 
   const layout = useMemo(
     () =>
@@ -64,6 +93,9 @@ export function VisorPanelDeck({
       }),
     [template, surfaced, openTrunk, templateValuesReady, preferredMainPanelId],
   );
+  const historyWidgetEnabled = template.widgetSlots.allowedWidgets.includes('history-navigation');
+  const previousMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, -1), [mainNav, layout]);
+  const nextMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, 1), [mainNav, layout]);
 
   useEffect(
     () => () => {
@@ -72,6 +104,35 @@ export function VisorPanelDeck({
     },
     [],
   );
+
+  useEffect(() => {
+    const currentMainPanelId = layout.mainPanelId;
+    const contextChanged = contextClassRef.current !== template.contextClass;
+
+    if (contextChanged) contextClassRef.current = template.contextClass;
+
+    setMainNav((currentNav) => {
+      if (contextChanged) {
+        return currentMainPanelId ? { history: [currentMainPanelId], index: 0 } : { history: [], index: -1 };
+      }
+
+      if (!currentMainPanelId) return currentNav;
+      if (currentNav.index >= 0 && currentNav.history[currentNav.index] === currentMainPanelId) return currentNav;
+
+      const baseHistory = currentNav.index >= 0 ? currentNav.history.slice(0, currentNav.index + 1) : [];
+      if (baseHistory[baseHistory.length - 1] === currentMainPanelId) {
+        return { history: baseHistory, index: baseHistory.length - 1 };
+      }
+
+      const withCurrent = [...baseHistory, currentMainPanelId];
+      if (withCurrent.length <= 24) {
+        return { history: withCurrent, index: withCurrent.length - 1 };
+      }
+
+      const trimmed = withCurrent.slice(withCurrent.length - 24);
+      return { history: trimmed, index: trimmed.length - 1 };
+    });
+  }, [layout.mainPanelId, template.contextClass]);
 
   useEffect(() => {
     const nextMainPanelId = layout.mainPanelId;
@@ -103,18 +164,44 @@ export function VisorPanelDeck({
     }, SWAP_EXIT_MS);
   }, [layout.mainPanelId, displayedMainPanelId]);
 
-  function collapseMainPanel(panelId: HudPanelId) {
-    const fallback = fallbackMainPanel([...layout.secondaryPanelIds, ...layout.collapsedPanelIds]);
-    onCollapseMainPanel(panelId, fallback);
+  function handleHistoryNavigation(direction: -1 | 1) {
+    const target = direction === -1 ? previousMainTarget : nextMainTarget;
+    if (!target) return;
+
+    setMainNav((currentNav) => ({ ...currentNav, index: target.index }));
+    onPromotePanel(target.panelId);
   }
 
   const mainPanelId = displayedMainPanelId ?? layout.mainPanelId;
 
   return (
     <div className={`visor-panel-deck visor-panel-deck--${template.contextClass} visor-panel-deck--${swapPhase}`}>
-      <div className="visor-panel-deck-header">
-        <span className="hud-info-label">{title}</span>
-      </div>
+      {title && (
+        <div className="visor-panel-deck-header">
+          <span className="hud-info-label">{title}</span>
+        </div>
+      )}
+
+      {historyWidgetEnabled && (previousMainTarget || nextMainTarget) && (
+        <div className="visor-history-nav" role="toolbar" aria-label="Visor history navigation">
+          <button
+            type="button"
+            className="hud-action-btn visor-history-btn"
+            onClick={() => handleHistoryNavigation(-1)}
+            disabled={!previousMainTarget}
+          >
+            Back
+          </button>
+          <button
+            type="button"
+            className="hud-action-btn visor-history-btn"
+            onClick={() => handleHistoryNavigation(1)}
+            disabled={!nextMainTarget}
+          >
+            Forward
+          </button>
+        </div>
+      )}
 
       {mainPanelId && (
         <div className="visor-panel-main-slot">
@@ -134,7 +221,7 @@ export function VisorPanelDeck({
                 <button
                   type="button"
                   className="hud-action-btn visor-panel-action-btn"
-                  onClick={() => collapseMainPanel(mainPanelId)}
+                  onClick={() => onCollapseMainPanel(mainPanelId)}
                 >
                   Collapse
                 </button>

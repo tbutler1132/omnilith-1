@@ -2,7 +2,7 @@
  * VisorPanelBody — renders a universal layer panel by schema ID.
  *
  * Keeps panel content mapping in one place so the panel registry and
- * layout policy can evolve without rewriting VisorView conditionals.
+ * layout policy can evolve without rewriting host conditionals.
  */
 
 import {

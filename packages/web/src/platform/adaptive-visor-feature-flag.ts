@@ -1,18 +1,9 @@
 /**
- * Adaptive visor feature flag resolver.
+ * Adaptive visor diagnostics flag resolver.
  *
- * Enables local rollout via URL query (`adaptiveVisorCompositor=1`)
- * and build-time environment flag (`VITE_ADAPTIVE_VISOR_COMPOSITOR=1`).
+ * Adaptive rendering is now always enabled. This resolver remains for
+ * optional trace logging during policy debugging.
  */
-
-export function isAdaptiveVisorCompositorEnabled(): boolean {
-  const params = new URLSearchParams(window.location.search);
-  const queryValue = params.get('adaptiveVisorCompositor') ?? params.get('adaptiveVisor');
-  if (queryValue === '1' || queryValue === 'true') return true;
-
-  const envValue = import.meta.env.VITE_ADAPTIVE_VISOR_COMPOSITOR;
-  return envValue === '1' || envValue === 'true';
-}
 
 export function isAdaptiveVisorDecisionTraceEnabled(): boolean {
   const params = new URLSearchParams(window.location.search);

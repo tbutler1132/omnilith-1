@@ -2,7 +2,7 @@
  * HudCueLayer — renders context-aware cue popups for the HUD.
  *
  * The initial implementation shows an adaptive-help cue once per browser
- * session when adaptive mode is enabled.
+ * session.
  */
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -11,10 +11,6 @@ import { resolveActiveHudCues } from './cue-policy.js';
 import { HUD_CUE_REGISTRY, type HudCueId } from './cue-schema.js';
 
 const SESSION_SEEN_KEY = 'omnilith.hud.cues.v1.seen';
-
-interface HudCueLayerProps {
-  adaptiveEnabled: boolean;
-}
 
 interface CueDebugOptions {
   forceShow: boolean;
@@ -117,17 +113,12 @@ function CueBubble({ cueId, anchorId, title, message, onDismiss }: CueBubbleProp
   );
 }
 
-export function HudCueLayer({ adaptiveEnabled }: HudCueLayerProps) {
+export function HudCueLayer() {
   const [dismissedCueIds, setDismissedCueIds] = useState<HudCueId[]>([]);
   const [sessionVisibleCueIds, setSessionVisibleCueIds] = useState<HudCueId[]>([]);
   const debugOptions = useMemo(() => readCueDebugOptions(), []);
 
   useEffect(() => {
-    if (!adaptiveEnabled) {
-      setSessionVisibleCueIds([]);
-      return;
-    }
-
     if (debugOptions.resetSessionSeen) {
       try {
         window.sessionStorage.removeItem(SESSION_SEEN_KEY);
@@ -144,7 +135,7 @@ export function HudCueLayer({ adaptiveEnabled }: HudCueLayerProps) {
       const nextSeenCueIds = Array.from(new Set([...seenCueIds, ...eligibleCueIds]));
       writeSeenCueIdsToSession(nextSeenCueIds);
     }
-  }, [adaptiveEnabled, debugOptions.forceShow, debugOptions.resetSessionSeen]);
+  }, [debugOptions.forceShow, debugOptions.resetSessionSeen]);
 
   const cues = useMemo(
     () =>
@@ -153,8 +144,6 @@ export function HudCueLayer({ adaptiveEnabled }: HudCueLayerProps) {
       ),
     [sessionVisibleCueIds, dismissedCueIds],
   );
-
-  if (!adaptiveEnabled) return null;
 
   return (
     <div className="hud-cue-layer">

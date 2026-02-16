@@ -1,10 +1,8 @@
 /**
- * HudBar — persistent floating location indicator.
+ * SpaceNavBar — persistent top navigation for spatial movement.
  *
- * Always visible. Context-aware: shows visor organism name when one is
- * loaded, altitude when on the map, or interior name when inside an
- * organism. Back button cascades through visor organism, interior,
- * focus, and map stack.
+ * Displays current location context and a physical back cascade across
+ * visor focus, interior presence, focused organism, and map stack.
  */
 
 import { useOrganism } from '../hooks/use-organism.js';
@@ -27,7 +25,7 @@ const ALTIMETER_LEVEL: Record<string, 0 | 1 | 2> = {
   close: 2,
 };
 
-export function HudBar() {
+export function SpaceNavBar() {
   const { navigationStack, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
   const { altitude } = usePlatformViewportMeta();
@@ -49,8 +47,8 @@ export function HudBar() {
   }
 
   return (
-    <div className="hud-bar">
-      <div className="hud-bar-left">
+    <div className="space-nav-bar">
+      <div className="space-nav-content">
         {showBack && (
           <button type="button" className="hud-back" onClick={handleBack} aria-label="Back">
             &larr;
@@ -81,25 +79,23 @@ export function HudBar() {
   );
 }
 
-/** Displays "Visor · [organism name]" */
 function VisorLocation({ organismId }: { organismId: string }) {
   const { data } = useOrganism(organismId);
   const name = data?.organism.name ?? '...';
 
   return (
-    <span className="hud-location">
+    <span className="hud-location space-nav-location">
       Visor &middot; <span className="hud-location-name">{name}</span>
     </span>
   );
 }
 
-/** Fetches organism name and displays "Inside [name]" */
 function InteriorLocation({ organismId }: { organismId: string }) {
   const { data } = useOrganism(organismId);
   const name = data?.organism.name ?? '...';
 
   return (
-    <span className="hud-location">
+    <span className="hud-location space-nav-location">
       Inside <span className="hud-location-name">{name}</span>
     </span>
   );

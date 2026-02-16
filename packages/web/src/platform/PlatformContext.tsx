@@ -1,7 +1,7 @@
 /**
  * PlatformContext — shared state for the Space + HUD paradigm.
  *
- * Manages navigation (map stack), organism focus, visor toggle,
+ * Manages navigation (map stack), organism focus, visor targeting,
  * and current altitude. All platform-level coordination flows
  * through this context.
  */
@@ -15,10 +15,7 @@ import {
   createAdaptiveVisorCompositorState,
   deriveAdaptiveVisorContext,
 } from './adaptive-visor-compositor.js';
-import {
-  isAdaptiveVisorCompositorEnabled,
-  isAdaptiveVisorDecisionTraceEnabled,
-} from './adaptive-visor-feature-flag.js';
+import { isAdaptiveVisorDecisionTraceEnabled } from './adaptive-visor-feature-flag.js';
 
 interface NavigationEntry {
   mapId: string;
@@ -42,8 +39,7 @@ export interface PlatformState {
   /** Organism entry — currently inside this organism's interior */
   enteredOrganismId: string | null;
 
-  /** Visor */
-  visorOpen: boolean;
+  /** Visor targeting */
   visorOrganismId: string | null;
 
   /** Current altitude level (synced from Space viewport) */
@@ -71,7 +67,6 @@ export interface PlatformMapState {
 }
 
 export interface PlatformVisorState {
-  visorOpen: boolean;
   visorOrganismId: string | null;
 }
 
@@ -95,9 +90,6 @@ type PlatformAction =
   | { type: 'ENTER_MAP'; mapId: string; label: string }
   | { type: 'EXIT_MAP' }
   | { type: 'NAVIGATE_TO_MAP'; mapId: string }
-  | { type: 'OPEN_VISOR' }
-  | { type: 'CLOSE_VISOR' }
-  | { type: 'TOGGLE_VISOR' }
   | { type: 'OPEN_IN_VISOR'; id: string }
   | { type: 'CLOSE_VISOR_ORGANISM' }
   | { type: 'SET_ALTITUDE'; altitude: Altitude }
@@ -147,17 +139,8 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
       };
     }
 
-    case 'OPEN_VISOR':
-      return { ...state, visorOpen: true };
-
-    case 'CLOSE_VISOR':
-      return { ...state, visorOpen: false, visorOrganismId: null };
-
-    case 'TOGGLE_VISOR':
-      return state.visorOpen ? { ...state, visorOpen: false, visorOrganismId: null } : { ...state, visorOpen: true };
-
     case 'OPEN_IN_VISOR':
-      return { ...state, visorOrganismId: action.id, visorOpen: true };
+      return { ...state, visorOrganismId: action.id };
 
     case 'CLOSE_VISOR_ORGANISM':
       return { ...state, visorOrganismId: null };
@@ -171,7 +154,6 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
         ...state,
         enteredOrganismId: action.id,
         focusedOrganismId: action.id,
-        visorOpen: false,
         visorOrganismId: null,
       };
 
@@ -209,9 +191,6 @@ interface PlatformContextValue {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openVisor: () => void;
-  closeVisor: () => void;
-  toggleVisor: () => void;
   openInVisor: (id: string) => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
@@ -226,9 +205,6 @@ export interface PlatformActions {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openVisor: () => void;
-  closeVisor: () => void;
-  toggleVisor: () => void;
   openInVisor: (id: string) => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
@@ -254,7 +230,6 @@ interface PlatformProviderProps {
 
 function buildAdaptiveVisorContext(state: PlatformState) {
   return deriveAdaptiveVisorContext({
-    visorOpen: state.visorOpen,
     visorOrganismId: state.visorOrganismId,
     enteredOrganismId: state.enteredOrganismId,
     focusedOrganismId: state.focusedOrganismId,
@@ -270,7 +245,7 @@ export function PlatformProvider({
   children,
 }: PlatformProviderProps) {
   const initialOrganismId = new URLSearchParams(window.location.search).get('organism');
-  const adaptiveEnabled = useMemo(() => isAdaptiveVisorCompositorEnabled(), []);
+  const adaptiveEnabled = true;
   const traceEnabled = useMemo(() => isAdaptiveVisorDecisionTraceEnabled(), []);
 
   const initialState: PlatformState = {
@@ -282,7 +257,6 @@ export function PlatformProvider({
     currentMapId: worldMapId,
     focusedOrganismId: null,
     enteredOrganismId: null,
-    visorOpen: initialOrganismId !== null,
     visorOrganismId: initialOrganismId,
     altitude: 'high',
     viewportCenter: { x: 2500, y: 2500 },
@@ -300,13 +274,12 @@ export function PlatformProvider({
   const adaptiveVisorContext = useMemo(
     () =>
       deriveAdaptiveVisorContext({
-        visorOpen: state.visorOpen,
         visorOrganismId: state.visorOrganismId,
         enteredOrganismId: state.enteredOrganismId,
         focusedOrganismId: state.focusedOrganismId,
         altitude: state.altitude,
       }),
-    [state.visorOpen, state.visorOrganismId, state.enteredOrganismId, state.focusedOrganismId, state.altitude],
+    [state.visorOrganismId, state.enteredOrganismId, state.focusedOrganismId, state.altitude],
   );
 
   useEffect(() => {
@@ -340,9 +313,6 @@ export function PlatformProvider({
   const enterMap = useCallback((mapId: string, label: string) => dispatch({ type: 'ENTER_MAP', mapId, label }), []);
   const exitMap = useCallback(() => dispatch({ type: 'EXIT_MAP' }), []);
   const navigateToMap = useCallback((mapId: string) => dispatch({ type: 'NAVIGATE_TO_MAP', mapId }), []);
-  const openVisor = useCallback(() => dispatch({ type: 'OPEN_VISOR' }), []);
-  const closeVisor = useCallback(() => dispatch({ type: 'CLOSE_VISOR' }), []);
-  const toggleVisor = useCallback(() => dispatch({ type: 'TOGGLE_VISOR' }), []);
   const openInVisor = useCallback((id: string) => dispatch({ type: 'OPEN_IN_VISOR', id }), []);
   const closeVisorOrganism = useCallback(() => dispatch({ type: 'CLOSE_VISOR_ORGANISM' }), []);
   const setAltitude = useCallback((altitude: Altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }), []);
@@ -379,10 +349,9 @@ export function PlatformProvider({
 
   const visorState = useMemo<PlatformVisorState>(
     () => ({
-      visorOpen: state.visorOpen,
       visorOrganismId: state.visorOrganismId,
     }),
-    [state.visorOpen, state.visorOrganismId],
+    [state.visorOrganismId],
   );
 
   const viewportMetaState = useMemo<PlatformViewportMetaState>(
@@ -414,9 +383,6 @@ export function PlatformProvider({
       enterMap,
       exitMap,
       navigateToMap,
-      openVisor,
-      closeVisor,
-      toggleVisor,
       openInVisor,
       closeVisorOrganism,
       setAltitude,
@@ -430,9 +396,6 @@ export function PlatformProvider({
       enterMap,
       exitMap,
       navigateToMap,
-      openVisor,
-      closeVisor,
-      toggleVisor,
       openInVisor,
       closeVisorOrganism,
       setAltitude,

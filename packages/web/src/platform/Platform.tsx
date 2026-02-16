@@ -8,7 +8,7 @@
 import { useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/organisms.js';
 import { Hud } from '../hud/index.js';
-import { Space } from '../space/index.js';
+import { Space, SpaceNavBar } from '../space/index.js';
 import { PlatformProvider, usePlatformVisorState } from './PlatformContext.js';
 
 /** Syncs visorOrganismId to the URL so organism links are shareable */
@@ -75,6 +75,7 @@ export function Platform({ userId, personalOrganismId, homePageOrganismId, onLog
     >
       <div className="platform">
         <Space />
+        <SpaceNavBar />
         <Hud onLogout={onLogout} />
         <UrlSync />
       </div>

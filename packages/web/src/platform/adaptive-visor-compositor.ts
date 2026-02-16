@@ -13,12 +13,11 @@ export type AdaptiveVisorMajorPanelId = 'visor-view' | 'interior-actions';
 export type AdaptiveVisorMapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
 export type AdaptiveVisorPanelId = AdaptiveVisorMajorPanelId | AdaptiveVisorMapPanelId;
 export type AdaptiveVisorWidgetId = 'map-actions';
-export type AdaptiveVisorAnchorId = 'visor-toggle' | 'navigation-back' | 'dismiss';
+export type AdaptiveVisorAnchorId = 'navigation-back' | 'dismiss';
 export type AdaptiveVisorIntentId = 'template-values-flow';
 export type AdaptiveVisorDecision = string;
 
 export interface AdaptiveVisorLayoutContext {
-  visorOpen: boolean;
   contextClass: AdaptiveVisorContextClass;
   focusedOrganismId: string | null;
   enteredOrganismId: string | null;
@@ -64,7 +63,7 @@ export type AdaptiveVisorCompositorEvent =
   | { type: 'close-temporary-panel' }
   | { type: 'mutation' };
 
-const ANCHORS: AdaptiveVisorAnchorId[] = ['visor-toggle', 'navigation-back', 'dismiss'];
+const ANCHORS: AdaptiveVisorAnchorId[] = ['navigation-back', 'dismiss'];
 const MAX_MAJOR_PANELS = 2;
 const MAX_LAYOUT_HISTORY = 12;
 const MAX_DECISION_TRACE = 80;
@@ -159,7 +158,6 @@ function recomputeForContext(context: AdaptiveVisorLayoutContext): {
   activePanels: AdaptiveVisorPanelId[];
   activeWidgets: AdaptiveVisorWidgetId[];
 } {
-  if (!context.visorOpen) return { activePanels: [], activeWidgets: [] };
   if (context.contextClass === 'visor-organism' && context.visorOrganismId) {
     return { activePanels: ['visor-view'], activeWidgets: [] };
   }
@@ -177,17 +175,15 @@ function handleContextChanged(
   state: AdaptiveVisorCompositorState,
   context: AdaptiveVisorLayoutContext,
 ): AdaptiveVisorPolicyResult {
-  const wasVisible = state.layoutContext.visorOpen;
-  const willBeVisible = context.visorOpen;
   const contextClassChanged = state.layoutContext.contextClass !== context.contextClass;
   let layoutHistory = state.layoutHistory;
 
-  if (wasVisible && (contextClassChanged || !willBeVisible)) {
+  if (contextClassChanged) {
     layoutHistory = pushHistory(state);
   }
 
   const recomputed = recomputeForContext(context);
-  if (context.contextClass !== 'map' || !context.visorOpen) {
+  if (context.contextClass !== 'map') {
     return {
       nextState: {
         ...state,
@@ -255,7 +251,7 @@ function handleToggleMapPanel(
   state: AdaptiveVisorCompositorState,
   panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>,
 ): AdaptiveVisorPolicyResult {
-  if (!state.layoutContext.visorOpen || state.layoutContext.contextClass !== 'map') {
+  if (state.layoutContext.contextClass !== 'map') {
     return { nextState: state, decision: 'ignore-toggle-map-panel-not-eligible' };
   }
 
@@ -275,7 +271,7 @@ function handleToggleMapPanel(
 }
 
 function handleOpenTemplateValues(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
-  if (!state.layoutContext.visorOpen || state.layoutContext.contextClass !== 'map') {
+  if (state.layoutContext.contextClass !== 'map') {
     return { nextState: state, decision: 'ignore-open-template-values-not-eligible' };
   }
 
@@ -302,8 +298,7 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
       nextState: {
         ...state,
         activePanels: [],
-        activeWidgets:
-          state.layoutContext.visorOpen && state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
+        activeWidgets: state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
         anchors: ANCHORS,
         intentStack: [],
       },
@@ -324,8 +319,7 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
       nextState: {
         ...state,
         activePanels: [],
-        activeWidgets:
-          state.layoutContext.visorOpen && state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
+        activeWidgets: state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
         anchors: ANCHORS,
         intentStack,
         layoutHistory: nextHistory,
@@ -348,7 +342,6 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
 }
 
 export function deriveAdaptiveVisorContext(input: {
-  visorOpen: boolean;
   visorOrganismId: string | null;
   enteredOrganismId: string | null;
   focusedOrganismId: string | null;
@@ -361,7 +354,6 @@ export function deriveAdaptiveVisorContext(input: {
       : 'map';
 
   return {
-    visorOpen: input.visorOpen,
     contextClass,
     focusedOrganismId: input.focusedOrganismId,
     enteredOrganismId: input.enteredOrganismId,

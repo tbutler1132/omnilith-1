@@ -6,10 +6,11 @@
  * secondary, and collapsed roles deterministically.
  */
 
-export type HudContextClass = 'map' | 'visor-organism';
+export type HudContextClass = 'map' | 'interior' | 'visor-organism';
 export type MapHudPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
+export type InteriorHudPanelId = 'interior-actions';
 export type VisorHudPanelId = 'organism' | 'vitality' | 'composition' | 'proposals' | 'history' | 'governance';
-export type HudPanelId = MapHudPanelId | VisorHudPanelId;
+export type HudPanelId = MapHudPanelId | InteriorHudPanelId | VisorHudPanelId;
 export type HudPanelRole = 'main' | 'secondary' | 'collapsed';
 
 export interface HudPanelContext {
@@ -73,6 +74,15 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 95,
     defaultSecondaryPriority: 90,
     collapsedPriority: 89,
+  },
+  {
+    id: 'interior-actions',
+    label: 'Tend current',
+    availableIn: (context) => context.contextClass === 'interior',
+    roleSupport: { main: false, secondary: false, collapsed: true },
+    defaultMainPriority: 0,
+    defaultSecondaryPriority: 0,
+    collapsedPriority: 100,
   },
   {
     id: 'organism',

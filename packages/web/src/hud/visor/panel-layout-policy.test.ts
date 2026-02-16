@@ -4,6 +4,7 @@ import { resolveVisorTemplate } from './template-schema.js';
 
 const organismSlots = resolveVisorTemplate('visor-organism').panelSlots;
 const mapSlots = resolveVisorTemplate('map').panelSlots;
+const interiorSlots = resolveVisorTemplate('interior').panelSlots;
 
 describe('resolveVisorPanelLayout', () => {
   it('a surfaced regulated organism resolves deterministic main secondary collapsed roles', () => {
@@ -78,5 +79,17 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.secondaryPanelIds).toEqual(['composition']);
+  });
+
+  it('an interior context uses the same policy path with collapsed-only tend actions', () => {
+    const layout = resolveVisorPanelLayout({
+      context: { contextClass: 'interior', surfaced: false, openTrunk: false, templateValuesReady: false },
+      preferredMainPanelId: null,
+      slots: interiorSlots,
+    });
+
+    expect(layout.mainPanelId).toBeNull();
+    expect(layout.secondaryPanelIds).toEqual([]);
+    expect(layout.collapsedPanelIds).toEqual(['interior-actions']);
   });
 });

@@ -8,12 +8,7 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  usePlatformActions,
-  usePlatformMapState,
-  usePlatformViewportMeta,
-  usePlatformVisorState,
-} from '../platform/index.js';
+import { usePlatformActions, usePlatformMapState, usePlatformViewportMeta } from '../platform/index.js';
 import { AltitudeControls } from './AltitudeControls.js';
 import { GroundPlane } from './GroundPlane.js';
 import { OrganismInterior } from './OrganismInterior.js';
@@ -27,7 +22,6 @@ type Phase = 'map' | 'entering' | 'inside' | 'exiting';
 
 export function Space() {
   const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
-  const { visorOpen } = usePlatformVisorState();
   const { mapRefreshKey } = usePlatformViewportMeta();
   const { focusOrganism, enterMap, enterOrganism, exitOrganism, setAltitude, setViewportCenter } = usePlatformActions();
   const { entries, width, height, loading, error } = useSpatialMap(currentMapId, mapRefreshKey);
@@ -129,7 +123,7 @@ export function Space() {
     fadeRef.current = requestAnimationFrame(tick);
   }, [phase, entries, interiorOrganismId, setViewport, exitOrganism, cancelFade]);
 
-  // ── React to external exit requests (e.g. HudBar back button) ──
+  // ── React to external exit requests (e.g. SpaceNavBar back button) ──
   // When enteredOrganismId is cleared externally while Space is still
   // in the 'inside' phase, trigger the proper exit animation.
   useEffect(() => {
@@ -172,7 +166,7 @@ export function Space() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return;
-      if (visorOpen) return;
+      if (e.defaultPrevented) return;
 
       if (phase === 'inside') {
         handleExitOrganism();
@@ -183,7 +177,7 @@ export function Space() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [visorOpen, focusedOrganismId, phase, focusOrganism, handleExitOrganism]);
+  }, [focusedOrganismId, phase, focusOrganism, handleExitOrganism]);
 
   if (loading) {
     return (

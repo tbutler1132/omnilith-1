@@ -931,7 +931,8 @@ button.secondary:hover {
 }
 
 .adaptive-visor-surface .visor-panel-main-slot,
-.adaptive-visor-surface .visor-panel-collapsed-rail--viewport-bottom-left {
+.adaptive-visor-surface .visor-panel-collapsed-rail--viewport-bottom-left,
+.adaptive-visor-surface .visor-history-nav {
   pointer-events: auto;
 }
 
@@ -950,10 +951,25 @@ button.secondary:hover {
   pointer-events: auto;
 }
 
-.hud-bar-left {
-  display: flex;
+.space-nav-bar {
+  position: fixed;
+  top: 6px;
+  left: 12px;
+  z-index: 67;
+  pointer-events: none;
+}
+
+.space-nav-content {
+  pointer-events: auto;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: min(68vw, 680px);
+  padding: 6px 10px;
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.66);
+  box-shadow: var(--hud-glow);
 }
 
 .hud-back {
@@ -981,6 +997,14 @@ button.secondary:hover {
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--hud-text);
+}
+
+.space-nav-location {
+  display: inline-block;
+  max-width: min(52vw, 520px);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .hud-location-name {
@@ -1025,39 +1049,6 @@ button.secondary:hover {
 
 .hud-altimeter-step--active {
   background: var(--hud-text-bright);
-}
-
-/* Visor pill — bottom-center toggle */
-
-.hud-pill {
-  position: absolute;
-  bottom: 20px;
-  left: 50%;
-  transform: translateX(-50%);
-  pointer-events: auto;
-  background: transparent;
-  border: 1px solid var(--hud-border);
-  border-radius: 20px;
-  padding: 4px 20px;
-  font-family: var(--hud-mono);
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--hud-text);
-  cursor: pointer;
-  box-shadow: var(--hud-glow);
-  transition: all 200ms ease;
-}
-
-.hud-pill:hover {
-  border-color: var(--hud-border-hover);
-  color: var(--hud-text-bright);
-  box-shadow: var(--hud-glow-hover);
-}
-
-.hud-pill--active {
-  border-color: var(--hud-border-active);
-  color: var(--hud-text-bright);
 }
 
 /* Floating logout — top-right */
@@ -1107,11 +1098,6 @@ button.secondary:hover {
 .hud-policy-badge--adaptive {
   border-color: rgba(76, 174, 140, 0.55);
   color: #7bd2b0;
-}
-
-.hud-policy-badge--legacy {
-  border-color: rgba(224, 144, 80, 0.45);
-  color: #e8b487;
 }
 
 .hud-cue-layer {
@@ -2990,6 +2976,30 @@ button.secondary:hover {
   justify-content: space-between;
 }
 
+.visor-history-nav {
+  position: fixed;
+  top: 58px;
+  left: 16px;
+  z-index: 66;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.66);
+  box-shadow: var(--hud-glow);
+}
+
+.visor-history-btn {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.visor-history-btn:disabled {
+  opacity: 0.4;
+}
+
 .visor-panel-main {
   border: 1px solid var(--hud-border);
   border-radius: 10px;
@@ -3121,6 +3131,11 @@ button.secondary:hover {
   flex-wrap: wrap;
   gap: 6px;
   transition: opacity 220ms ease, transform 220ms ease;
+}
+
+.visor-panel-collapsed-rail--inline {
+  position: static;
+  width: 100%;
 }
 
 .visor-panel-collapsed-rail--viewport-bottom-left {
@@ -3677,8 +3692,22 @@ button.secondary:hover {
     letter-spacing: 1px;
   }
 
-  .hud-pill {
-    bottom: 14px;
+  .space-nav-bar {
+    top: 6px;
+    left: 10px;
+  }
+
+  .space-nav-content {
+    max-width: calc(100vw - 20px);
+  }
+
+  .space-nav-location {
+    max-width: min(64vw, 320px);
+  }
+
+  .visor-history-nav {
+    top: 58px;
+    left: 10px;
   }
 
   .visor-view {

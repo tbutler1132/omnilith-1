@@ -7,13 +7,11 @@ import {
 } from './adaptive-visor-compositor.js';
 
 function createContext(input?: {
-  visorOpen?: boolean;
   visorOrganismId?: string | null;
   enteredOrganismId?: string | null;
   focusedOrganismId?: string | null;
 }) {
   return deriveAdaptiveVisorContext({
-    visorOpen: input?.visorOpen ?? true,
     visorOrganismId: input?.visorOrganismId ?? null,
     enteredOrganismId: input?.enteredOrganismId ?? null,
     focusedOrganismId: input?.focusedOrganismId ?? null,
@@ -22,7 +20,7 @@ function createContext(input?: {
 }
 
 describe('adaptive visor compositor', () => {
-  it('an open visor on the map exposes map actions with no major panel selected', () => {
+  it('a map context exposes map actions with no major panel selected', () => {
     const state = createAdaptiveVisorCompositorState(true, createContext());
 
     expect(state.activeWidgets).toEqual(['map-actions']);
@@ -74,11 +72,11 @@ describe('adaptive visor compositor', () => {
     const toggled = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'mine' });
     const changedContext = computeNextAdaptiveVisorLayout(toggled, {
       type: 'context-changed',
-      context: createContext({ visorOpen: true, visorOrganismId: 'organism-2' }),
+      context: createContext({ visorOrganismId: 'organism-2' }),
     });
     const mutated = computeNextAdaptiveVisorLayout(changedContext, { type: 'mutation' });
 
-    expect(mutated.anchors).toEqual(['visor-toggle', 'navigation-back', 'dismiss']);
+    expect(mutated.anchors).toEqual(['navigation-back', 'dismiss']);
   });
 
   it('records event to decision to layout traces when trace mode is enabled', () => {

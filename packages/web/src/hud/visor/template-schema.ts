@@ -8,11 +8,11 @@
 
 import type { HudContextClass } from './panel-schema.js';
 
-export type AdaptiveHudContextClass = HudContextClass | 'interior';
 export type VisorTemplateId = 'map-core' | 'organism-core' | 'interior-core';
 export type VisorCollapsedRailPlacement = 'inline' | 'viewport-bottom-left';
 export type VisorMainSlotPresentation = 'inline' | 'centered-overlay';
 export type VisorReservedAnchor = 'hud-bar' | 'compass' | 'logout' | 'altitude-controls' | 'policy-badge';
+export type VisorWidgetId = 'map-actions' | 'history-navigation';
 
 export interface VisorTemplatePanelSlots {
   main: {
@@ -32,7 +32,7 @@ export interface VisorTemplatePanelSlots {
 }
 
 export interface VisorTemplateWidgetSlots {
-  allowedWidgets: string[];
+  allowedWidgets: VisorWidgetId[];
 }
 
 export interface VisorTemplateCueSlots {
@@ -42,7 +42,7 @@ export interface VisorTemplateCueSlots {
 
 export interface VisorTemplateDefinition {
   id: VisorTemplateId;
-  contextClass: AdaptiveHudContextClass;
+  contextClass: HudContextClass;
   label: string;
   panelSlots: VisorTemplatePanelSlots;
   widgetSlots: VisorTemplateWidgetSlots;
@@ -80,7 +80,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
     },
     widgetSlots: {
-      allowedWidgets: ['map-actions'],
+      allowedWidgets: ['map-actions', 'history-navigation'],
     },
     cueSlots: {
       enabled: true,
@@ -109,7 +109,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
     },
     widgetSlots: {
-      allowedWidgets: [],
+      allowedWidgets: ['history-navigation'],
     },
     cueSlots: {
       enabled: true,
@@ -148,7 +148,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
   },
 ];
 
-export function resolveVisorTemplate(contextClass: AdaptiveHudContextClass): VisorTemplateDefinition {
+export function resolveVisorTemplate(contextClass: HudContextClass): VisorTemplateDefinition {
   const template = VISOR_TEMPLATE_REGISTRY.find((entry) => entry.contextClass === contextClass);
   if (!template) {
     throw new Error(`No visor template for context ${contextClass}`);

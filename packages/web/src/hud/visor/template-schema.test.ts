@@ -8,7 +8,7 @@ describe('resolveVisorTemplate', () => {
     expect(template.id).toBe('map-core');
     expect(template.panelSlots.main.allowEmpty).toBe(true);
     expect(template.panelSlots.collapsed.placement).toBe('viewport-bottom-left');
-    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions']);
+    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions', 'history-navigation']);
   });
 
   it('returns the organism template with non-empty main and collapsed rail capacity', () => {
@@ -18,6 +18,7 @@ describe('resolveVisorTemplate', () => {
     expect(template.panelSlots.main.allowEmpty).toBe(false);
     expect(template.panelSlots.secondary.maxPanels).toBe(0);
     expect(template.panelSlots.collapsed.maxPanels).toBeNull();
+    expect(template.widgetSlots.allowedWidgets).toContain('history-navigation');
   });
 
   it('registers a template for each adaptive context class', () => {
