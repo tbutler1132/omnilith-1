@@ -143,6 +143,7 @@ export function VisorView({ organismId }: VisorViewProps) {
               <ProposeForm
                 organismId={organismId}
                 currentContentTypeId={organism.currentState.contentTypeId}
+                currentPayload={organism.currentState.payload}
                 openTrunk={openTrunk}
                 onComplete={handleProposed}
                 onClose={() => setShowProposeForm(false)}

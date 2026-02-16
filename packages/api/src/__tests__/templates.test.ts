@@ -171,6 +171,73 @@ describe('template instantiation', () => {
     expect(body.organisms[0].organismId).not.toBe(body.organisms[1].organismId);
   });
 
+  it('song starter template composes song assets under the song parent', async () => {
+    const template = await createTemplateOrganism([
+      {
+        ref: 'song',
+        contentTypeId: 'song',
+        initialPayload: {
+          title: 'Untitled Song',
+          artistCredit: 'Test Artist',
+          status: 'draft',
+        },
+      },
+      {
+        ref: 'cover',
+        contentTypeId: 'image',
+        initialPayload: {
+          fileReference: 'dev/images/cover.jpg',
+          width: 1600,
+          height: 1600,
+          format: 'jpg',
+        },
+        composeInto: 'song',
+      },
+      {
+        ref: 'source',
+        contentTypeId: 'daw-project',
+        initialPayload: {
+          fileReference: 'dev/projects/song-v1.als',
+          daw: 'ableton-live',
+          format: 'als',
+        },
+        composeInto: 'song',
+      },
+      {
+        ref: 'stems',
+        contentTypeId: 'stems-bundle',
+        initialPayload: {
+          fileReference: 'dev/stems/song-v1.zip',
+          format: 'zip',
+        },
+        composeInto: 'song',
+      },
+      {
+        ref: 'mix',
+        contentTypeId: 'audio',
+        initialPayload: {
+          fileReference: 'dev/audio/song-v1.wav',
+          durationSeconds: 180,
+          format: 'wav',
+        },
+        composeInto: 'song',
+      },
+    ]);
+
+    const res = await app.request(`/templates/${template.id}/instantiate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    expect(res.status).toBe(201);
+    const body = await res.json();
+    const songId = body.organisms.find((o: { ref: string }) => o.ref === 'song')?.organismId;
+    expect(songId).toBeDefined();
+
+    const children = await container.compositionRepository.findChildren(songId);
+    expect(children).toHaveLength(4);
+  });
+
   it('returns 404 for nonexistent template organism', async () => {
     const res = await app.request('/templates/nonexistent/instantiate', {
       method: 'POST',

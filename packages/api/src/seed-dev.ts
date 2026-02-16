@@ -15,9 +15,10 @@ import type { ContentTypeId, OrganismId, UserId } from '@omnilith/kernel';
 import { appendState, composeOrganism, createOrganism, openProposal } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
-import { platformConfig, sessions, users } from './db/schema.js';
+import { organisms, platformConfig, sessions, users } from './db/schema.js';
 
 const DEV_SEED_KEY = 'dev_seed_complete';
+const SONG_STARTER_TEMPLATE_KEY = 'dev_song_starter_template_id';
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
 
@@ -27,12 +28,131 @@ function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
+async function ensureSongStarterTemplate(container: Container, devUserId: UserId): Promise<void> {
+  const existingTemplateKey = await container.db
+    .select()
+    .from(platformConfig)
+    .where(eq(platformConfig.key, SONG_STARTER_TEMPLATE_KEY));
+
+  if (existingTemplateKey.length > 0) {
+    return;
+  }
+
+  const namedTemplates = await container.db.select().from(organisms).where(eq(organisms.name, 'Song Starter'));
+
+  for (const candidate of namedTemplates) {
+    const currentState = await container.stateRepository.findCurrentByOrganismId(candidate.id as OrganismId);
+    if (currentState?.contentTypeId === 'template') {
+      await container.db.insert(platformConfig).values({
+        key: SONG_STARTER_TEMPLATE_KEY,
+        value: candidate.id,
+      });
+      return;
+    }
+  }
+
+  const songTemplate = await createOrganism(
+    {
+      name: 'Song Starter',
+      contentTypeId: 'template' as ContentTypeId,
+      payload: {
+        name: 'Song Starter',
+        description: 'Creates a song organism with cover art, source project, stems, and a starter mix.',
+        recipe: [
+          {
+            ref: 'song',
+            contentTypeId: 'song',
+            initialPayload: {
+              title: 'Untitled Song',
+              artistCredit: 'Dev User',
+              status: 'draft',
+              tempoBpm: 120,
+              keySignature: 'A minor',
+            },
+          },
+          {
+            ref: 'cover',
+            contentTypeId: 'image',
+            initialPayload: {
+              fileReference: 'dev/images/cover-placeholder.jpg',
+              width: 1600,
+              height: 1600,
+              format: 'jpg',
+              metadata: { title: 'Cover Art' },
+            },
+            composeInto: 'song',
+            position: 0,
+          },
+          {
+            ref: 'source',
+            contentTypeId: 'daw-project',
+            initialPayload: {
+              fileReference: 'dev/projects/untitled-song-v1.als',
+              daw: 'ableton-live',
+              format: 'als',
+              versionLabel: 'v1',
+            },
+            composeInto: 'song',
+            position: 1,
+          },
+          {
+            ref: 'stems',
+            contentTypeId: 'stems-bundle',
+            initialPayload: {
+              fileReference: 'dev/stems/untitled-song-v1.zip',
+              format: 'zip',
+              stemCount: 10,
+              sampleRate: 48000,
+              bitDepth: 24,
+            },
+            composeInto: 'song',
+            position: 2,
+          },
+          {
+            ref: 'mix-1',
+            contentTypeId: 'audio',
+            initialPayload: {
+              fileReference: 'dev/audio/untitled-song-mix-1.wav',
+              durationSeconds: 180,
+              format: 'wav',
+              sampleRate: 48000,
+              metadata: { title: 'Mix 1', artist: 'Dev User' },
+            },
+            composeInto: 'song',
+            position: 3,
+          },
+        ],
+      },
+      createdBy: devUserId,
+    },
+    {
+      organismRepository: container.organismRepository,
+      stateRepository: container.stateRepository,
+      contentTypeRegistry: container.contentTypeRegistry,
+      eventPublisher: container.eventPublisher,
+      relationshipRepository: container.relationshipRepository,
+      identityGenerator: container.identityGenerator,
+    },
+  );
+
+  await container.db.insert(platformConfig).values({
+    key: SONG_STARTER_TEMPLATE_KEY,
+    value: songTemplate.organism.id,
+  });
+
+  console.log(`  Template "Song Starter": ${songTemplate.organism.id}`);
+}
+
 export async function seedDev(container: Container): Promise<void> {
   // Skip if already seeded
   const existing = await container.db.select().from(platformConfig).where(eq(platformConfig.key, DEV_SEED_KEY));
 
   if (existing.length > 0) {
-    console.log('Dev seed already applied, skipping.');
+    const devUser = await container.db.select().from(users).where(eq(users.email, DEV_USER_EMAIL));
+    if (devUser.length > 0) {
+      await ensureSongStarterTemplate(container, devUser[0].id as UserId);
+    }
+    console.log('Dev seed already applied, ensured Song Starter template.');
     return;
   }
 
@@ -268,6 +388,8 @@ export async function seedDev(container: Container): Promise<void> {
     composeDeps,
   );
   console.log(`  Album (3 tracks composed): ${album.organism.id}`);
+
+  await ensureSongStarterTemplate(container, devUserId);
 
   // 7. An image organism
   const photograph = await createOrganism(

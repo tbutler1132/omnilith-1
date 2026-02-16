@@ -13,6 +13,12 @@ export {
   type CompositionReferencePayload,
   compositionReferenceContentType,
 } from './composition-reference/index.js';
+export {
+  type DawName,
+  type DawProjectFormat,
+  type DawProjectPayload,
+  dawProjectContentType,
+} from './daw-project/index.js';
 export { type ImageFormat, type ImagePayload, imageContentType } from './image/index.js';
 export { type IntegrationPolicyPayload, integrationPolicyContentType } from './integration-policy/index.js';
 export {
@@ -27,7 +33,14 @@ export {
   type SensorReading,
   sensorContentType,
 } from './sensor/index.js';
+export { type SongPayload, type SongStatus, songContentType } from './song/index.js';
 export { type SpatialMapEntry, type SpatialMapPayload, spatialMapContentType } from './spatial-map/index.js';
+export {
+  type StemsBitDepth,
+  type StemsBundleFormat,
+  type StemsBundlePayload,
+  stemsBundleContentType,
+} from './stems-bundle/index.js';
 export {
   type TemplatePayload,
   type TemplateRecipeStep,
@@ -45,11 +58,14 @@ import type { ContentTypeContract } from '@omnilith/kernel';
 import { audioContentType } from './audio/index.js';
 import { communityContentType } from './community/index.js';
 import { compositionReferenceContentType } from './composition-reference/index.js';
+import { dawProjectContentType } from './daw-project/index.js';
 import { imageContentType } from './image/index.js';
 import { integrationPolicyContentType } from './integration-policy/index.js';
 import { responsePolicyContentType } from './response-policy/index.js';
 import { sensorContentType } from './sensor/index.js';
+import { songContentType } from './song/index.js';
 import { spatialMapContentType } from './spatial-map/index.js';
+import { stemsBundleContentType } from './stems-bundle/index.js';
 import { templateContentType } from './template/index.js';
 import { textContentType } from './text/index.js';
 import { threadContentType } from './thread/index.js';
@@ -68,4 +84,7 @@ export const allContentTypes: ReadonlyArray<ContentTypeContract> = [
   variableContentType,
   responsePolicyContentType,
   templateContentType,
+  songContentType,
+  dawProjectContentType,
+  stemsBundleContentType,
 ];

@@ -12,8 +12,9 @@ import { useOrganism } from '../hooks/use-organism.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatformActions, usePlatformMapState } from '../platform/index.js';
 import { HudMyOrganisms } from './HudMyOrganisms.js';
+import { HudTemplates } from './HudTemplates.js';
 
-type ActivePanel = 'threshold' | 'mine' | null;
+type ActivePanel = 'threshold' | 'mine' | 'templates' | null;
 
 /** Shows focused organism name + "Tend" action */
 function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onTend: () => void }) {
@@ -32,7 +33,7 @@ export function HudMapActions() {
   const { openInVisor } = usePlatformActions();
   const [activePanel, setActivePanel] = useState<ActivePanel>(null);
 
-  function togglePanel(panel: 'threshold' | 'mine') {
+  function togglePanel(panel: 'threshold' | 'mine' | 'templates') {
     setActivePanel((cur) => (cur === panel ? null : panel));
   }
 
@@ -46,9 +47,15 @@ export function HudMapActions() {
     openInVisor(organismId);
   }
 
+  function handleTemplateInstantiated(organismId: string) {
+    setActivePanel(null);
+    openInVisor(organismId);
+  }
+
   const panelHint = useMemo(() => {
     if (activePanel === 'threshold') return 'Define identity, choose state type, and threshold in one flow.';
     if (activePanel === 'mine') return 'Jump directly into tending organisms you already steward.';
+    if (activePanel === 'templates') return 'Instantiate a recipe to create a composed organism bundle.';
     if (focusedOrganismId) return 'Focused organism is ready to tend.';
     return 'Threshold a new organism or open one you already steward.';
   }, [activePanel, focusedOrganismId]);
@@ -67,6 +74,14 @@ export function HudMapActions() {
         <div className="hud-panel hud-panel--mine hud-fade hud-fade--visible">
           <div className="hud-panel-inner">
             <HudMyOrganisms onSelect={handleOrganismSelect} />
+          </div>
+        </div>
+      )}
+
+      {activePanel === 'templates' && (
+        <div className="hud-panel hud-panel--templates hud-fade hud-fade--visible">
+          <div className="hud-panel-inner">
+            <HudTemplates onTemplateInstantiated={handleTemplateInstantiated} />
           </div>
         </div>
       )}
@@ -93,6 +108,13 @@ export function HudMapActions() {
           onClick={() => togglePanel('mine')}
         >
           My Organisms
+        </button>
+        <button
+          type="button"
+          className={`hud-map-btn ${activePanel === 'templates' ? 'hud-map-btn--active' : ''}`}
+          onClick={() => togglePanel('templates')}
+        >
+          Templates
         </button>
       </div>
 

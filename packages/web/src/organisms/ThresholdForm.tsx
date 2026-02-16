@@ -21,13 +21,36 @@ const CONTENT_TYPES: ContentTypeOption[] = [
     id: 'audio',
     label: 'Audio',
     summary: 'Songs, clips, and sound studies.',
-    payloadExample: '{\n  "url": "https://example.com/track.mp3",\n  "title": "Untitled Track"\n}',
+    payloadExample:
+      '{\n  "fileReference": "dev/audio/untitled-track.mp3",\n  "durationSeconds": 180,\n  "format": "mp3",\n  "metadata": {\n    "title": "Untitled Track"\n  }\n}',
   },
   {
     id: 'image',
     label: 'Image',
     summary: 'Stills, artwork, and references.',
-    payloadExample: '{\n  "url": "https://example.com/image.jpg",\n  "alt": "Image description"\n}',
+    payloadExample:
+      '{\n  "fileReference": "dev/images/cover.jpg",\n  "width": 1600,\n  "height": 1600,\n  "format": "jpg",\n  "metadata": {\n    "title": "Cover Art"\n  }\n}',
+  },
+  {
+    id: 'song',
+    label: 'Song',
+    summary: 'A parent song boundary for mixes, stems, and source.',
+    payloadExample:
+      '{\n  "title": "Untitled Song",\n  "artistCredit": "Unknown Artist",\n  "status": "draft",\n  "tempoBpm": 120\n}',
+  },
+  {
+    id: 'daw-project',
+    label: 'DAW Project',
+    summary: 'Source production file from a DAW session.',
+    payloadExample:
+      '{\n  "fileReference": "dev/projects/song-v1.als",\n  "daw": "ableton-live",\n  "format": "als",\n  "versionLabel": "v1"\n}',
+  },
+  {
+    id: 'stems-bundle',
+    label: 'Stems Bundle',
+    summary: 'Exported stems package for collaboration or delivery.',
+    payloadExample:
+      '{\n  "fileReference": "dev/stems/song-v1.zip",\n  "format": "zip",\n  "stemCount": 10,\n  "sampleRate": 48000,\n  "bitDepth": 24\n}',
   },
   {
     id: 'spatial-map',

@@ -146,6 +146,70 @@ describe('organism routes', () => {
     expect(body.initialState.sequenceNumber).toBe(1);
   });
 
+  it('POST /organisms validates new song-related content types', async () => {
+    const songRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Signal Bloom',
+        contentTypeId: 'song',
+        payload: {
+          title: 'Signal Bloom',
+          artistCredit: 'Omnilith Ensemble',
+          status: 'draft',
+        },
+      }),
+    });
+    expect(songRes.status).toBe(201);
+
+    const dawRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Signal Bloom Source',
+        contentTypeId: 'daw-project',
+        payload: {
+          fileReference: 'dev/projects/signal-bloom-v1.als',
+          daw: 'ableton-live',
+          format: 'als',
+        },
+      }),
+    });
+    expect(dawRes.status).toBe(201);
+
+    const stemsRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Signal Bloom Stems',
+        contentTypeId: 'stems-bundle',
+        payload: {
+          fileReference: 'dev/stems/signal-bloom-v1.zip',
+          format: 'zip',
+          stemCount: 8,
+          sampleRate: 48000,
+          bitDepth: 24,
+        },
+      }),
+    });
+    expect(stemsRes.status).toBe(201);
+
+    const invalidRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Invalid Song',
+        contentTypeId: 'song',
+        payload: {
+          title: '',
+          artistCredit: '',
+          status: 'shipping',
+        },
+      }),
+    });
+    expect(invalidRes.status).toBe(400);
+  });
+
   it('GET /organisms/:id returns organism with current state', async () => {
     // Create first
     const createRes = await app.request('/organisms', {

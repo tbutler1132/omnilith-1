@@ -2,9 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { validateAudio } from '../audio/validator.js';
 import { validateCommunity } from '../community/validator.js';
 import { validateCompositionReference } from '../composition-reference/validator.js';
+import { validateDawProject } from '../daw-project/validator.js';
 import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
+import { validateSong } from '../song/validator.js';
 import { validateSpatialMap } from '../spatial-map/validator.js';
+import { validateStemsBundle } from '../stems-bundle/validator.js';
 import { validateText } from '../text/validator.js';
 import { validateThread } from '../thread/validator.js';
 
@@ -273,5 +276,40 @@ describe('integration-policy validator', () => {
       mode: 'single-integrator',
     });
     expect(result.valid).toBe(false);
+  });
+});
+
+describe('song validator', () => {
+  it('accepts valid song payload', () => {
+    const result = validateSong({
+      title: 'Signal Bloom',
+      artistCredit: 'Omnilith Ensemble',
+      status: 'mixing',
+    });
+    expect(result.valid).toBe(true);
+  });
+});
+
+describe('daw-project validator', () => {
+  it('accepts valid daw project payload', () => {
+    const result = validateDawProject({
+      fileReference: 'dev/projects/song-v2.als',
+      daw: 'ableton-live',
+      format: 'als',
+    });
+    expect(result.valid).toBe(true);
+  });
+});
+
+describe('stems-bundle validator', () => {
+  it('accepts valid stems bundle payload', () => {
+    const result = validateStemsBundle({
+      fileReference: 'dev/stems/song-v3.zip',
+      format: 'zip',
+      stemCount: 12,
+      sampleRate: 48000,
+      bitDepth: 24,
+    });
+    expect(result.valid).toBe(true);
   });
 });

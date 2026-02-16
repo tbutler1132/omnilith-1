@@ -39,13 +39,14 @@ export class PgQueryPort implements QueryPort {
     if (filters.contentTypeId) {
       conditions.push(
         sql`${organisms.id} IN (
-          SELECT os1.${organismStates.organismId} FROM ${organismStates} os1
-          WHERE os1.${organismStates.contentTypeId} = ${filters.contentTypeId}
-          AND os1.${organismStates.sequenceNumber} = (
-            SELECT MAX(os2.${organismStates.sequenceNumber})
-            FROM ${organismStates} os2
-            WHERE os2.${organismStates.organismId} = os1.${organismStates.organismId}
-          )
+          SELECT os1.organism_id
+          FROM organism_states AS os1
+          WHERE os1.content_type_id = ${filters.contentTypeId}
+            AND os1.sequence_number = (
+              SELECT MAX(os2.sequence_number)
+              FROM organism_states AS os2
+              WHERE os2.organism_id = os1.organism_id
+            )
         )`,
       );
     }
