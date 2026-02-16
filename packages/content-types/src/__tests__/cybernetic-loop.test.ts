@@ -97,6 +97,7 @@ describe('cybernetic feedback loop', () => {
 
   const proposalDeps = () => ({
     organismRepository,
+    stateRepository,
     proposalRepository,
     contentTypeRegistry,
     eventPublisher,

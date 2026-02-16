@@ -56,6 +56,7 @@ export type {
   ContentTypeContract,
   EvaluationResult,
   ProposalForEvaluation,
+  ValidationContext,
   ValidationResult,
 } from './content-types/content-type-contract.js';
 export type { ContentTypeRegistry } from './content-types/content-type-registry.js';

@@ -11,6 +11,7 @@ export interface SpatialMapPayload {
   readonly entries: ReadonlyArray<SpatialMapEntry>;
   readonly width: number;
   readonly height: number;
+  readonly minSeparation?: number;
 }
 
 export interface SpatialMapEntry {

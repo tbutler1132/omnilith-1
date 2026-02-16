@@ -17,6 +17,7 @@ import type { DomainEvent } from '../events/event.js';
 import type { EventPublisher } from '../events/event-publisher.js';
 import type { ContentTypeId, IdentityGenerator, OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { StateRepository } from '../organism/state-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
@@ -32,6 +33,7 @@ export interface OpenProposalInput {
 
 export interface OpenProposalDeps {
   readonly organismRepository: OrganismRepository;
+  readonly stateRepository: StateRepository;
   readonly proposalRepository: ProposalRepository;
   readonly contentTypeRegistry: ContentTypeRegistry;
   readonly eventPublisher: EventPublisher;
@@ -63,7 +65,8 @@ export async function openProposal(input: OpenProposalInput, deps: OpenProposalD
     throw new ContentTypeNotRegisteredError(input.proposedContentTypeId);
   }
 
-  const validation = contract.validate(input.proposedPayload);
+  const currentState = await deps.stateRepository.findCurrentByOrganismId(input.organismId);
+  const validation = contract.validate(input.proposedPayload, { previousPayload: currentState?.payload });
   if (!validation.valid) {
     throw new ValidationFailedError(input.proposedContentTypeId, validation.issues);
   }

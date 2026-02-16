@@ -8,7 +8,13 @@
 
 import type { CompositionRepository } from '../composition/composition-repository.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
-import { AccessDeniedError, ProposalAlreadyResolvedError, ProposalNotFoundError } from '../errors.js';
+import {
+  AccessDeniedError,
+  ContentTypeNotRegisteredError,
+  ProposalAlreadyResolvedError,
+  ProposalNotFoundError,
+  ValidationFailedError,
+} from '../errors.js';
 import type { DomainEvent } from '../events/event.js';
 import type { EventPublisher } from '../events/event-publisher.js';
 import type { IdentityGenerator, ProposalId, UserId } from '../identity.js';
@@ -114,6 +120,15 @@ export async function integrateProposal(
 
   // Advance state
   const currentState = await deps.stateRepository.findCurrentByOrganismId(proposal.organismId);
+  const contract = deps.contentTypeRegistry.get(proposal.proposedContentTypeId);
+  if (!contract) {
+    throw new ContentTypeNotRegisteredError(proposal.proposedContentTypeId);
+  }
+  const validation = contract.validate(proposal.proposedPayload, { previousPayload: currentState?.payload });
+  if (!validation.valid) {
+    throw new ValidationFailedError(proposal.proposedContentTypeId, validation.issues);
+  }
+
   const now = deps.identityGenerator.timestamp();
 
   const newState: OrganismState = {

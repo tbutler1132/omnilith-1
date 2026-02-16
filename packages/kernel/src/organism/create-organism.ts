@@ -49,7 +49,7 @@ export async function createOrganism(
     throw new ContentTypeNotRegisteredError(input.contentTypeId);
   }
 
-  const validation = contract.validate(input.payload);
+  const validation = contract.validate(input.payload, { previousPayload: undefined });
   if (!validation.valid) {
     throw new ValidationFailedError(input.contentTypeId, validation.issues);
   }

@@ -154,6 +154,7 @@ describe('query port', () => {
         },
         {
           organismRepository,
+          stateRepository,
           proposalRepository,
           contentTypeRegistry,
           eventPublisher,
@@ -215,6 +216,7 @@ describe('query port', () => {
         },
         {
           organismRepository,
+          stateRepository,
           proposalRepository,
           contentTypeRegistry,
           eventPublisher,
@@ -253,6 +255,7 @@ describe('query port', () => {
         },
         {
           organismRepository,
+          stateRepository,
           proposalRepository,
           contentTypeRegistry,
           eventPublisher,
@@ -281,6 +284,7 @@ describe('query port', () => {
         },
         {
           organismRepository,
+          stateRepository,
           proposalRepository,
           contentTypeRegistry,
           eventPublisher,

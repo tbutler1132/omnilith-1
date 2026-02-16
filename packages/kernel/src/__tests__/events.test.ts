@@ -174,6 +174,7 @@ describe('events', () => {
       },
       {
         organismRepository,
+        stateRepository,
         proposalRepository,
         contentTypeRegistry,
         eventPublisher,
@@ -205,6 +206,7 @@ describe('events', () => {
       },
       {
         organismRepository,
+        stateRepository,
         proposalRepository,
         contentTypeRegistry,
         eventPublisher,
@@ -253,6 +255,7 @@ describe('events', () => {
       },
       {
         organismRepository,
+        stateRepository,
         proposalRepository,
         contentTypeRegistry,
         eventPublisher,

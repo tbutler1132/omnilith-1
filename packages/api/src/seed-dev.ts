@@ -56,6 +56,7 @@ export async function seedDev(container: Container): Promise<void> {
 
   const proposalDeps = {
     organismRepository: container.organismRepository,
+    stateRepository: container.stateRepository,
     proposalRepository: container.proposalRepository,
     contentTypeRegistry: container.contentTypeRegistry,
     eventPublisher: container.eventPublisher,

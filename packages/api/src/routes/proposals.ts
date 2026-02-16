@@ -40,6 +40,7 @@ export function proposalRoutes(container: Container) {
         },
         {
           organismRepository: container.organismRepository,
+          stateRepository: container.stateRepository,
           proposalRepository: container.proposalRepository,
           contentTypeRegistry: container.contentTypeRegistry,
           eventPublisher: container.eventPublisher,
@@ -101,6 +102,8 @@ export function proposalRoutes(container: Container) {
       if (e.kind === 'ProposalNotFoundError') return c.json({ error: e.message }, 404);
       if (e.kind === 'ProposalAlreadyResolvedError') return c.json({ error: e.message }, 409);
       if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+      if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
+      if (e.kind === 'ContentTypeNotRegisteredError') return c.json({ error: e.message }, 400);
       throw err;
     }
   });

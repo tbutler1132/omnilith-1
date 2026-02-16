@@ -65,12 +65,12 @@ export async function appendState(input: AppendStateInput, deps: AppendStateDeps
     throw new ContentTypeNotRegisteredError(input.contentTypeId);
   }
 
-  const validation = contract.validate(input.payload);
+  const currentState = await deps.stateRepository.findCurrentByOrganismId(input.organismId);
+  const validation = contract.validate(input.payload, { previousPayload: currentState?.payload });
   if (!validation.valid) {
     throw new ValidationFailedError(input.contentTypeId, validation.issues);
   }
 
-  const currentState = await deps.stateRepository.findCurrentByOrganismId(input.organismId);
   const now = deps.identityGenerator.timestamp();
 
   const newState: OrganismState = {

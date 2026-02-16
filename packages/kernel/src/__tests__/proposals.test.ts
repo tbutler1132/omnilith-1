@@ -65,6 +65,7 @@ describe('proposals', () => {
 
   const openDeps = () => ({
     organismRepository,
+    stateRepository,
     proposalRepository,
     contentTypeRegistry,
     eventPublisher,

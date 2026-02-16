@@ -95,8 +95,8 @@ describe('spatial-map validator', () => {
   it('accepts a valid spatial map', () => {
     const result = validateSpatialMap({
       entries: [
-        { organismId: 'org-1', x: 10, y: 20 },
-        { organismId: 'org-2', x: 30, y: 40 },
+        { organismId: 'org-1', x: 100, y: 100 },
+        { organismId: 'org-2', x: 300, y: 300 },
       ],
       width: 1000,
       height: 1000,
@@ -123,6 +123,42 @@ describe('spatial-map validator', () => {
       height: 1000,
     });
     expect(result.valid).toBe(false);
+  });
+
+  it('rejects overlap based on minimum separation', () => {
+    const result = validateSpatialMap({
+      entries: [
+        { organismId: 'org-1', x: 100, y: 100 },
+        { organismId: 'org-2', x: 120, y: 120 },
+      ],
+      width: 1000,
+      height: 1000,
+    });
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('entries[0] overlaps entries[1]');
+  });
+
+  it('rejects removing existing entry during transition validation', () => {
+    const result = validateSpatialMap(
+      {
+        entries: [{ organismId: 'org-1', x: 100, y: 100 }],
+        width: 1000,
+        height: 1000,
+      },
+      {
+        previousPayload: {
+          entries: [
+            { organismId: 'org-1', x: 100, y: 100 },
+            { organismId: 'org-2', x: 300, y: 300 },
+          ],
+          width: 1000,
+          height: 1000,
+        },
+      },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('existing entry removed: org-2');
   });
 });
 

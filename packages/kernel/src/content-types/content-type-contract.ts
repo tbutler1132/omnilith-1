@@ -14,6 +14,10 @@ export interface ValidationResult {
   readonly issues: string[];
 }
 
+export interface ValidationContext {
+  readonly previousPayload?: unknown;
+}
+
 export interface EvaluationResult {
   readonly decision: 'pass' | 'decline';
   readonly reason?: string;
@@ -27,6 +31,6 @@ export interface ProposalForEvaluation {
 
 export interface ContentTypeContract {
   readonly typeId: ContentTypeId;
-  validate(payload: unknown): ValidationResult;
+  validate(payload: unknown, context?: ValidationContext): ValidationResult;
   evaluate?(proposal: ProposalForEvaluation, policyPayload: unknown): EvaluationResult;
 }
