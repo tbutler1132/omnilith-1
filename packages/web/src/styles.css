@@ -1726,6 +1726,31 @@ button.secondary:hover {
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-top: 1px solid rgba(124, 108, 240, 0.15);
+  border-radius: 16px 16px 0 0;
+  overflow: hidden;
+}
+
+/* Visor curvature — vignette + specular highlight */
+.visor-view::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background:
+    /* specular highlight — faint arc across the top */
+    linear-gradient(
+      180deg,
+      rgba(124, 108, 240, 0.06) 0%,
+      transparent 3%
+    ),
+    /* vignette — subtle darkening at edges to simulate lens curvature */
+    radial-gradient(
+      ellipse 85% 80% at 50% 50%,
+      transparent 60%,
+      rgba(0, 0, 0, 0.35) 100%
+    );
+  pointer-events: none;
+  z-index: 60;
+  border-radius: 16px 16px 0 0;
 }
 
 .visor-view-content {
