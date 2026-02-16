@@ -557,6 +557,44 @@ The world map is a finite shared habitat. Organisms surfaced on it occupy real s
 - `SpatialMapPayload` may gain an optional `minSeparation` field.
 - No kernel changes.
 
+### Move 30: Adaptive Visor Unified as Template-Slot Rendering System
+
+The adaptive visor implementation began as a practical feature-flagged refactor (`adaptiveVisorCompositor=1`) and then became a deeper architectural clarification.
+
+At first, behavior improved but structure was still mixed:
+
+- panel roles were being introduced (`main`, `collapsed`) but some map/visor code paths still reflected old mode-specific assumptions
+- collapsed chips appeared in different places by context
+- some adaptive bodies still looked like nested panels due to inner component chrome
+- `Tend` was functionally present but not yet treated as a first-class panel concept
+
+This created a recurring friction: behavior looked close to the target, but the mental model and code structure were still partially split.
+
+The founder clarified the intended model directly:
+
+- the visor is a template with slots
+- slots adapt by context/state/events
+- panels move between slot roles (main/secondary/collapsed), not fixed locations
+- cues are a separate rendering category
+- panel nesting should not happen unless explicitly designed
+
+The implementation was then reworked to match that model, producing the following decisions:
+
+1. **Single adaptive host.** Adaptive rendering flows through one context-driven host (`AdaptiveVisorHost`) instead of map/organism branching at `Hud.tsx`.
+2. **Template schema added.** A typed template layer defines slot topology (`main`, `secondary`, `collapsed`, widgets, cues, reserved anchors) for `map`, `visor-organism`, and `interior` contexts.
+3. **Panel policy now template-driven.** Role resolution uses template slot limits/capabilities rather than ad hoc flags.
+4. **Shared panel deck as core engine.** `VisorPanelDeck` consumes template config and handles promotion/collapse transitions consistently across contexts.
+5. **`Tend` as first-class panel.** The organism view is a panel (`organism`), and universal panels can replace it through the same slot mechanics.
+6. **Collapsed rail placement unified.** Placement is now a slot property, enabling consistent adaptive behavior.
+7. **Cue lane kept separate.** Context cues remain independent from panel/widget mechanics.
+8. **Content-only panel body rule.** Inline forms rendered in slot containers should not draw their own shell chrome (for example Threshold form and Template Values form in adaptive panel bodies).
+
+This work was intentionally iterative and included mid-flight corrections as product intent was clarified through hands-on testing. The key outcome is that adaptive behavior is no longer just a set of UI tweaks; it is now anchored in a rendering architecture that mirrors the compositional logic of the broader system.
+
+The detailed architectural record for this decision set is captured in:
+
+- `docs/decisions/019-adaptive-visor-template-slot-architecture.md`
+
 ---
 
 ## Summary of What We're Building
