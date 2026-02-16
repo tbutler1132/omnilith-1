@@ -590,6 +590,27 @@ button.secondary:hover {
   box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.3);
 }
 
+/* ── Community organism distinction ── */
+
+.space-organism--community .organism-dot {
+  background: #e09050;
+}
+
+.space-organism--community.space-organism--focused .organism-dot {
+  background: #f0a060;
+  box-shadow: 0 0 0 3px rgba(240, 160, 96, 0.3);
+}
+
+.space-organism--community.space-organism--focused {
+  border-color: #e09050;
+  box-shadow: 0 0 0 3px rgba(240, 160, 96, 0.3);
+}
+
+.space-organism--community .organism-type-badge {
+  border-color: rgba(224, 144, 80, 0.3);
+  color: #e09050;
+}
+
 .space-organism--loading,
 .space-organism--error {
   display: flex;

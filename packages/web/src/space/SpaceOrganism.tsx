@@ -65,11 +65,14 @@ export function SpaceOrganism({ entry, altitude, focused, onFocusOrganism, onEnt
     }
   };
 
+  const contentTypeId = data?.currentState?.contentTypeId;
+
   const className = [
     'space-organism',
     focused && 'space-organism--focused',
     loading && 'space-organism--loading',
     error && 'space-organism--error',
+    contentTypeId && `space-organism--${contentTypeId}`,
   ]
     .filter(Boolean)
     .join(' ');
