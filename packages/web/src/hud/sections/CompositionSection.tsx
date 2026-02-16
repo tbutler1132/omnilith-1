@@ -16,6 +16,7 @@ import { usePlatform } from '../../platform/PlatformContext.js';
 interface CompositionSectionProps {
   organismId: string;
   refreshKey: number;
+  onMutate?: () => void;
 }
 
 type ComposeAction = 'compose' | 'create' | null;
@@ -57,7 +58,7 @@ function ChildItem({
   );
 }
 
-export function CompositionSection({ organismId, refreshKey: parentRefresh }: CompositionSectionProps) {
+export function CompositionSection({ organismId, refreshKey: parentRefresh, onMutate }: CompositionSectionProps) {
   const [localRefresh, setLocalRefresh] = useState(0);
   const combinedRefresh = parentRefresh + localRefresh;
 
@@ -83,6 +84,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh }: Co
     try {
       await decomposeChild(organismId, childId);
       setLocalRefresh((k) => k + 1);
+      onMutate?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to decompose');
     } finally {
@@ -95,6 +97,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh }: Co
     try {
       await composeChild(organismId, childId);
       setLocalRefresh((k) => k + 1);
+      onMutate?.();
       setAction(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to compose');
@@ -106,6 +109,7 @@ export function CompositionSection({ organismId, refreshKey: parentRefresh }: Co
     try {
       await composeChild(organismId, newOrganismId);
       setLocalRefresh((k) => k + 1);
+      onMutate?.();
       setAction(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to compose');

@@ -13,9 +13,10 @@ import { formatDate } from './format-date.js';
 interface ProposalsSectionProps {
   organismId: string;
   refreshKey: number;
+  onMutate?: () => void;
 }
 
-export function ProposalsSection({ organismId, refreshKey: parentRefresh }: ProposalsSectionProps) {
+export function ProposalsSection({ organismId, refreshKey: parentRefresh, onMutate }: ProposalsSectionProps) {
   const [localRefresh, setLocalRefresh] = useState(0);
   const combinedRefresh = parentRefresh + localRefresh;
 
@@ -29,6 +30,7 @@ export function ProposalsSection({ organismId, refreshKey: parentRefresh }: Prop
     try {
       await integrateProposal(proposalId);
       setLocalRefresh((k) => k + 1);
+      onMutate?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to integrate');
     } finally {
@@ -42,6 +44,7 @@ export function ProposalsSection({ organismId, refreshKey: parentRefresh }: Prop
     try {
       await declineProposal(proposalId);
       setLocalRefresh((k) => k + 1);
+      onMutate?.();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to decline');
     } finally {

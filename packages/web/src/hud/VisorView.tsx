@@ -28,13 +28,13 @@ interface VisorViewProps {
 
 export function VisorView({ organismId }: VisorViewProps) {
   const { state, closeVisor, closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatform();
-  const { data: organism } = useOrganism(organismId);
-  const { surfaced, loading: surfaceLoading } = useIsSurfaced(organismId);
-
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showProposeForm, setShowProposeForm] = useState(false);
   const [surfacing, setSurfacing] = useState(false);
+
+  const { data: organism } = useOrganism(organismId, refreshKey);
+  const { surfaced, loading: surfaceLoading } = useIsSurfaced(organismId);
 
   const name = organism?.organism.name ?? '...';
   const contentType = organism?.currentState?.contentTypeId ?? '...';
@@ -127,8 +127,16 @@ export function VisorView({ organismId }: VisorViewProps) {
             )}
 
             <VitalitySection organismId={organismId} refreshKey={refreshKey} />
-            <CompositionSection organismId={organismId} refreshKey={refreshKey} />
-            <ProposalsSection organismId={organismId} refreshKey={refreshKey} />
+            <CompositionSection
+              organismId={organismId}
+              refreshKey={refreshKey}
+              onMutate={() => setRefreshKey((k) => k + 1)}
+            />
+            <ProposalsSection
+              organismId={organismId}
+              refreshKey={refreshKey}
+              onMutate={() => setRefreshKey((k) => k + 1)}
+            />
             <StateHistorySection organismId={organismId} refreshKey={refreshKey} />
             <GovernanceSection organismId={organismId} />
           </>
