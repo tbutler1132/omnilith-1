@@ -1,10 +1,8 @@
 /**
- * VisorView — the independent organism tending interface inside the Visor.
+ * VisorView — organism tending through the adaptive panel deck.
  *
- * Opens any organism regardless of spatial position. Shows the content-type
- * renderer in the main area with a collapsible sidebar containing all
- * universal layer sections. Provides Visit (surfaced) or Surface (not yet
- * on map) actions.
+ * The organism rendering is modeled as the "Tend" panel and shares the
+ * same promotion/collapse behavior as universal visor panels.
  */
 
 import { useState } from 'react';
@@ -19,44 +17,41 @@ import {
   usePlatformViewportMeta,
 } from '../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
-import {
-  CompositionSection,
-  GovernanceSection,
-  ProposalsSection,
-  StateHistorySection,
-  VitalitySection,
-} from './sections/index.js';
+import type { HudPanelId, VisorHudPanelId } from './visor/panel-schema.js';
+import { resolvePanelVisorTemplate } from './visor/template-schema.js';
+import { VisorPanelBody } from './visor/VisorPanelBody.js';
+import { VisorPanelDeck } from './visor/VisorPanelDeck.js';
 
 interface VisorViewProps {
   organismId: string;
 }
 
-type SidebarSectionId = 'vitality' | 'composition' | 'proposals' | 'history' | 'governance';
+function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
+  return (
+    panelId === 'organism' ||
+    panelId === 'composition' ||
+    panelId === 'vitality' ||
+    panelId === 'proposals' ||
+    panelId === 'history' ||
+    panelId === 'governance'
+  );
+}
 
-const SECTION_LABELS: Record<SidebarSectionId, string> = {
-  vitality: 'Vitality',
-  composition: 'Composition',
-  proposals: 'Proposals',
-  history: 'State history',
-  governance: 'Governance',
-};
+function isUniversalVisorPanelId(panelId: VisorHudPanelId): panelId is Exclude<VisorHudPanelId, 'organism'> {
+  return panelId !== 'organism';
+}
 
 export function VisorView({ organismId }: VisorViewProps) {
   const { worldMapId } = usePlatformStaticState();
   const { viewportCenter } = usePlatformViewportMeta();
-  const { closeVisor, closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
+  const { closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+
   const [refreshKey, setRefreshKey] = useState(0);
   const [showProposeForm, setShowProposeForm] = useState(false);
   const [surfacing, setSurfacing] = useState(false);
-  const [openSections, setOpenSections] = useState<Record<SidebarSectionId, boolean>>({
-    vitality: true,
-    composition: true,
-    proposals: false,
-    history: false,
-    governance: false,
-  });
+  const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId>('organism');
+  const organismTemplate = resolvePanelVisorTemplate('visor-organism');
 
   const { data: organism } = useOrganism(organismId, refreshKey);
   const { surfaced, loading: surfaceLoading } = useIsSurfaced(organismId);
@@ -67,7 +62,7 @@ export function VisorView({ organismId }: VisorViewProps) {
 
   function handleVisit() {
     focusOrganism(organismId);
-    closeVisor();
+    closeVisorOrganism();
   }
 
   async function handleSurface() {
@@ -87,115 +82,121 @@ export function VisorView({ organismId }: VisorViewProps) {
     bumpMutationToken();
   }
 
-  function toggleSection(id: SidebarSectionId) {
-    setOpenSections((prev) => ({ ...prev, [id]: !prev[id] }));
-  }
-
   const proposeLabel = openTrunk ? 'Append State' : 'Open Proposal';
 
-  // Content-type renderer
   const Renderer = organism?.currentState
     ? (getRenderer(organism.currentState.contentTypeId) ?? FallbackRenderer)
     : null;
 
   return (
     <div className="visor-view">
-      <div className="visor-view-content">
-        <div className="visor-view-header">
-          <div className="visor-view-header-info">
-            <span className="content-type">{contentType}</span>
-            <h3 className="hud-info-name">{name}</h3>
-          </div>
-          <button type="button" className="visor-view-close" onClick={closeVisorOrganism} aria-label="Close">
-            &times;
-          </button>
-        </div>
+      <div className="visor-view-shell">
+        <VisorPanelDeck
+          title="Organism panels"
+          template={organismTemplate}
+          surfaced={surfaced}
+          openTrunk={openTrunk}
+          preferredMainPanelId={preferredPanelId}
+          onPromotePanel={(panelId) => {
+            if (!isVisorHudPanelId(panelId)) return;
+            setPreferredPanelId(panelId);
+          }}
+          onCollapseMainPanel={(panelId, fallbackPanelId) => {
+            if (panelId === 'organism') {
+              setShowProposeForm(false);
+              closeVisorOrganism();
+              return;
+            }
+            if (fallbackPanelId && isVisorHudPanelId(fallbackPanelId)) {
+              setPreferredPanelId(fallbackPanelId);
+              return;
+            }
+            setPreferredPanelId('organism');
+          }}
+          renderPanelBody={(panelId) => {
+            if (panelId === 'organism') {
+              return (
+                <div className="visor-organism-panel">
+                  <div className="visor-organism-panel-header">
+                    <div className="visor-organism-panel-info">
+                      <span className="content-type">{contentType}</span>
+                      <h3 className="hud-info-name">{name}</h3>
+                    </div>
 
-        <div className="visor-view-renderer">
-          {Renderer && organism?.currentState && <Renderer state={organism.currentState} zoom={1} focused={false} />}
-        </div>
+                    <div className="visor-organism-panel-controls">
+                      {!showProposeForm && (
+                        <button type="button" className="hud-action-btn" onClick={() => setShowProposeForm(true)}>
+                          {proposeLabel}
+                        </button>
+                      )}
 
-        <div className="visor-view-actions">
-          {!surfaceLoading && surfaced && (
-            <button type="button" className="hud-action-btn" onClick={handleVisit}>
-              Visit
-            </button>
-          )}
-          {!surfaceLoading && !surfaced && (
-            <button type="button" className="hud-action-btn" onClick={handleSurface} disabled={surfacing}>
-              {surfacing ? 'Surfacing...' : 'Surface'}
-            </button>
-          )}
-        </div>
-      </div>
+                      <button
+                        type="button"
+                        className="visor-view-close"
+                        onClick={() => {
+                          setShowProposeForm(false);
+                          closeVisorOrganism();
+                        }}
+                        aria-label="Close"
+                      >
+                        &times;
+                      </button>
+                    </div>
+                  </div>
 
-      <div className={`visor-sidebar ${sidebarCollapsed ? 'visor-sidebar--collapsed' : ''}`}>
-        <button
-          type="button"
-          className="visor-sidebar-toggle"
-          onClick={() => setSidebarCollapsed((c) => !c)}
-          aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        >
-          {sidebarCollapsed ? '\u25C0' : '\u25B6'}
-        </button>
+                  {showProposeForm && organism?.currentState && (
+                    <div className="visor-organism-panel-propose">
+                      <ProposeForm
+                        organismId={organismId}
+                        currentContentTypeId={organism.currentState.contentTypeId}
+                        currentPayload={organism.currentState.payload}
+                        openTrunk={openTrunk}
+                        onComplete={handleProposed}
+                        onClose={() => setShowProposeForm(false)}
+                      />
+                    </div>
+                  )}
 
-        {!sidebarCollapsed && (
-          <>
-            {!showProposeForm && (
-              <button type="button" className="hud-action-btn" onClick={() => setShowProposeForm(true)}>
-                {proposeLabel}
-              </button>
-            )}
+                  <div className="visor-view-renderer">
+                    {Renderer && organism?.currentState && (
+                      <Renderer state={organism.currentState} zoom={1} focused={false} />
+                    )}
+                  </div>
 
-            {showProposeForm && organism?.currentState && (
-              <ProposeForm
-                organismId={organismId}
-                currentContentTypeId={organism.currentState.contentTypeId}
-                currentPayload={organism.currentState.payload}
-                openTrunk={openTrunk}
-                onComplete={handleProposed}
-                onClose={() => setShowProposeForm(false)}
-              />
-            )}
+                  <div className="visor-view-actions">
+                    {!surfaceLoading && surfaced && (
+                      <button type="button" className="hud-action-btn" onClick={handleVisit}>
+                        Visit
+                      </button>
+                    )}
 
-            <div className="hud-section-toggles">
-              {(Object.keys(SECTION_LABELS) as SidebarSectionId[]).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`hud-section-toggle ${openSections[id] ? 'hud-section-toggle--active' : ''}`}
-                  onClick={() => toggleSection(id)}
-                >
-                  {openSections[id] ? 'Hide' : 'Show'} {SECTION_LABELS[id]}
-                </button>
-              ))}
-            </div>
+                    {!surfaceLoading && !surfaced && (
+                      <button type="button" className="hud-action-btn" onClick={handleSurface} disabled={surfacing}>
+                        {surfacing ? 'Surfacing...' : 'Surface'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            }
 
-            {openSections.vitality && <VitalitySection organismId={organismId} refreshKey={refreshKey} />}
-            {openSections.composition && (
-              <CompositionSection
-                organismId={organismId}
-                refreshKey={refreshKey}
-                onMutate={() => {
-                  setRefreshKey((k) => k + 1);
-                  bumpMutationToken();
-                }}
-              />
-            )}
-            {openSections.proposals && (
-              <ProposalsSection
-                organismId={organismId}
-                refreshKey={refreshKey}
-                onMutate={() => {
-                  setRefreshKey((k) => k + 1);
-                  bumpMutationToken();
-                }}
-              />
-            )}
-            {openSections.history && <StateHistorySection organismId={organismId} refreshKey={refreshKey} />}
-            {openSections.governance && <GovernanceSection organismId={organismId} />}
-          </>
-        )}
+            if (isVisorHudPanelId(panelId) && isUniversalVisorPanelId(panelId)) {
+              return (
+                <VisorPanelBody
+                  panelId={panelId}
+                  organismId={organismId}
+                  refreshKey={refreshKey}
+                  onMutate={() => {
+                    setRefreshKey((k) => k + 1);
+                    bumpMutationToken();
+                  }}
+                />
+              );
+            }
+
+            return null;
+          }}
+        />
       </div>
     </div>
   );

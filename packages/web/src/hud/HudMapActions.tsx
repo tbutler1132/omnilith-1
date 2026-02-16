@@ -1,10 +1,7 @@
 /**
- * HudMapActions — visor-up action buttons when on the map.
+ * HudMapActions — legacy visor-up action buttons when on the map.
  *
- * Positioned bottom-left. "Threshold" opens inline form,
- * "My Organisms" opens a compact list. When an organism is focused
- * on the map, a context-aware "Tend" button lets you open it
- * directly in the Visor.
+ * Adaptive mode now uses AdaptiveVisorHost.
  */
 
 import { useMemo, useState } from 'react';
@@ -19,18 +16,6 @@ import type { TemplateSongCustomization } from './template-values.js';
 type ActivePanel = 'threshold' | 'mine' | 'templates' | 'template-values' | null;
 type TogglePanelId = 'threshold' | 'mine' | 'templates';
 
-interface AdaptiveHudMapActionsBindings {
-  activePanel: ActivePanel;
-  togglePanel: (panel: TogglePanelId) => void;
-  openTemplateValuesPanel: () => void;
-  closeTemporaryPanel: () => void;
-  bumpMutationToken: () => void;
-}
-
-interface HudMapActionsProps {
-  adaptive?: AdaptiveHudMapActionsBindings;
-}
-
 /** Shows focused organism name + "Tend" action */
 function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onTend: () => void }) {
   const { data } = useOrganism(organismId);
@@ -43,36 +28,26 @@ function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onT
   );
 }
 
-export function HudMapActions({ adaptive }: HudMapActionsProps) {
+export function HudMapActions() {
   const { focusedOrganismId } = usePlatformMapState();
   const { openInVisor } = usePlatformActions();
-  const [localActivePanel, setLocalActivePanel] = useState<ActivePanel>(null);
+  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
   const [templateCustomization, setTemplateCustomization] = useState<TemplateSongCustomization | null>(null);
-  const activePanel = adaptive ? adaptive.activePanel : localActivePanel;
 
   function togglePanel(panel: TogglePanelId) {
-    if (adaptive) {
-      adaptive.togglePanel(panel);
-      return;
-    }
-    setLocalActivePanel((cur) => (cur === panel ? null : panel));
+    setActivePanel((cur) => (cur === panel ? null : panel));
   }
 
   function closeActivePanel() {
     if (!activePanel) return;
     if (activePanel === 'template-values') {
-      if (adaptive) {
-        adaptive.closeTemporaryPanel();
-      } else {
-        setLocalActivePanel('templates');
-      }
+      setActivePanel('templates');
       return;
     }
     togglePanel(activePanel);
   }
 
   function handleThresholdCreated(organismId: string) {
-    if (adaptive) adaptive.bumpMutationToken();
     closeActivePanel();
     openInVisor(organismId);
   }
@@ -84,27 +59,18 @@ export function HudMapActions({ adaptive }: HudMapActionsProps) {
 
   function handleTemplateInstantiated(organismId: string) {
     setTemplateCustomization(null);
-    if (adaptive) adaptive.bumpMutationToken();
     closeActivePanel();
     openInVisor(organismId);
   }
 
   function handleTemplateValuesRequested(customization: TemplateSongCustomization) {
     setTemplateCustomization(customization);
-    if (adaptive) {
-      adaptive.openTemplateValuesPanel();
-    } else {
-      setLocalActivePanel('template-values');
-    }
+    setActivePanel('template-values');
   }
 
   function closeTemplateValues() {
     setTemplateCustomization(null);
-    if (adaptive) {
-      adaptive.closeTemporaryPanel();
-    } else {
-      setLocalActivePanel('templates');
-    }
+    setActivePanel('templates');
   }
 
   const panelHint = useMemo(() => {
