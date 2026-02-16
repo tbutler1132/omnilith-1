@@ -7,7 +7,7 @@
  * directly in the Visor.
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
 import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { usePlatformActions, usePlatformMapState } from '../platform/index.js';
@@ -46,10 +46,17 @@ export function HudMapActions() {
     openInVisor(organismId);
   }
 
+  const panelHint = useMemo(() => {
+    if (activePanel === 'threshold') return 'Define identity, choose state type, and threshold in one flow.';
+    if (activePanel === 'mine') return 'Jump directly into tending organisms you already steward.';
+    if (focusedOrganismId) return 'Focused organism is ready to tend.';
+    return 'Threshold a new organism or open one you already steward.';
+  }, [activePanel, focusedOrganismId]);
+
   return (
     <div className="hud-map-actions-container">
       {activePanel === 'threshold' && (
-        <div className="hud-panel hud-fade hud-fade--visible">
+        <div className="hud-panel hud-panel--threshold hud-fade hud-fade--visible">
           <div className="hud-panel-inner">
             <ThresholdForm inline onCreated={handleThresholdCreated} onClose={() => setActivePanel(null)} />
           </div>
@@ -57,7 +64,7 @@ export function HudMapActions() {
       )}
 
       {activePanel === 'mine' && (
-        <div className="hud-panel hud-fade hud-fade--visible">
+        <div className="hud-panel hud-panel--mine hud-fade hud-fade--visible">
           <div className="hud-panel-inner">
             <HudMyOrganisms onSelect={handleOrganismSelect} />
           </div>
@@ -78,7 +85,7 @@ export function HudMapActions() {
           className={`hud-map-btn ${activePanel === 'threshold' ? 'hud-map-btn--active' : ''}`}
           onClick={() => togglePanel('threshold')}
         >
-          Threshold
+          Threshold New
         </button>
         <button
           type="button"
@@ -88,6 +95,8 @@ export function HudMapActions() {
           My Organisms
         </button>
       </div>
+
+      <p className="hud-map-actions-hint">{panelHint}</p>
     </div>
   );
 }

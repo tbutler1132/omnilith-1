@@ -207,7 +207,23 @@ button.secondary:hover {
   border-radius: 12px;
   padding: 32px;
   width: 100%;
-  max-width: 440px;
+  max-width: min(760px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.threshold-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.threshold-form-close {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 12px;
 }
 
 .threshold-form h2 {
@@ -216,16 +232,37 @@ button.secondary:hover {
   margin-bottom: 4px;
 }
 
-.threshold-form > p {
+.threshold-form p {
   color: var(--text-dim);
   font-size: 14px;
-  margin-bottom: 20px;
+}
+
+.threshold-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.threshold-progress span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--text-dim);
+  background: rgba(10, 10, 15, 0.3);
+}
+
+.threshold-progress .is-complete {
+  border-color: rgba(124, 108, 240, 0.6);
+  color: var(--text);
 }
 
 .threshold-form form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .threshold-form label {
@@ -234,6 +271,13 @@ button.secondary:hover {
   color: var(--text-dim);
 }
 
+.threshold-field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.threshold-form input,
 .threshold-form select,
 .threshold-form textarea {
   background: var(--bg);
@@ -248,14 +292,157 @@ button.secondary:hover {
   transition: border-color 0.15s;
 }
 
+.threshold-form input:focus,
 .threshold-form select:focus,
 .threshold-form textarea:focus {
   border-color: var(--accent);
 }
 
-.threshold-form .checkbox-label {
+.threshold-content-types {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.threshold-content-type {
+  background: rgba(10, 10, 15, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.threshold-content-type:hover {
+  border-color: var(--accent);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.threshold-content-type strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-content-type span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.threshold-content-type--selected {
+  border-color: rgba(124, 108, 240, 0.75);
+  background: rgba(124, 108, 240, 0.12);
+}
+
+.threshold-payload-header {
   display: flex;
   align-items: center;
+  justify-content: space-between;
+}
+
+.threshold-example-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.threshold-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.threshold-mode-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.threshold-mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.threshold-mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(10, 10, 15, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+
+.threshold-mode-option input[type='radio'] {
+  accent-color: var(--accent);
+  margin-top: 2px;
+}
+
+.threshold-mode-option > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.threshold-mode-option:hover {
+  border-color: var(--accent);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.threshold-mode-option strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-mode-option small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.threshold-mode-option--selected {
+  border-color: rgba(124, 108, 240, 0.75);
+  background: rgba(124, 108, 240, 0.12);
+}
+
+.threshold-mode-note {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.72);
+}
+
+.threshold-next {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.22);
+  padding: 9px 10px;
+}
+
+.threshold-next-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.threshold-next p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-form .checkbox-label {
+  display: flex;
+  align-items: flex-start;
   gap: 8px;
   font-size: 13px;
   color: var(--text);
@@ -264,6 +451,31 @@ button.secondary:hover {
 
 .threshold-form .checkbox-label input[type="checkbox"] {
   accent-color: var(--accent);
+  margin-top: 2px;
+}
+
+.threshold-form .checkbox-label span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.threshold-form .checkbox-label small {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.threshold-summary {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.3);
+  padding: 9px 10px;
+}
+
+.threshold-summary p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
 }
 
 .threshold-form .error {
@@ -274,7 +486,7 @@ button.secondary:hover {
 .threshold-form .form-actions {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
+  margin-top: 4px;
 }
 
 /* Composition children */
@@ -810,6 +1022,16 @@ button.secondary:hover {
   gap: 8px;
 }
 
+.hud-map-actions-hint {
+  margin-top: 8px;
+  margin-left: 2px;
+  max-width: 420px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: rgba(224, 224, 232, 0.55);
+}
+
 .hud-map-btn {
   background: transparent;
   border: 1px solid var(--hud-border);
@@ -852,6 +1074,43 @@ button.secondary:hover {
   overflow: hidden;
 }
 
+.hud-panel--threshold {
+  width: min(860px, calc(100vw - 32px));
+  max-height: 82vh;
+  background: rgba(10, 10, 15, 0.74);
+  border-color: var(--hud-border-active);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 18px rgba(124, 108, 240, 0.14);
+  backdrop-filter: blur(7px);
+}
+
+.hud-panel--threshold .hud-panel-inner {
+  padding: 20px;
+  max-height: 82vh;
+}
+
+.hud-panel--mine {
+  width: min(720px, calc(100vw - 32px));
+  max-height: 78vh;
+  background: rgba(10, 10, 15, 0.68);
+  border-color: var(--hud-border-active);
+  box-shadow:
+    0 14px 34px rgba(0, 0, 0, 0.4),
+    0 0 14px rgba(124, 108, 240, 0.1);
+  backdrop-filter: blur(6px);
+}
+
+.hud-panel--mine .hud-panel-inner {
+  padding: 18px;
+  max-height: 78vh;
+}
+
+.hud-panel-inner .threshold-form--inline {
+  max-height: none;
+  overflow: visible;
+}
+
 .hud-panel-inner {
   padding: 16px;
   max-height: 400px;
@@ -874,18 +1133,133 @@ button.secondary:hover {
 
 /* HUD organism list (My Organisms panel) */
 
-.hud-organism-list {
+.hud-my-organisms {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 10px;
+}
+
+.hud-my-organisms-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hud-my-organisms-header h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-organisms-header p {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.6);
+}
+
+.hud-my-organisms-count {
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  color: var(--hud-text);
+}
+
+.hud-my-organisms-search {
+  background: rgba(10, 10, 15, 0.5);
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--hud-text-bright);
+  font-size: 12px;
+  outline: none;
+  transition: border-color 200ms ease, box-shadow 200ms ease;
+}
+
+.hud-my-organisms-search:focus {
+  border-color: var(--hud-border-hover);
+  box-shadow: var(--hud-glow-hover);
+}
+
+.hud-my-organisms-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hud-my-organisms-filter {
+  background: transparent;
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--hud-text);
+  cursor: pointer;
+  transition: border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+}
+
+.hud-my-organisms-filter:hover {
+  border-color: var(--hud-border-hover);
+  color: var(--hud-text-bright);
+  box-shadow: var(--hud-glow-hover);
+}
+
+.hud-my-organisms-filter--active {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+  background: rgba(124, 108, 240, 0.14);
+}
+
+.hud-my-organisms-state {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 2px;
+}
+
+.hud-my-organisms-state h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-organisms-state p {
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.65);
+}
+
+.hud-organism-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: min(56vh, 480px);
+  overflow-y: auto;
+  margin: 0;
+  padding: 0 2px 0 0;
+}
+
+.hud-organism-list li {
+  margin: 0;
+  padding: 0;
 }
 
 .hud-organism-item {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 6px;
   width: 100%;
-  padding: 8px 12px;
+  padding: 9px 11px;
   background: transparent;
   border: 1px solid var(--hud-border);
   border-radius: 8px;
@@ -904,6 +1278,14 @@ button.secondary:hover {
 .hud-organism-item--focused {
   border-color: var(--hud-border-active);
   box-shadow: var(--hud-glow-hover);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.hud-organism-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .hud-organism-preview {
@@ -911,6 +1293,41 @@ button.secondary:hover {
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+  font-size: 13px;
+}
+
+.hud-organism-focus-tag {
+  border: 1px solid rgba(124, 108, 240, 0.75);
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--hud-text-bright);
+}
+
+.hud-organism-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.hud-organism-type {
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  color: var(--hud-text);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+
+.hud-organism-id {
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  color: rgba(224, 224, 232, 0.45);
 }
 
 
@@ -1942,14 +2359,64 @@ button.secondary:hover {
   margin-bottom: 8px;
 }
 
-.visor-sidebar .threshold-form > p {
+.visor-sidebar .threshold-form .threshold-form-header p {
   display: none;
+}
+
+.visor-sidebar .threshold-form .threshold-form-header {
+  margin-bottom: 8px;
+}
+
+.visor-sidebar .threshold-form .threshold-form-close {
+  font-size: 10px;
+  padding: 4px 8px;
+}
+
+.visor-sidebar .threshold-form .threshold-progress {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.visor-sidebar .threshold-form .threshold-content-types {
+  grid-template-columns: 1fr;
+}
+
+.visor-sidebar .threshold-form .threshold-mode-options {
+  grid-template-columns: 1fr;
+}
+
+.visor-sidebar .threshold-form .threshold-content-type {
+  padding: 7px 8px;
+}
+
+.visor-sidebar .threshold-form .threshold-content-type span {
+  font-size: 11px;
+}
+
+.visor-sidebar .threshold-form .threshold-mode-option {
+  padding: 7px 8px;
+}
+
+.visor-sidebar .threshold-form .threshold-mode-option span {
+  font-size: 11px;
+}
+
+.visor-sidebar .threshold-form .threshold-mode-note,
+.visor-sidebar .threshold-form .threshold-next p {
+  font-size: 11px;
 }
 
 .visor-sidebar .threshold-form select,
 .visor-sidebar .threshold-form textarea,
 .visor-sidebar .propose-form select,
 .visor-sidebar .propose-form textarea {
+  background: rgba(10, 10, 15, 0.5);
+  border-color: var(--hud-border);
+  color: var(--hud-text-bright);
+  font-size: 12px;
+  padding: 6px 10px;
+}
+
+.visor-sidebar .threshold-form input {
   background: rgba(10, 10, 15, 0.5);
   border-color: var(--hud-border);
   color: var(--hud-text-bright);
@@ -1991,6 +2458,27 @@ button.secondary:hover {
 }
 
 @media (max-width: 768px) {
+  .threshold-form {
+    padding: 18px;
+  }
+
+  .threshold-form-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .threshold-progress {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .threshold-content-types {
+    grid-template-columns: 1fr;
+  }
+
+  .threshold-mode-options {
+    grid-template-columns: 1fr;
+  }
+
   .hud-bar {
     padding: 0 10px;
   }
@@ -2023,6 +2511,26 @@ button.secondary:hover {
   .hud-panel {
     width: calc(100vw - 20px);
     max-height: 55vh;
+  }
+
+  .hud-panel--threshold {
+    width: calc(100vw - 20px);
+    max-height: 78vh;
+  }
+
+  .hud-panel--threshold .hud-panel-inner {
+    max-height: 78vh;
+    padding: 14px;
+  }
+
+  .hud-panel--mine {
+    width: calc(100vw - 20px);
+    max-height: 74vh;
+  }
+
+  .hud-panel--mine .hud-panel-inner {
+    max-height: 74vh;
+    padding: 12px;
   }
 
   .hud-panel-inner {

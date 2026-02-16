@@ -1,22 +1,61 @@
 /**
- * ThresholdForm — modal form for introducing a new organism to the platform.
+ * ThresholdForm — form for introducing a new organism to the platform.
  *
  * Collects content type, payload, and open-trunk preference. On submit,
  * calls thresholdOrganism and notifies the parent via onCreated.
  */
 
-import { type FormEvent, useState } from 'react';
+import { type FormEvent, useMemo, useState } from 'react';
 import { thresholdOrganism } from '../api/organisms.js';
 
-const CONTENT_TYPES = [
-  { id: 'text', label: 'Text' },
-  { id: 'audio', label: 'Audio' },
-  { id: 'image', label: 'Image' },
-  { id: 'spatial-map', label: 'Spatial Map' },
-  { id: 'composition-reference', label: 'Composition Reference' },
-  { id: 'integration-policy', label: 'Integration Policy' },
-  { id: 'thread', label: 'Thread' },
+interface ContentTypeOption {
+  id: string;
+  label: string;
+  summary: string;
+  payloadExample?: string;
+}
+
+const CONTENT_TYPES: ContentTypeOption[] = [
+  { id: 'text', label: 'Text', summary: 'Notes, writing, and drafts.' },
+  {
+    id: 'audio',
+    label: 'Audio',
+    summary: 'Songs, clips, and sound studies.',
+    payloadExample: '{\n  "url": "https://example.com/track.mp3",\n  "title": "Untitled Track"\n}',
+  },
+  {
+    id: 'image',
+    label: 'Image',
+    summary: 'Stills, artwork, and references.',
+    payloadExample: '{\n  "url": "https://example.com/image.jpg",\n  "alt": "Image description"\n}',
+  },
+  {
+    id: 'spatial-map',
+    label: 'Spatial Map',
+    summary: 'A curated map for surfacing organisms.',
+    payloadExample: '{\n  "width": 2000,\n  "height": 2000,\n  "entries": []\n}',
+  },
+  {
+    id: 'composition-reference',
+    label: 'Composition Reference',
+    summary: 'A pointer to another organism in composition work.',
+    payloadExample: '{\n  "targetOrganismId": "org_123"\n}',
+  },
+  {
+    id: 'integration-policy',
+    label: 'Integration Policy',
+    summary: 'Regulation policy for proposal evaluation.',
+    payloadExample: '{\n  "mode": "single-integrator",\n  "integratorUserIds": []\n}',
+  },
+  {
+    id: 'thread',
+    label: 'Thread',
+    summary: 'Open-trunk conversation organism.',
+    payloadExample: '{\n  "title": "Conversation"\n}',
+  },
 ];
+
+const CONTENT_TYPE_BY_ID = new Map(CONTENT_TYPES.map((option) => [option.id, option]));
 
 interface ThresholdFormProps {
   onCreated: (organismId: string) => void;
@@ -34,22 +73,64 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
   const [openTrunk, setOpenTrunk] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [jsonError, setJsonError] = useState('');
+
+  const selectedType = useMemo(() => CONTENT_TYPE_BY_ID.get(contentTypeId) ?? CONTENT_TYPES[0], [contentTypeId]);
+  const openTrunkRecommended = contentTypeId === 'thread';
+
+  function handleContentTypeSelect(nextContentTypeId: string) {
+    setContentTypeId(nextContentTypeId);
+    setJsonError('');
+    if (nextContentTypeId !== 'text' && jsonPayload.trim() === '{}') {
+      const example = CONTENT_TYPE_BY_ID.get(nextContentTypeId)?.payloadExample;
+      if (example) setJsonPayload(example);
+    }
+  }
+
+  function parseJsonPayload(): unknown {
+    try {
+      return JSON.parse(jsonPayload);
+    } catch {
+      throw new Error('Payload JSON is invalid. Please fix the syntax and try again.');
+    }
+  }
 
   function buildPayload(): unknown {
     if (contentTypeId === 'text') {
       return { content: textContent, format };
     }
-    return JSON.parse(jsonPayload);
+    return parseJsonPayload();
   }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError('');
+    setJsonError('');
+
+    if (name.trim().length === 0) {
+      setError('Name is required.');
+      return;
+    }
+
+    if (contentTypeId !== 'text') {
+      try {
+        parseJsonPayload();
+      } catch (err) {
+        setJsonError(err instanceof Error ? err.message : 'Payload JSON is invalid.');
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
       const payload = buildPayload();
-      const result = await thresholdOrganism({ name, contentTypeId, payload, openTrunk });
+      const result = await thresholdOrganism({
+        name: name.trim(),
+        contentTypeId,
+        payload,
+        openTrunk,
+      });
       onCreated(result.organism.id);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to threshold organism');
@@ -60,8 +141,27 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
 
   const formInner = (
     <>
-      <h2>Threshold Organism</h2>
-      <p>Introduce something new to the platform.</p>
+      <div className="threshold-form-header">
+        <div>
+          <h2>Threshold Organism</h2>
+          <p>Introduce something new with an initial state and stewardship posture.</p>
+        </div>
+        <button
+          type="button"
+          className="secondary threshold-form-close"
+          onClick={onClose}
+          aria-label="Close threshold form"
+        >
+          Close
+        </button>
+      </div>
+
+      <div className="threshold-progress" aria-hidden="true">
+        <span className={name.trim() ? 'is-complete' : ''}>Name</span>
+        <span className="is-complete">Content Type</span>
+        <span className={contentTypeId === 'text' || jsonPayload.trim() ? 'is-complete' : ''}>Initial State</span>
+        <span className="is-complete">Integration Mode</span>
+      </div>
 
       <form onSubmit={handleSubmit}>
         <label htmlFor="tf-name">Name</label>
@@ -70,18 +170,29 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
           type="text"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Give it a name..."
+          placeholder="Give this organism a clear identity..."
           required
         />
 
-        <label htmlFor="tf-content-type">Content type</label>
-        <select id="tf-content-type" value={contentTypeId} onChange={(e) => setContentTypeId(e.target.value)}>
-          {CONTENT_TYPES.map((ct) => (
-            <option key={ct.id} value={ct.id}>
-              {ct.label}
-            </option>
-          ))}
-        </select>
+        <p className="threshold-field-label">Content type</p>
+        <div className="threshold-content-types" role="listbox" aria-label="Select content type">
+          {CONTENT_TYPES.map((ct) => {
+            const selected = ct.id === contentTypeId;
+            return (
+              <button
+                key={ct.id}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`threshold-content-type ${selected ? 'threshold-content-type--selected' : ''}`}
+                onClick={() => handleContentTypeSelect(ct.id)}
+              >
+                <strong>{ct.label}</strong>
+                <span>{ct.summary}</span>
+              </button>
+            );
+          })}
+        </div>
 
         {contentTypeId === 'text' ? (
           <>
@@ -100,45 +211,98 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
               id="tf-text-content"
               value={textContent}
               onChange={(e) => setTextContent(e.target.value)}
-              rows={5}
-              placeholder="Write something..."
+              rows={6}
+              placeholder="Write the first state..."
             />
           </>
         ) : (
           <>
-            <label htmlFor="tf-json-payload">Payload (JSON)</label>
+            <div className="threshold-payload-header">
+              <label htmlFor="tf-json-payload">Payload (JSON)</label>
+              {selectedType.payloadExample && (
+                <button
+                  type="button"
+                  className="secondary threshold-example-btn"
+                  onClick={() => {
+                    setJsonPayload(selectedType.payloadExample ?? '{}');
+                    setJsonError('');
+                  }}
+                >
+                  Use example
+                </button>
+              )}
+            </div>
             <textarea
               id="tf-json-payload"
               value={jsonPayload}
-              onChange={(e) => setJsonPayload(e.target.value)}
-              rows={5}
+              onChange={(e) => {
+                setJsonPayload(e.target.value);
+                if (jsonError) setJsonError('');
+              }}
+              rows={8}
               placeholder='{ "key": "value" }'
             />
+            {jsonError && <p className="error">{jsonError}</p>}
           </>
         )}
 
-        <label className="checkbox-label">
-          <input type="checkbox" checked={openTrunk} onChange={(e) => setOpenTrunk(e.target.checked)} />
-          Open-trunk (allow direct state changes without proposals)
-        </label>
+        <div className="threshold-mode">
+          <fieldset className="threshold-mode-fieldset">
+            <legend className="threshold-field-label">Integration mode</legend>
+            <div className="threshold-mode-options">
+              <label className={`threshold-mode-option ${!openTrunk ? 'threshold-mode-option--selected' : ''}`}>
+                <input type="radio" name="integration-mode" checked={!openTrunk} onChange={() => setOpenTrunk(false)} />
+                <span>
+                  <strong>Review First</strong>
+                  <small>Changes are offered as proposals before integration.</small>
+                </span>
+              </label>
+              <label className={`threshold-mode-option ${openTrunk ? 'threshold-mode-option--selected' : ''}`}>
+                <input type="radio" name="integration-mode" checked={openTrunk} onChange={() => setOpenTrunk(true)} />
+                <span>
+                  <strong>Instant Integrate (open-trunk)</strong>
+                  <small>Changes integrate immediately without a proposal review step.</small>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+          {openTrunkRecommended && (
+            <p className="threshold-mode-note">Recommended for thread organisms and fast conversational flows.</p>
+          )}
+        </div>
+
+        <div className="threshold-next">
+          <p className="threshold-next-label">What happens next</p>
+          <p>
+            {openTrunk
+              ? 'After threshold, authorized stewards can integrate changes directly.'
+              : 'After threshold, changes follow the proposal flow before integration.'}
+          </p>
+        </div>
+
+        <div className="threshold-summary">
+          <p>
+            Thresholding as <strong>{name.trim() || 'Untitled organism'}</strong> with{' '}
+            <strong>{selectedType.label}</strong> state in{' '}
+            <strong>{openTrunk ? 'Instant Integrate (open-trunk)' : 'Review First'}</strong> mode.
+          </p>
+        </div>
 
         {error && <p className="error">{error}</p>}
 
         <div className="form-actions">
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Thresholding...' : 'Threshold'}
+            {submitting ? 'Thresholding...' : 'Threshold Organism'}
           </button>
-          {!inline && (
-            <button type="button" className="secondary" onClick={onClose}>
-              Cancel
-            </button>
-          )}
+          <button type="button" className="secondary" onClick={onClose}>
+            Cancel
+          </button>
         </div>
       </form>
     </>
   );
 
-  if (inline) return <div className="threshold-form">{formInner}</div>;
+  if (inline) return <div className="threshold-form threshold-form--inline">{formInner}</div>;
 
   return (
     <div
