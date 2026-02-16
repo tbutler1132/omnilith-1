@@ -5,6 +5,37 @@
  * Pure TypeScript. Zero external dependencies.
  */
 
+// API Contracts
+export type {
+  AppendStateRequest,
+  AppendStateResponse,
+  ComposeChildRequest,
+  ComposeChildResponse,
+  DeclineProposalRequest,
+  DeclineProposalResponse,
+  DecomposeChildResponse,
+  FetchChildrenResponse,
+  FetchEventsResponse,
+  FetchOrganismResponse,
+  FetchOrganismsResponse,
+  FetchParentResponse,
+  FetchProposalsResponse,
+  FetchRelationshipsResponse,
+  FetchStateHistoryResponse,
+  FetchUserOrganismsResponse,
+  FetchUserProposalsResponse,
+  FetchVisibilityResponse,
+  FetchVitalityResponse,
+  FetchWorldMapResponse,
+  InstantiateTemplateResponse,
+  IntegrateProposalResponse,
+  OpenProposalRequest,
+  OpenProposalResponse,
+  ThresholdOrganismRequest,
+  ThresholdOrganismResponse,
+  UpdateVisibilityRequest,
+  UpdateVisibilityResponse,
+} from './api-contracts.js';
 export {
   type ComposeOrganismDeps,
   type ComposeOrganismInput,

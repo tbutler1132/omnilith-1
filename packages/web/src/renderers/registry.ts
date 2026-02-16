@@ -5,8 +5,8 @@
  * loads the appropriate renderer. Unknown types get a fallback.
  */
 
+import type { OrganismState } from '@omnilith/kernel';
 import type { ComponentType } from 'react';
-import type { OrganismState } from '../api/organisms.js';
 
 export interface RendererProps {
   state: OrganismState;

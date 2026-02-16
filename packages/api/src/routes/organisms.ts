@@ -3,13 +3,16 @@
  */
 
 import type {
+  AppendStateRequest,
+  ComposeChildRequest,
   ContentTypeId,
   DomainError,
   EventType,
   OrganismId,
   RelationshipType,
+  ThresholdOrganismRequest,
+  UpdateVisibilityRequest,
   UserId,
-  VisibilityLevel,
 } from '@omnilith/kernel';
 import {
   appendState,
@@ -45,12 +48,7 @@ export function organismRoutes(container: Container) {
   // Threshold — create organism
   app.post('/', async (c) => {
     const userId = c.get('userId');
-    const body = await parseJsonBody<{
-      name: string;
-      contentTypeId: string;
-      payload: unknown;
-      openTrunk?: boolean;
-    }>(c);
+    const body = await parseJsonBody<ThresholdOrganismRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
     if (!body.name || typeof body.name !== 'string') return c.json({ error: 'Name is required' }, 400);
@@ -110,7 +108,7 @@ export function organismRoutes(container: Container) {
   app.post('/:id/states', async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id') as OrganismId;
-    const body = await parseJsonBody<{ contentTypeId: string; payload: unknown }>(c);
+    const body = await parseJsonBody<AppendStateRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
@@ -166,7 +164,7 @@ export function organismRoutes(container: Container) {
   app.post('/:id/children', async (c) => {
     const userId = c.get('userId');
     const parentId = c.req.param('id') as OrganismId;
-    const body = await parseJsonBody<{ childId: string; position?: number }>(c);
+    const body = await parseJsonBody<ComposeChildRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
@@ -252,7 +250,7 @@ export function organismRoutes(container: Container) {
   app.put('/:id/visibility', async (c) => {
     const userId = c.get('userId');
     const id = c.req.param('id') as OrganismId;
-    const body = await parseJsonBody<{ level: string }>(c);
+    const body = await parseJsonBody<UpdateVisibilityRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
@@ -269,7 +267,7 @@ export function organismRoutes(container: Container) {
 
     await container.visibilityRepository.save({
       organismId: id,
-      level: body.level as VisibilityLevel,
+      level: body.level,
       updatedAt: container.identityGenerator.timestamp(),
     });
 

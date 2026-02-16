@@ -2,7 +2,14 @@
  * Proposal routes — open, list, integrate, decline.
  */
 
-import type { ContentTypeId, DomainError, OrganismId, ProposalId } from '@omnilith/kernel';
+import type {
+  ContentTypeId,
+  DeclineProposalRequest,
+  DomainError,
+  OpenProposalRequest,
+  OrganismId,
+  ProposalId,
+} from '@omnilith/kernel';
 import { declineProposal, integrateProposal, openProposal } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
@@ -16,10 +23,7 @@ export function proposalRoutes(container: Container) {
   app.post('/organisms/:id/proposals', async (c) => {
     const userId = c.get('userId');
     const organismId = c.req.param('id') as OrganismId;
-    const body = await parseJsonBody<{
-      proposedContentTypeId: string;
-      proposedPayload: unknown;
-    }>(c);
+    const body = await parseJsonBody<OpenProposalRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
@@ -95,7 +99,7 @@ export function proposalRoutes(container: Container) {
   app.post('/proposals/:id/decline', async (c) => {
     const userId = c.get('userId');
     const proposalId = c.req.param('id') as ProposalId;
-    const body = await c.req.json<{ reason?: string }>().catch(() => ({ reason: undefined }));
+    const body = await c.req.json<DeclineProposalRequest>().catch(() => ({ reason: undefined }));
 
     try {
       const proposal = await declineProposal(
