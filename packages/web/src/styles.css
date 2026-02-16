@@ -1072,6 +1072,33 @@ button.secondary:hover {
   box-shadow: var(--hud-glow-hover);
 }
 
+.hud-policy-badge {
+  position: absolute;
+  top: 108px;
+  right: 16px;
+  pointer-events: none;
+  border: 1px solid var(--hud-border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--hud-text);
+  background: rgba(8, 8, 16, 0.88);
+  box-shadow: var(--hud-glow);
+}
+
+.hud-policy-badge--adaptive {
+  border-color: rgba(76, 174, 140, 0.55);
+  color: #7bd2b0;
+}
+
+.hud-policy-badge--legacy {
+  border-color: rgba(224, 144, 80, 0.45);
+  color: #e8b487;
+}
+
 /* Map actions — visor-up on map, bottom-left */
 
 .hud-map-actions-container {
@@ -2917,6 +2944,13 @@ button.secondary:hover {
   .hud-logout {
     top: 10px;
     right: 10px;
+  }
+
+  .hud-policy-badge {
+    top: 102px;
+    right: 10px;
+    font-size: 9px;
+    padding: 3px 7px;
   }
 
   .compass {

@@ -6,8 +6,19 @@
  * through this context.
  */
 
-import { createContext, type ReactNode, useCallback, useContext, useMemo, useReducer } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import type { Altitude } from '../space/viewport-math.js';
+import {
+  type AdaptiveVisorCompositorState,
+  type AdaptiveVisorMapPanelId,
+  computeNextAdaptiveVisorLayout,
+  createAdaptiveVisorCompositorState,
+  deriveAdaptiveVisorContext,
+} from './adaptive-visor-compositor.js';
+import {
+  isAdaptiveVisorCompositorEnabled,
+  isAdaptiveVisorDecisionTraceEnabled,
+} from './adaptive-visor-feature-flag.js';
 
 interface NavigationEntry {
   mapId: string;
@@ -68,6 +79,15 @@ export interface PlatformViewportMetaState {
   altitude: Altitude;
   viewportCenter: { x: number; y: number };
   mapRefreshKey: number;
+}
+
+export interface PlatformAdaptiveVisorState extends AdaptiveVisorCompositorState {}
+
+export interface PlatformAdaptiveVisorActions {
+  toggleMapPanel: (panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>) => void;
+  openTemplateValuesPanel: () => void;
+  closeTemporaryPanel: () => void;
+  bumpMutationToken: () => void;
 }
 
 type PlatformAction =
@@ -221,6 +241,8 @@ const MapStateContext = createContext<PlatformMapState | null>(null);
 const VisorStateContext = createContext<PlatformVisorState | null>(null);
 const ViewportMetaStateContext = createContext<PlatformViewportMetaState | null>(null);
 const ActionsContext = createContext<PlatformActions | null>(null);
+const AdaptiveVisorStateContext = createContext<PlatformAdaptiveVisorState | null>(null);
+const AdaptiveVisorActionsContext = createContext<PlatformAdaptiveVisorActions | null>(null);
 
 interface PlatformProviderProps {
   userId: string;
@@ -228,6 +250,16 @@ interface PlatformProviderProps {
   homePageOrganismId: string | null;
   worldMapId: string;
   children: ReactNode;
+}
+
+function buildAdaptiveVisorContext(state: PlatformState) {
+  return deriveAdaptiveVisorContext({
+    visorOpen: state.visorOpen,
+    visorOrganismId: state.visorOrganismId,
+    enteredOrganismId: state.enteredOrganismId,
+    focusedOrganismId: state.focusedOrganismId,
+    altitude: state.altitude,
+  });
 }
 
 export function PlatformProvider({
@@ -238,8 +270,10 @@ export function PlatformProvider({
   children,
 }: PlatformProviderProps) {
   const initialOrganismId = new URLSearchParams(window.location.search).get('organism');
+  const adaptiveEnabled = useMemo(() => isAdaptiveVisorCompositorEnabled(), []);
+  const traceEnabled = useMemo(() => isAdaptiveVisorDecisionTraceEnabled(), []);
 
-  const [state, dispatch] = useReducer(reducer, {
+  const initialState: PlatformState = {
     userId,
     personalOrganismId,
     homePageOrganismId,
@@ -253,7 +287,52 @@ export function PlatformProvider({
     altitude: 'high',
     viewportCenter: { x: 2500, y: 2500 },
     mapRefreshKey: 0,
-  });
+  };
+
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const [adaptiveVisorState, adaptiveVisorDispatch] = useReducer(
+    computeNextAdaptiveVisorLayout,
+    createAdaptiveVisorCompositorState(adaptiveEnabled, buildAdaptiveVisorContext(initialState), {
+      traceEnabled,
+    }),
+  );
+  const lastLoggedTraceSequence = useRef(0);
+  const adaptiveVisorContext = useMemo(
+    () =>
+      deriveAdaptiveVisorContext({
+        visorOpen: state.visorOpen,
+        visorOrganismId: state.visorOrganismId,
+        enteredOrganismId: state.enteredOrganismId,
+        focusedOrganismId: state.focusedOrganismId,
+        altitude: state.altitude,
+      }),
+    [state.visorOpen, state.visorOrganismId, state.enteredOrganismId, state.focusedOrganismId, state.altitude],
+  );
+
+  useEffect(() => {
+    adaptiveVisorDispatch({
+      type: 'context-changed',
+      context: adaptiveVisorContext,
+    });
+  }, [adaptiveVisorContext]);
+
+  useEffect(() => {
+    if (!adaptiveVisorState.traceEnabled) return;
+    const latestEntry = adaptiveVisorState.decisionTrace[adaptiveVisorState.decisionTrace.length - 1];
+    if (!latestEntry) return;
+    if (latestEntry.sequence <= lastLoggedTraceSequence.current) return;
+
+    console.debug('[adaptive-visor]', {
+      event: latestEntry.eventType,
+      decision: latestEntry.decision,
+      contextClass: latestEntry.contextClass,
+      activePanels: latestEntry.activePanels,
+      activeWidgets: latestEntry.activeWidgets,
+      mutationToken: latestEntry.mutationToken,
+      sequence: latestEntry.sequence,
+    });
+    lastLoggedTraceSequence.current = latestEntry.sequence;
+  }, [adaptiveVisorState.traceEnabled, adaptiveVisorState.decisionTrace]);
 
   const focusOrganism = useCallback((id: string | null) => dispatch({ type: 'FOCUS_ORGANISM', id }), []);
   const enterOrganism = useCallback((id: string) => dispatch({ type: 'ENTER_ORGANISM', id }), []);
@@ -269,6 +348,14 @@ export function PlatformProvider({
   const setAltitude = useCallback((altitude: Altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }), []);
   const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
   const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
+  const toggleMapPanel = useCallback(
+    (panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>) =>
+      adaptiveVisorDispatch({ type: 'toggle-map-panel', panelId }),
+    [],
+  );
+  const openTemplateValuesPanel = useCallback(() => adaptiveVisorDispatch({ type: 'open-template-values' }), []);
+  const closeTemporaryPanel = useCallback(() => adaptiveVisorDispatch({ type: 'close-temporary-panel' }), []);
+  const bumpMutationToken = useCallback(() => adaptiveVisorDispatch({ type: 'mutation' }), []);
 
   const staticState = useMemo<PlatformStaticState>(
     () => ({
@@ -305,6 +392,18 @@ export function PlatformProvider({
       mapRefreshKey: state.mapRefreshKey,
     }),
     [state.altitude, state.viewportCenter, state.mapRefreshKey],
+  );
+
+  const adaptiveState = useMemo<PlatformAdaptiveVisorState>(() => adaptiveVisorState, [adaptiveVisorState]);
+
+  const adaptiveActions = useMemo<PlatformAdaptiveVisorActions>(
+    () => ({
+      toggleMapPanel,
+      openTemplateValuesPanel,
+      closeTemporaryPanel,
+      bumpMutationToken,
+    }),
+    [toggleMapPanel, openTemplateValuesPanel, closeTemporaryPanel, bumpMutationToken],
   );
 
   const actions = useMemo<PlatformActions>(
@@ -347,7 +446,11 @@ export function PlatformProvider({
       <MapStateContext.Provider value={mapState}>
         <VisorStateContext.Provider value={visorState}>
           <ViewportMetaStateContext.Provider value={viewportMetaState}>
-            <ActionsContext.Provider value={actions}>{children}</ActionsContext.Provider>
+            <AdaptiveVisorStateContext.Provider value={adaptiveState}>
+              <AdaptiveVisorActionsContext.Provider value={adaptiveActions}>
+                <ActionsContext.Provider value={actions}>{children}</ActionsContext.Provider>
+              </AdaptiveVisorActionsContext.Provider>
+            </AdaptiveVisorStateContext.Provider>
           </ViewportMetaStateContext.Provider>
         </VisorStateContext.Provider>
       </MapStateContext.Provider>
@@ -382,6 +485,18 @@ export function usePlatformViewportMeta(): PlatformViewportMetaState {
 export function usePlatformActions(): PlatformActions {
   const ctx = useContext(ActionsContext);
   if (!ctx) throw new Error('usePlatformActions must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformAdaptiveVisorState(): PlatformAdaptiveVisorState {
+  const ctx = useContext(AdaptiveVisorStateContext);
+  if (!ctx) throw new Error('usePlatformAdaptiveVisorState must be used within PlatformProvider');
+  return ctx;
+}
+
+export function usePlatformAdaptiveVisorActions(): PlatformAdaptiveVisorActions {
+  const ctx = useContext(AdaptiveVisorActionsContext);
+  if (!ctx) throw new Error('usePlatformAdaptiveVisorActions must be used within PlatformProvider');
   return ctx;
 }
 

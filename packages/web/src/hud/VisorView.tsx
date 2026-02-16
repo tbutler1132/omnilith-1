@@ -12,7 +12,12 @@ import { surfaceOnWorldMap } from '../api/surface.js';
 import { useIsSurfaced } from '../hooks/use-is-surfaced.js';
 import { useOrganism } from '../hooks/use-organism.js';
 import { ProposeForm } from '../organisms/ProposeForm.js';
-import { usePlatformActions, usePlatformStaticState, usePlatformViewportMeta } from '../platform/index.js';
+import {
+  usePlatformActions,
+  usePlatformAdaptiveVisorActions,
+  usePlatformStaticState,
+  usePlatformViewportMeta,
+} from '../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import {
   CompositionSection,
@@ -40,6 +45,7 @@ export function VisorView({ organismId }: VisorViewProps) {
   const { worldMapId } = usePlatformStaticState();
   const { viewportCenter } = usePlatformViewportMeta();
   const { closeVisor, closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
+  const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showProposeForm, setShowProposeForm] = useState(false);
@@ -69,6 +75,7 @@ export function VisorView({ organismId }: VisorViewProps) {
     try {
       await surfaceOnWorldMap(worldMapId, organismId, viewportCenter.x, viewportCenter.y);
       bumpMapRefresh();
+      bumpMutationToken();
     } finally {
       setSurfacing(false);
     }
@@ -77,6 +84,7 @@ export function VisorView({ organismId }: VisorViewProps) {
   function handleProposed() {
     setRefreshKey((k) => k + 1);
     setShowProposeForm(false);
+    bumpMutationToken();
   }
 
   function toggleSection(id: SidebarSectionId) {
@@ -168,14 +176,20 @@ export function VisorView({ organismId }: VisorViewProps) {
               <CompositionSection
                 organismId={organismId}
                 refreshKey={refreshKey}
-                onMutate={() => setRefreshKey((k) => k + 1)}
+                onMutate={() => {
+                  setRefreshKey((k) => k + 1);
+                  bumpMutationToken();
+                }}
               />
             )}
             {openSections.proposals && (
               <ProposalsSection
                 organismId={organismId}
                 refreshKey={refreshKey}
-                onMutate={() => setRefreshKey((k) => k + 1)}
+                onMutate={() => {
+                  setRefreshKey((k) => k + 1);
+                  bumpMutationToken();
+                }}
               />
             )}
             {openSections.history && <StateHistorySection organismId={organismId} refreshKey={refreshKey} />}

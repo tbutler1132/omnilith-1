@@ -15,7 +15,14 @@
 
 import { useEffect } from 'react';
 import { useOrganism } from '../hooks/use-organism.js';
-import { usePlatformActions, usePlatformMapState, usePlatformVisorState } from '../platform/index.js';
+import { selectActiveMapPanel } from '../platform/adaptive-visor-compositor.js';
+import {
+  usePlatformActions,
+  usePlatformAdaptiveVisorActions,
+  usePlatformAdaptiveVisorState,
+  usePlatformMapState,
+  usePlatformVisorState,
+} from '../platform/index.js';
 import { Compass } from './Compass.js';
 import { HudBar } from './HudBar.js';
 import { HudMapActions } from './HudMapActions.js';
@@ -46,8 +53,17 @@ export function Hud({ onLogout }: HudProps) {
   const { enteredOrganismId } = usePlatformMapState();
   const { visorOpen, visorOrganismId } = usePlatformVisorState();
   const { closeVisor, toggleVisor, closeVisorOrganism } = usePlatformActions();
+  const adaptiveVisorState = usePlatformAdaptiveVisorState();
+  const adaptiveVisorActions = usePlatformAdaptiveVisorActions();
   const isInside = enteredOrganismId !== null;
   const expanded = visorOpen;
+  const activeMapPanel = selectActiveMapPanel(adaptiveVisorState);
+  const adaptiveEnabled = adaptiveVisorState.adaptiveEnabled;
+  const showAdaptiveVisorView =
+    expanded && Boolean(visorOrganismId) && adaptiveVisorState.activePanels.includes('visor-view');
+  const showAdaptiveMapActions = expanded && adaptiveVisorState.activeWidgets.includes('map-actions');
+  const showAdaptiveInteriorActions =
+    expanded && Boolean(enteredOrganismId) && adaptiveVisorState.activePanels.includes('interior-actions');
 
   // V key toggles expanded mode, Escape dismisses organism then collapses
   useEffect(() => {
@@ -62,6 +78,12 @@ export function Hud({ onLogout }: HudProps) {
         e.preventDefault();
         if (visorOrganismId) {
           closeVisorOrganism();
+        } else if (adaptiveEnabled && activeMapPanel) {
+          if (activeMapPanel === 'template-values') {
+            adaptiveVisorActions.closeTemporaryPanel();
+          } else {
+            adaptiveVisorActions.toggleMapPanel(activeMapPanel);
+          }
         } else {
           closeVisor();
         }
@@ -70,10 +92,23 @@ export function Hud({ onLogout }: HudProps) {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [expanded, visorOrganismId, toggleVisor, closeVisor, closeVisorOrganism]);
+  }, [
+    expanded,
+    visorOrganismId,
+    toggleVisor,
+    closeVisor,
+    closeVisorOrganism,
+    adaptiveEnabled,
+    activeMapPanel,
+    adaptiveVisorActions,
+  ]);
 
   return (
-    <div className="hud">
+    <div
+      className="hud"
+      data-visor-policy={adaptiveEnabled ? 'adaptive' : 'legacy'}
+      data-visor-map-panel={adaptiveEnabled ? (activeMapPanel ?? 'none') : 'legacy'}
+    >
       <HudBar />
       <Compass />
 
@@ -82,25 +117,57 @@ export function Hud({ onLogout }: HudProps) {
         Log out
       </button>
 
+      <div
+        className={`hud-policy-badge ${adaptiveEnabled ? 'hud-policy-badge--adaptive' : 'hud-policy-badge--legacy'}`}
+      >
+        {adaptiveEnabled ? 'Adaptive HUD' : 'Legacy HUD'}
+      </div>
+
       {/* Visor expand/collapse toggle — bottom-center, always visible */}
       <button type="button" className={`hud-pill ${expanded ? 'hud-pill--active' : ''}`} onClick={toggleVisor}>
         {expanded ? '\u25B3' : '\u25BD'}
       </button>
 
-      {/* Expanded: organism tending view (any context) */}
-      <div className={`hud-fade ${expanded && visorOrganismId ? 'hud-fade--visible' : ''}`}>
-        {visorOrganismId && <VisorView organismId={visorOrganismId} />}
-      </div>
+      {adaptiveEnabled ? (
+        <>
+          <div className={`hud-fade ${showAdaptiveVisorView ? 'hud-fade--visible' : ''}`}>
+            {showAdaptiveVisorView && visorOrganismId && <VisorView organismId={visorOrganismId} />}
+          </div>
 
-      {/* Expanded on map: action buttons */}
-      <div className={`hud-fade ${!isInside && expanded && !visorOrganismId ? 'hud-fade--visible' : ''}`}>
-        <HudMapActions />
-      </div>
+          <div className={`hud-fade ${showAdaptiveMapActions ? 'hud-fade--visible' : ''}`}>
+            <HudMapActions
+              adaptive={{
+                activePanel: activeMapPanel,
+                togglePanel: adaptiveVisorActions.toggleMapPanel,
+                openTemplateValuesPanel: adaptiveVisorActions.openTemplateValuesPanel,
+                closeTemporaryPanel: adaptiveVisorActions.closeTemporaryPanel,
+                bumpMutationToken: adaptiveVisorActions.bumpMutationToken,
+              }}
+            />
+          </div>
 
-      {/* Expanded inside organism: tend button */}
-      <div className={`hud-fade ${isInside && expanded && !visorOrganismId ? 'hud-fade--visible' : ''}`}>
-        {enteredOrganismId && <HudInteriorActions organismId={enteredOrganismId} />}
-      </div>
+          <div className={`hud-fade ${showAdaptiveInteriorActions ? 'hud-fade--visible' : ''}`}>
+            {showAdaptiveInteriorActions && enteredOrganismId && <HudInteriorActions organismId={enteredOrganismId} />}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Expanded: organism tending view (any context) */}
+          <div className={`hud-fade ${expanded && visorOrganismId ? 'hud-fade--visible' : ''}`}>
+            {visorOrganismId && <VisorView organismId={visorOrganismId} />}
+          </div>
+
+          {/* Expanded on map: action buttons */}
+          <div className={`hud-fade ${!isInside && expanded && !visorOrganismId ? 'hud-fade--visible' : ''}`}>
+            <HudMapActions />
+          </div>
+
+          {/* Expanded inside organism: tend button */}
+          <div className={`hud-fade ${isInside && expanded && !visorOrganismId ? 'hud-fade--visible' : ''}`}>
+            {enteredOrganismId && <HudInteriorActions organismId={enteredOrganismId} />}
+          </div>
+        </>
+      )}
     </div>
   );
 }

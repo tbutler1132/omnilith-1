@@ -1,0 +1,110 @@
+import { describe, expect, it } from 'vitest';
+import {
+  computeNextAdaptiveVisorLayout,
+  createAdaptiveVisorCompositorState,
+  deriveAdaptiveVisorContext,
+  selectActiveMapPanel,
+} from './adaptive-visor-compositor.js';
+
+function createContext(input?: {
+  visorOpen?: boolean;
+  visorOrganismId?: string | null;
+  enteredOrganismId?: string | null;
+  focusedOrganismId?: string | null;
+}) {
+  return deriveAdaptiveVisorContext({
+    visorOpen: input?.visorOpen ?? true,
+    visorOrganismId: input?.visorOrganismId ?? null,
+    enteredOrganismId: input?.enteredOrganismId ?? null,
+    focusedOrganismId: input?.focusedOrganismId ?? null,
+    altitude: 'high',
+  });
+}
+
+describe('adaptive visor compositor', () => {
+  it('an open visor on the map exposes map actions with no major panel selected', () => {
+    const state = createAdaptiveVisorCompositorState(true, createContext());
+
+    expect(state.activeWidgets).toEqual(['map-actions']);
+    expect(state.activePanels).toEqual([]);
+  });
+
+  it('a visor organism context activates the visor view panel', () => {
+    const state = createAdaptiveVisorCompositorState(
+      true,
+      createContext({ visorOrganismId: 'organism-1', enteredOrganismId: null }),
+    );
+
+    expect(state.activePanels).toEqual(['visor-view']);
+    expect(state.activeWidgets).toEqual([]);
+  });
+
+  it('toggling a map panel opens and closes it deterministically', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const opened = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'threshold' });
+    const closed = computeNextAdaptiveVisorLayout(opened, { type: 'toggle-map-panel', panelId: 'threshold' });
+
+    expect(selectActiveMapPanel(opened)).toBe('threshold');
+    expect(selectActiveMapPanel(closed)).toBeNull();
+  });
+
+  it('closing a temporary template values flow restores the prior map panel when unchanged', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const templates = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'templates' });
+    const templateValues = computeNextAdaptiveVisorLayout(templates, { type: 'open-template-values' });
+    const restored = computeNextAdaptiveVisorLayout(templateValues, { type: 'close-temporary-panel' });
+
+    expect(selectActiveMapPanel(templateValues)).toBe('template-values');
+    expect(selectActiveMapPanel(restored)).toBe('templates');
+  });
+
+  it('a mutation token bump forces recompute instead of restoring a temporary flow', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const templates = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'templates' });
+    const templateValues = computeNextAdaptiveVisorLayout(templates, { type: 'open-template-values' });
+    const mutated = computeNextAdaptiveVisorLayout(templateValues, { type: 'mutation' });
+    const recomputed = computeNextAdaptiveVisorLayout(mutated, { type: 'close-temporary-panel' });
+
+    expect(selectActiveMapPanel(recomputed)).toBeNull();
+    expect(recomputed.activeWidgets).toEqual(['map-actions']);
+  });
+
+  it('anchors remain available after context transitions and mutation events', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const toggled = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'mine' });
+    const changedContext = computeNextAdaptiveVisorLayout(toggled, {
+      type: 'context-changed',
+      context: createContext({ visorOpen: true, visorOrganismId: 'organism-2' }),
+    });
+    const mutated = computeNextAdaptiveVisorLayout(changedContext, { type: 'mutation' });
+
+    expect(mutated.anchors).toEqual(['visor-toggle', 'navigation-back', 'dismiss']);
+  });
+
+  it('records event to decision to layout traces when trace mode is enabled', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext(), { traceEnabled: true });
+    const nextState = computeNextAdaptiveVisorLayout(initialState, {
+      type: 'toggle-map-panel',
+      panelId: 'mine',
+    });
+    const entry = nextState.decisionTrace[nextState.decisionTrace.length - 1];
+
+    expect(entry).toBeDefined();
+    expect(entry?.eventType).toBe('toggle-map-panel');
+    expect(entry?.decision).toBe('toggle-map-panel-open');
+    expect(entry?.activePanels).toEqual(['mine']);
+    expect(entry?.activeWidgets).toEqual(['map-actions']);
+    expect(entry?.sequence).toBe(1);
+  });
+
+  it('does not append traces when trace mode is disabled', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext(), { traceEnabled: false });
+    const nextState = computeNextAdaptiveVisorLayout(initialState, {
+      type: 'toggle-map-panel',
+      panelId: 'mine',
+    });
+
+    expect(nextState.decisionTrace).toHaveLength(0);
+    expect(nextState.nextDecisionTraceSequence).toBe(1);
+  });
+});

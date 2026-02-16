@@ -17,6 +17,19 @@ import { HudTemplateValuesPanel } from './HudTemplateValuesPanel.js';
 import type { TemplateSongCustomization } from './template-values.js';
 
 type ActivePanel = 'threshold' | 'mine' | 'templates' | 'template-values' | null;
+type TogglePanelId = 'threshold' | 'mine' | 'templates';
+
+interface AdaptiveHudMapActionsBindings {
+  activePanel: ActivePanel;
+  togglePanel: (panel: TogglePanelId) => void;
+  openTemplateValuesPanel: () => void;
+  closeTemporaryPanel: () => void;
+  bumpMutationToken: () => void;
+}
+
+interface HudMapActionsProps {
+  adaptive?: AdaptiveHudMapActionsBindings;
+}
 
 /** Shows focused organism name + "Tend" action */
 function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onTend: () => void }) {
@@ -30,40 +43,68 @@ function FocusedOrganismButton({ organismId, onTend }: { organismId: string; onT
   );
 }
 
-export function HudMapActions() {
+export function HudMapActions({ adaptive }: HudMapActionsProps) {
   const { focusedOrganismId } = usePlatformMapState();
   const { openInVisor } = usePlatformActions();
-  const [activePanel, setActivePanel] = useState<ActivePanel>(null);
+  const [localActivePanel, setLocalActivePanel] = useState<ActivePanel>(null);
   const [templateCustomization, setTemplateCustomization] = useState<TemplateSongCustomization | null>(null);
+  const activePanel = adaptive ? adaptive.activePanel : localActivePanel;
 
-  function togglePanel(panel: 'threshold' | 'mine' | 'templates') {
-    setActivePanel((cur) => (cur === panel ? null : panel));
+  function togglePanel(panel: TogglePanelId) {
+    if (adaptive) {
+      adaptive.togglePanel(panel);
+      return;
+    }
+    setLocalActivePanel((cur) => (cur === panel ? null : panel));
+  }
+
+  function closeActivePanel() {
+    if (!activePanel) return;
+    if (activePanel === 'template-values') {
+      if (adaptive) {
+        adaptive.closeTemporaryPanel();
+      } else {
+        setLocalActivePanel('templates');
+      }
+      return;
+    }
+    togglePanel(activePanel);
   }
 
   function handleThresholdCreated(organismId: string) {
-    setActivePanel(null);
+    if (adaptive) adaptive.bumpMutationToken();
+    closeActivePanel();
     openInVisor(organismId);
   }
 
   function handleOrganismSelect(organismId: string) {
-    setActivePanel(null);
+    closeActivePanel();
     openInVisor(organismId);
   }
 
   function handleTemplateInstantiated(organismId: string) {
     setTemplateCustomization(null);
-    setActivePanel(null);
+    if (adaptive) adaptive.bumpMutationToken();
+    closeActivePanel();
     openInVisor(organismId);
   }
 
   function handleTemplateValuesRequested(customization: TemplateSongCustomization) {
     setTemplateCustomization(customization);
-    setActivePanel('template-values');
+    if (adaptive) {
+      adaptive.openTemplateValuesPanel();
+    } else {
+      setLocalActivePanel('template-values');
+    }
   }
 
   function closeTemplateValues() {
     setTemplateCustomization(null);
-    setActivePanel('templates');
+    if (adaptive) {
+      adaptive.closeTemporaryPanel();
+    } else {
+      setLocalActivePanel('templates');
+    }
   }
 
   const panelHint = useMemo(() => {
@@ -80,7 +121,7 @@ export function HudMapActions() {
       {activePanel === 'threshold' && (
         <div className="hud-panel hud-panel--threshold hud-fade hud-fade--visible">
           <div className="hud-panel-inner">
-            <ThresholdForm inline onCreated={handleThresholdCreated} onClose={() => setActivePanel(null)} />
+            <ThresholdForm inline onCreated={handleThresholdCreated} onClose={closeActivePanel} />
           </div>
         </div>
       )}
