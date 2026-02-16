@@ -972,6 +972,46 @@ button.secondary:hover {
   color: var(--hud-text-bright);
 }
 
+.hud-altitude {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hud-altitude-label {
+  display: inline-block;
+  width: 5ch;
+}
+
+.hud-altimeter {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 10px;
+}
+
+.hud-altimeter-step {
+  width: 2px;
+  border-radius: 1px;
+  background: var(--hud-border);
+}
+
+.hud-altimeter-step:nth-child(1) {
+  height: 4px;
+}
+
+.hud-altimeter-step:nth-child(2) {
+  height: 7px;
+}
+
+.hud-altimeter-step:nth-child(3) {
+  height: 10px;
+}
+
+.hud-altimeter-step--active {
+  background: var(--hud-text-bright);
+}
+
 /* Visor pill — bottom-center toggle */
 
 .hud-pill {

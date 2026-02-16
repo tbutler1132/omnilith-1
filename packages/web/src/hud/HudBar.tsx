@@ -21,6 +21,12 @@ const ALTITUDE_LABELS: Record<string, string> = {
   close: 'Close',
 };
 
+const ALTIMETER_LEVEL: Record<string, 0 | 1 | 2> = {
+  high: 0,
+  mid: 1,
+  close: 2,
+};
+
 export function HudBar() {
   const { navigationStack, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
@@ -55,7 +61,20 @@ export function HudBar() {
         ) : isInside && enteredOrganismId ? (
           <InteriorLocation organismId={enteredOrganismId} />
         ) : (
-          <span className="hud-location">{ALTITUDE_LABELS[altitude] ?? 'High'}</span>
+          <div className="hud-altitude">
+            <span className="hud-location hud-altitude-label">{ALTITUDE_LABELS[altitude] ?? 'High'}</span>
+            <span className="hud-altimeter" aria-hidden>
+              <span
+                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 0 ? 'hud-altimeter-step--active' : ''}`}
+              />
+              <span
+                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 1 ? 'hud-altimeter-step--active' : ''}`}
+              />
+              <span
+                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 2 ? 'hud-altimeter-step--active' : ''}`}
+              />
+            </span>
+          </div>
         )}
       </div>
     </div>

@@ -61,6 +61,9 @@ cd omnilith
 # Install dependencies
 pnpm install
 
+# Install local git hooks (one time per clone)
+pnpm run hooks:install
+
 # Run the full check suite (build + lint + test)
 pnpm run check
 ```
@@ -85,12 +88,16 @@ pnpm run test:coverage
 
 ```bash
 # Copy the example environment file
-cp packages/api/.env.example packages/api/.env
+cp .env.example .env
 
 # Edit .env with your PostgreSQL connection string, then:
-pnpm --filter @omnilith/api db:generate
 pnpm --filter @omnilith/api db:migrate
+
+# Reset + reseed dev data at any time
+pnpm run db:reset
 ```
+
+For branch protection, CI, and local workflow guardrails, see [docs/DEVELOPMENT-GUARDRAILS.md](docs/DEVELOPMENT-GUARDRAILS.md).
 
 ## Project structure
 

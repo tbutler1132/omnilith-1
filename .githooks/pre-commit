@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Fast local guardrail before commit.
+pnpm run hooks:pre-commit

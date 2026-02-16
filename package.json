@@ -7,7 +7,12 @@
     "lint": "pnpm -r lint",
     "check": "pnpm -r build && pnpm -r lint && pnpm -r test",
     "format": "biome format --write packages/",
-    "dev": "pnpm --filter @omnilith/api --filter @omnilith/web --parallel dev"
+    "dev": "pnpm --filter @omnilith/api --filter @omnilith/web --parallel dev",
+    "db:migrate": "pnpm --filter @omnilith/api db:migrate",
+    "db:reset": "OMNILITH_ALLOW_DB_RESET=true pnpm --filter @omnilith/api db:reset",
+    "hooks:install": "git config core.hooksPath .githooks",
+    "hooks:pre-commit": "pnpm -r lint",
+    "hooks:pre-push": "pnpm run check"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",

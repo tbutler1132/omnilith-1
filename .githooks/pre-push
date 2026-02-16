@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# Full verification before pushing.
+pnpm run hooks:pre-push
