@@ -514,6 +514,31 @@ This is not urgent for Phase 1 with a single user, but becomes critical before m
 - The `appendState` use case (validate, append, emit event).
 - Open-trunk semantics (still bypass proposal evaluation, still require valid payloads).
 
+### Move 29: Finite Space and Overlap Prevention on the World Map
+
+The world map is a finite shared habitat. Organisms surfaced on it occupy real space — they are not pins on an infinite canvas. Two organisms should not be able to occupy the same location.
+
+**The instinct:** the world map should feel like a place with physical constraints. Scarcity of space is part of what makes surfacing meaningful. If organisms can pile on top of each other without consequence, the spatial metaphor breaks down. The map becomes a list with coordinates, not a territory.
+
+**The mechanism:** overlap prevention belongs in the spatial-map content type validator, not in the kernel. The validator already enforces structural rules (no duplicate organisms, valid coordinates, positive dimensions). Adding a minimum distance check between entries is a natural extension — each entry has `x`, `y`, and `size`, which together define the space an organism occupies. The validator can reject any append where two entries would overlap based on their positions and sizes.
+
+**Design considerations:**
+- The check should account for `size` — larger organisms occupy more space. A default size should be assumed when `size` is omitted.
+- The minimum separation distance may need to be a property of the map itself (part of the `SpatialMapPayload`), since different maps might have different density tolerances. The world map wants breathing room. A dense community map might pack organisms tighter.
+- This naturally creates pressure for curation. You can't just dump everything onto the map. Placement becomes a deliberate spatial decision.
+- Moving an organism means the vacated space becomes available. The immutable state history preserves the record of where things used to be.
+
+**What this does NOT mean:**
+- Non-world-map spatial maps (community maps, personal maps) could have different or no overlap rules. The validator could check a `preventOverlap` flag on the payload.
+- This is not a reservation or land-claim system. There are no ownership zones. It is simply collision detection — two things cannot be in the same place.
+
+**Implementation priority:** before the world map has multiple contributors surfacing organisms. Not urgent for single-founder Phase 1, but should be in place before communities can surface.
+
+**What changes:**
+- `validateSpatialMap` gains overlap detection logic.
+- `SpatialMapPayload` may gain an optional `minSeparation` field.
+- No kernel changes.
+
 ---
 
 ## Summary of What We're Building
