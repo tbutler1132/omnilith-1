@@ -104,7 +104,7 @@ export function AdaptiveVisorHost() {
         </VisorWidgetLane>
       )}
 
-      {contextClass === 'map' && adaptiveState.activeWidgets.includes('map-actions') && (
+      {contextClass === 'map' && (
         <VisorPanelDeck
           title="Map panels"
           template={mapTemplate}

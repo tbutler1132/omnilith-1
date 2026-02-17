@@ -42,8 +42,8 @@ export function AuthDialog({ onAuthenticated, onClose }: AuthDialogProps) {
   }
 
   return (
-    <div className="auth-page" role="dialog" aria-modal="true" aria-label="Authentication">
-      <div className="auth-card">
+    <div className="auth-dialog-overlay" role="dialog" aria-modal="true" aria-label="Authentication">
+      <div className="auth-card auth-dialog-card">
         <h1>Omnilith</h1>
         <p>{mode === 'signup' ? 'Create your account to begin.' : 'Welcome back.'}</p>
 
