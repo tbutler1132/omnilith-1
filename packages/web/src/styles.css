@@ -965,6 +965,7 @@ button.secondary:hover {
 }
 
 .adaptive-visor-surface .visor-panel-main-slot,
+.adaptive-visor-surface .visor-panel-secondary-row,
 .adaptive-visor-surface .visor-panel-collapsed-rail--viewport-bottom-left,
 .adaptive-visor-surface .visor-history-nav {
   pointer-events: auto;
@@ -3182,7 +3183,6 @@ button.secondary:hover {
   border: 1px solid var(--hud-border);
   border-radius: 8px;
   padding: 9px 10px;
-  cursor: pointer;
   text-align: left;
   display: flex;
   flex-direction: column;
@@ -3194,6 +3194,12 @@ button.secondary:hover {
   border-color: var(--hud-border-hover);
   transform: translateY(-1px);
   box-shadow: var(--hud-glow-hover);
+}
+
+.visor-panel-secondary-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .visor-panel-secondary-title {
@@ -3208,6 +3214,11 @@ button.secondary:hover {
   font-family: var(--hud-mono);
   font-size: 9px;
   color: var(--hud-text);
+}
+
+.visor-panel-secondary-promote {
+  margin-top: 2px;
+  width: fit-content;
 }
 
 .visor-panel-collapsed-rail {
@@ -3286,9 +3297,18 @@ button.secondary:hover {
   gap: 8px;
 }
 
-.adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-deck-header,
-.adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-secondary-row {
+.adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-deck-header {
   display: none;
+}
+
+.adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-secondary-row {
+  position: fixed;
+  left: calc(50% + min(490px, calc((100vw - 220px) / 2)) + 12px);
+  top: 53%;
+  transform: translateY(-50%);
+  width: min(220px, calc(100vw - 32px));
+  grid-template-columns: minmax(0, 1fr);
+  z-index: 67;
 }
 
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-slot {
@@ -3318,6 +3338,12 @@ button.secondary:hover {
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-body {
   max-height: calc(80vh - 52px);
   overflow-y: auto;
+}
+
+.visor-organism-shortcut-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 .visor-panel-deck--map {
@@ -3755,6 +3781,14 @@ button.secondary:hover {
 
   .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-body {
     max-height: calc(74vh - 48px);
+  }
+
+  .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-secondary-row {
+    left: 10px;
+    width: calc(100vw - 20px);
+    bottom: 124px;
+    top: auto;
+    transform: none;
   }
 
   .visor-panel-collapsed-rail--viewport-bottom-left {

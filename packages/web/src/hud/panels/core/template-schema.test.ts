@@ -16,7 +16,7 @@ describe('resolveVisorTemplate', () => {
 
     expect(template.id).toBe('organism-core');
     expect(template.panelSlots.main.allowEmpty).toBe(true);
-    expect(template.panelSlots.secondary.maxPanels).toBe(0);
+    expect(template.panelSlots.secondary.maxPanels).toBe(1);
     expect(template.panelSlots.collapsed.maxPanels).toBeNull();
     expect(template.widgetSlots.allowedWidgets).toContain('history-navigation');
     expect(template.widgetSlots.allowedWidgets).toContain('vitality');

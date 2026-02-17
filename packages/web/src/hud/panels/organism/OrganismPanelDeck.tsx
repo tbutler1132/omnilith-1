@@ -31,6 +31,7 @@ interface OrganismPanelDeckProps {
 function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
   return (
     panelId === 'organism' ||
+    panelId === 'organism-nav' ||
     panelId === 'composition' ||
     panelId === 'propose' ||
     panelId === 'proposals' ||
@@ -41,8 +42,15 @@ function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
   );
 }
 
-function isUniversalVisorPanelId(panelId: VisorHudPanelId): panelId is Exclude<VisorHudPanelId, 'organism'> {
-  return panelId !== 'organism';
+function isUniversalVisorPanelId(
+  panelId: VisorHudPanelId,
+): panelId is Exclude<VisorHudPanelId, 'organism' | 'organism-nav'> {
+  return panelId !== 'organism' && panelId !== 'organism-nav';
+}
+
+interface OrganismShortcutAction {
+  panelId: Exclude<VisorHudPanelId, 'organism' | 'organism-nav'>;
+  label: string;
 }
 
 export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
@@ -53,6 +61,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
 
   const initialPanelId: VisorHudPanelId | null = enteredOrganismId === organismId ? 'organism' : null;
+  const interiorOrigin = enteredOrganismId === organismId;
   const [refreshKey, setRefreshKey] = useState(0);
   const [surfacing, setSurfacing] = useState(false);
   const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(initialPanelId);
@@ -69,6 +78,18 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const Renderer = organism?.currentState
     ? (getRenderer(organism.currentState.contentTypeId) ?? FallbackRenderer)
     : null;
+  const secondaryShortcutActions: OrganismShortcutAction[] = [];
+
+  secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
+  if (openTrunk) {
+    if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
+  } else {
+    if (canWrite) secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
+    secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
+  }
+  secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
+  secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });
+  secondaryShortcutActions.push({ panelId: 'relationships', label: 'Open relationships' });
 
   function handleVisit() {
     focusOrganism(organismId);
@@ -100,6 +121,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
         surfaced={surfaced}
         openTrunk={openTrunk}
         canWrite={canWrite}
+        interiorOrigin={interiorOrigin}
         preferredMainPanelId={preferredPanelId}
         onPromotePanel={(panelId) => {
           if (!isVisorHudPanelId(panelId)) return;
@@ -195,6 +217,24 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
           }
 
           return null;
+        }}
+        renderSecondaryBody={(panelId) => {
+          if (panelId !== 'organism-nav') return null;
+
+          return (
+            <div className="visor-organism-shortcut-actions">
+              {secondaryShortcutActions.map((action) => (
+                <button
+                  key={action.panelId}
+                  type="button"
+                  className="hud-action-btn"
+                  onClick={() => setPreferredPanelId(action.panelId)}
+                >
+                  {action.label}
+                </button>
+              ))}
+            </div>
+          );
         }}
       />
     </>

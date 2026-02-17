@@ -10,6 +10,7 @@ function renderDeck(input: {
   preferredMainPanelId: HudPanelId | null;
   templateValuesReady?: boolean;
   canWrite?: boolean;
+  interiorOrigin?: boolean;
 }) {
   const template = resolvePanelVisorTemplate(input.templateContext);
 
@@ -20,11 +21,13 @@ function renderDeck(input: {
       surfaced: false,
       openTrunk: false,
       canWrite: input.canWrite ?? true,
+      interiorOrigin: input.interiorOrigin ?? false,
       templateValuesReady: input.templateValuesReady ?? false,
       preferredMainPanelId: input.preferredMainPanelId,
       onPromotePanel: () => {},
       onCollapseMainPanel: () => {},
       renderPanelBody: (panelId: HudPanelId) => createElement('div', null, `body-${panelId}`),
+      renderSecondaryBody: (panelId: HudPanelId) => createElement('div', null, `secondary-${panelId}`),
     }),
   );
 }
@@ -63,5 +66,24 @@ describe('VisorPanelDeck', () => {
     expect(html).toContain('<h4>Templates</h4>');
     expect(html).toContain('body-templates');
     expect(html).toContain('Collapse');
+  });
+
+  it('opening tend in organism context renders one secondary action card', () => {
+    const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: 'organism' });
+
+    expect(html).toContain('<h4>Tend</h4>');
+    expect(html).toContain('visor-panel-secondary-row');
+    expect(html).toContain('Composition');
+  });
+
+  it('entered-organism visor context renders organism-nav in the secondary slot', () => {
+    const html = renderDeck({
+      templateContext: 'visor-organism',
+      preferredMainPanelId: 'organism',
+      interiorOrigin: true,
+    });
+
+    expect(html).toContain('Panel shortcuts');
+    expect(html).toContain('secondary-organism-nav');
   });
 });

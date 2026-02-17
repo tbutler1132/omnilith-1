@@ -32,13 +32,14 @@ interface VisorPanelDeckProps {
   surfaced: boolean;
   openTrunk: boolean;
   canWrite: boolean;
+  interiorOrigin?: boolean;
   templateValuesReady?: boolean;
   preferredMainPanelId: HudPanelId | null;
   extraCollapsedChips?: ExtraCollapsedChip[];
   onPromotePanel: (panelId: HudPanelId) => void;
   onCollapseMainPanel: (panelId: HudPanelId) => void;
   renderPanelBody: (panelId: HudPanelId) => ReactNode;
-  renderSecondaryPreview?: (panelId: HudPanelId) => ReactNode;
+  renderSecondaryBody?: (panelId: HudPanelId) => ReactNode;
 }
 
 interface MainNavState {
@@ -69,13 +70,14 @@ export function VisorPanelDeck({
   surfaced,
   openTrunk,
   canWrite,
+  interiorOrigin = false,
   templateValuesReady = false,
   preferredMainPanelId,
   extraCollapsedChips = [],
   onPromotePanel,
   onCollapseMainPanel,
   renderPanelBody,
-  renderSecondaryPreview,
+  renderSecondaryBody,
 }: VisorPanelDeckProps) {
   const SWAP_EXIT_MS = 180;
   const SWAP_ENTER_MS = 260;
@@ -89,11 +91,18 @@ export function VisorPanelDeck({
   const layout = useMemo(
     () =>
       resolveVisorPanelLayout({
-        context: { contextClass: template.contextClass, surfaced, openTrunk, templateValuesReady, canWrite },
+        context: {
+          contextClass: template.contextClass,
+          surfaced,
+          openTrunk,
+          templateValuesReady,
+          canWrite,
+          interiorOrigin,
+        },
         preferredMainPanelId,
         slots: template.panelSlots,
       }),
-    [template, surfaced, openTrunk, canWrite, templateValuesReady, preferredMainPanelId],
+    [template, surfaced, openTrunk, canWrite, interiorOrigin, templateValuesReady, preferredMainPanelId],
   );
   const historyWidgetEnabled = template.widgetSlots.allowedWidgets.includes('history-navigation');
   const previousMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, -1), [mainNav, layout]);
@@ -237,19 +246,22 @@ export function VisorPanelDeck({
       {layout.secondaryPanelIds.length > 0 && (
         <div className="visor-panel-secondary-row">
           {layout.secondaryPanelIds.map((panelId) => (
-            <button
-              key={panelId}
-              type="button"
-              className="visor-panel-secondary-card"
-              onClick={() => onPromotePanel(panelId)}
-              title={`Promote ${getHudPanelDefinition(panelId).label} to main panel`}
-            >
+            <div key={panelId} className="visor-panel-secondary-card">
               <span className="visor-panel-secondary-title">{getHudPanelDefinition(panelId).label}</span>
-              <span className="visor-panel-secondary-action">Open main</span>
-              {renderSecondaryPreview ? (
-                <span className="visor-panel-secondary-preview">{renderSecondaryPreview(panelId)}</span>
+              {renderSecondaryBody ? (
+                <div className="visor-panel-secondary-body">{renderSecondaryBody(panelId)}</div>
               ) : null}
-            </button>
+              {getHudPanelDefinition(panelId).roleSupport.main ? (
+                <button
+                  type="button"
+                  className="hud-action-btn visor-panel-secondary-promote"
+                  onClick={() => onPromotePanel(panelId)}
+                  title={`Promote ${getHudPanelDefinition(panelId).label} to main panel`}
+                >
+                  Open main
+                </button>
+              ) : null}
+            </div>
           ))}
         </div>
       )}

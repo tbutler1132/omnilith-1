@@ -16,7 +16,7 @@ import {
 } from '../organism/sections/index.js';
 import type { VisorHudPanelId } from './panel-schema.js';
 
-type UniversalVisorHudPanelId = Exclude<VisorHudPanelId, 'organism'>;
+type UniversalVisorHudPanelId = Exclude<VisorHudPanelId, 'organism' | 'organism-nav'>;
 
 interface VisorPanelBodyProps {
   panelId: UniversalVisorHudPanelId;

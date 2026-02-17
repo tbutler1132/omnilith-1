@@ -100,7 +100,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
       secondary: {
         enabled: true,
-        maxPanels: 0,
+        maxPanels: 1,
       },
       collapsed: {
         enabled: true,
