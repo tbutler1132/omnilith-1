@@ -11,6 +11,7 @@ import {
   GovernanceSection,
   ProposalsSection,
   ProposeSection,
+  RelationshipsSection,
   StateHistorySection,
 } from '../organism/sections/index.js';
 import type { VisorHudPanelId } from './panel-schema.js';
@@ -39,6 +40,9 @@ export function VisorPanelBody({ panelId, organismId, refreshKey, canWrite, onMu
   }
   if (panelId === 'append') {
     return <AppendSection organismId={organismId} refreshKey={refreshKey} canWrite={canWrite} onMutate={onMutate} />;
+  }
+  if (panelId === 'relationships') {
+    return <RelationshipsSection organismId={organismId} />;
   }
   if (panelId === 'history') {
     return <StateHistorySection organismId={organismId} refreshKey={refreshKey} />;

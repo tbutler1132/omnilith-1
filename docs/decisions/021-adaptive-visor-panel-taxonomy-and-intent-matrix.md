@@ -113,3 +113,5 @@ This preserves the adaptive architecture while clarifying the interface contract
 ## Status
 
 Accepted and implemented.
+
+Companion planning playbook: `docs/ADAPTIVE-VISOR-PANEL-FEATURE-PLAYBOOK.md`.

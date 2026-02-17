@@ -15,6 +15,7 @@ export type VisorHudPanelId =
   | 'propose'
   | 'proposals'
   | 'append'
+  | 'relationships'
   | 'history'
   | 'governance';
 export type HudPanelId = MapHudPanelId | InteriorHudPanelId | VisorHudPanelId;
@@ -147,6 +148,16 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
     collapsedPriority: 88,
+  },
+  {
+    id: 'relationships',
+    label: 'Relationships',
+    purpose: 'Inspect membership, stewardship, and integration authority relationships.',
+    availableIn: (context) => context.contextClass === 'visor-organism',
+    roleSupport: { main: true, secondary: true, collapsed: true },
+    defaultMainPriority: 73,
+    defaultSecondaryPriority: 77,
+    collapsedPriority: 80,
   },
   {
     id: 'history',

@@ -65,10 +65,12 @@ const ORGANISM_RULE: IntentMatrixRule = {
       composition: 3,
       propose: 2,
       append: 2,
+      relationships: 1,
     },
     unsurfaced: {
       history: 4,
       governance: 2,
+      relationships: 2,
     },
   },
 };

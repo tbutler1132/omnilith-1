@@ -35,6 +35,7 @@ function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
     panelId === 'propose' ||
     panelId === 'proposals' ||
     panelId === 'append' ||
+    panelId === 'relationships' ||
     panelId === 'history' ||
     panelId === 'governance'
   );

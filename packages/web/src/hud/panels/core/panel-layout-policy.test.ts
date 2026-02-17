@@ -39,7 +39,14 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.mainPanelId).toBe('organism');
-    expect(layout.collapsedPanelIds).toEqual(['composition', 'propose', 'proposals', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual([
+      'composition',
+      'propose',
+      'proposals',
+      'relationships',
+      'governance',
+      'history',
+    ]);
   });
 
   it('an open-trunk organism exposes append and omits regulated proposal panels', () => {
@@ -55,7 +62,14 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['organism', 'composition', 'append', 'history', 'governance']);
+    expect(layout.availablePanelIds).toEqual([
+      'organism',
+      'composition',
+      'append',
+      'relationships',
+      'history',
+      'governance',
+    ]);
     expect(layout.secondaryPanelIds).toEqual([]);
     expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
@@ -73,7 +87,7 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.collapsedPanelIds).toEqual(['composition', 'append', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual(['composition', 'append', 'relationships', 'governance', 'history']);
   });
 
   it('an organism context keeps main empty until a panel is promoted', () => {
