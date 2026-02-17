@@ -1,0 +1,299 @@
+{
+  "updatedAt": "2026-02-17",
+  "statusModel": [
+    "spike-only",
+    "approved",
+    "implemented",
+    "parity-verified"
+  ],
+  "items": [
+    {
+      "id": "elements-panels-threshold",
+      "label": "Threshold Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/threshold.html",
+      "contractPath": "design-spikes/contracts/threshold-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/forms/ThresholdForm.tsx",
+        "packages/web/src/hud/panels/core/panel-body-registry.tsx"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-mine",
+      "label": "My Organisms Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/mine.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-templates",
+      "label": "Templates Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/templates.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-template-values",
+      "label": "Template Values Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/template-values.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-interior-actions",
+      "label": "Interior Actions Chip",
+      "spikePath": "design-spikes/current-state/elements/panels/interior-actions.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-organism",
+      "label": "Organism Main Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/organism.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-organism-nav",
+      "label": "Organism Nav Shortcuts",
+      "spikePath": "design-spikes/current-state/elements/panels/organism-nav.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-composition",
+      "label": "Composition Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/composition.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-propose",
+      "label": "Open Proposal Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/propose.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-proposals",
+      "label": "Proposals Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/proposals.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-append",
+      "label": "Append State Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/append.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-relationships",
+      "label": "Relationships Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/relationships.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-history",
+      "label": "State History Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/history.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-panels-governance",
+      "label": "Governance Section Panel",
+      "spikePath": "design-spikes/current-state/elements/panels/governance.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/panels/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-widgets-map-actions",
+      "label": "Map Actions Widget Surface",
+      "spikePath": "design-spikes/current-state/elements/widgets/map-actions.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/widgets/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-widgets-history-navigation",
+      "label": "History Navigation Widget Surface",
+      "spikePath": "design-spikes/current-state/elements/widgets/history-navigation.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/widgets/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-widgets-compass",
+      "label": "Compass Widget",
+      "spikePath": "design-spikes/current-state/elements/widgets/compass.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/widgets/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-widgets-vitality",
+      "label": "Vitality Widget",
+      "spikePath": "design-spikes/current-state/elements/widgets/vitality.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/widgets/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-cues-adaptive-help",
+      "label": "Adaptive Help Cue",
+      "spikePath": "design-spikes/current-state/elements/cues/adaptive-help.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/cues/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-hud-root",
+      "label": "HUD Root Shell",
+      "spikePath": "design-spikes/current-state/elements/shells/hud-root.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/HudRoot.tsx"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-adaptive-visor-host",
+      "label": "Adaptive Visor Host",
+      "spikePath": "design-spikes/current-state/elements/shells/adaptive-visor-host.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/AdaptiveVisorHost.tsx"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-visor-panel-deck",
+      "label": "Visor Panel Deck Shell",
+      "spikePath": "design-spikes/current-state/elements/shells/visor-panel-deck.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-organism-panel-deck",
+      "label": "Organism Panel Deck Shell",
+      "spikePath": "design-spikes/current-state/elements/shells/organism-panel-deck.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-visor-widget-lane",
+      "label": "Visor Widget Lane Shell",
+      "spikePath": "design-spikes/current-state/elements/shells/visor-widget-lane.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-shells-hud-cue-layer",
+      "label": "HUD Cue Layer Shell",
+      "spikePath": "design-spikes/current-state/elements/shells/hud-cue-layer.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-behavior-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/"
+      ],
+      "status": "implemented",
+      "lastVerifiedAt": "2026-02-17"
+    },
+    {
+      "id": "elements-flows-adaptive-visor-end-to-end",
+      "label": "Adaptive Visor End-to-End Storyboard",
+      "spikePath": "design-spikes/current-state/elements/flows/adaptive-visor-end-to-end.html",
+      "contractPath": "design-spikes/contracts/adaptive-visor-contract-v1.md",
+      "reactTargets": [
+        "packages/web/src/hud/",
+        "packages/web/src/platform/adaptive-visor-compositor.ts"
+      ],
+      "status": "spike-only",
+      "lastVerifiedAt": "2026-02-17"
+    }
+  ]
+}

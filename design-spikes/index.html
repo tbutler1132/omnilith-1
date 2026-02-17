@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Omnilith Design Spikes Hub</title>
+    <style>
+      :root {
+        --bg-0: #060912;
+        --bg-1: #0b111f;
+        --surface: rgba(14, 21, 34, 0.82);
+        --surface-strong: rgba(18, 28, 45, 0.92);
+        --line: rgba(123, 158, 208, 0.35);
+        --line-soft: rgba(123, 158, 208, 0.18);
+        --text: #e5edf8;
+        --text-dim: #9eb0ca;
+        --accent: #79b7ff;
+        --accent-warm: #ffd074;
+        --ok: #6ee7b7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        color: var(--text);
+        font-family: "Space Grotesk", "Avenir Next", "Segoe UI", sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(121, 183, 255, 0.2), transparent 38%),
+          radial-gradient(circle at 88% 0%, rgba(255, 208, 116, 0.14), transparent 30%),
+          linear-gradient(180deg, var(--bg-0), var(--bg-1));
+        line-height: 1.45;
+        padding: 28px 18px 40px;
+      }
+
+      .grain {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.2;
+        background-image: radial-gradient(rgba(255, 255, 255, 0.09) 0.35px, transparent 0.35px);
+        background-size: 2px 2px;
+        z-index: -1;
+      }
+
+      .shell {
+        max-width: 1120px;
+        margin: 0 auto;
+        display: grid;
+        gap: 16px;
+      }
+
+      .hero {
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        background: linear-gradient(165deg, var(--surface-strong), var(--surface));
+        box-shadow: 0 24px 60px rgba(0, 0, 0, 0.42);
+      }
+
+      .kicker {
+        margin: 0;
+        font-size: 11px;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+      }
+
+      h1 {
+        margin: 6px 0 8px;
+        font-size: clamp(28px, 5.2vw, 44px);
+        line-height: 1.06;
+      }
+
+      .hero p {
+        margin: 0;
+        max-width: 760px;
+        color: var(--text-dim);
+      }
+
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .pill {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        color: var(--text-dim);
+        background: rgba(121, 183, 255, 0.08);
+      }
+
+      .section {
+        border: 1px solid var(--line-soft);
+        border-radius: 14px;
+        background: rgba(10, 16, 28, 0.72);
+        padding: 14px;
+      }
+
+      .section h2 {
+        margin: 0 0 10px;
+        font-size: 15px;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .step {
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        padding: 10px;
+        background: rgba(121, 183, 255, 0.05);
+      }
+
+      .step strong {
+        display: block;
+        font-size: 12px;
+        color: var(--accent-warm);
+        margin-bottom: 5px;
+      }
+
+      .step p {
+        margin: 0;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .stack {
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        padding: 12px;
+        background: rgba(16, 24, 39, 0.8);
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+      }
+
+      .card p {
+        margin: 0 0 10px;
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      .links {
+        display: grid;
+        gap: 6px;
+      }
+
+      .links a {
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        padding: 8px 10px;
+        text-decoration: none;
+        color: var(--text);
+        font-size: 13px;
+        background: rgba(121, 183, 255, 0.04);
+      }
+
+      .links a:hover {
+        border-color: var(--accent);
+        background: rgba(121, 183, 255, 0.12);
+      }
+
+      .tag {
+        color: var(--ok);
+        font-size: 11px;
+        margin-left: 6px;
+      }
+
+      .status {
+        display: inline-block;
+        margin-left: 8px;
+        font-size: 10px;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        border-radius: 999px;
+        padding: 3px 7px;
+        border: 1px solid var(--line-soft);
+      }
+
+      .status.impl {
+        color: #baf5d7;
+        background: rgba(50, 170, 110, 0.16);
+      }
+
+      .status.progress {
+        color: #ffe4aa;
+        background: rgba(195, 130, 45, 0.18);
+      }
+
+      .status.state {
+        color: #cbe0ff;
+        background: rgba(70, 115, 195, 0.16);
+      }
+
+      .footer {
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      code {
+        color: var(--accent-warm);
+      }
+
+      @media (max-width: 900px) {
+        .flow {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 560px) {
+        body {
+          padding: 14px 12px 24px;
+        }
+        .flow {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="grain"></div>
+    <main class="shell">
+      <section class="hero">
+        <p class="kicker">Omnilith Rendering Workspace</p>
+        <h1>Design Spikes Hub</h1>
+        <p>
+          This is the entry point for the spike-first workflow: shape the full presentation and interaction behavior here,
+          lock it with a contract, then apply it cleanly in React.
+        </p>
+        <div class="pill-row">
+          <span class="pill">Design first</span>
+          <span class="pill">Contract second</span>
+          <span class="pill">React translation third</span>
+          <span class="pill">State driven + event mutated</span>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Flow</h2>
+        <div class="flow">
+          <article class="step">
+            <strong>1. Spike</strong>
+            <p>Build the panel or visor behavior in plain HTML/CSS/JS until the interaction feels right.</p>
+          </article>
+          <article class="step">
+            <strong>2. Enumerate States</strong>
+            <p>Cover default, loading, empty, error, auth-required, and edge behavior before implementation.</p>
+          </article>
+          <article class="step">
+            <strong>3. Contract</strong>
+            <p>Define expected behavior in <code>design-spikes/contracts/</code> and keep it explicit.</p>
+          </article>
+          <article class="step">
+            <strong>4. Apply</strong>
+            <p>Translate into React with no redesign drift, then validate against contract tests.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Spike Workstreams</h2>
+        <div class="stack">
+          <article class="card">
+            <h3>
+              Existing HUD / Visor Elements
+              <span class="status impl">Implemented in React</span>
+            </h3>
+            <p>Use these when you want spikes anchored to behavior already present in the app. Every element page supports visual-only mode and default/loading/empty/error state previews.</p>
+            <div class="links">
+              <a href="./current-state/elements/index.html">
+                current-state/elements/index.html <span class="tag">full implemented element pack</span>
+              </a>
+              <a href="./implementation-status.json">implementation-status.json <span class="tag">official spike -> react status tracker</span></a>
+              <a href="./current-state/elements/flows/adaptive-visor-end-to-end.html">current-state/elements/flows/adaptive-visor-end-to-end.html <span class="tag">end-to-end storyboard</span></a>
+              <a href="./current-state/elements/README.md">current-state/elements/README.md</a>
+              <a href="./panels/threshold-v1.html">panels/threshold-v1.html <span class="tag">threshold panel</span></a>
+              <a href="./contracts/threshold-contract-v1.md">contracts/threshold-contract-v1.md</a>
+              <a href="./current-state/adaptive-visor-current-state.html">current-state/adaptive-visor-current-state.html</a>
+              <a href="./contracts/adaptive-visor-behavior-contract-v1.md">contracts/adaptive-visor-behavior-contract-v1.md</a>
+              <a href="../packages/web/src/hud/contracts/adaptive-visor-behavior-contract.ts">
+                packages/web/src/hud/contracts/adaptive-visor-behavior-contract.ts
+              </a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>
+              In Progress / New Design Spikes
+              <span class="status progress">Not fully applied</span>
+            </h3>
+            <p>Use these for exploratory interaction work before implementation decisions are locked.</p>
+            <div class="links">
+              <a href="./visor/adaptive-visor-layout-v1.html">visor/adaptive-visor-layout-v1.html <span class="tag">adaptive visor direction</span></a>
+              <a href="./contracts/adaptive-visor-contract-v1.md">contracts/adaptive-visor-contract-v1.md</a>
+              <a href="./explainers/organism-explainer-v1.html">explainers/organism-explainer-v1.html</a>
+            </div>
+          </article>
+
+          <article class="card">
+            <h3>
+              Layouts + Visor State System
+              <span class="status state">State and orchestration</span>
+            </h3>
+            <p>Use this set to reason about adaptive context, transitions, panel roles, and event/state behavior.</p>
+            <div class="links">
+              <a href="./current-state/orchestrator-map.md">current-state/orchestrator-map.md</a>
+              <a href="./current-state/panel-state-matrix.md">current-state/panel-state-matrix.md</a>
+              <a href="./current-state/observations.md">current-state/observations.md</a>
+              <a href="./current-state/UPDATE-CHECKLIST.md">current-state/UPDATE-CHECKLIST.md</a>
+              <a href="./current-state/README.md">current-state/README.md</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Templates + Guides</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Templates</h3>
+            <div class="links">
+              <a href="./panel-template.html">panel-template.html <span class="tag">template</span></a>
+              <a href="./SPIKE-BRIEF-TEMPLATE.md">SPIKE-BRIEF-TEMPLATE.md</a>
+              <a href="./contracts/CONTRACT-TEMPLATE.md">contracts/CONTRACT-TEMPLATE.md</a>
+            </div>
+          </article>
+          <article class="card">
+            <h3>Workspace Docs</h3>
+            <div class="links">
+              <a href="./README.md">README.md</a>
+              <a href="./INDEX.md">INDEX.md</a>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <p class="footer">
+        Tip: open this page directly as <code>design-spikes/index.html</code> and use it as the home base for iterative spike work.
+      </p>
+    </main>
+  </body>
+</html>

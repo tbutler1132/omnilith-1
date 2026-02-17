@@ -20,6 +20,14 @@ Use this pack to:
   Noted mismatches and potential cleanup opportunities.
 - `design-spikes/current-state/UPDATE-CHECKLIST.md`
   Fast refresh checklist when adaptive implementation changes.
+- `design-spikes/current-state/elements/index.html`
+  One-page index for individual current-state spikes of implemented HUD elements and flow storyboards.
+- `design-spikes/current-state/elements/README.md`
+  Inventory summary for generated panel/widget/cue/shell spike files.
+- `design-spikes/current-state/elements/flows/adaptive-visor-end-to-end.html`
+  End-to-end storyboard sequencing adaptive visor transitions across contexts.
+- `design-spikes/implementation-status.json`
+  Official status tracker for spike-to-React parity and implementation state.
 
 ## Source Of Truth
 

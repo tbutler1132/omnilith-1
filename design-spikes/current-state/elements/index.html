@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HUD Elements Render Spikes</title>
+    <link rel="stylesheet" href="../../../packages/web/src/styles.css" />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 10% 6%, rgba(124, 108, 240, 0.26), transparent 34%),
+          linear-gradient(180deg, #07070c, #0c0c15);
+        color: var(--text);
+        padding: 18px;
+      }
+
+      .spike-shell {
+        max-width: 1180px;
+        margin: 0 auto;
+        display: grid;
+        gap: 12px;
+      }
+
+      .spike-card {
+        border: 1px solid rgba(124, 108, 240, 0.32);
+        border-radius: 14px;
+        padding: 14px;
+        background: rgba(12, 12, 20, 0.88);
+      }
+
+      .spike-kicker {
+        margin: 0;
+        font-family: var(--hud-mono);
+        font-size: 10px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        color: var(--hud-text);
+      }
+
+      .spike-title {
+        margin: 6px 0 6px;
+        font-size: 24px;
+        line-height: 1.1;
+      }
+
+      .spike-summary {
+        margin: 0;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .spike-meta {
+        margin-top: 10px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .spike-pill {
+        border: 1px solid var(--hud-border);
+        border-radius: 999px;
+        padding: 4px 9px;
+        font-family: var(--hud-mono);
+        font-size: 10px;
+        letter-spacing: 0.6px;
+        color: var(--hud-text);
+        background: rgba(124, 108, 240, 0.08);
+      }
+
+      .spike-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .spike-links {
+        display: grid;
+        gap: 6px;
+      }
+
+      .spike-source {
+        border: 1px solid var(--hud-border);
+        border-radius: 8px;
+        padding: 8px 10px;
+        text-decoration: none;
+        color: rgba(216, 216, 232, 0.86);
+        font-family: var(--hud-mono);
+        font-size: 11px;
+        background: rgba(124, 108, 240, 0.05);
+      }
+
+      .spike-source:hover {
+        border-color: var(--hud-border-hover);
+        color: var(--hud-text-bright);
+      }
+
+      .spike-source span {
+        display: block;
+        opacity: 0.72;
+        margin-top: 2px;
+      }
+
+      .spike-status {
+        display: inline-block;
+        border: 1px solid var(--hud-border);
+        border-radius: 999px;
+        padding: 2px 6px;
+        font-family: var(--hud-mono);
+        font-size: 9px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        opacity: 1;
+      }
+
+      .spike-source .spike-status {
+        margin-left: 6px;
+        margin-top: 0;
+      }
+
+      .spike-status--implemented {
+        color: #bff7d5;
+        border-color: rgba(123, 255, 188, 0.3);
+        background: rgba(55, 165, 112, 0.2);
+      }
+
+      .spike-status--spike-only {
+        color: #ffe7b3;
+        border-color: rgba(255, 208, 116, 0.4);
+        background: rgba(185, 130, 34, 0.22);
+      }
+
+      .spike-back {
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .spike-back a {
+        color: var(--accent);
+      }
+
+      code {
+        color: #d7cdff;
+      }
+
+      @media (max-width: 900px) {
+        .spike-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="spike-shell">
+      <section class="spike-card">
+        <p class="spike-kicker">Omnilith HUD Design Spikes</p>
+        <h1 class="spike-title">HUD Elements + Flow - Rendered Static Spikes</h1>
+        <p class="spike-summary">
+          Current set includes 25 implemented HUD surfaces plus 1 spike-only storyboard flow.
+          Each element page is a static rendering of the implemented HUD surface with seeded content.
+          Every page now supports <code>View: Annotated/Visual only</code> and <code>State: Default/Loading/Empty/Error</code>.
+        </p>
+        <div class="spike-meta">
+          <span class="spike-pill">Elements: 25</span>
+          <span class="spike-pill">Implemented: 25</span>
+          <span class="spike-pill">Spike-only: 1</span>
+          <span class="spike-pill">Panels: 14</span>
+          <span class="spike-pill">Widgets: 4</span>
+          <span class="spike-pill">Cues: 1</span>
+          <span class="spike-pill">Shells: 6</span>
+          <span class="spike-pill">Flow pages: 1</span>
+        </div>
+      </section>
+
+      <section class="spike-card">
+        <h2 class="spike-kicker" style="margin-bottom: 8px">Launch Tips</h2>
+        <p class="spike-summary">
+          Open any element page in direct visual mode with <code>?mode=visual</code>.
+          You can also set initial state with <code>?state=loading</code>, <code>?state=empty</code>, or <code>?state=error</code>.
+        </p>
+        <p class="spike-summary" style="margin-top: 8px">
+          Official status source: <a href="../../implementation-status.json"><code>design-spikes/implementation-status.json</code></a>
+        </p>
+        <div class="spike-meta">
+          <span class="spike-status spike-status--implemented">Implemented</span>
+          <span class="spike-status spike-status--spike-only">Spike-only</span>
+        </div>
+      </section>
+
+      <section class="spike-grid">
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:10px">Panels</h2>
+          <div class="spike-links">
+            <a class="spike-source" href="./panels/threshold.html">Threshold Panel <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./panels/mine.html">My Organisms Panel <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./panels/templates.html">Templates Panel <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./panels/template-values.html">Template Values Panel <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./panels/interior-actions.html">Interior Actions Chip <span class="spike-status spike-status--implemented">Implemented</span><span>interior</span></a>
+            <a class="spike-source" href="./panels/organism.html">Organism Main Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+            <a class="spike-source" href="./panels/organism-nav.html">Organism Nav Shortcuts <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism (interior-origin)</span></a>
+            <a class="spike-source" href="./panels/composition.html">Composition Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+            <a class="spike-source" href="./panels/propose.html">Open Proposal Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism (regulated)</span></a>
+            <a class="spike-source" href="./panels/proposals.html">Proposals Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism (regulated)</span></a>
+            <a class="spike-source" href="./panels/append.html">Append State Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism (open-trunk)</span></a>
+            <a class="spike-source" href="./panels/relationships.html">Relationships Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+            <a class="spike-source" href="./panels/history.html">State History Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+            <a class="spike-source" href="./panels/governance.html">Governance Section Panel <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+          </div>
+        </article>
+
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:10px">Widgets</h2>
+          <div class="spike-links">
+            <a class="spike-source" href="./widgets/map-actions.html">Map Actions Widget Surface <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./widgets/history-navigation.html">History Navigation Widget Surface <span class="spike-status spike-status--implemented">Implemented</span><span>map, visor-organism</span></a>
+            <a class="spike-source" href="./widgets/compass.html">Compass Widget <span class="spike-status spike-status--implemented">Implemented</span><span>map</span></a>
+            <a class="spike-source" href="./widgets/vitality.html">Vitality Widget <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+          </div>
+        </article>
+
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:10px">Cues</h2>
+          <div class="spike-links">
+            <a class="spike-source" href="./cues/adaptive-help.html">Adaptive Help Cue <span class="spike-status spike-status--implemented">Implemented</span><span>global overlay</span></a>
+          </div>
+        </article>
+
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:10px">Shells / Decks</h2>
+          <div class="spike-links">
+            <a class="spike-source" href="./shells/hud-root.html">HUD Root Shell <span class="spike-status spike-status--implemented">Implemented</span><span>global</span></a>
+            <a class="spike-source" href="./shells/adaptive-visor-host.html">Adaptive Visor Host <span class="spike-status spike-status--implemented">Implemented</span><span>map, interior, visor-organism</span></a>
+            <a class="spike-source" href="./shells/visor-panel-deck.html">Visor Panel Deck Shell <span class="spike-status spike-status--implemented">Implemented</span><span>map, interior, visor-organism</span></a>
+            <a class="spike-source" href="./shells/organism-panel-deck.html">Organism Panel Deck Shell <span class="spike-status spike-status--implemented">Implemented</span><span>visor-organism</span></a>
+            <a class="spike-source" href="./shells/visor-widget-lane.html">Visor Widget Lane Shell <span class="spike-status spike-status--implemented">Implemented</span><span>map, visor-organism</span></a>
+            <a class="spike-source" href="./shells/hud-cue-layer.html">HUD Cue Layer Shell <span class="spike-status spike-status--implemented">Implemented</span><span>global overlay</span></a>
+          </div>
+        </article>
+      </section>
+
+      <section class="spike-card">
+        <h2 class="spike-kicker" style="margin-bottom:10px">Flow Storyboards</h2>
+        <div class="spike-links">
+          <a class="spike-source" href="./flows/adaptive-visor-end-to-end.html">
+            Adaptive Visor End-to-End Storyboard <span class="spike-status spike-status--spike-only">Spike-only</span>
+            <span>Map -> Threshold -> Organism -> Sections -> Map</span>
+          </a>
+        </div>
+      </section>
+
+      <p class="spike-back">Back to <a href="../../index.html">Design Spikes Hub</a></p>
+    </main>
+  </body>
+</html>

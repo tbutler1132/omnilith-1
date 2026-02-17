@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Proposals Section Panel - Current State Spike</title>
+    <link rel="stylesheet" href="../../../../packages/web/src/styles.css" />
+    <style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 10% 6%, rgba(124, 108, 240, 0.26), transparent 34%),
+    linear-gradient(180deg, #07070c, #0c0c15);
+  color: var(--text);
+  padding: 18px;
+}
+
+.spike-shell {
+  max-width: 1180px;
+  margin: 0 auto;
+  display: grid;
+  gap: 12px;
+}
+
+.spike-card {
+  border: 1px solid rgba(124, 108, 240, 0.32);
+  border-radius: 14px;
+  padding: 14px;
+  background: rgba(12, 12, 20, 0.88);
+}
+
+.spike-kicker {
+  margin: 0;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--hud-text);
+}
+
+.spike-title {
+  margin: 6px 0 6px;
+  font-size: 24px;
+  line-height: 1.1;
+}
+
+.spike-summary {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.spike-meta {
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.spike-pill {
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  color: var(--hud-text);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.spike-stage {
+  border: 1px solid rgba(124, 108, 240, 0.25);
+  border-radius: 12px;
+  background: rgba(7, 7, 13, 0.74);
+  min-height: 420px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.spike-stage--short {
+  min-height: 260px;
+}
+
+.spike-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.spike-links {
+  display: grid;
+  gap: 6px;
+}
+
+.spike-source {
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  padding: 7px 9px;
+  text-decoration: none;
+  color: rgba(216, 216, 232, 0.86);
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  background: rgba(124, 108, 240, 0.05);
+}
+
+.spike-source:hover {
+  border-color: var(--hud-border-hover);
+  color: var(--hud-text-bright);
+}
+
+.spike-note-list {
+  margin: 0;
+  padding-left: 17px;
+  display: grid;
+  gap: 5px;
+}
+
+.spike-note-list li {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.spike-stage .hud {
+  position: relative;
+  min-height: 390px;
+}
+
+.spike-stage .hud-logout {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.spike-stage .hud-cue-layer {
+  position: relative;
+  pointer-events: auto;
+}
+
+.spike-stage .hud-cue {
+  position: relative;
+  left: auto !important;
+  top: auto !important;
+  margin-top: 8px;
+  max-width: 290px;
+}
+
+.spike-stage .hud-cue::after {
+  display: none;
+}
+
+.spike-stage .visor-widget-lane {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+}
+
+.spike-stage .hud-map-actions-container {
+  position: static;
+}
+
+.spike-stage .visor-view {
+  position: relative;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  min-height: 320px;
+}
+
+.spike-stage .adaptive-visor-surface .visor-panel-collapsed-rail--viewport-bottom-left {
+  position: relative;
+  left: 0;
+  bottom: 0;
+  margin-top: 10px;
+}
+
+.spike-stage .visor-panel-main-slot,
+.spike-stage .visor-panel-secondary-row,
+.spike-stage .visor-history-nav {
+  position: relative;
+  top: auto;
+  left: auto;
+  right: auto;
+}
+
+.spike-back {
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.spike-back a {
+  color: var(--accent);
+}
+
+.spike-stage .hud-panel {
+  margin: 0;
+}
+
+@media (max-width: 920px) {
+  .spike-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* spike-interaction-controls */
+.spike-controls {
+  border-color: rgba(124, 108, 240, 0.45);
+  background: rgba(15, 15, 26, 0.9);
+}
+
+.spike-controls-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.spike-control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px;
+  border-radius: 10px;
+  border: 1px solid var(--hud-border);
+  background: rgba(124, 108, 240, 0.06);
+}
+
+.spike-control-label {
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--hud-text);
+  margin-right: 4px;
+}
+
+.spike-control-btn {
+  border: 1px solid var(--hud-border);
+  background: rgba(12, 12, 20, 0.9);
+  color: var(--hud-text-dim, #b9bbca);
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  border-radius: 8px;
+  padding: 6px 8px;
+  cursor: pointer;
+}
+
+.spike-control-btn:hover {
+  color: var(--hud-text-bright);
+  border-color: var(--hud-border-hover);
+}
+
+.spike-control-btn.is-active {
+  color: var(--hud-text-bright);
+  border-color: var(--hud-border-hover);
+  background: rgba(124, 108, 240, 0.2);
+}
+
+.spike-stage {
+  position: relative;
+}
+
+.spike-render-root {
+  transition: opacity 140ms ease;
+}
+
+.spike-state-overlay {
+  display: none;
+  position: absolute;
+  inset: 14px;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.spike-state-card {
+  min-width: 220px;
+  max-width: 380px;
+  border-radius: 12px;
+  border: 1px solid var(--hud-border);
+  background: rgba(8, 9, 15, 0.92);
+  padding: 12px;
+  text-align: center;
+}
+
+.spike-state-card strong {
+  display: block;
+  font-size: 12px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--hud-text-bright);
+}
+
+.spike-state-card p {
+  margin: 6px 0 0;
+  color: var(--text-dim);
+  font-size: 12px;
+}
+
+.spike-spinner {
+  width: 22px;
+  height: 22px;
+  margin: 0 auto 8px;
+  border-radius: 999px;
+  border: 2px solid rgba(124, 108, 240, 0.24);
+  border-top-color: rgba(180, 170, 255, 0.95);
+  animation: spike-spin 0.85s linear infinite;
+}
+
+@keyframes spike-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spike-stage[data-spike-state="loading"] .spike-render-root {
+  opacity: 0.38;
+}
+
+.spike-stage[data-spike-state="loading"] .spike-state-overlay--loading,
+.spike-stage[data-spike-state="empty"] .spike-state-overlay--empty,
+.spike-stage[data-spike-state="error"] .spike-state-overlay--error {
+  display: flex;
+}
+
+.spike-stage[data-spike-state="empty"] .spike-render-root,
+.spike-stage[data-spike-state="error"] .spike-render-root {
+  opacity: 0;
+}
+
+body[data-spike-mode="visual"] {
+  padding: 0;
+  background: #05050a;
+}
+
+body[data-spike-mode="visual"] .spike-shell {
+  max-width: none;
+  gap: 0;
+}
+
+body[data-spike-mode="visual"] .spike-card:not(.spike-controls):not(.spike-preview-card),
+body[data-spike-mode="visual"] .spike-back {
+  display: none;
+}
+
+body[data-spike-mode="visual"] .spike-preview-card {
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body[data-spike-mode="visual"] .spike-preview-card .spike-kicker {
+  display: none;
+}
+
+body[data-spike-mode="visual"] .spike-stage {
+  min-height: 100vh;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
+  background: transparent;
+}
+
+body[data-spike-mode="visual"] .spike-controls {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  right: auto;
+  z-index: 40;
+  max-width: calc(100vw - 20px);
+  backdrop-filter: blur(7px);
+}
+
+@media (max-width: 740px) {
+  .spike-controls-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .spike-control-group {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+}
+
+</style>
+  </head>
+  <body>
+    <main class="spike-shell">
+      <section class="spike-card">
+        <p class="spike-kicker">Current-State Render Spike / panels</p>
+        <h1 class="spike-title">Proposals Section Panel</h1>
+        <p class="spike-summary">Review open proposals and integrate or decline them.</p>
+        <div class="spike-meta">
+          <span class="spike-pill">Status: Implemented in React</span>
+          <span class="spike-pill">Context: visor-organism (regulated)</span>
+        </div>
+      </section>
+
+      <section class="spike-card spike-controls">
+        <div class="spike-controls-row">
+          <div class="spike-control-group" role="group" aria-label="View mode">
+            <span class="spike-control-label">View</span>
+            <button type="button" class="spike-control-btn is-active" data-spike-mode-select="annotated">Annotated</button>
+            <button type="button" class="spike-control-btn" data-spike-mode-select="visual">Visual only</button>
+          </div>
+          <div class="spike-control-group" role="group" aria-label="State preview">
+            <span class="spike-control-label">State</span>
+            <button type="button" class="spike-control-btn is-active" data-spike-state-select="default">Default</button>
+            <button type="button" class="spike-control-btn" data-spike-state-select="loading">Loading</button>
+            <button type="button" class="spike-control-btn" data-spike-state-select="empty">Empty</button>
+            <button type="button" class="spike-control-btn" data-spike-state-select="error">Error</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="spike-card spike-preview-card">
+        <h2 class="spike-kicker" style="margin-bottom:8px">Rendered Static Preview</h2>
+        <div class="spike-stage" data-spike-state="default">
+          <div class="spike-render-root">
+          
+    <div class="hud-info-section">
+      <span class="hud-info-label">Proposals</span>
+      <div class="hud-info-proposal"><span class="hud-info-proposal-status hud-info-proposal-status--open">open</span><span class="hud-info-proposal-detail">song by usr_19b4d3a1, Feb 16 2026</span><span class="hud-proposal-actions"><button class="hud-proposal-btn hud-proposal-btn--integrate">Integrate</button><button class="hud-proposal-btn hud-proposal-btn--decline">Decline</button></span></div>
+      <div class="hud-info-proposal"><span class="hud-info-proposal-status hud-info-proposal-status--integrated">integrated</span><span class="hud-info-proposal-detail">song by usr_19b4d3a1, Feb 10 2026</span></div>
+      <div class="hud-info-proposal"><span class="hud-info-proposal-status hud-info-proposal-status--declined">declined</span><span class="hud-info-proposal-detail">song by usr_ff22a93e, Feb 02 2026</span></div>
+    </div>
+</div>
+          <div class="spike-state-overlay spike-state-overlay--loading" aria-live="polite">
+            <div class="spike-state-card">
+              <div class="spike-spinner" aria-hidden="true"></div>
+              <strong>Loading State</strong>
+              <p>Panel data is synchronizing with the current visor context.</p>
+            </div>
+          </div>
+          <div class="spike-state-overlay spike-state-overlay--empty" aria-live="polite">
+            <div class="spike-state-card">
+              <strong>Empty State</strong>
+              <p>No renderable content is currently available for this surface.</p>
+            </div>
+          </div>
+          <div class="spike-state-overlay spike-state-overlay--error" aria-live="polite">
+            <div class="spike-state-card">
+              <strong>Error State</strong>
+              <p>This surface cannot render due to a data or orchestration mismatch.</p>
+            </div>
+          </div>
+</div>
+      </section>
+
+      <section class="spike-row">
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:8px">Current Behavior Notes</h2>
+          <ul class="spike-note-list"><li>Shows proposal lifecycle status badges.</li><li>Integrate/decline controls shown for open proposals.</li><li>Readable even without write access.</li></ul>
+        </article>
+        <article class="spike-card">
+          <h2 class="spike-kicker" style="margin-bottom:8px">React Sources</h2>
+          <div class="spike-links"><a class="spike-source" href="../../../../packages/web/src/hud/panels/organism/sections/ProposalsSection.tsx">packages/web/src/hud/panels/organism/sections/ProposalsSection.tsx</a></div>
+        </article>
+      </section>
+
+      <p class="spike-back">Back to <a href="../index.html">HUD Element Spikes Index</a></p>
+    </main>
+  
+<script>
+(() => {
+  const body = document.body;
+  const stage = document.querySelector('.spike-stage');
+  if (!stage) {
+    return;
+  }
+
+  const modeButtons = Array.from(document.querySelectorAll('[data-spike-mode-select]'));
+  const stateButtons = Array.from(document.querySelectorAll('[data-spike-state-select]'));
+
+  const markActive = (buttons, activeValue, key) => {
+    buttons.forEach((button) => {
+      const isActive = button.dataset[key] === activeValue;
+      button.classList.toggle('is-active', isActive);
+      button.setAttribute('aria-pressed', String(isActive));
+    });
+  };
+
+  const setMode = (mode) => {
+    body.dataset.spikeMode = mode;
+    markActive(modeButtons, mode, 'spikeModeSelect');
+  };
+
+  const setState = (state) => {
+    stage.dataset.spikeState = state;
+    markActive(stateButtons, state, 'spikeStateSelect');
+  };
+
+  modeButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const value = button.dataset.spikeModeSelect;
+      if (value) {
+        setMode(value);
+      }
+    });
+  });
+
+  stateButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const value = button.dataset.spikeStateSelect;
+      if (value) {
+        setState(value);
+      }
+    });
+  });
+
+  const params = new URLSearchParams(window.location.search);
+  const modeParam = params.get('mode') === 'visual' ? 'visual' : 'annotated';
+  const stateParam = params.get('state');
+  const allowedStates = new Set(['default', 'loading', 'empty', 'error']);
+  const initialState = allowedStates.has(stateParam || '') ? stateParam : 'default';
+
+  setMode(modeParam);
+  setState(initialState);
+})();
+</script>
+
+  </body>
+</html>

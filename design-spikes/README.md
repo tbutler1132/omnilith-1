@@ -2,6 +2,8 @@
 
 This directory is for presentation and interaction design spikes before React implementation.
 
+Start from `design-spikes/index.html` for the visual hub and quick links to all spikes.
+
 The goal is to separate concerns clearly:
 
 1. `packages/kernel` defines infrastructure behavior.
@@ -17,6 +19,9 @@ The goal is to separate concerns clearly:
 - `design-spikes/contracts/` — implementation contracts and acceptance criteria.
 - `design-spikes/explainers/` — standalone explainer pages.
 - `design-spikes/current-state/` — implementation snapshots of current adaptive behavior.
+  - includes rendered element spikes with per-page `Visual only` and `Default/Loading/Empty/Error` state controls
+- `design-spikes/scripts/enhance-element-spikes.mjs` — utility to apply/refresh controls across current-state element pages.
+- `design-spikes/implementation-status.json` — official spike-to-React implementation status tracker (`spike-only`, `approved`, `implemented`, `parity-verified`).
 - `design-spikes/SPIKE-BRIEF-TEMPLATE.md` — input brief for new spikes.
 
 ## Workflow
