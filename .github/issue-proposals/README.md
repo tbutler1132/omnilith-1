@@ -2,7 +2,7 @@
 
 One proposal per file to reduce merge conflicts.
 
-- File format: JSON object
+- File format: JSON object in `.json` files only
 - File naming: `YYYYMMDD-short-proposal-id.json`
 - Required fields: `proposalId`, `title`, `body`
 - Optional fields: `labels`, `openedBy`, `aiAuthored`
@@ -19,3 +19,8 @@ Example:
   "aiAuthored": true
 }
 ```
+
+Notes:
+
+- Keep only live proposals as `.json` files in this directory.
+- Use `EXAMPLE.md` as a reference template and create a new dated `.json` file for real proposals.
