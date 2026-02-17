@@ -6,6 +6,7 @@
  */
 
 import { useChildren, useOrganismsByIds } from '../../../../hooks/use-organism.js';
+import { PanelSection } from '../../core/panel-ux.js';
 
 interface GovernanceSectionProps {
   organismId: string;
@@ -25,8 +26,7 @@ export function GovernanceSection({ organismId }: GovernanceSectionProps) {
   });
 
   return (
-    <div className="hud-info-section">
-      <span className="hud-info-label">Governance</span>
+    <PanelSection label="Governance">
       {loading && childIds.length > 0 && <span className="hud-info-dim">Checking policies...</span>}
       {!loading && policyDetails.length > 0 && (
         <>
@@ -48,6 +48,6 @@ export function GovernanceSection({ organismId }: GovernanceSectionProps) {
           <span className="hud-info-governance-detail">No policy organisms</span>
         </>
       )}
-    </div>
+    </PanelSection>
   );
 }

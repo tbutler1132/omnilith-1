@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useUserOrganisms } from '../../../hooks/use-organism.js';
 import { usePlatformMapState } from '../../../platform/index.js';
+import { PanelCardEmpty, PanelCardErrorWithAction, PanelCardLoading } from '../core/panel-ux.js';
 
 interface HudMyOrganismsProps {
   onSelect: (organismId: string) => void;
@@ -66,32 +67,23 @@ export function HudMyOrganisms({ onSelect }: HudMyOrganismsProps) {
   }, [organisms, query, focusedOrganismId, activeTypeFilter]);
 
   if (loading) {
-    return (
-      <div className="hud-my-organisms-state">
-        <h3>My Organisms</h3>
-        <p>Gathering organisms you steward...</p>
-      </div>
-    );
+    return <PanelCardLoading title="My Organisms" message="Gathering organisms you steward..." />;
   }
 
   if (error) {
     return (
-      <div className="hud-my-organisms-state">
-        <h3>My Organisms</h3>
-        <p>Could not load your organisms.</p>
-        <button type="button" className="hud-map-btn" onClick={() => setRefreshKey((v) => v + 1)}>
-          Retry
-        </button>
-      </div>
+      <PanelCardErrorWithAction
+        title="My Organisms"
+        message="Could not load your organisms."
+        actionLabel="Retry"
+        onAction={() => setRefreshKey((v) => v + 1)}
+      />
     );
   }
 
   if (!organisms || organisms.length === 0) {
     return (
-      <div className="hud-my-organisms-state">
-        <h3>My Organisms</h3>
-        <p>No organisms yet. Use Threshold New to introduce your first one.</p>
-      </div>
+      <PanelCardEmpty title="My Organisms" message="No organisms yet. Use Threshold New to introduce your first one." />
     );
   }
 

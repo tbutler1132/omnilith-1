@@ -28,6 +28,18 @@ Debug and contract checks:
 - `packages/web/src/hud/panels/core/panel-body-registry.test.ts`
 - `packages/web/src/hud/panels/core/panel-rendering-boundary.test.ts`
 - `packages/web/src/hud/panels/core/widget-schema.test.ts`
+- `packages/web/src/hud/panels/core/panel-ux.tsx`
+- `packages/web/src/hud/panels/core/panel-ux.test.ts`
+
+## Panel UX Contract v1
+
+Use shared panel UX primitives for state surfaces instead of ad hoc copy/layout:
+
+- info surfaces: `PanelInfoLoading`, `PanelInfoEmpty`, `PanelInfoError`, `PanelInfoAuthRequired`
+- card surfaces: `PanelCardLoading`, `PanelCardEmpty`, `PanelCardErrorWithAction`
+- section wrapper: `PanelSection`
+
+Current goal: every panel should render loading/empty/error/auth-required states in a consistent visual and semantic pattern.
 
 ## Why This Exists
 

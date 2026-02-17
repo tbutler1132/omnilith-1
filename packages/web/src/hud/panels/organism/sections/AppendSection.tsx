@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { useOrganism } from '../../../../hooks/use-organism.js';
+import { PanelInfoAuthRequired, PanelInfoEmpty, PanelSection } from '../../core/panel-ux.js';
 import { ProposeForm } from '../../forms/ProposeForm.js';
 
 interface AppendSectionProps {
@@ -30,26 +31,15 @@ export function AppendSection({ organismId, refreshKey: parentRefresh, canWrite,
   }
 
   if (!canWrite) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">Append state</span>
-        <span className="hud-info-dim">Log in to append state.</span>
-      </div>
-    );
+    return <PanelInfoAuthRequired label="Append state" message="Log in to append state." />;
   }
 
   if (!currentState) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">Append state</span>
-        <span className="hud-info-dim">No current state to append from.</span>
-      </div>
-    );
+    return <PanelInfoEmpty label="Append state" message="No current state to append from." />;
   }
 
   return (
-    <div className="hud-info-section">
-      <span className="hud-info-label">Append state</span>
+    <PanelSection label="Append state">
       {showForm ? (
         <div className="hud-panel-inline-form">
           <ProposeForm
@@ -66,6 +56,6 @@ export function AppendSection({ organismId, refreshKey: parentRefresh, canWrite,
           Append state
         </button>
       )}
-    </div>
+    </PanelSection>
   );
 }

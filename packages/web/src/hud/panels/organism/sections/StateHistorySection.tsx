@@ -6,6 +6,7 @@
  */
 
 import { useStateHistory } from '../../../../hooks/use-organism.js';
+import { PanelInfoEmpty, PanelInfoError, PanelInfoLoading, PanelSection } from '../../core/panel-ux.js';
 import { formatDate } from './format-date.js';
 
 interface StateHistorySectionProps {
@@ -14,22 +15,24 @@ interface StateHistorySectionProps {
 }
 
 export function StateHistorySection({ organismId, refreshKey }: StateHistorySectionProps) {
-  const { data: states } = useStateHistory(organismId, refreshKey);
+  const { data: states, loading, error } = useStateHistory(organismId, refreshKey);
+
+  if (loading) {
+    return <PanelInfoLoading label="State history" message="Loading state history..." />;
+  }
+
+  if (error) {
+    return <PanelInfoError label="State history" message="Failed to load state history." />;
+  }
 
   if (!states || states.length === 0) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">State history</span>
-        <span className="hud-info-dim">No states</span>
-      </div>
-    );
+    return <PanelInfoEmpty label="State history" message="No states." />;
   }
 
   const reversed = [...states].reverse();
 
   return (
-    <div className="hud-info-section">
-      <span className="hud-info-label">State history</span>
+    <PanelSection label="State history">
       {reversed.map((s) => (
         <div key={s.id} className="hud-info-state">
           <span className="hud-info-state-num">#{s.sequenceNumber}</span>
@@ -38,6 +41,6 @@ export function StateHistorySection({ organismId, refreshKey }: StateHistorySect
           </span>
         </div>
       ))}
-    </div>
+    </PanelSection>
   );
 }

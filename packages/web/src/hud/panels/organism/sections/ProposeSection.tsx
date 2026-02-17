@@ -7,6 +7,7 @@
 
 import { useState } from 'react';
 import { useOrganism } from '../../../../hooks/use-organism.js';
+import { PanelInfoAuthRequired, PanelInfoEmpty, PanelSection } from '../../core/panel-ux.js';
 import { ProposeForm } from '../../forms/ProposeForm.js';
 
 interface ProposeSectionProps {
@@ -30,26 +31,15 @@ export function ProposeSection({ organismId, refreshKey: parentRefresh, canWrite
   }
 
   if (!canWrite) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">Open proposal</span>
-        <span className="hud-info-dim">Log in to open proposals.</span>
-      </div>
-    );
+    return <PanelInfoAuthRequired label="Open proposal" message="Log in to open proposals." />;
   }
 
   if (!currentState) {
-    return (
-      <div className="hud-info-section">
-        <span className="hud-info-label">Open proposal</span>
-        <span className="hud-info-dim">No current state to propose from.</span>
-      </div>
-    );
+    return <PanelInfoEmpty label="Open proposal" message="No current state to propose from." />;
   }
 
   return (
-    <div className="hud-info-section">
-      <span className="hud-info-label">Open proposal</span>
+    <PanelSection label="Open proposal">
       {showForm ? (
         <div className="hud-panel-inline-form">
           <ProposeForm
@@ -66,6 +56,6 @@ export function ProposeSection({ organismId, refreshKey: parentRefresh, canWrite
           Open proposal
         </button>
       )}
-    </div>
+    </PanelSection>
   );
 }

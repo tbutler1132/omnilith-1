@@ -6,6 +6,7 @@
  */
 
 import { useRelationships } from '../../../../hooks/use-organism.js';
+import { PanelInfoError, PanelInfoLoading, PanelSection } from '../../core/panel-ux.js';
 import { presentRelationships } from './relationships-presenter.js';
 
 interface RelationshipsSectionProps {
@@ -16,15 +17,18 @@ export function RelationshipsSection({ organismId }: RelationshipsSectionProps) 
   const { data, loading, error } = useRelationships(organismId);
   const rows = presentRelationships(data ?? []);
 
+  if (loading) {
+    return <PanelInfoLoading label="Relationships" message="Loading relationships..." />;
+  }
+
+  if (error) {
+    return <PanelInfoError label="Relationships" message="Failed to load relationships." />;
+  }
+
   return (
-    <div className="hud-info-section">
-      <span className="hud-info-label">Relationships</span>
-      {loading && <span className="hud-info-dim">Loading relationships...</span>}
-      {error && !loading && <span className="hud-info-error">Failed to load relationships.</span>}
-      {!loading && !error && rows.length === 0 && (
-        <span className="hud-info-dim">No relationships visible for this organism.</span>
-      )}
-      {!loading && !error && rows.length > 0 && (
+    <PanelSection label="Relationships">
+      {rows.length === 0 && <span className="hud-info-dim">No relationships visible for this organism.</span>}
+      {rows.length > 0 && (
         <div className="hud-info-relationship-list">
           {rows.map((row) => (
             <div key={row.id} className="hud-info-relationship">
@@ -40,6 +44,6 @@ export function RelationshipsSection({ organismId }: RelationshipsSectionProps) 
           ))}
         </div>
       )}
-    </div>
+    </PanelSection>
   );
 }

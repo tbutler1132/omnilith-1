@@ -8,6 +8,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { fetchOrganisms, instantiateTemplate } from '../../../api/organisms.js';
 import type { SongPayloadDraft, SongStatus, TemplateSongCustomization } from '../../template-values.js';
+import { PanelCardEmpty, PanelCardLoading } from '../core/panel-ux.js';
 
 interface TemplateRecipeStep {
   readonly ref: string;
@@ -175,21 +176,11 @@ export function HudTemplates({ onTemplateInstantiated, onTemplateValuesRequested
   }
 
   if (loading) {
-    return (
-      <div className="hud-templates-state">
-        <h3>Templates</h3>
-        <p>Loading templates...</p>
-      </div>
-    );
+    return <PanelCardLoading title="Templates" message="Loading templates..." />;
   }
 
   if (sorted.length === 0) {
-    return (
-      <div className="hud-templates-state">
-        <h3>Templates</h3>
-        <p>No templates available yet.</p>
-      </div>
-    );
+    return <PanelCardEmpty title="Templates" message="No templates available yet." />;
   }
 
   return (
