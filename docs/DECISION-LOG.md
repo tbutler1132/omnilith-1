@@ -617,6 +617,33 @@ The detailed decision and rationale are captured in:
 
 - `docs/decisions/020-public-read-path-enabled.md`
 
+### Move 32: Song Production Coherence — One-Way Derivation with Sync Enforcement
+
+A practical workflow question emerged for Song organisms: how to keep a DAW project source, stems, and mix coherent while still allowing contribution from people who cannot edit the DAW project directly.
+
+The key clarification is that this is not a bidirectional synchronization problem. In practice, derivation is asymmetric:
+
+- `daw-project` -> `stems-bundle` -> `audio` (mix) is natural
+- reverse sync from `audio` back to stems/project is generally lossy and cannot be automated reliably
+
+The architecture supports this cleanly without kernel changes:
+
+1. A Song organism composes child organisms for source project, stems, and mix.
+2. Contributors can still propose to stems or mix directly.
+3. Those downstream integrations mark the Song as `sync-required` (tracked state, not the policy itself).
+4. A steward performs intentional backporting by proposing/integrating the corresponding `daw-project` change.
+5. Stems and mix are regenerated from the updated source lineage.
+6. Policy organisms enforce release/surface constraints while `sync-required` is unresolved.
+
+This preserves openness (non-DAW contributors can still shape the work) while preserving coherence (release requires reconciliation to source lineage).
+
+Important modeling distinction:
+
+- `sync-required` is state (for example Song metadata or a dedicated sync-status/variable organism).
+- policy organisms evaluate that state to allow or decline specific proposal integrations (for example release transitions).
+
+No new infrastructure concern is introduced. This is composition + content types + policy evaluation, consistent with the existing model.
+
 ---
 
 ## Summary of What We're Building
