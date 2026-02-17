@@ -6,13 +6,14 @@
  * This keeps behavior debuggable while supporting restore/recompute rules.
  */
 
+import type { VisorWidgetId } from '../hud/panels/core/widget-schema.js';
 import type { Altitude } from '../space/viewport-math.js';
 
 export type AdaptiveVisorContextClass = 'map' | 'interior' | 'visor-organism';
 export type AdaptiveVisorMajorPanelId = 'visor-view' | 'interior-actions';
 export type AdaptiveVisorMapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
 export type AdaptiveVisorPanelId = AdaptiveVisorMajorPanelId | AdaptiveVisorMapPanelId;
-export type AdaptiveVisorWidgetId = 'map-actions';
+export type AdaptiveVisorWidgetId = VisorWidgetId;
 export type AdaptiveVisorAnchorId = 'navigation-back' | 'dismiss';
 export type AdaptiveVisorIntentId = 'template-values-flow';
 export type AdaptiveVisorDecision = string;
@@ -158,13 +159,24 @@ function recomputeForContext(context: AdaptiveVisorLayoutContext): {
   activePanels: AdaptiveVisorPanelId[];
   activeWidgets: AdaptiveVisorWidgetId[];
 } {
+  const activeWidgets = resolveWidgetsForContext(context);
   if (context.contextClass === 'visor-organism' && context.visorOrganismId) {
-    return { activePanels: ['visor-view'], activeWidgets: [] };
+    return { activePanels: ['visor-view'], activeWidgets };
   }
   if (context.contextClass === 'interior' && context.enteredOrganismId) {
-    return { activePanels: ['interior-actions'], activeWidgets: [] };
+    return { activePanels: ['interior-actions'], activeWidgets };
   }
-  return { activePanels: [], activeWidgets: ['map-actions'] };
+  return { activePanels: [], activeWidgets };
+}
+
+function resolveWidgetsForContext(context: AdaptiveVisorLayoutContext): AdaptiveVisorWidgetId[] {
+  if (context.contextClass === 'map') {
+    return ['map-actions', 'history-navigation', 'compass'];
+  }
+  if (context.contextClass === 'visor-organism' && context.visorOrganismId) {
+    return ['history-navigation', 'vitality'];
+  }
+  return [];
 }
 
 function selectRestorableMapPanels(snapshot: AdaptiveVisorLayoutSnapshot): AdaptiveVisorPanelId[] {
@@ -205,7 +217,7 @@ function handleContextChanged(
         ...state,
         layoutContext: context,
         activePanels: constrainPanels(state.activePanels.filter((panelId) => isMapPanel(panelId))),
-        activeWidgets: ['map-actions'],
+        activeWidgets: resolveWidgetsForContext(context),
         anchors: ANCHORS,
         layoutHistory,
       },
@@ -224,7 +236,7 @@ function handleContextChanged(
         ...state,
         layoutContext: context,
         activePanels: selectRestorableMapPanels(restored),
-        activeWidgets: ['map-actions'],
+        activeWidgets: resolveWidgetsForContext(context),
         anchors: ANCHORS,
         layoutHistory: nextHistory,
         intentStack: [],
@@ -262,7 +274,7 @@ function handleToggleMapPanel(
     nextState: {
       ...state,
       activePanels: nextPanel ? [nextPanel] : [],
-      activeWidgets: ['map-actions'],
+      activeWidgets: resolveWidgetsForContext(state.layoutContext),
       anchors: ANCHORS,
       intentStack: currentlyActive === 'template-values' ? [] : state.intentStack,
     },
@@ -279,7 +291,7 @@ function handleOpenTemplateValues(state: AdaptiveVisorCompositorState): Adaptive
     nextState: {
       ...state,
       activePanels: ['template-values'],
-      activeWidgets: ['map-actions'],
+      activeWidgets: resolveWidgetsForContext(state.layoutContext),
       anchors: ANCHORS,
       layoutHistory: pushHistory(state),
       intentStack: [...state.intentStack, 'template-values-flow'],
@@ -298,7 +310,7 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
       nextState: {
         ...state,
         activePanels: [],
-        activeWidgets: state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
+        activeWidgets: resolveWidgetsForContext(state.layoutContext),
         anchors: ANCHORS,
         intentStack: [],
       },
@@ -319,7 +331,7 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
       nextState: {
         ...state,
         activePanels: [],
-        activeWidgets: state.layoutContext.contextClass === 'map' ? ['map-actions'] : [],
+        activeWidgets: resolveWidgetsForContext(state.layoutContext),
         anchors: ANCHORS,
         intentStack,
         layoutHistory: nextHistory,
@@ -332,7 +344,7 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
     nextState: {
       ...state,
       activePanels: selectRestorableMapPanels(restored),
-      activeWidgets: ['map-actions'],
+      activeWidgets: resolveWidgetsForContext(state.layoutContext),
       anchors: ANCHORS,
       intentStack,
       layoutHistory: nextHistory,

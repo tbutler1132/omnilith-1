@@ -17,28 +17,20 @@ import {
   usePlatformVisorState,
 } from '../platform/index.js';
 import { Compass } from './Compass.js';
-import type { HudPanelId } from './panels/core/panel-schema.js';
+import { renderMapPanelBody } from './panels/core/panel-body-registry.js';
+import {
+  isInteriorHudPanelId,
+  isMapHudPanelId,
+  isToggleMapHudPanelId,
+  type MapHudPanelId,
+} from './panels/core/panel-schema.js';
 import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
 import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
-import { ThresholdForm } from './panels/forms/ThresholdForm.js';
-import { HudMyOrganisms } from './panels/map/HudMyOrganisms.js';
-import { HudTemplates } from './panels/map/HudTemplates.js';
-import { HudTemplateValuesPanel } from './panels/map/HudTemplateValuesPanel.js';
 import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
 import { VisorWidgetLane } from './panels/widgets/VisorWidgetLane.js';
 import type { TemplateSongCustomization } from './template-values.js';
 
-type MapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values' | null;
-type ToggleMapPanelId = 'threshold' | 'mine' | 'templates';
-type InteriorPanelId = 'interior-actions';
-
-function isToggleMapPanelId(panelId: HudPanelId): panelId is ToggleMapPanelId {
-  return panelId === 'threshold' || panelId === 'mine' || panelId === 'templates';
-}
-
-function isInteriorPanelId(panelId: HudPanelId): panelId is InteriorPanelId {
-  return panelId === 'interior-actions';
-}
+type MapPanelId = MapHudPanelId | null;
 
 export function AdaptiveVisorHost() {
   const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
@@ -54,7 +46,15 @@ export function AdaptiveVisorHost() {
 
   const contextClass = adaptiveState.layoutContext.contextClass;
   const activeMapPanel = selectActiveMapPanel(adaptiveState) as MapPanelId;
-  const mapShowsCompass = contextClass === 'map' && mapTemplate.widgetSlots.allowedWidgets.includes('compass');
+  const activeWidgets = new Set(adaptiveState.activeWidgets);
+  const mapShowsCompass =
+    contextClass === 'map' &&
+    activeWidgets.has('compass') &&
+    mapTemplate.widgetSlots.allowedWidgets.includes('compass');
+  const mapHistoryNavigationEnabled =
+    contextClass === 'map' &&
+    activeWidgets.has('history-navigation') &&
+    mapTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
 
   function closeActiveMapPanel() {
     if (!activeMapPanel) return;
@@ -131,7 +131,7 @@ export function AdaptiveVisorHost() {
               if (templateCustomization) adaptiveActions.openTemplateValuesPanel();
               return;
             }
-            if (isToggleMapPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
+            if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
           onCollapseMainPanel={(panelId) => {
             if (panelId === 'template-values') {
@@ -140,41 +140,20 @@ export function AdaptiveVisorHost() {
               adaptiveActions.closeTemporaryPanel();
               return;
             }
-            if (isToggleMapPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
+            if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
+          historyNavigationEnabled={mapHistoryNavigationEnabled}
           renderPanelBody={(panelId) => {
-            if (panelId === 'threshold') {
-              return <ThresholdForm inline onCreated={handleThresholdCreated} onClose={closeActiveMapPanel} />;
-            }
-
-            if (panelId === 'mine') {
-              return <HudMyOrganisms onSelect={handleOrganismSelect} />;
-            }
-
-            if (panelId === 'templates') {
-              return (
-                <HudTemplates
-                  onTemplateInstantiated={handleTemplateInstantiated}
-                  onTemplateValuesRequested={handleTemplateValuesRequested}
-                />
-              );
-            }
-
-            if (panelId === 'template-values' && templateCustomization) {
-              return (
-                <HudTemplateValuesPanel
-                  customization={templateCustomization}
-                  onCancel={closeTemplateValues}
-                  onTemplateInstantiated={handleTemplateInstantiated}
-                />
-              );
-            }
-
-            return (
-              <div className="hud-panel-empty">
-                <span className="hud-info-dim">Select a template first to edit template values.</span>
-              </div>
-            );
+            if (!isMapHudPanelId(panelId)) return null;
+            return renderMapPanelBody(panelId, {
+              templateCustomization,
+              onThresholdCreated: handleThresholdCreated,
+              onCloseMapPanel: closeActiveMapPanel,
+              onOrganismSelect: handleOrganismSelect,
+              onTemplateInstantiated: handleTemplateInstantiated,
+              onTemplateValuesRequested: handleTemplateValuesRequested,
+              onCloseTemplateValues: closeTemplateValues,
+            });
           }}
         />
       )}
@@ -191,7 +170,7 @@ export function AdaptiveVisorHost() {
           canWrite={canWrite}
           preferredMainPanelId={null}
           onPromotePanel={(panelId) => {
-            if (!isInteriorPanelId(panelId)) return;
+            if (!isInteriorHudPanelId(panelId)) return;
             openInVisor(enteredOrganismId);
           }}
           onCollapseMainPanel={() => undefined}

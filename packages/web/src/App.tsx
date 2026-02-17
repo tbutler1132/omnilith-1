@@ -3,6 +3,7 @@ import { fetchSession } from './api/auth.js';
 import { AuthDialog } from './auth/AuthDialog.js';
 import type { AuthSession } from './auth/session.js';
 import { clearOrganismCache } from './hooks/use-organism.js';
+import { AdaptiveVisorHarness } from './hud/panels/core/AdaptiveVisorHarness.js';
 import { Platform } from './platform/index.js';
 
 function AppShell() {
@@ -91,5 +92,9 @@ function AuthenticatedApp() {
 }
 
 export function App() {
+  const harnessMode = new URLSearchParams(window.location.search).get('adaptiveVisorHarness');
+  if (harnessMode === '1' || harnessMode === 'true') {
+    return <AdaptiveVisorHarness />;
+  }
   return <AuthenticatedApp />;
 }

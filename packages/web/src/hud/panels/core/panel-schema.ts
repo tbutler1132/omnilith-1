@@ -7,18 +7,51 @@
  */
 
 export type HudContextClass = 'map' | 'interior' | 'visor-organism';
-export type MapHudPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
-export type InteriorHudPanelId = 'interior-actions';
-export type VisorHudPanelId =
-  | 'organism'
-  | 'organism-nav'
-  | 'composition'
-  | 'propose'
-  | 'proposals'
-  | 'append'
-  | 'relationships'
-  | 'history'
-  | 'governance';
+
+export const MAP_HUD_PANEL_IDS = ['threshold', 'mine', 'templates', 'template-values'] as const;
+export type MapHudPanelId = (typeof MAP_HUD_PANEL_IDS)[number];
+
+export const TOGGLE_MAP_HUD_PANEL_IDS = ['threshold', 'mine', 'templates'] as const;
+export type ToggleMapHudPanelId = (typeof TOGGLE_MAP_HUD_PANEL_IDS)[number];
+
+export const INTERIOR_HUD_PANEL_IDS = ['interior-actions'] as const;
+export type InteriorHudPanelId = (typeof INTERIOR_HUD_PANEL_IDS)[number];
+
+export const VISOR_HUD_PANEL_IDS = [
+  'organism',
+  'organism-nav',
+  'composition',
+  'propose',
+  'proposals',
+  'append',
+  'relationships',
+  'history',
+  'governance',
+] as const;
+export type VisorHudPanelId = (typeof VISOR_HUD_PANEL_IDS)[number];
+
+export const VISOR_MAIN_HUD_PANEL_IDS = [
+  'organism',
+  'composition',
+  'propose',
+  'proposals',
+  'append',
+  'relationships',
+  'history',
+  'governance',
+] as const;
+export type VisorMainHudPanelId = (typeof VISOR_MAIN_HUD_PANEL_IDS)[number];
+
+export const UNIVERSAL_VISOR_HUD_PANEL_IDS = [
+  'composition',
+  'propose',
+  'proposals',
+  'append',
+  'relationships',
+  'history',
+  'governance',
+] as const;
+export type UniversalVisorHudPanelId = (typeof UNIVERSAL_VISOR_HUD_PANEL_IDS)[number];
 export type HudPanelId = MapHudPanelId | InteriorHudPanelId | VisorHudPanelId;
 export type HudPanelRole = 'main' | 'secondary' | 'collapsed';
 
@@ -203,4 +236,28 @@ export function getHudPanelDefinition(panelId: HudPanelId): HudPanelDefinition {
 
 export function getVisorPanelDefinition(panelId: HudPanelId): HudPanelDefinition {
   return getHudPanelDefinition(panelId);
+}
+
+export function isMapHudPanelId(panelId: HudPanelId): panelId is MapHudPanelId {
+  return MAP_HUD_PANEL_IDS.includes(panelId as MapHudPanelId);
+}
+
+export function isToggleMapHudPanelId(panelId: HudPanelId): panelId is ToggleMapHudPanelId {
+  return TOGGLE_MAP_HUD_PANEL_IDS.includes(panelId as ToggleMapHudPanelId);
+}
+
+export function isInteriorHudPanelId(panelId: HudPanelId): panelId is InteriorHudPanelId {
+  return INTERIOR_HUD_PANEL_IDS.includes(panelId as InteriorHudPanelId);
+}
+
+export function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
+  return VISOR_HUD_PANEL_IDS.includes(panelId as VisorHudPanelId);
+}
+
+export function isVisorMainHudPanelId(panelId: HudPanelId): panelId is VisorMainHudPanelId {
+  return VISOR_MAIN_HUD_PANEL_IDS.includes(panelId as VisorMainHudPanelId);
+}
+
+export function isUniversalVisorHudPanelId(panelId: HudPanelId): panelId is UniversalVisorHudPanelId {
+  return UNIVERSAL_VISOR_HUD_PANEL_IDS.includes(panelId as UniversalVisorHudPanelId);
 }

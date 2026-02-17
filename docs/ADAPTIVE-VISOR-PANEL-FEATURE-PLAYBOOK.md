@@ -14,10 +14,19 @@ Primary implementation files:
 - `packages/web/src/hud/panels/core/intent-matrix.ts`
 - `packages/web/src/hud/panels/core/panel-layout-policy.ts`
 - `packages/web/src/hud/panels/core/VisorPanelBody.tsx`
+- `packages/web/src/hud/panels/core/panel-body-registry.tsx`
+- `packages/web/src/hud/panels/core/widget-schema.ts`
 
 Guardrail for write ownership:
 
 - `packages/web/src/hud/panels/core/write-boundary.test.ts`
+
+Debug and contract checks:
+
+- `packages/web/src/hud/panels/core/AdaptiveVisorHarness.tsx` (open with `?adaptiveVisorHarness=1`)
+- `packages/web/src/hud/panels/core/panel-body-registry.test.ts`
+- `packages/web/src/hud/panels/core/panel-rendering-boundary.test.ts`
+- `packages/web/src/hud/panels/core/widget-schema.test.ts`
 
 ## Why This Exists
 

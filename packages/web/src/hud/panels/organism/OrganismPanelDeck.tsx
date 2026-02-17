@@ -12,14 +12,20 @@ import { useOrganism } from '../../../hooks/use-organism.js';
 import {
   usePlatformActions,
   usePlatformAdaptiveVisorActions,
+  usePlatformAdaptiveVisorState,
   usePlatformMapState,
   usePlatformStaticState,
   usePlatformViewportMeta,
 } from '../../../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../../../renderers/index.js';
-import type { HudPanelId, VisorHudPanelId } from '../core/panel-schema.js';
+import { renderVisorPanelBody } from '../core/panel-body-registry.js';
+import {
+  isVisorHudPanelId,
+  isVisorMainHudPanelId,
+  type UniversalVisorHudPanelId,
+  type VisorHudPanelId,
+} from '../core/panel-schema.js';
 import { resolvePanelVisorTemplate } from '../core/template-schema.js';
-import { VisorPanelBody } from '../core/VisorPanelBody.js';
 import { VisorPanelDeck } from '../core/VisorPanelDeck.js';
 import { VisorWidgetLane } from '../widgets/VisorWidgetLane.js';
 import { VitalityWidget } from '../widgets/VitalityWidget.js';
@@ -28,28 +34,8 @@ interface OrganismPanelDeckProps {
   organismId: string;
 }
 
-function isVisorHudPanelId(panelId: HudPanelId): panelId is VisorHudPanelId {
-  return (
-    panelId === 'organism' ||
-    panelId === 'organism-nav' ||
-    panelId === 'composition' ||
-    panelId === 'propose' ||
-    panelId === 'proposals' ||
-    panelId === 'append' ||
-    panelId === 'relationships' ||
-    panelId === 'history' ||
-    panelId === 'governance'
-  );
-}
-
-function isUniversalVisorPanelId(
-  panelId: VisorHudPanelId,
-): panelId is Exclude<VisorHudPanelId, 'organism' | 'organism-nav'> {
-  return panelId !== 'organism' && panelId !== 'organism-nav';
-}
-
 interface OrganismShortcutAction {
-  panelId: Exclude<VisorHudPanelId, 'organism' | 'organism-nav'>;
+  panelId: UniversalVisorHudPanelId;
   label: string;
 }
 
@@ -59,6 +45,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const { viewportCenter } = usePlatformViewportMeta();
   const { closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
+  const adaptiveVisorState = usePlatformAdaptiveVisorState();
 
   const initialPanelId: VisorHudPanelId | null = enteredOrganismId === organismId ? 'organism' : null;
   const interiorOrigin = enteredOrganismId === organismId;
@@ -66,7 +53,12 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const [surfacing, setSurfacing] = useState(false);
   const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(initialPanelId);
   const organismTemplate = resolvePanelVisorTemplate('visor-organism');
-  const vitalityWidgetEnabled = organismTemplate.widgetSlots.allowedWidgets.includes('vitality');
+  const activeWidgets = new Set(adaptiveVisorState.activeWidgets);
+  const vitalityWidgetEnabled =
+    activeWidgets.has('vitality') && organismTemplate.widgetSlots.allowedWidgets.includes('vitality');
+  const historyNavigationEnabled =
+    activeWidgets.has('history-navigation') &&
+    organismTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
 
   const { data: organism } = useOrganism(organismId, refreshKey);
   const { surfaced, loading: surfaceLoading } = useIsSurfaced(worldMapId, organismId);
@@ -123,6 +115,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
         canWrite={canWrite}
         interiorOrigin={interiorOrigin}
         preferredMainPanelId={preferredPanelId}
+        historyNavigationEnabled={historyNavigationEnabled}
         onPromotePanel={(panelId) => {
           if (!isVisorHudPanelId(panelId)) return;
           setPreferredPanelId(panelId);
@@ -136,87 +129,37 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
           }
         }}
         renderPanelBody={(panelId) => {
-          if (panelId === 'organism') {
-            return (
-              <div className="visor-organism-panel">
-                <div className="visor-organism-panel-header">
-                  <div className="visor-organism-panel-info">
-                    <span className="content-type">{contentType}</span>
-                    <h3 className="hud-info-name">{name}</h3>
-                  </div>
-
-                  <div className="visor-organism-panel-controls">
-                    {canWrite && openTrunk && (
-                      <button type="button" className="hud-action-btn" onClick={() => setPreferredPanelId('append')}>
-                        Append
-                      </button>
-                    )}
-
-                    {canWrite && !openTrunk && (
-                      <button type="button" className="hud-action-btn" onClick={() => setPreferredPanelId('propose')}>
-                        Propose
-                      </button>
-                    )}
-
-                    {!openTrunk && (
-                      <button type="button" className="hud-action-btn" onClick={() => setPreferredPanelId('proposals')}>
-                        Proposals
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      className="visor-view-close"
-                      onClick={() => {
-                        closeVisorOrganism();
-                      }}
-                      aria-label="Close"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                </div>
-
-                <div className="visor-view-renderer">
-                  {Renderer && organism?.currentState && (
-                    <Renderer state={organism.currentState} zoom={1} focused={false} />
-                  )}
-                </div>
-
-                <div className="visor-view-actions">
-                  {!surfaceLoading && surfaced && (
-                    <button type="button" className="hud-action-btn" onClick={handleVisit}>
-                      Visit
-                    </button>
-                  )}
-
-                  {canWrite && !surfaceLoading && !surfaced && (
-                    <button type="button" className="hud-action-btn" onClick={handleSurface} disabled={surfacing}>
-                      {surfacing ? 'Surfacing...' : 'Surface'}
-                    </button>
-                  )}
-                  {!canWrite && <span className="hud-info-dim">Log in to tend this organism.</span>}
-                </div>
-              </div>
-            );
-          }
-
-          if (isVisorHudPanelId(panelId) && isUniversalVisorPanelId(panelId)) {
-            return (
-              <VisorPanelBody
-                panelId={panelId}
-                organismId={organismId}
-                refreshKey={refreshKey}
-                canWrite={canWrite}
-                onMutate={() => {
-                  setRefreshKey((k) => k + 1);
-                  bumpMutationToken();
-                }}
-              />
-            );
-          }
-
-          return null;
+          if (!isVisorMainHudPanelId(panelId)) return null;
+          return renderVisorPanelBody(panelId, {
+            organismMain: {
+              name,
+              contentType,
+              canWrite,
+              openTrunk,
+              surfaceLoading,
+              surfaced,
+              surfacing,
+              organismRenderer:
+                Renderer && organism?.currentState ? (
+                  <Renderer state={organism.currentState} zoom={1} focused={false} />
+                ) : null,
+              onOpenAppend: () => setPreferredPanelId('append'),
+              onOpenPropose: () => setPreferredPanelId('propose'),
+              onOpenProposals: () => setPreferredPanelId('proposals'),
+              onCloseVisor: () => closeVisorOrganism(),
+              onVisit: handleVisit,
+              onSurface: handleSurface,
+            },
+            universal: {
+              organismId,
+              refreshKey,
+              canWrite,
+              onMutate: () => {
+                setRefreshKey((k) => k + 1);
+                bumpMutationToken();
+              },
+            },
+          });
         }}
         renderSecondaryBody={(panelId) => {
           if (panelId !== 'organism-nav') return null;

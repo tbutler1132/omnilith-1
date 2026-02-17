@@ -35,6 +35,7 @@ interface VisorPanelDeckProps {
   interiorOrigin?: boolean;
   templateValuesReady?: boolean;
   preferredMainPanelId: HudPanelId | null;
+  historyNavigationEnabled?: boolean;
   extraCollapsedChips?: ExtraCollapsedChip[];
   onPromotePanel: (panelId: HudPanelId) => void;
   onCollapseMainPanel: (panelId: HudPanelId) => void;
@@ -73,6 +74,7 @@ export function VisorPanelDeck({
   interiorOrigin = false,
   templateValuesReady = false,
   preferredMainPanelId,
+  historyNavigationEnabled,
   extraCollapsedChips = [],
   onPromotePanel,
   onCollapseMainPanel,
@@ -104,7 +106,8 @@ export function VisorPanelDeck({
       }),
     [template, surfaced, openTrunk, canWrite, interiorOrigin, templateValuesReady, preferredMainPanelId],
   );
-  const historyWidgetEnabled = template.widgetSlots.allowedWidgets.includes('history-navigation');
+  const historyWidgetEnabled =
+    historyNavigationEnabled ?? template.widgetSlots.allowedWidgets.includes('history-navigation');
   const previousMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, -1), [mainNav, layout]);
   const nextMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, 1), [mainNav, layout]);
 

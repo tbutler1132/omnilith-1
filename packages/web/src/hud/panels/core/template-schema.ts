@@ -7,12 +7,12 @@
  */
 
 import type { HudContextClass } from './panel-schema.js';
+import type { VisorWidgetId } from './widget-schema.js';
 
 export type VisorTemplateId = 'map-core' | 'organism-core' | 'interior-core';
 export type VisorCollapsedRailPlacement = 'inline' | 'viewport-bottom-left';
 export type VisorMainSlotPresentation = 'inline' | 'centered-overlay';
 export type VisorReservedAnchor = 'hud-bar' | 'compass' | 'logout' | 'altitude-controls' | 'policy-badge';
-export type VisorWidgetId = 'map-actions' | 'history-navigation' | 'compass' | 'vitality';
 
 export interface VisorTemplatePanelSlots {
   main: {
