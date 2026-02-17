@@ -2,6 +2,11 @@
 
 Describe the behavior change and why it is needed.
 
+## Contribution Lane
+
+- [ ] Human-authored code PR
+- [ ] Issue proposal PR (`.github/issue-proposals/*.json`)
+
 ## Checklist
 
 - [ ] `pnpm run check` passes locally

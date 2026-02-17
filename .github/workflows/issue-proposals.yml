@@ -1,0 +1,57 @@
+name: Issue Proposals
+
+on:
+  pull_request:
+    paths:
+      - ".github/issue-proposals/**"
+      - ".github/issue-proposals.json"
+      - "scripts/issue-proposals.mjs"
+      - ".github/workflows/issue-proposals.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/issue-proposals/**"
+      - ".github/issue-proposals.json"
+      - "scripts/issue-proposals.mjs"
+      - ".github/workflows/issue-proposals.yml"
+
+jobs:
+  validate:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate issue proposals
+        run: node scripts/issue-proposals.mjs validate
+
+  sync:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync issue proposals to GitHub issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          ISSUE_PROPOSAL_DEFAULT_LABELS: agent
+        run: node scripts/issue-proposals.mjs sync

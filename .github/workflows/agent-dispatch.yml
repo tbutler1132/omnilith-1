@@ -1,0 +1,86 @@
+name: Agent Dispatch
+
+on:
+  issues:
+    types:
+      - opened
+      - reopened
+      - labeled
+
+jobs:
+  dispatch:
+    if: contains(join(github.event.issue.labels.*.name, ','), 'agent')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+
+    steps:
+      - name: Build dispatch payload
+        run: |
+          cat > payload.json <<'JSON'
+          {
+            "event": "agent_issue_ready",
+            "repository": ${{ toJson(github.repository) }},
+            "repository_url": ${{ toJson(github.server_url) }},
+            "issue": ${{ toJson(github.event.issue) }},
+            "sender": ${{ toJson(github.event.sender) }}
+          }
+          JSON
+
+      - name: Dispatch to agent webhook
+        id: dispatch
+        env:
+          AGENT_WEBHOOK_URL: ${{ secrets.AGENT_WEBHOOK_URL }}
+          AGENT_WEBHOOK_TOKEN: ${{ secrets.AGENT_WEBHOOK_TOKEN }}
+        run: |
+          if [ -z "$AGENT_WEBHOOK_URL" ]; then
+            echo "dispatched=false" >> "$GITHUB_OUTPUT"
+            echo "reason=missing_webhook_secret" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          auth_args=()
+          if [ -n "$AGENT_WEBHOOK_TOKEN" ]; then
+            auth_args=(-H "Authorization: Bearer $AGENT_WEBHOOK_TOKEN")
+          fi
+
+          http_code=$(curl --silent --show-error --output /tmp/agent-dispatch-response.txt \
+            --write-out "%{http_code}" \
+            -X POST "$AGENT_WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -H "X-Omnilith-Dispatch-Version: 1" \
+            "${auth_args[@]}" \
+            --data-binary @payload.json)
+
+          if [ "$http_code" -ge 200 ] && [ "$http_code" -lt 300 ]; then
+            echo "dispatched=true" >> "$GITHUB_OUTPUT"
+            echo "reason=ok" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          echo "dispatched=false" >> "$GITHUB_OUTPUT"
+          echo "reason=webhook_http_${http_code}" >> "$GITHUB_OUTPUT"
+          echo "Webhook response:"
+          cat /tmp/agent-dispatch-response.txt
+
+      - name: Comment dispatch status
+        uses: actions/github-script@v7
+        env:
+          DISPATCHED: ${{ steps.dispatch.outputs.dispatched }}
+          REASON: ${{ steps.dispatch.outputs.reason }}
+        with:
+          script: |
+            const dispatched = process.env.DISPATCHED === "true";
+            const reason = process.env.REASON || "unknown";
+            const issueNumber = context.payload.issue.number;
+            const message = dispatched
+              ? "Agent dispatch received this issue and queued execution."
+              : `Agent dispatch did not run: ${reason}. Configure AGENT_WEBHOOK_URL to enable automatic handoff.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNumber,
+              body: message,
+            });
