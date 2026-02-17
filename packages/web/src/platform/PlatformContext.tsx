@@ -279,23 +279,6 @@ export function PlatformProvider({
     }),
   );
   const lastLoggedTraceSequence = useRef(0);
-  const adaptiveVisorContext = useMemo(
-    () =>
-      deriveAdaptiveVisorContext({
-        visorOrganismId: state.visorOrganismId,
-        enteredOrganismId: state.enteredOrganismId,
-        focusedOrganismId: state.focusedOrganismId,
-        altitude: state.altitude,
-      }),
-    [state.visorOrganismId, state.enteredOrganismId, state.focusedOrganismId, state.altitude],
-  );
-
-  useEffect(() => {
-    adaptiveVisorDispatch({
-      type: 'context-changed',
-      context: adaptiveVisorContext,
-    });
-  }, [adaptiveVisorContext]);
 
   useEffect(() => {
     if (!adaptiveVisorState.traceEnabled) return;
@@ -315,15 +298,36 @@ export function PlatformProvider({
     lastLoggedTraceSequence.current = latestEntry.sequence;
   }, [adaptiveVisorState.traceEnabled, adaptiveVisorState.decisionTrace]);
 
-  const focusOrganism = useCallback((id: string | null) => dispatch({ type: 'FOCUS_ORGANISM', id }), []);
-  const enterOrganism = useCallback((id: string) => dispatch({ type: 'ENTER_ORGANISM', id }), []);
-  const exitOrganism = useCallback(() => dispatch({ type: 'EXIT_ORGANISM' }), []);
-  const enterMap = useCallback((mapId: string, label: string) => dispatch({ type: 'ENTER_MAP', mapId, label }), []);
-  const exitMap = useCallback(() => dispatch({ type: 'EXIT_MAP' }), []);
-  const navigateToMap = useCallback((mapId: string) => dispatch({ type: 'NAVIGATE_TO_MAP', mapId }), []);
-  const openInVisor = useCallback((id: string) => dispatch({ type: 'OPEN_IN_VISOR', id }), []);
-  const closeVisorOrganism = useCallback(() => dispatch({ type: 'CLOSE_VISOR_ORGANISM' }), []);
-  const setAltitude = useCallback((altitude: Altitude) => dispatch({ type: 'SET_ALTITUDE', altitude }), []);
+  const focusOrganism = useCallback(
+    (id: string | null) => adaptiveVisorDispatch({ type: 'focus-organism', organismId: id }),
+    [],
+  );
+  const enterOrganism = useCallback(
+    (id: string) => adaptiveVisorDispatch({ type: 'enter-organism', organismId: id }),
+    [],
+  );
+  const exitOrganism = useCallback(() => adaptiveVisorDispatch({ type: 'exit-organism' }), []);
+  const enterMap = useCallback((mapId: string, label: string) => {
+    dispatch({ type: 'ENTER_MAP', mapId, label });
+    adaptiveVisorDispatch({ type: 'enter-map' });
+  }, []);
+  const exitMap = useCallback(() => {
+    dispatch({ type: 'EXIT_MAP' });
+    adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
+  }, []);
+  const navigateToMap = useCallback((mapId: string) => {
+    dispatch({ type: 'NAVIGATE_TO_MAP', mapId });
+    adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
+  }, []);
+  const openInVisor = useCallback(
+    (id: string) => adaptiveVisorDispatch({ type: 'open-visor-organism', organismId: id }),
+    [],
+  );
+  const closeVisorOrganism = useCallback(() => adaptiveVisorDispatch({ type: 'close-visor-organism' }), []);
+  const setAltitude = useCallback((altitude: Altitude) => {
+    dispatch({ type: 'SET_ALTITUDE', altitude });
+    adaptiveVisorDispatch({ type: 'set-altitude', altitude });
+  }, []);
   const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
   const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
   const toggleMapPanel = useCallback(
@@ -351,17 +355,22 @@ export function PlatformProvider({
     () => ({
       navigationStack: state.navigationStack,
       currentMapId: state.currentMapId,
-      focusedOrganismId: state.focusedOrganismId,
-      enteredOrganismId: state.enteredOrganismId,
+      focusedOrganismId: adaptiveVisorState.focusedOrganismId,
+      enteredOrganismId: adaptiveVisorState.enteredOrganismId,
     }),
-    [state.navigationStack, state.currentMapId, state.focusedOrganismId, state.enteredOrganismId],
+    [
+      state.navigationStack,
+      state.currentMapId,
+      adaptiveVisorState.focusedOrganismId,
+      adaptiveVisorState.enteredOrganismId,
+    ],
   );
 
   const visorState = useMemo<PlatformVisorState>(
     () => ({
-      visorOrganismId: state.visorOrganismId,
+      visorOrganismId: adaptiveVisorState.visorOrganismId,
     }),
-    [state.visorOrganismId],
+    [adaptiveVisorState.visorOrganismId],
   );
 
   const viewportMetaState = useMemo<PlatformViewportMetaState>(

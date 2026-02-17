@@ -1,0 +1,658 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Visor Current State</title>
+    <style>
+      :root {
+        --bg-0: #06060b;
+        --bg-1: #0b0b12;
+        --surface: rgba(14, 14, 23, 0.92);
+        --surface-soft: rgba(18, 18, 31, 0.82);
+        --line: rgba(124, 108, 240, 0.35);
+        --line-soft: rgba(124, 108, 240, 0.18);
+        --text: #ececf6;
+        --text-dim: #b3b3cb;
+        --accent: #7c6cf0;
+        --good: #4ade80;
+        --warn: #fbbf24;
+        --bad: #f87171;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        font-family: "Sora", "Inter", "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 10% 8%, rgba(124, 108, 240, 0.24), transparent 32%),
+          radial-gradient(circle at 86% 6%, rgba(124, 108, 240, 0.15), transparent 28%),
+          linear-gradient(180deg, var(--bg-0), var(--bg-1));
+        padding: 18px;
+      }
+
+      .shell {
+        max-width: 1320px;
+        margin: 0 auto;
+        display: grid;
+        gap: 12px;
+      }
+
+      .card {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface);
+        padding: 12px;
+      }
+
+      .title {
+        font-size: 18px;
+      }
+
+      .muted {
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .controls {
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .label {
+        color: var(--text-dim);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-right: 2px;
+      }
+
+      button,
+      select {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        padding: 7px 12px;
+        font-size: 12px;
+        color: var(--text);
+        background: rgba(124, 108, 240, 0.1);
+        cursor: pointer;
+      }
+
+      button[aria-pressed="true"] {
+        border-color: var(--accent);
+        background: rgba(124, 108, 240, 0.26);
+      }
+
+      select {
+        border-radius: 8px;
+        background: rgba(10, 10, 16, 0.9);
+      }
+
+      .layout {
+        position: relative;
+        min-height: 340px;
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        overflow: hidden;
+        background:
+          linear-gradient(155deg, rgba(15, 15, 25, 0.9), rgba(10, 10, 18, 0.84)),
+          radial-gradient(circle at 82% 10%, rgba(124, 108, 240, 0.14), transparent 34%);
+      }
+
+      .layout-header {
+        border-bottom: 1px solid var(--line-soft);
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .pane {
+        padding: 10px;
+      }
+
+      .slot-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 2fr) minmax(240px, 1fr);
+        gap: 10px;
+      }
+
+      .slot {
+        border: 1px solid var(--line-soft);
+        border-radius: 10px;
+        background: var(--surface-soft);
+        padding: 10px;
+      }
+
+      .slot h3 {
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+      }
+
+      .chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+
+      .chip {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        background: rgba(10, 10, 16, 0.88);
+      }
+
+      .chip.warn {
+        border-color: rgba(251, 191, 36, 0.45);
+      }
+
+      .chip.good {
+        border-color: rgba(74, 222, 128, 0.5);
+      }
+
+      .chip.bad {
+        border-color: rgba(248, 113, 113, 0.5);
+      }
+
+      .tag {
+        display: inline-block;
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        padding: 3px 8px;
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--line-soft);
+        text-align: left;
+        padding: 8px 6px;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--text-dim);
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        font-size: 10px;
+      }
+
+      .grid {
+        display: grid;
+        gap: 10px;
+      }
+
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .callouts {
+        display: grid;
+        gap: 8px;
+      }
+
+      .callout {
+        border: 1px solid var(--line-soft);
+        border-radius: 10px;
+        padding: 10px;
+        background: rgba(10, 10, 16, 0.78);
+      }
+
+      .callout h4 {
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+
+      .callout p {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+      }
+
+      @media (max-width: 980px) {
+        .slot-grid,
+        .grid.two {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="card controls">
+        <h1 class="title">Adaptive Visor Current-State Explorer</h1>
+        <p class="muted">
+          Mirrors live panel schema, template rules, intent deltas, and compositor widget outputs from
+          <code>packages/web/src/hud</code> and <code>packages/web/src/platform/adaptive-visor-compositor.ts</code>.
+        </p>
+
+        <div class="row" role="toolbar" aria-label="context class">
+          <span class="label">Context</span>
+          <button type="button" data-context="map" aria-pressed="false">map</button>
+          <button type="button" data-context="visor-organism" aria-pressed="true">visor-organism</button>
+          <button type="button" data-context="interior" aria-pressed="false">interior</button>
+        </div>
+
+        <div class="row" role="toolbar" aria-label="eligibility inputs">
+          <span class="label">Inputs</span>
+          <button type="button" data-toggle="canWrite" aria-pressed="true">canWrite</button>
+          <button type="button" data-toggle="openTrunk" aria-pressed="false">openTrunk</button>
+          <button type="button" data-toggle="surfaced" aria-pressed="true">surfaced</button>
+          <button type="button" data-toggle="templateValuesReady" aria-pressed="false">templateValuesReady</button>
+          <button type="button" data-toggle="interiorOrigin" aria-pressed="true">interiorOrigin</button>
+          <span class="label">Preferred main</span>
+          <select id="preferredMain"></select>
+        </div>
+      </section>
+
+      <section class="card layout">
+        <div class="layout-header">
+          <span id="layoutSummary">context: visor-organism</span>
+          <span id="layoutDecision">main follows preferred panel when valid; otherwise template may allow empty</span>
+        </div>
+        <div class="pane slot-grid">
+          <div class="slot">
+            <h3>Main Slot</h3>
+            <div id="mainSlot" class="chip-row"></div>
+          </div>
+
+          <div class="slot">
+            <h3>Secondary Slot</h3>
+            <div id="secondarySlot" class="chip-row"></div>
+          </div>
+
+          <div class="slot" style="grid-column: 1 / -1">
+            <h3>Collapsed Rail</h3>
+            <div id="collapsedSlot" class="chip-row"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grid two">
+        <section class="card">
+          <h2 class="title" style="font-size: 15px; margin-bottom: 8px">Panels (Registry + Rendering)</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Label</th>
+                <th>Roles</th>
+                <th>Body</th>
+              </tr>
+            </thead>
+            <tbody id="panelTable"></tbody>
+          </table>
+        </section>
+
+        <section class="card">
+          <h2 class="title" style="font-size: 15px; margin-bottom: 8px">Widgets + Cues + Orchestrator</h2>
+          <div class="grid" style="gap: 8px">
+            <div>
+              <span class="tag">Active widgets (compositor)</span>
+              <div id="activeWidgets" class="chip-row" style="margin-top: 6px"></div>
+            </div>
+            <div>
+              <span class="tag">Rendered widgets (host/deck)</span>
+              <div id="renderedWidgets" class="chip-row" style="margin-top: 6px"></div>
+            </div>
+            <div>
+              <span class="tag">Cues</span>
+              <div id="cueList" class="chip-row" style="margin-top: 6px"></div>
+            </div>
+            <div>
+              <span class="tag">Compositor events</span>
+              <div id="eventList" class="chip-row" style="margin-top: 6px"></div>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section class="card callouts">
+        <h2 class="title" style="font-size: 15px">Noted Gaps In Current State</h2>
+        <article class="callout">
+          <h4>`map-actions` is active in compositor but has no rendered widget component</h4>
+          <p>Declared in widget schema and template/compositor output, but host only renders compass and vitality lane widgets.</p>
+        </article>
+        <article class="callout">
+          <h4>`visor-pill` cue anchor exists in cue schema but is not present in DOM anchors</h4>
+          <p>Current cue target uses `adaptive-policy-badge`; `visor-pill` appears to be reserved but unused.</p>
+        </article>
+        <article class="callout">
+          <h4>`VitalitySection` exists, but vitality is currently surfaced as a widget instead of a panel</h4>
+          <p>Section component is exported but not wired into panel registry mapping.</p>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      const state = {
+        contextClass: 'visor-organism',
+        canWrite: true,
+        openTrunk: false,
+        surfaced: true,
+        templateValuesReady: false,
+        interiorOrigin: true,
+        preferredMainPanelId: null,
+      };
+
+      const panelDefs = [
+        { id: 'templates', label: 'Templates', roles: ['main', 'secondary', 'collapsed'], mainPriority: 88, secondaryPriority: 86, collapsedPriority: 82, availableIn: (c) => c.contextClass === 'map' && c.canWrite, body: 'HudTemplates' },
+        { id: 'threshold', label: 'Threshold', roles: ['main', 'secondary', 'collapsed'], mainPriority: 86, secondaryPriority: 84, collapsedPriority: 81, availableIn: (c) => c.contextClass === 'map' && c.canWrite, body: 'ThresholdForm' },
+        { id: 'mine', label: 'My organisms', roles: ['main', 'secondary', 'collapsed'], mainPriority: 84, secondaryPriority: 83, collapsedPriority: 80, availableIn: (c) => c.contextClass === 'map' && c.canWrite, body: 'HudMyOrganisms' },
+        { id: 'template-values', label: 'Template values', roles: ['main', 'secondary', 'collapsed'], mainPriority: 95, secondaryPriority: 90, collapsedPriority: 89, availableIn: (c) => c.contextClass === 'map' && c.templateValuesReady && c.canWrite, body: 'HudTemplateValuesPanel' },
+        { id: 'interior-actions', label: 'Tend current', roles: ['collapsed'], mainPriority: 0, secondaryPriority: 0, collapsedPriority: 100, availableIn: (c) => c.contextClass === 'interior', body: 'no body (collapsed action)' },
+        { id: 'organism', label: 'Tend', roles: ['main', 'collapsed'], mainPriority: 99, secondaryPriority: 0, collapsedPriority: 96, availableIn: (c) => c.contextClass === 'visor-organism', body: 'renderOrganismMainPanelBody' },
+        { id: 'organism-nav', label: 'Panel shortcuts', roles: ['secondary'], mainPriority: 0, secondaryPriority: 98, collapsedPriority: 0, availableIn: (c) => c.contextClass === 'visor-organism' && c.interiorOrigin === true, body: 'secondary shortcut actions' },
+        { id: 'composition', label: 'Composition', roles: ['main', 'secondary', 'collapsed'], mainPriority: 90, secondaryPriority: 85, collapsedPriority: 90, availableIn: (c) => c.contextClass === 'visor-organism', body: 'CompositionSection' },
+        { id: 'propose', label: 'Open proposal', roles: ['main', 'secondary', 'collapsed'], mainPriority: 88, secondaryPriority: 82, collapsedPriority: 89, availableIn: (c) => c.contextClass === 'visor-organism' && !c.openTrunk && c.canWrite, body: 'ProposeSection' },
+        { id: 'proposals', label: 'Proposals', roles: ['main', 'secondary', 'collapsed'], mainPriority: 86, secondaryPriority: 84, collapsedPriority: 87, availableIn: (c) => c.contextClass === 'visor-organism' && !c.openTrunk, body: 'ProposalsSection' },
+        { id: 'append', label: 'Append state', roles: ['main', 'secondary', 'collapsed'], mainPriority: 88, secondaryPriority: 82, collapsedPriority: 88, availableIn: (c) => c.contextClass === 'visor-organism' && c.openTrunk && c.canWrite, body: 'AppendSection' },
+        { id: 'relationships', label: 'Relationships', roles: ['main', 'secondary', 'collapsed'], mainPriority: 73, secondaryPriority: 77, collapsedPriority: 80, availableIn: (c) => c.contextClass === 'visor-organism', body: 'RelationshipsSection' },
+        { id: 'history', label: 'State history', roles: ['main', 'secondary', 'collapsed'], mainPriority: 74, secondaryPriority: 78, collapsedPriority: 78, availableIn: (c) => c.contextClass === 'visor-organism', body: 'StateHistorySection' },
+        { id: 'governance', label: 'Governance', roles: ['main', 'secondary', 'collapsed'], mainPriority: 72, secondaryPriority: 76, collapsedPriority: 79, availableIn: (c) => c.contextClass === 'visor-organism', body: 'GovernanceSection' },
+      ];
+
+      const templates = {
+        map: { main: { enabled: true, allowEmpty: true }, secondary: { enabled: true, maxPanels: 0 }, collapsed: { enabled: true, placement: 'viewport-bottom-left' } },
+        'visor-organism': { main: { enabled: true, allowEmpty: true }, secondary: { enabled: true, maxPanels: 1 }, collapsed: { enabled: true, placement: 'viewport-bottom-left' } },
+        interior: { main: { enabled: false, allowEmpty: true }, secondary: { enabled: false, maxPanels: 0 }, collapsed: { enabled: true, placement: 'viewport-bottom-left' } },
+      };
+
+      const widgetsByContext = {
+        map: ['map-actions', 'history-navigation', 'compass'],
+        'visor-organism': ['history-navigation', 'vitality'],
+        interior: [],
+      };
+
+      const cues = [{ id: 'adaptive-help', target: 'adaptive-policy-badge', variant: 'hint' }];
+
+      const events = [
+        'enter-map',
+        'focus-organism',
+        'enter-organism',
+        'exit-organism',
+        'open-visor-organism',
+        'close-visor-organism',
+        'set-altitude',
+        'toggle-map-panel',
+        'open-template-values',
+        'close-temporary-panel',
+        'mutation',
+      ];
+
+      function intentDelta(panelId, context, lane) {
+        const surfaced = context.surfaced;
+        if (context.contextClass === 'map') {
+          if (lane === 'main') {
+            if (panelId === 'templates') return 4;
+            if (panelId === 'threshold') return 2;
+            if (panelId === 'template-values') return 7;
+          }
+          if (lane === 'secondary') {
+            if (panelId === 'mine') return 4;
+            if (panelId === 'templates') return 3;
+            if (panelId === 'threshold') return 2;
+          }
+        }
+
+        if (context.contextClass === 'visor-organism') {
+          if (lane === 'main') {
+            if (panelId === 'organism') return 30;
+            if (surfaced) {
+              if (panelId === 'composition') return 10;
+              if (panelId === 'proposals') return 7;
+              if (panelId === 'propose' || panelId === 'append') return 6;
+            } else {
+              if (panelId === 'propose' || panelId === 'append') return 9;
+              if (panelId === 'history') return 6;
+            }
+          }
+
+          if (lane === 'secondary') {
+            if (surfaced) {
+              if (panelId === 'proposals' || panelId === 'composition') return 3;
+              if (panelId === 'propose' || panelId === 'append') return 2;
+              if (panelId === 'relationships') return 1;
+            } else {
+              if (panelId === 'history') return 4;
+              if (panelId === 'governance' || panelId === 'relationships') return 2;
+            }
+          }
+        }
+
+        return 0;
+      }
+
+      function resolveLayout() {
+        const template = templates[state.contextClass];
+        const available = panelDefs.filter((p) => p.availableIn(state));
+
+        let main = null;
+        if (template.main.enabled && state.preferredMainPanelId) {
+          const preferred = available.find((p) => p.id === state.preferredMainPanelId && p.roles.includes('main'));
+          if (preferred) main = preferred;
+        }
+
+        if (!main && template.main.enabled && !template.main.allowEmpty) {
+          main = available
+            .filter((p) => p.roles.includes('main'))
+            .sort((a, b) => {
+              const aScore = a.mainPriority + intentDelta(a.id, state, 'main');
+              const bScore = b.mainPriority + intentDelta(b.id, state, 'main');
+              if (aScore !== bScore) return bScore - aScore;
+              return a.id.localeCompare(b.id);
+            })[0] || null;
+        }
+
+        let secondary = [];
+        if (template.secondary.enabled && template.secondary.maxPanels > 0 && main) {
+          secondary = available
+            .filter((p) => p.id !== main.id && p.roles.includes('secondary'))
+            .sort((a, b) => {
+              const aScore = a.secondaryPriority + intentDelta(a.id, state, 'secondary');
+              const bScore = b.secondaryPriority + intentDelta(b.id, state, 'secondary');
+              if (aScore !== bScore) return bScore - aScore;
+              return a.id.localeCompare(b.id);
+            })
+            .slice(0, template.secondary.maxPanels);
+        }
+
+        let collapsed = [];
+        if (template.collapsed.enabled) {
+          const blocked = new Set([...(main ? [main.id] : []), ...secondary.map((p) => p.id)]);
+          if (!main && state.contextClass === 'visor-organism') {
+            const initial = available.find((p) => p.id === 'organism' && p.roles.includes('collapsed'));
+            collapsed = initial ? [initial] : [];
+          } else {
+            collapsed = available
+              .filter((p) => p.roles.includes('collapsed') && !blocked.has(p.id))
+              .sort((a, b) => {
+                if (a.collapsedPriority !== b.collapsedPriority) return b.collapsedPriority - a.collapsedPriority;
+                return a.id.localeCompare(b.id);
+              });
+          }
+        }
+
+        return { available, main, secondary, collapsed };
+      }
+
+      function renderedWidgets(activeWidgets, layout) {
+        const rendered = [];
+        if (state.contextClass === 'map') {
+          if (activeWidgets.includes('compass')) rendered.push('compass (lane)');
+          if (activeWidgets.includes('history-navigation') && layout.main) rendered.push('history-navigation (deck nav)');
+          if (activeWidgets.includes('map-actions')) rendered.push('map-actions (not rendered)');
+        }
+
+        if (state.contextClass === 'visor-organism') {
+          if (activeWidgets.includes('history-navigation') && layout.main) rendered.push('history-navigation (deck nav)');
+          if (activeWidgets.includes('vitality') && state.preferredMainPanelId !== null) {
+            rendered.push('vitality (lane)');
+          } else if (activeWidgets.includes('vitality')) {
+            rendered.push('vitality (gated by preferredMainPanelId !== null)');
+          }
+        }
+
+        return rendered;
+      }
+
+      const panelTable = document.getElementById('panelTable');
+      const preferredMain = document.getElementById('preferredMain');
+      const mainSlot = document.getElementById('mainSlot');
+      const secondarySlot = document.getElementById('secondarySlot');
+      const collapsedSlot = document.getElementById('collapsedSlot');
+      const activeWidgets = document.getElementById('activeWidgets');
+      const renderedWidgetsEl = document.getElementById('renderedWidgets');
+      const cueList = document.getElementById('cueList');
+      const eventList = document.getElementById('eventList');
+      const layoutSummary = document.getElementById('layoutSummary');
+      const layoutDecision = document.getElementById('layoutDecision');
+
+      function renderChips(container, items, className) {
+        container.innerHTML = '';
+        if (items.length === 0) {
+          const chip = document.createElement('span');
+          chip.className = `chip ${className || ''}`;
+          chip.textContent = 'none';
+          container.appendChild(chip);
+          return;
+        }
+
+        items.forEach((item) => {
+          const chip = document.createElement('span');
+          chip.className = `chip ${className || ''}`;
+          chip.textContent = item;
+          container.appendChild(chip);
+        });
+      }
+
+      function renderPanelTable(availableSet) {
+        panelTable.innerHTML = '';
+        panelDefs.forEach((panel) => {
+          const tr = document.createElement('tr');
+          const isAvailable = availableSet.has(panel.id);
+          tr.innerHTML = `
+            <td><code>${panel.id}</code>${isAvailable ? ' <span class="tag">available</span>' : ''}</td>
+            <td>${panel.label}</td>
+            <td>${panel.roles.join(', ')}</td>
+            <td>${panel.body}</td>
+          `;
+          panelTable.appendChild(tr);
+        });
+      }
+
+      function renderPreferredOptions(available) {
+        const current = state.preferredMainPanelId;
+        const mainCandidates = available.filter((p) => p.roles.includes('main'));
+
+        preferredMain.innerHTML = '';
+        const none = document.createElement('option');
+        none.value = '';
+        none.textContent = 'none';
+        preferredMain.appendChild(none);
+
+        mainCandidates.forEach((panel) => {
+          const option = document.createElement('option');
+          option.value = panel.id;
+          option.textContent = `${panel.id} (${panel.label})`;
+          preferredMain.appendChild(option);
+        });
+
+        if (current && mainCandidates.some((p) => p.id === current)) {
+          preferredMain.value = current;
+        } else {
+          preferredMain.value = '';
+          state.preferredMainPanelId = null;
+        }
+      }
+
+      function render() {
+        const layout = resolveLayout();
+        const availableSet = new Set(layout.available.map((p) => p.id));
+
+        renderPreferredOptions(layout.available);
+        renderPanelTable(availableSet);
+
+        renderChips(mainSlot, layout.main ? [layout.main.id] : [], layout.main ? 'good' : 'warn');
+        renderChips(secondarySlot, layout.secondary.map((p) => p.id), '');
+        renderChips(collapsedSlot, layout.collapsed.map((p) => p.id), '');
+
+        const active = widgetsByContext[state.contextClass] || [];
+        renderChips(activeWidgets, active, '');
+        renderChips(renderedWidgetsEl, renderedWidgets(active, layout), '');
+        renderChips(cueList, cues.map((c) => `${c.id} -> ${c.target}`), '');
+        renderChips(eventList, events, '');
+
+        layoutSummary.textContent = `context: ${state.contextClass} | available panels: ${layout.available.length} | template: ${state.contextClass}`;
+        layoutDecision.textContent = layout.main
+          ? `main selected: ${layout.main.id}; secondary slots: ${layout.secondary.length}`
+          : 'main is empty (allowEmpty=true or no valid preferred main)';
+
+        document.querySelectorAll('[data-context]').forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.context === state.contextClass));
+        });
+        document.querySelectorAll('[data-toggle]').forEach((button) => {
+          const key = button.dataset.toggle;
+          button.setAttribute('aria-pressed', String(Boolean(state[key])));
+        });
+      }
+
+      document.querySelectorAll('[data-context]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const next = button.dataset.context;
+          if (!next) return;
+          state.contextClass = next;
+          state.preferredMainPanelId = null;
+          render();
+        });
+      });
+
+      document.querySelectorAll('[data-toggle]').forEach((button) => {
+        button.addEventListener('click', () => {
+          const key = button.dataset.toggle;
+          if (!key) return;
+          state[key] = !state[key];
+          render();
+        });
+      });
+
+      preferredMain.addEventListener('change', () => {
+        state.preferredMainPanelId = preferredMain.value || null;
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

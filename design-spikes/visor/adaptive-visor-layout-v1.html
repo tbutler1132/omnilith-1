@@ -1,0 +1,663 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Adaptive Visor Layout Spike</title>
+    <style>
+      :root {
+        --bg: #090910;
+        --surface: rgba(14, 14, 24, 0.9);
+        --surface-soft: rgba(20, 20, 32, 0.8);
+        --line: rgba(124, 108, 240, 0.35);
+        --line-soft: rgba(124, 108, 240, 0.2);
+        --text: #e8e8f5;
+        --text-dim: #aeaec7;
+        --accent: #7c6cf0;
+        --good: #4ade80;
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        min-height: 100vh;
+        background:
+          radial-gradient(circle at 8% 8%, rgba(124, 108, 240, 0.26), transparent 30%),
+          linear-gradient(180deg, #06060b, var(--bg));
+        color: var(--text);
+        font-family: "Sora", "Inter", "Segoe UI", sans-serif;
+        padding: 22px;
+      }
+
+      .shell {
+        max-width: 1260px;
+        margin: 0 auto;
+        display: grid;
+        gap: 14px;
+      }
+
+      .controls {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: var(--surface);
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .label {
+        font-size: 11px;
+        color: var(--text-dim);
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        margin-right: 2px;
+      }
+
+      .state-pill {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        background: rgba(124, 108, 240, 0.08);
+        color: var(--text-dim);
+        font-size: 12px;
+        padding: 7px 12px;
+      }
+
+      .state-pill strong {
+        color: var(--text);
+      }
+
+      button,
+      .toggle {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        background: rgba(124, 108, 240, 0.08);
+        color: var(--text);
+        font-size: 12px;
+        padding: 7px 12px;
+        cursor: pointer;
+      }
+
+      button[aria-pressed="true"],
+      .toggle.active {
+        border-color: var(--accent);
+        background: rgba(124, 108, 240, 0.24);
+      }
+
+      .toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .layout {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 22px;
+        min-height: min(86vh, 860px);
+        overflow: hidden;
+        background:
+          linear-gradient(145deg, rgba(12, 12, 20, 0.94), rgba(8, 8, 14, 0.92)),
+          radial-gradient(circle at 86% 8%, rgba(124, 108, 240, 0.18), transparent 34%);
+        box-shadow:
+          0 28px 80px rgba(0, 0, 0, 0.52),
+          0 0 90px rgba(124, 108, 240, 0.1);
+      }
+
+      .bar {
+        position: absolute;
+        left: 14px;
+        right: 14px;
+        top: 14px;
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        min-height: 44px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 12px;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .bar strong {
+        color: var(--text);
+      }
+
+      .hud-stage {
+        position: absolute;
+        inset: 76px 16px 16px;
+        border: 1px dashed rgba(124, 108, 240, 0.25);
+        border-radius: 14px;
+      }
+
+      .main {
+        position: absolute;
+        left: 50%;
+        top: 53%;
+        transform: translate(-50%, -50%);
+        width: min(680px, calc(100% - 122px));
+        min-height: 320px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: linear-gradient(155deg, rgba(16, 16, 27, 0.9), rgba(12, 12, 20, 0.85));
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        display: none;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .main.visible {
+        display: grid;
+      }
+
+      .main header {
+        border-bottom: 1px solid var(--line-soft);
+        padding: 12px 14px;
+      }
+
+      .main .kicker {
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .main h1 {
+        margin-top: 4px;
+        font-size: 24px;
+      }
+
+      .main .body {
+        padding: 14px;
+        color: var(--text-dim);
+        font-size: 13px;
+      }
+
+      .main footer {
+        border-top: 1px solid var(--line-soft);
+        padding: 10px 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .main-empty {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        border: 1px dashed var(--line);
+        border-radius: 12px;
+        padding: 10px 14px;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .secondary {
+        position: absolute;
+        right: 16px;
+        top: 94px;
+        width: 250px;
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        background: rgba(10, 10, 16, 0.82);
+        padding: 12px;
+      }
+
+      .secondary h3,
+      .inspector h3 {
+        font-size: 11px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--text-dim);
+        margin-bottom: 8px;
+      }
+
+      .secondary ul,
+      .inspector ul {
+        list-style: none;
+        display: grid;
+        gap: 6px;
+      }
+
+      .secondary li,
+      .inspector li {
+        border: 1px solid var(--line-soft);
+        border-radius: 8px;
+        background: rgba(124, 108, 240, 0.08);
+        padding: 8px;
+        font-size: 12px;
+      }
+
+      .inspector {
+        position: absolute;
+        left: 16px;
+        top: 94px;
+        width: 280px;
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        background: rgba(10, 10, 16, 0.82);
+        padding: 12px;
+      }
+
+      .collapsed {
+        position: absolute;
+        left: 16px;
+        right: 16px;
+        bottom: 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .chip {
+        border: 1px solid var(--line-soft);
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: rgba(10, 10, 16, 0.86);
+        color: var(--text-dim);
+        font-size: 12px;
+      }
+
+      .chip button {
+        padding: 0;
+        margin-left: 6px;
+        border: none;
+        background: transparent;
+        color: var(--text);
+        text-decoration: underline;
+        font-size: 11px;
+      }
+
+      .meta {
+        border: 1px solid var(--line-soft);
+        border-radius: 12px;
+        background: rgba(10, 10, 16, 0.76);
+        padding: 12px;
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .meta strong {
+        color: var(--text);
+      }
+
+      .ok {
+        color: var(--good);
+      }
+
+      @media (max-width: 980px) {
+        body {
+          padding: 12px;
+        }
+
+        .main {
+          width: calc(100% - 24px);
+        }
+
+        .inspector,
+        .secondary {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="controls">
+        <div class="row" role="toolbar" aria-label="location in space">
+          <span class="label">Location in space</span>
+          <button type="button" data-location="map" aria-pressed="false">map</button>
+          <button type="button" data-location="interior" aria-pressed="true">interior organism</button>
+        </div>
+
+        <div class="row" role="toolbar" aria-label="visor target">
+          <span class="label">Visor target</span>
+          <button type="button" data-visor-target="none" aria-pressed="false">none</button>
+          <button type="button" data-visor-target="organism" aria-pressed="true">organism main panel open</button>
+        </div>
+
+        <div class="row" aria-label="derived adaptive context">
+          <span class="label">Derived context</span>
+          <span class="state-pill">location: <strong id="locationReadout">interior</strong></span>
+          <span class="state-pill">visor target: <strong id="visorReadout">organism</strong></span>
+          <span class="state-pill">adaptive context: <strong id="derivedContextReadout">visor-organism</strong></span>
+        </div>
+
+        <div class="row" role="toolbar" aria-label="context toggles">
+          <span class="label">Inputs</span>
+          <button type="button" class="toggle active" data-toggle="canWrite">canWrite</button>
+          <button type="button" class="toggle" data-toggle="openTrunk">openTrunk</button>
+          <button type="button" class="toggle active" data-toggle="surfaced">surfaced</button>
+          <button type="button" class="toggle" data-toggle="templateValuesReady">templateValuesReady</button>
+          <button type="button" class="toggle active" data-toggle="interiorOrigin">interiorOrigin</button>
+          <button type="button" id="clearPreferred">clear preferred main</button>
+        </div>
+      </section>
+
+      <section class="layout" aria-label="adaptive visor layout spike">
+        <div class="bar">
+          <span><strong>Adaptive Visor Layout Spike</strong> | slot topology + intent behavior</span>
+          <span id="statusLine">location: interior | visor target: organism | context: visor-organism</span>
+        </div>
+
+        <div class="hud-stage" aria-hidden="true"></div>
+
+        <article class="main" id="mainPanel">
+          <header>
+            <div class="kicker">Main Slot</div>
+            <h1 id="mainTitle">No main panel</h1>
+          </header>
+          <div class="body" id="mainBody">Set preferred main or change context inputs to explore slot behavior.</div>
+          <footer>
+            <span id="preferredInfo">preferred main: none</span>
+            <button type="button" id="promoteFirst">promote first collapsed</button>
+          </footer>
+        </article>
+
+        <div class="main-empty" id="mainEmpty">Main slot intentionally empty by template policy.</div>
+
+        <aside class="inspector">
+          <h3>Available Panels</h3>
+          <ul id="availableList"></ul>
+        </aside>
+
+        <aside class="secondary">
+          <h3>Secondary Slot</h3>
+          <ul id="secondaryList"></ul>
+        </aside>
+
+        <div class="collapsed" id="collapsedRail"></div>
+      </section>
+
+      <section class="meta">
+        <strong>Workflow idea:</strong> this spike separates spatial location from visor targeting, then derives adaptive
+        context from those two inputs before applying panel layout policy.
+        <span class="ok">If this mapping feels right, implementation should be translation, not redesign.</span>
+      </section>
+    </main>
+
+    <script>
+      const panelDefs = [
+        { id: 'templates', label: 'Templates', main: true, secondary: true, collapsed: true, mainPriority: 88, secondaryPriority: 86, collapsedPriority: 82, available: (c) => c.contextClass === 'map' && c.canWrite },
+        { id: 'threshold', label: 'Threshold', main: true, secondary: true, collapsed: true, mainPriority: 86, secondaryPriority: 84, collapsedPriority: 81, available: (c) => c.contextClass === 'map' && c.canWrite },
+        { id: 'mine', label: 'My organisms', main: true, secondary: true, collapsed: true, mainPriority: 84, secondaryPriority: 83, collapsedPriority: 80, available: (c) => c.contextClass === 'map' && c.canWrite },
+        { id: 'template-values', label: 'Template values', main: true, secondary: true, collapsed: true, mainPriority: 95, secondaryPriority: 90, collapsedPriority: 89, available: (c) => c.contextClass === 'map' && c.templateValuesReady && c.canWrite },
+        { id: 'interior-actions', label: 'Tend current', main: false, secondary: false, collapsed: true, mainPriority: 0, secondaryPriority: 0, collapsedPriority: 100, available: (c) => c.contextClass === 'interior' },
+        { id: 'organism', label: 'Tend', main: true, secondary: false, collapsed: true, mainPriority: 99, secondaryPriority: 0, collapsedPriority: 96, available: (c) => c.contextClass === 'visor-organism' },
+        { id: 'organism-nav', label: 'Panel shortcuts', main: false, secondary: true, collapsed: false, mainPriority: 0, secondaryPriority: 98, collapsedPriority: 0, available: (c) => c.contextClass === 'visor-organism' && c.interiorOrigin },
+        { id: 'composition', label: 'Composition', main: true, secondary: true, collapsed: true, mainPriority: 90, secondaryPriority: 85, collapsedPriority: 90, available: (c) => c.contextClass === 'visor-organism' },
+        { id: 'propose', label: 'Open proposal', main: true, secondary: true, collapsed: true, mainPriority: 88, secondaryPriority: 82, collapsedPriority: 89, available: (c) => c.contextClass === 'visor-organism' && !c.openTrunk && c.canWrite },
+        { id: 'proposals', label: 'Proposals', main: true, secondary: true, collapsed: true, mainPriority: 86, secondaryPriority: 84, collapsedPriority: 87, available: (c) => c.contextClass === 'visor-organism' && !c.openTrunk },
+        { id: 'append', label: 'Append state', main: true, secondary: true, collapsed: true, mainPriority: 88, secondaryPriority: 82, collapsedPriority: 88, available: (c) => c.contextClass === 'visor-organism' && c.openTrunk && c.canWrite },
+        { id: 'relationships', label: 'Relationships', main: true, secondary: true, collapsed: true, mainPriority: 73, secondaryPriority: 77, collapsedPriority: 80, available: (c) => c.contextClass === 'visor-organism' },
+        { id: 'history', label: 'State history', main: true, secondary: true, collapsed: true, mainPriority: 74, secondaryPriority: 78, collapsedPriority: 78, available: (c) => c.contextClass === 'visor-organism' },
+        { id: 'governance', label: 'Governance', main: true, secondary: true, collapsed: true, mainPriority: 72, secondaryPriority: 76, collapsedPriority: 79, available: (c) => c.contextClass === 'visor-organism' },
+      ];
+
+      const templates = {
+        map: { mainEnabled: true, allowEmpty: true, secondaryEnabled: true, secondaryMax: 0, collapsedEnabled: true },
+        'visor-organism': { mainEnabled: true, allowEmpty: true, secondaryEnabled: true, secondaryMax: 1, collapsedEnabled: true },
+        interior: { mainEnabled: false, allowEmpty: true, secondaryEnabled: false, secondaryMax: 0, collapsedEnabled: true },
+      };
+
+      const state = {
+        locationContext: 'interior',
+        visorTarget: 'organism',
+        canWrite: true,
+        openTrunk: false,
+        surfaced: true,
+        templateValuesReady: false,
+        interiorOrigin: true,
+        preferredMainPanelId: null,
+      };
+
+      function deriveContextClass(currentState) {
+        if (currentState.visorTarget === 'organism') return 'visor-organism';
+        if (currentState.locationContext === 'interior') return 'interior';
+        return 'map';
+      }
+
+      function scoreDeltas(panelId, context, lane) {
+        const isSurfaced = context.surfaced;
+        if (context.contextClass === 'map') {
+          if (lane === 'main') {
+            if (panelId === 'templates') return 4;
+            if (panelId === 'threshold') return 2;
+            if (panelId === 'template-values') return 7;
+          }
+          if (lane === 'secondary') {
+            if (panelId === 'mine') return 4;
+            if (panelId === 'templates') return 3;
+            if (panelId === 'threshold') return 2;
+          }
+        }
+
+        if (context.contextClass === 'visor-organism') {
+          if (lane === 'main') {
+            if (panelId === 'organism') return 30;
+            if (isSurfaced) {
+              if (panelId === 'composition') return 10;
+              if (panelId === 'proposals') return 7;
+              if (panelId === 'propose' || panelId === 'append') return 6;
+            }
+            if (!isSurfaced) {
+              if (panelId === 'propose' || panelId === 'append') return 9;
+              if (panelId === 'history') return 6;
+            }
+          }
+
+          if (lane === 'secondary') {
+            if (isSurfaced) {
+              if (panelId === 'proposals' || panelId === 'composition') return 3;
+              if (panelId === 'propose' || panelId === 'append') return 2;
+              if (panelId === 'relationships') return 1;
+            }
+            if (!isSurfaced) {
+              if (panelId === 'history') return 4;
+              if (panelId === 'governance' || panelId === 'relationships') return 2;
+            }
+          }
+        }
+
+        return 0;
+      }
+
+      function resolveLayout() {
+        const contextClass = deriveContextClass(state);
+        const context = { ...state, contextClass };
+        const template = templates[contextClass];
+        const available = panelDefs.filter((p) => p.available(context));
+
+        let mainPanel = null;
+        if (template.mainEnabled && state.preferredMainPanelId) {
+          const candidate = available.find((p) => p.id === state.preferredMainPanelId && p.main);
+          if (candidate) mainPanel = candidate;
+        }
+
+        if (!mainPanel && template.mainEnabled && !template.allowEmpty) {
+          mainPanel = [...available]
+            .filter((p) => p.main)
+            .sort((a, b) => {
+              const scoreA = a.mainPriority + scoreDeltas(a.id, context, 'main');
+              const scoreB = b.mainPriority + scoreDeltas(b.id, context, 'main');
+              if (scoreA !== scoreB) return scoreB - scoreA;
+              return a.id.localeCompare(b.id);
+            })[0] || null;
+        }
+
+        const secondary = !template.secondaryEnabled || template.secondaryMax <= 0 || !mainPanel
+          ? []
+          : [...available]
+              .filter((p) => p.id !== mainPanel.id && p.secondary)
+              .sort((a, b) => {
+                const scoreA = a.secondaryPriority + scoreDeltas(a.id, context, 'secondary');
+                const scoreB = b.secondaryPriority + scoreDeltas(b.id, context, 'secondary');
+                if (scoreA !== scoreB) return scoreB - scoreA;
+                return a.id.localeCompare(b.id);
+              })
+              .slice(0, template.secondaryMax);
+
+        let collapsed = [];
+        if (template.collapsedEnabled) {
+          const blocked = new Set([...(mainPanel ? [mainPanel.id] : []), ...secondary.map((p) => p.id)]);
+          if (!mainPanel && contextClass === 'visor-organism') {
+            const initial = available.find((p) => p.id === 'organism' && p.collapsed);
+            collapsed = initial ? [initial] : [];
+          } else {
+            collapsed = [...available]
+              .filter((p) => !blocked.has(p.id) && p.collapsed)
+              .sort((a, b) => {
+                if (a.collapsedPriority !== b.collapsedPriority) return b.collapsedPriority - a.collapsedPriority;
+                return a.id.localeCompare(b.id);
+              });
+          }
+        }
+
+        return { contextClass, template, available, mainPanel, secondary, collapsed };
+      }
+
+      const locationButtons = Array.from(document.querySelectorAll('[data-location]'));
+      const visorTargetButtons = Array.from(document.querySelectorAll('[data-visor-target]'));
+      const toggleButtons = Array.from(document.querySelectorAll('.toggle[data-toggle]'));
+      const availableList = document.getElementById('availableList');
+      const secondaryList = document.getElementById('secondaryList');
+      const collapsedRail = document.getElementById('collapsedRail');
+      const mainPanel = document.getElementById('mainPanel');
+      const mainTitle = document.getElementById('mainTitle');
+      const mainBody = document.getElementById('mainBody');
+      const mainEmpty = document.getElementById('mainEmpty');
+      const statusLine = document.getElementById('statusLine');
+      const preferredInfo = document.getElementById('preferredInfo');
+      const locationReadout = document.getElementById('locationReadout');
+      const visorReadout = document.getElementById('visorReadout');
+      const derivedContextReadout = document.getElementById('derivedContextReadout');
+
+      function render() {
+        const { contextClass, template, available, mainPanel: main, secondary, collapsed } = resolveLayout();
+
+        locationButtons.forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.location === state.locationContext));
+        });
+
+        visorTargetButtons.forEach((button) => {
+          button.setAttribute('aria-pressed', String(button.dataset.visorTarget === state.visorTarget));
+        });
+
+        toggleButtons.forEach((button) => {
+          const key = button.dataset.toggle;
+          button.classList.toggle('active', Boolean(state[key]));
+        });
+
+        availableList.innerHTML = '';
+        if (available.length === 0) {
+          availableList.innerHTML = '<li>none</li>';
+        } else {
+          available.forEach((panel) => {
+            const li = document.createElement('li');
+            li.textContent = panel.id;
+            availableList.appendChild(li);
+          });
+        }
+
+        secondaryList.innerHTML = '';
+        if (secondary.length === 0) {
+          secondaryList.innerHTML = '<li>none</li>';
+        } else {
+          secondary.forEach((panel) => {
+            const li = document.createElement('li');
+            li.textContent = panel.id;
+            secondaryList.appendChild(li);
+          });
+        }
+
+        collapsedRail.innerHTML = '';
+        collapsed.forEach((panel) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip';
+          chip.innerHTML = `${panel.id}<button type="button" data-promote="${panel.id}">promote</button>`;
+          collapsedRail.appendChild(chip);
+        });
+
+        if (main) {
+          mainPanel.classList.add('visible');
+          mainEmpty.style.display = 'none';
+          mainTitle.textContent = main.id;
+          mainBody.textContent = `Main slot receives ${main.label}. Secondary max: ${template.secondaryMax}. Collapsed count: ${collapsed.length}.`;
+        } else {
+          mainPanel.classList.remove('visible');
+          mainEmpty.style.display = 'block';
+        }
+
+        statusLine.textContent = `location: ${state.locationContext} | visor target: ${state.visorTarget} | context: ${contextClass}`;
+        preferredInfo.textContent = `preferred main: ${state.preferredMainPanelId ?? 'none'}`;
+        locationReadout.textContent = state.locationContext;
+        visorReadout.textContent = state.visorTarget;
+        derivedContextReadout.textContent = contextClass;
+
+        const promoteButtons = Array.from(document.querySelectorAll('[data-promote]'));
+        promoteButtons.forEach((button) => {
+          button.addEventListener('click', () => {
+            const panelId = button.dataset.promote;
+            if (!panelId) return;
+            state.preferredMainPanelId = panelId;
+            render();
+          });
+        });
+      }
+
+      locationButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const location = button.dataset.location;
+          if (!location) return;
+          state.locationContext = location;
+          state.preferredMainPanelId = null;
+          render();
+        });
+      });
+
+      visorTargetButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const visorTarget = button.dataset.visorTarget;
+          if (!visorTarget) return;
+          state.visorTarget = visorTarget;
+          state.preferredMainPanelId = null;
+          render();
+        });
+      });
+
+      toggleButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const key = button.dataset.toggle;
+          if (!key) return;
+          state[key] = !state[key];
+          render();
+        });
+      });
+
+      document.getElementById('clearPreferred').addEventListener('click', () => {
+        state.preferredMainPanelId = null;
+        render();
+      });
+
+      document.getElementById('promoteFirst').addEventListener('click', () => {
+        const { collapsed } = resolveLayout();
+        state.preferredMainPanelId = collapsed[0]?.id ?? null;
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>

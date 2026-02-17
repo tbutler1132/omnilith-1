@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Omnilith Organisms</title>
+    <style>
+      :root {
+        --bg-0: #06060b;
+        --bg-1: #0a0a0f;
+        --bg-2: #12121d;
+        --ink: #ececf6;
+        --ink-dim: #b7b7cf;
+        --accent: #7c6cf0;
+        --accent-soft: rgba(124, 108, 240, 0.28);
+        --line: rgba(124, 108, 240, 0.35);
+        --line-soft: rgba(124, 108, 240, 0.18);
+        --good: #4ade80;
+        --card: rgba(14, 14, 22, 0.74);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: "Sora", "Avenir Next", "Segoe UI", sans-serif;
+        color: var(--ink-dim);
+        background:
+          radial-gradient(circle at 10% 12%, rgba(124, 108, 240, 0.28), transparent 34%),
+          radial-gradient(circle at 90% 5%, rgba(70, 110, 255, 0.22), transparent 38%),
+          linear-gradient(180deg, var(--bg-0) 0%, var(--bg-1) 35%, #090914 100%);
+        min-height: 100vh;
+        line-height: 1.5;
+        overflow-x: hidden;
+      }
+
+      .atmosphere {
+        position: fixed;
+        inset: 0;
+        background:
+          radial-gradient(circle at 25% 25%, rgba(124, 108, 240, 0.15), transparent 26%),
+          radial-gradient(circle at 68% 18%, rgba(100, 140, 255, 0.12), transparent 30%);
+        filter: blur(30px);
+        pointer-events: none;
+        z-index: -1;
+        animation: atmosphereDrift 16s ease-in-out infinite alternate;
+      }
+
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.025),
+          rgba(255, 255, 255, 0.025) 1px,
+          transparent 1px,
+          transparent 4px
+        );
+        opacity: 0.12;
+        pointer-events: none;
+        z-index: -1;
+      }
+
+      .page {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 52px 20px 86px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+
+      .cinema-frame {
+        position: relative;
+        border: 1px solid var(--line);
+        border-radius: 24px;
+        background: linear-gradient(155deg, rgba(12, 12, 20, 0.92), rgba(18, 18, 29, 0.72));
+        box-shadow:
+          inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+          0 24px 80px rgba(0, 0, 0, 0.55),
+          0 0 80px rgba(124, 108, 240, 0.13);
+        overflow: hidden;
+      }
+
+      .cinema-frame::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background:
+          linear-gradient(120deg, rgba(124, 108, 240, 0.12), transparent 40%),
+          radial-gradient(circle at 90% 10%, rgba(124, 108, 240, 0.14), transparent 42%);
+        pointer-events: none;
+      }
+
+      .hero {
+        position: relative;
+        padding: clamp(24px, 5vw, 48px);
+        animation: rise 700ms ease both;
+      }
+
+      .eyebrow {
+        display: inline-block;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        color: var(--ink);
+        background: rgba(124, 108, 240, 0.2);
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 6px 12px;
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        font-family: "Fraunces", "Palatino Linotype", serif;
+        font-weight: 700;
+        font-size: clamp(2rem, 7vw, 3.5rem);
+        line-height: 1.05;
+        max-width: 16ch;
+        color: var(--ink);
+        text-wrap: balance;
+      }
+
+      .hero-glow {
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: 5%;
+        top: 10%;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(124, 108, 240, 0.36), rgba(124, 108, 240, 0));
+        filter: blur(8px);
+        pointer-events: none;
+      }
+
+      .hero p {
+        margin-top: 14px;
+        max-width: 62ch;
+        font-size: 1.05rem;
+        color: var(--ink-dim);
+      }
+
+      .path {
+        position: relative;
+        display: grid;
+        gap: 14px;
+        padding: 0 20px 24px;
+      }
+
+      .path::before {
+        content: "";
+        position: absolute;
+        left: 32px;
+        top: 8px;
+        bottom: 30px;
+        width: 1px;
+        background: linear-gradient(180deg, var(--accent), rgba(124, 108, 240, 0));
+      }
+
+      .path-step {
+        position: relative;
+        margin-left: 20px;
+        border: 1px solid var(--line-soft);
+        border-radius: 18px;
+        background: linear-gradient(160deg, rgba(19, 19, 32, 0.85), rgba(13, 13, 21, 0.8));
+        padding: 18px;
+        display: grid;
+        gap: 6px;
+        animation: rise 800ms ease both;
+      }
+
+      .path-step::before {
+        content: "";
+        position: absolute;
+        left: -26px;
+        top: 22px;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--accent);
+        box-shadow: 0 0 0 8px rgba(124, 108, 240, 0.15);
+      }
+
+      .path-step:nth-child(2) {
+        animation-delay: 90ms;
+      }
+
+      .path-step:nth-child(3) {
+        animation-delay: 170ms;
+      }
+
+      .path-step strong {
+        color: var(--ink);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .path-step p {
+        color: var(--ink-dim);
+      }
+
+      .cards {
+        display: grid;
+        gap: 14px;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        padding: 0 20px 0;
+      }
+
+      .card {
+        border: 1px solid var(--line-soft);
+        border-radius: 16px;
+        background: rgba(10, 10, 16, 0.62);
+        padding: 18px;
+        backdrop-filter: blur(2px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.28);
+        animation: rise 800ms ease both;
+      }
+
+      .card h2 {
+        font-size: 1.2rem;
+        margin-bottom: 8px;
+        color: var(--ink);
+      }
+
+      .card p {
+        font-size: 0.96rem;
+        color: var(--ink-dim);
+      }
+
+      .card:nth-child(2) {
+        animation-delay: 110ms;
+      }
+
+      .card:nth-child(3) {
+        animation-delay: 180ms;
+      }
+
+      .example {
+        margin: 0 20px 0;
+        border: 1px dashed var(--line);
+        border-radius: 20px;
+        padding: 22px;
+        background: linear-gradient(120deg, rgba(16, 16, 28, 0.92), rgba(11, 11, 20, 0.84));
+      }
+
+      .example h3 {
+        font-size: 1.05rem;
+        margin-bottom: 10px;
+        color: #9c8cff;
+      }
+
+      .example p {
+        color: var(--ink-dim);
+      }
+
+      .pulse {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        margin-top: 12px;
+        color: var(--ink);
+      }
+
+      .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--good);
+        box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+        animation: pulse 2.4s infinite;
+      }
+
+      footer {
+        font-size: 0.9rem;
+        color: var(--ink-dim);
+        padding: 0 22px 24px;
+        opacity: 0.9;
+      }
+
+      @keyframes pulse {
+        0% {
+          box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.55);
+        }
+        70% {
+          box-shadow: 0 0 0 16px rgba(74, 222, 128, 0);
+        }
+        100% {
+          box-shadow: 0 0 0 0 rgba(74, 222, 128, 0);
+        }
+      }
+
+      @keyframes rise {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes atmosphereDrift {
+        from {
+          transform: translate3d(0, 0, 0) scale(1);
+        }
+        to {
+          transform: translate3d(0, -16px, 0) scale(1.03);
+        }
+      }
+
+      @media (max-width: 640px) {
+        .page {
+          padding-top: 30px;
+        }
+
+        .cinema-frame,
+        .example,
+        .path-step {
+          border-radius: 18px;
+        }
+
+        .path,
+        .cards,
+        .example,
+        footer {
+          margin: 0;
+          padding-left: 16px;
+          padding-right: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="atmosphere" aria-hidden="true"></div>
+    <div class="scanlines" aria-hidden="true"></div>
+    <main class="page">
+      <section class="cinema-frame">
+        <section class="hero">
+          <span class="eyebrow">Omnilith in plain language</span>
+          <h1>Think of an organism as a living creative thing.</h1>
+          <div class="hero-glow" aria-hidden="true"></div>
+          <p>
+            A song can be an organism. A conversation can be an organism. A map can be an organism. Each one has a lasting identity,
+            changes over time through state, and can contain other organisms through composition.
+          </p>
+        </section>
+
+        <section class="path" aria-label="how identity begins">
+          <article class="path-step">
+            <strong>1. Coherence is noticed</strong>
+            <p>Someone feels that this thing is real enough to be tended.</p>
+          </article>
+          <article class="path-step">
+            <strong>2. Threshold is crossed</strong>
+            <p>A steward introduces it to Omnilith and takes responsibility for its life.</p>
+          </article>
+          <article class="path-step">
+            <strong>3. Identity is maintained</strong>
+            <p>It keeps evolving through proposals, integration, and ongoing care.</p>
+          </article>
+        </section>
+
+        <section class="cards" aria-label="organism basics">
+          <article class="card">
+            <h2>Identity</h2>
+            <p>
+              Identity is the thread that stays the same even when the details change. You can always point to this organism and know
+              it is still itself.
+            </p>
+          </article>
+          <article class="card">
+            <h2>State</h2>
+            <p>
+              State is each moment of the organism's life. States are never overwritten, so the history remains visible and trustworthy.
+            </p>
+          </article>
+          <article class="card">
+            <h2>Composition</h2>
+            <p>
+              Composition is how organisms live inside one another. A parent creates a boundary, and children inside it create richer
+              behavior together.
+            </p>
+          </article>
+        </section>
+
+        <section class="example">
+          <h3>Example: A release organism</h3>
+          <p>
+            Imagine a release as one organism. Inside it you compose song organisms, image organisms, policy organisms, and thread
+            organisms. The whole release gains its own identity, while each child remains alive and independently tendable.
+          </p>
+          <p class="pulse"><span class="dot" aria-hidden="true"></span>Vitality reflects recent tending and change.</p>
+        </section>
+
+        <footer>
+          Omnilith is an ecology: infrastructure provides the physics, and organisms provide the life.
+        </footer>
+      </section>
+    </main>
+  </body>
+</html>

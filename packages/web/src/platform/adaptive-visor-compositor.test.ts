@@ -37,6 +37,53 @@ describe('adaptive visor compositor', () => {
     expect(state.activeWidgets).toEqual(['history-navigation', 'vitality']);
   });
 
+  it('canonical events transition context across map, interior, and visor-organism deterministically', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const focused = computeNextAdaptiveVisorLayout(initialState, { type: 'focus-organism', organismId: 'organism-a' });
+    const entered = computeNextAdaptiveVisorLayout(focused, { type: 'enter-organism', organismId: 'organism-a' });
+    const visorOpened = computeNextAdaptiveVisorLayout(entered, {
+      type: 'open-visor-organism',
+      organismId: 'organism-b',
+    });
+    const visorClosed = computeNextAdaptiveVisorLayout(visorOpened, { type: 'close-visor-organism' });
+    const exited = computeNextAdaptiveVisorLayout(visorClosed, { type: 'exit-organism' });
+    const mapReset = computeNextAdaptiveVisorLayout(exited, { type: 'enter-map' });
+
+    expect(focused.layoutContext.contextClass).toBe('map');
+    expect(focused.focusedOrganismId).toBe('organism-a');
+
+    expect(entered.layoutContext.contextClass).toBe('interior');
+    expect(entered.spatialLocation).toBe('interior');
+    expect(entered.enteredOrganismId).toBe('organism-a');
+    expect(entered.activePanels).toEqual(['interior-actions']);
+
+    expect(visorOpened.layoutContext.contextClass).toBe('visor-organism');
+    expect(visorOpened.visorOrganismId).toBe('organism-b');
+    expect(visorOpened.enteredOrganismId).toBe('organism-a');
+    expect(visorOpened.activePanels).toEqual(['visor-view']);
+
+    expect(visorClosed.layoutContext.contextClass).toBe('interior');
+    expect(visorClosed.visorOrganismId).toBeNull();
+    expect(visorClosed.activePanels).toEqual(['interior-actions']);
+
+    expect(exited.layoutContext.contextClass).toBe('map');
+    expect(exited.spatialLocation).toBe('map');
+    expect(exited.enteredOrganismId).toBeNull();
+
+    expect(mapReset.layoutContext.contextClass).toBe('map');
+    expect(mapReset.focusedOrganismId).toBeNull();
+    expect(mapReset.enteredOrganismId).toBeNull();
+    expect(mapReset.visorOrganismId).toBeNull();
+  });
+
+  it('set-altitude updates canonical altitude and derived context altitude', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const nextState = computeNextAdaptiveVisorLayout(initialState, { type: 'set-altitude', altitude: 'mid' });
+
+    expect(nextState.altitude).toBe('mid');
+    expect(nextState.layoutContext.altitude).toBe('mid');
+  });
+
   it('toggling a map panel opens and closes it deterministically', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
     const opened = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'threshold' });
@@ -71,8 +118,8 @@ describe('adaptive visor compositor', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
     const toggled = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'mine' });
     const changedContext = computeNextAdaptiveVisorLayout(toggled, {
-      type: 'context-changed',
-      context: createContext({ visorOrganismId: 'organism-2' }),
+      type: 'open-visor-organism',
+      organismId: 'organism-2',
     });
     const mutated = computeNextAdaptiveVisorLayout(changedContext, { type: 'mutation' });
 

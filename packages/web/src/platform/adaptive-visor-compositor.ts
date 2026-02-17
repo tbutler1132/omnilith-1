@@ -10,6 +10,7 @@ import type { VisorWidgetId } from '../hud/panels/core/widget-schema.js';
 import type { Altitude } from '../space/viewport-math.js';
 
 export type AdaptiveVisorContextClass = 'map' | 'interior' | 'visor-organism';
+export type AdaptiveVisorSpatialLocation = 'map' | 'interior';
 export type AdaptiveVisorMajorPanelId = 'visor-view' | 'interior-actions';
 export type AdaptiveVisorMapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
 export type AdaptiveVisorPanelId = AdaptiveVisorMajorPanelId | AdaptiveVisorMapPanelId;
@@ -36,6 +37,11 @@ export interface AdaptiveVisorLayoutSnapshot {
 export interface AdaptiveVisorCompositorState {
   adaptiveEnabled: boolean;
   traceEnabled: boolean;
+  spatialLocation: AdaptiveVisorSpatialLocation;
+  focusedOrganismId: string | null;
+  enteredOrganismId: string | null;
+  visorOrganismId: string | null;
+  altitude: Altitude;
   layoutContext: AdaptiveVisorLayoutContext;
   activePanels: AdaptiveVisorPanelId[];
   activeWidgets: AdaptiveVisorWidgetId[];
@@ -58,7 +64,13 @@ export interface AdaptiveVisorDecisionTraceEntry {
 }
 
 export type AdaptiveVisorCompositorEvent =
-  | { type: 'context-changed'; context: AdaptiveVisorLayoutContext }
+  | { type: 'enter-map' }
+  | { type: 'focus-organism'; organismId: string | null }
+  | { type: 'enter-organism'; organismId: string }
+  | { type: 'exit-organism' }
+  | { type: 'open-visor-organism'; organismId: string }
+  | { type: 'close-visor-organism' }
+  | { type: 'set-altitude'; altitude: Altitude }
   | { type: 'toggle-map-panel'; panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'> }
   | { type: 'open-template-values' }
   | { type: 'close-temporary-panel' }
@@ -96,6 +108,25 @@ function pushHistory(state: AdaptiveVisorCompositorState): AdaptiveVisorLayoutSn
 function trimDecisionTrace(decisionTrace: AdaptiveVisorDecisionTraceEntry[]): AdaptiveVisorDecisionTraceEntry[] {
   if (decisionTrace.length <= MAX_DECISION_TRACE) return decisionTrace;
   return decisionTrace.slice(decisionTrace.length - MAX_DECISION_TRACE);
+}
+
+function toSpatialLocation(enteredOrganismId: string | null): AdaptiveVisorSpatialLocation {
+  return enteredOrganismId ? 'interior' : 'map';
+}
+
+function withCanonicalFromContext(
+  state: AdaptiveVisorCompositorState,
+  context: AdaptiveVisorLayoutContext,
+): AdaptiveVisorCompositorState {
+  return {
+    ...state,
+    spatialLocation: toSpatialLocation(context.enteredOrganismId),
+    focusedOrganismId: context.focusedOrganismId,
+    enteredOrganismId: context.enteredOrganismId,
+    visorOrganismId: context.visorOrganismId,
+    altitude: context.altitude,
+    layoutContext: context,
+  };
 }
 
 function applyDecisionTrace(
@@ -198,8 +229,7 @@ function handleContextChanged(
   if (context.contextClass !== 'map') {
     return {
       nextState: {
-        ...state,
-        layoutContext: context,
+        ...withCanonicalFromContext(state, context),
         activePanels: recomputed.activePanels,
         activeWidgets: recomputed.activeWidgets,
         anchors: ANCHORS,
@@ -214,8 +244,7 @@ function handleContextChanged(
   if (canKeepCurrentMapPanel && contextClassChanged === false) {
     return {
       nextState: {
-        ...state,
-        layoutContext: context,
+        ...withCanonicalFromContext(state, context),
         activePanels: constrainPanels(state.activePanels.filter((panelId) => isMapPanel(panelId))),
         activeWidgets: resolveWidgetsForContext(context),
         anchors: ANCHORS,
@@ -233,8 +262,7 @@ function handleContextChanged(
   if (restored) {
     return {
       nextState: {
-        ...state,
-        layoutContext: context,
+        ...withCanonicalFromContext(state, context),
         activePanels: selectRestorableMapPanels(restored),
         activeWidgets: resolveWidgetsForContext(context),
         anchors: ANCHORS,
@@ -247,8 +275,7 @@ function handleContextChanged(
 
   return {
     nextState: {
-      ...state,
-      layoutContext: context,
+      ...withCanonicalFromContext(state, context),
       activePanels: recomputed.activePanels,
       activeWidgets: recomputed.activeWidgets,
       anchors: ANCHORS,
@@ -353,6 +380,114 @@ function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): Adaptiv
   };
 }
 
+function handleFocusOrganism(
+  state: AdaptiveVisorCompositorState,
+  organismId: string | null,
+): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: state.visorOrganismId,
+    enteredOrganismId: state.enteredOrganismId,
+    focusedOrganismId: organismId,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'focus-organism',
+  };
+}
+
+function handleEnterMap(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: null,
+    enteredOrganismId: null,
+    focusedOrganismId: null,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'enter-map',
+  };
+}
+
+function handleEnterOrganism(state: AdaptiveVisorCompositorState, organismId: string): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: null,
+    enteredOrganismId: organismId,
+    focusedOrganismId: organismId,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'enter-organism',
+  };
+}
+
+function handleExitOrganism(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: state.visorOrganismId,
+    enteredOrganismId: null,
+    focusedOrganismId: state.focusedOrganismId,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'exit-organism',
+  };
+}
+
+function handleOpenVisorOrganism(state: AdaptiveVisorCompositorState, organismId: string): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: organismId,
+    enteredOrganismId: state.enteredOrganismId,
+    focusedOrganismId: state.focusedOrganismId,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'open-visor-organism',
+  };
+}
+
+function handleCloseVisorOrganism(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: null,
+    enteredOrganismId: state.enteredOrganismId,
+    focusedOrganismId: state.focusedOrganismId,
+    altitude: state.altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'close-visor-organism',
+  };
+}
+
+function handleSetAltitude(state: AdaptiveVisorCompositorState, altitude: Altitude): AdaptiveVisorPolicyResult {
+  const context = deriveAdaptiveVisorContext({
+    visorOrganismId: state.visorOrganismId,
+    enteredOrganismId: state.enteredOrganismId,
+    focusedOrganismId: state.focusedOrganismId,
+    altitude,
+  });
+
+  const result = handleContextChanged(state, context);
+  return {
+    nextState: result.nextState,
+    decision: 'set-altitude',
+  };
+}
+
 export function deriveAdaptiveVisorContext(input: {
   visorOrganismId: string | null;
   enteredOrganismId: string | null;
@@ -383,6 +518,11 @@ export function createAdaptiveVisorCompositorState(
   return {
     adaptiveEnabled,
     traceEnabled: options?.traceEnabled ?? false,
+    spatialLocation: toSpatialLocation(context.enteredOrganismId),
+    focusedOrganismId: context.focusedOrganismId,
+    enteredOrganismId: context.enteredOrganismId,
+    visorOrganismId: context.visorOrganismId,
+    altitude: context.altitude,
     layoutContext: context,
     activePanels: recomputed.activePanels,
     activeWidgets: recomputed.activeWidgets,
@@ -399,30 +539,47 @@ export function computeNextAdaptiveVisorLayout(
   state: AdaptiveVisorCompositorState,
   event: AdaptiveVisorCompositorEvent,
 ): AdaptiveVisorCompositorState {
-  if (!state.adaptiveEnabled) {
-    if (event.type !== 'context-changed') {
-      return applyDecisionTrace(state, event, {
-        nextState: state,
-        decision: 'ignore-event-adaptive-disabled',
-      });
-    }
-    const recomputed = recomputeForContext(event.context);
+  if (
+    !state.adaptiveEnabled &&
+    (event.type === 'toggle-map-panel' ||
+      event.type === 'open-template-values' ||
+      event.type === 'close-temporary-panel' ||
+      event.type === 'mutation')
+  ) {
     return applyDecisionTrace(state, event, {
-      nextState: {
-        ...state,
-        layoutContext: event.context,
-        activePanels: recomputed.activePanels,
-        activeWidgets: recomputed.activeWidgets,
-        anchors: ANCHORS,
-      },
-      decision: 'recompute-layout-adaptive-disabled',
+      nextState: state,
+      decision: 'ignore-policy-event-adaptive-disabled',
     });
   }
 
   let result: AdaptiveVisorPolicyResult;
   switch (event.type) {
-    case 'context-changed':
-      result = handleContextChanged(state, event.context);
+    case 'enter-map':
+      result = handleEnterMap(state);
+      break;
+
+    case 'focus-organism':
+      result = handleFocusOrganism(state, event.organismId);
+      break;
+
+    case 'enter-organism':
+      result = handleEnterOrganism(state, event.organismId);
+      break;
+
+    case 'exit-organism':
+      result = handleExitOrganism(state);
+      break;
+
+    case 'open-visor-organism':
+      result = handleOpenVisorOrganism(state, event.organismId);
+      break;
+
+    case 'close-visor-organism':
+      result = handleCloseVisorOrganism(state);
+      break;
+
+    case 'set-altitude':
+      result = handleSetAltitude(state, event.altitude);
       break;
 
     case 'toggle-map-panel':
