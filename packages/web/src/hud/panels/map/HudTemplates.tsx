@@ -197,7 +197,7 @@ export function HudTemplates({ onTemplateInstantiated, onTemplateValuesRequested
       <header className="hud-templates-header">
         <div>
           <h3>Templates</h3>
-          <p>Instantiate a composition recipe, then tend the new organism.</p>
+          <p>Templates instantiate multiple organisms from one recipe and compose them in one flow.</p>
         </div>
       </header>
 
@@ -221,7 +221,7 @@ export function HudTemplates({ onTemplateInstantiated, onTemplateValuesRequested
                     onClick={() => handleWithValues(template)}
                     disabled={isInstantiating}
                   >
-                    With values
+                    Customize values
                   </button>
                 )}
                 <button
@@ -230,7 +230,7 @@ export function HudTemplates({ onTemplateInstantiated, onTemplateValuesRequested
                   onClick={() => handleInstantiate(template.id)}
                   disabled={isInstantiating}
                 >
-                  {isInstantiating ? 'Instantiating...' : 'Instantiate'}
+                  {isInstantiating ? 'Creating scaffold...' : 'Create scaffold'}
                 </button>
               </div>
             </li>

@@ -115,7 +115,7 @@ export function HudTemplateValuesPanel({
       <div className="hud-template-values-header">
         <div>
           <h3>{customization.templateName}</h3>
-          <p>Set initial song values before threshold.</p>
+          <p>Customize song values before running this template recipe.</p>
         </div>
         <button type="button" className="secondary" onClick={onCancel}>
           Back
@@ -177,7 +177,7 @@ export function HudTemplateValuesPanel({
 
         <div className="form-actions">
           <button type="submit" disabled={submitting}>
-            {submitting ? 'Instantiating...' : 'Instantiate With Values'}
+            {submitting ? 'Creating scaffold...' : 'Create scaffold with values'}
           </button>
           <button type="button" className="secondary" onClick={onCancel}>
             Cancel

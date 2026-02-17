@@ -34,7 +34,7 @@ const CONTENT_TYPES: ContentTypeOption[] = [
   {
     id: 'song',
     label: 'Song',
-    summary: 'A parent song boundary for mixes, stems, and source.',
+    summary: 'Song identity and state only. Use a template to scaffold cover, source, stems, and mix organisms.',
     payloadExample:
       '{\n  "title": "Untitled Song",\n  "artistCredit": "Unknown Artist",\n  "status": "draft",\n  "tempoBpm": 120\n}',
   },
@@ -167,7 +167,7 @@ export function ThresholdForm({ onCreated, onClose, inline }: ThresholdFormProps
       <div className="threshold-form-header">
         <div>
           <h2>Threshold Organism</h2>
-          <p>Introduce something new with an initial state and stewardship posture.</p>
+          <p>Threshold introduces one organism with one initial state. For multi-organism scaffolds, use Templates.</p>
         </div>
         <button
           type="button"
