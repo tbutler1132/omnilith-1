@@ -1,8 +1,0 @@
-{
-  "proposalId": "test-agent-issue-proposal-flow",
-  "title": "Test agent issue proposal flow",
-  "body": "Validation issue to confirm proposal sync creates a GitHub issue after merge. Safe to delete after verification.",
-  "labels": ["test"],
-  "openedBy": "@tbutler1132",
-  "aiAuthored": true
-}
