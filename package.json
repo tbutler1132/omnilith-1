@@ -12,7 +12,10 @@
     "db:reset": "OMNILITH_ALLOW_DB_RESET=true pnpm --filter @omnilith/api db:reset",
     "hooks:install": "git config core.hooksPath .githooks",
     "hooks:pre-commit": "pnpm -r lint",
-    "hooks:pre-push": "pnpm run check"
+    "hooks:pre-push": "pnpm run check",
+    "issue-proposals:validate": "node scripts/issue-proposals.mjs validate",
+    "issue-proposals:sync": "node scripts/issue-proposals.mjs sync",
+    "agent:receiver": "node scripts/agent-webhook-receiver.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.3.14",

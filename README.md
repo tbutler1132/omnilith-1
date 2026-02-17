@@ -110,6 +110,17 @@ For branch protection, CI, and local workflow guardrails, see [docs/DEVELOPMENT-
 | `CLAUDE.md` | Agent and developer guide, controlled vocabulary |
 | `CONTRIBUTING.md` | How to contribute |
 
+## Contributing model
+
+Omnilith uses a dual-lane contribution model:
+
+- Human-authored code can be submitted via normal pull requests.
+- AI-authored implementation work should be proposed through `.github/issue-proposals/` (one JSON file per proposal).
+
+Accepted proposal entries are synchronized into GitHub issues automatically after merge to `main`.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for required proposal fields and workflow details.
+For agent webhook setup, see [docs/AGENT-WEBHOOK-RECEIVER.md](docs/AGENT-WEBHOOK-RECEIVER.md).
+
 ## Tech stack
 
 - **Language:** TypeScript (strict mode)

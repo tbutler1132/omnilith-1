@@ -1,0 +1,51 @@
+name: Agent Execution
+description: Define machine-executable work for the agent lane.
+title: "agent: "
+labels:
+  - agent
+  - ai-authored
+body:
+  - type: textarea
+    id: objective
+    attributes:
+      label: Objective
+      description: What should be implemented?
+      placeholder: Implement X so Y outcome is possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Domain context, constraints, and architecture boundaries.
+      placeholder: Include relevant files, docs, and constraints.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Checklist of expected behavior.
+      placeholder: |
+        - [ ] Behavior A
+        - [ ] Behavior B
+        - [ ] Tests cover key domain behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: verification
+    attributes:
+      label: Verification
+      description: Commands or manual checks that prove completion.
+      placeholder: |
+        pnpm run check
+
+  - type: textarea
+    id: implementation_notes
+    attributes:
+      label: Implementation Notes
+      description: Optional details for sequencing, risks, and non-goals.
+      placeholder: Keep phase scope tight. No unrelated refactors.
