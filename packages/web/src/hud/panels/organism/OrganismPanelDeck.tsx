@@ -107,6 +107,11 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
         }}
         onCollapseMainPanel={() => {
           setPreferredPanelId(null);
+          // When tending from an interior context, collapsing should return
+          // to interior actions instead of leaving an invisible visor target.
+          if (enteredOrganismId === organismId) {
+            closeVisorOrganism();
+          }
         }}
         renderPanelBody={(panelId) => {
           if (panelId === 'organism') {
