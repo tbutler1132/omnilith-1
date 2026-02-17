@@ -7,6 +7,7 @@ Related decisions:
 
 - `docs/decisions/019-adaptive-visor-template-slot-architecture.md`
 - `docs/decisions/021-adaptive-visor-panel-taxonomy-and-intent-matrix.md`
+- `docs/decisions/022-adaptive-visor-layout-variants-and-collapsed-overflow.md`
 
 Primary implementation files:
 
