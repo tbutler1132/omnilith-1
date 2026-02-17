@@ -37,6 +37,7 @@ export function organismRoutes(container: Container) {
       contentTypeId: c.req.query('contentTypeId') as ContentTypeId | undefined,
       createdBy: c.req.query('createdBy') as UserId | undefined,
       parentId: c.req.query('parentId') as OrganismId | undefined,
+      nameQuery: c.req.query('q') ?? undefined,
       limit: c.req.query('limit') ? Number(c.req.query('limit')) : undefined,
       offset: c.req.query('offset') ? Number(c.req.query('offset')) : undefined,
     };

@@ -7,6 +7,7 @@
  */
 
 import { useMemo } from 'react';
+import { useOrganismsByIds } from '../hooks/use-organism.js';
 import { SpaceOrganism } from './SpaceOrganism.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
@@ -22,6 +23,11 @@ interface SpaceLayerProps {
   onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterMap: (mapId: string, label: string) => void;
+}
+
+export function resolveDetailIds(visibleEntries: SpatialMapEntry[]): string[] {
+  // High-altitude markers still need content-type data for visual distinctions.
+  return visibleEntries.map((entry) => entry.organismId);
 }
 
 export function SpaceLayer({
@@ -40,14 +46,28 @@ export function SpaceLayer({
     return entries.filter((e) => isVisible(e.x, e.y, BASE_SIZE * (e.size ?? 1), bounds));
   }, [entries, viewport, screenSize]);
 
+  const detailIds = useMemo(() => resolveDetailIds(visibleEntries), [visibleEntries]);
+
+  const {
+    data: organismDataById,
+    loading: organismDataLoading,
+    error: organismDataError,
+  } = useOrganismsByIds(detailIds);
+
   return (
     <>
       {visibleEntries.map((entry) => (
+        // Visible map entries request organism detail so marker distinctions
+        // can reflect content type even at high altitude.
         <SpaceOrganism
           key={entry.organismId}
           entry={entry}
           altitude={altitude}
           focused={focusedOrganismId === entry.organismId}
+          organismDataRequested={true}
+          organismData={organismDataById?.[entry.organismId]}
+          organismDataLoading={organismDataLoading && !organismDataById?.[entry.organismId]}
+          organismDataError={organismDataError}
           onFocusOrganism={onFocusOrganism}
           onEnterOrganism={onEnterOrganism}
           onEnterMap={onEnterMap}

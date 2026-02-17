@@ -8,7 +8,7 @@
  */
 
 import { memo } from 'react';
-import { useOrganism } from '../hooks/use-organism.js';
+import type { OrganismData } from '../hooks/use-organism.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, zoomForAltitude } from './viewport-math.js';
@@ -19,6 +19,10 @@ interface SpaceOrganismProps {
   entry: SpatialMapEntry;
   altitude: Altitude;
   focused: boolean;
+  organismDataRequested: boolean;
+  organismData: OrganismData | undefined;
+  organismDataLoading: boolean;
+  organismDataError: Error | undefined;
   onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterMap: (mapId: string, label: string) => void;
@@ -28,11 +32,17 @@ function SpaceOrganismImpl({
   entry,
   altitude,
   focused,
+  organismDataRequested,
+  organismData,
+  organismDataLoading,
+  organismDataError,
   onFocusOrganism,
   onEnterOrganism,
   onEnterMap,
 }: SpaceOrganismProps) {
-  const { data, loading, error } = useOrganism(entry.organismId);
+  const data = organismData;
+  const loading = organismDataRequested && organismDataLoading && !data;
+  const error = organismDataRequested ? organismDataError : undefined;
 
   // Fixed world-space size — never changes with altitude.
   // Only the rendered content inside changes.
@@ -51,6 +61,7 @@ function SpaceOrganismImpl({
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (focused) {
+      if (!data?.currentState) return;
       if (data?.currentState?.contentTypeId === 'community') {
         const payload = data.currentState.payload as { mapOrganismId: string };
         onEnterMap(payload.mapOrganismId, data.organism.name);
@@ -64,6 +75,7 @@ function SpaceOrganismImpl({
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (!data?.currentState) return;
     if (data?.currentState?.contentTypeId === 'spatial-map') {
       onEnterMap(entry.organismId, data.organism.name);
     } else if (data?.currentState?.contentTypeId === 'community') {
@@ -92,7 +104,7 @@ function SpaceOrganismImpl({
     );
   }
 
-  if (error || !data?.currentState) {
+  if (organismDataRequested && (error || !data?.currentState)) {
     return (
       <button
         type="button"
@@ -120,6 +132,16 @@ function SpaceOrganismImpl({
     );
   }
 
+  if (!data?.currentState) {
+    return (
+      <button type="button" className={className} style={style} onClick={handleClick} onDoubleClick={handleDoubleClick}>
+        {altitude === 'mid' ? <span className="organism-label">Loading...</span> : null}
+      </button>
+    );
+  }
+
+  const currentState = data.currentState;
+
   // Mid altitude: type badge + organism name
   if (altitude === 'mid') {
     return (
@@ -130,18 +152,18 @@ function SpaceOrganismImpl({
         onClick={handleClick}
         onDoubleClick={handleDoubleClick}
       >
-        <span className="organism-type-badge">{data.currentState.contentTypeId}</span>
+        <span className="organism-type-badge">{currentState.contentTypeId}</span>
         <span className="organism-label">{data.organism.name}</span>
       </button>
     );
   }
 
   // Close altitude: full content-type renderer
-  const Renderer = getRenderer(data.currentState.contentTypeId) ?? FallbackRenderer;
+  const Renderer = getRenderer(currentState.contentTypeId) ?? FallbackRenderer;
 
   return (
     <button type="button" className={className} style={style} onClick={handleClick} onDoubleClick={handleDoubleClick}>
-      <Renderer state={data.currentState} zoom={zoomForAltitude('close')} focused={focused} />
+      <Renderer state={currentState} zoom={zoomForAltitude('close')} focused={focused} />
     </button>
   );
 }

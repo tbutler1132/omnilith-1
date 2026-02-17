@@ -36,6 +36,13 @@ export class PgQueryPort implements QueryPort {
       );
     }
 
+    if (filters.nameQuery) {
+      const normalizedNameQuery = filters.nameQuery.trim().toLowerCase();
+      if (normalizedNameQuery.length > 0) {
+        conditions.push(sql`LOWER(${organisms.name}) LIKE ${`%${normalizedNameQuery}%`}`);
+      }
+    }
+
     if (filters.contentTypeId) {
       conditions.push(
         sql`${organisms.id} IN (

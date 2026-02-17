@@ -524,6 +524,33 @@ describe('query and listing routes', () => {
     expect(body.organisms).toHaveLength(2);
   });
 
+  it('GET /organisms filters by name query', async () => {
+    await createTestOrganism(app, { name: 'Alpha Song' });
+    await createTestOrganism(app, { name: 'Beta Draft' });
+    await createTestOrganism(app, { name: 'alpha Notes' });
+
+    const res = await app.request('/organisms?q=ALPHA');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(2);
+    expect(body.organisms.map((entry: { organism: { name: string } }) => entry.organism.name)).toEqual([
+      'Alpha Song',
+      'alpha Notes',
+    ]);
+  });
+
+  it('GET /organisms applies pagination filters', async () => {
+    await createTestOrganism(app, { name: 'First' });
+    await createTestOrganism(app, { name: 'Second' });
+    await createTestOrganism(app, { name: 'Third' });
+
+    const res = await app.request('/organisms?limit=1&offset=1');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(1);
+    expect(body.organisms[0].organism.name).toBe('Second');
+  });
+
   it('GET /organisms/:id/parent returns parent composition record', async () => {
     const { organism: parent } = await createTestOrganism(app);
     const { organism: child } = await createTestOrganism(app);

@@ -27,6 +27,7 @@ export interface QueryFilters {
   readonly contentTypeId?: ContentTypeId;
   readonly createdBy?: UserId;
   readonly parentId?: OrganismId;
+  readonly nameQuery?: string;
   readonly limit?: number;
   readonly offset?: number;
 }

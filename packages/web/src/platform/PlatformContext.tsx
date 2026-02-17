@@ -337,14 +337,14 @@ export function PlatformProvider({
 
   const staticState = useMemo<PlatformStaticState>(
     () => ({
-      authMode: state.authMode,
-      canWrite: state.authMode === 'authenticated',
-      userId: state.userId,
-      personalOrganismId: state.personalOrganismId,
-      homePageOrganismId: state.homePageOrganismId,
-      worldMapId: state.worldMapId,
+      authMode,
+      canWrite: authMode === 'authenticated',
+      userId,
+      personalOrganismId,
+      homePageOrganismId,
+      worldMapId,
     }),
-    [state.authMode, state.userId, state.personalOrganismId, state.homePageOrganismId, state.worldMapId],
+    [authMode, userId, personalOrganismId, homePageOrganismId, worldMapId],
   );
 
   const mapState = useMemo<PlatformMapState>(

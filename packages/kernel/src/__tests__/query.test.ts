@@ -123,6 +123,16 @@ describe('query port', () => {
       expect(results[0].organism.id).toBe(child.id);
     });
 
+    it('filters by name query case-insensitively', async () => {
+      await makeOrganism('Alpha Song');
+      await makeOrganism('Beta Draft');
+      await makeOrganism('alpha Notes');
+
+      const results = await queryPort.findOrganismsWithState({ nameQuery: 'ALPHA' });
+      expect(results).toHaveLength(2);
+      expect(results.map((result) => result.organism.name)).toEqual(['Alpha Song', 'alpha Notes']);
+    });
+
     it('paginates with limit and offset', async () => {
       await makeOrganism('First');
       await makeOrganism('Second');

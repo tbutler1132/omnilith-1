@@ -60,7 +60,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const vitalityWidgetEnabled = organismTemplate.widgetSlots.allowedWidgets.includes('vitality');
 
   const { data: organism } = useOrganism(organismId, refreshKey);
-  const { surfaced, loading: surfaceLoading } = useIsSurfaced(organismId);
+  const { surfaced, loading: surfaceLoading } = useIsSurfaced(worldMapId, organismId);
 
   const name = organism?.organism.name ?? '...';
   const contentType = organism?.currentState?.contentTypeId ?? '...';

@@ -55,10 +55,19 @@ function readPath(path: string): string {
   return `/public${path}`;
 }
 
-export function fetchOrganisms(filters?: { contentTypeId?: string; limit?: number }) {
+interface FetchOrganismsFilters {
+  readonly contentTypeId?: string;
+  readonly limit?: number;
+  readonly offset?: number;
+  readonly query?: string;
+}
+
+export function fetchOrganisms(filters?: FetchOrganismsFilters) {
   const params = new URLSearchParams();
   if (filters?.contentTypeId) params.set('contentTypeId', filters.contentTypeId);
   if (filters?.limit) params.set('limit', String(filters.limit));
+  if (filters?.offset && filters.offset > 0) params.set('offset', String(filters.offset));
+  if (filters?.query && filters.query.trim().length > 0) params.set('q', filters.query.trim());
   const qs = params.toString();
   return apiFetch<FetchOrganismsResponse>(`/organisms${qs ? `?${qs}` : ''}`);
 }
