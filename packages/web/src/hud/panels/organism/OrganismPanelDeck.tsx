@@ -18,6 +18,7 @@ import {
   usePlatformViewportMeta,
 } from '../../../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../../../renderers/index.js';
+import { VisorWidgetLane, VitalityWidget } from '../../widgets/index.js';
 import { renderVisorPanelBody } from '../core/panel-body-registry.js';
 import {
   isVisorHudPanelId,
@@ -27,8 +28,6 @@ import {
 } from '../core/panel-schema.js';
 import { resolvePanelVisorTemplate } from '../core/template-schema.js';
 import { VisorPanelDeck } from '../core/VisorPanelDeck.js';
-import { VisorWidgetLane } from '../widgets/VisorWidgetLane.js';
-import { VitalityWidget } from '../widgets/VitalityWidget.js';
 
 interface OrganismPanelDeckProps {
   organismId: string;

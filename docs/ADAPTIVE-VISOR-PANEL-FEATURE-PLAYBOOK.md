@@ -17,6 +17,7 @@ Primary implementation files:
 - `packages/web/src/hud/panels/core/VisorPanelBody.tsx`
 - `packages/web/src/hud/panels/core/panel-body-registry.tsx`
 - `packages/web/src/hud/panels/core/widget-schema.ts`
+- `packages/web/src/hud/widgets/index.ts`
 
 Guardrail for write ownership:
 

@@ -5,8 +5,8 @@
  * vitality out of the main panel taxonomy.
  */
 
-import { useVitality } from '../../../hooks/use-organism.js';
-import { formatDate } from '../organism/sections/format-date.js';
+import { useVitality } from '../../hooks/use-organism.js';
+import { formatDate } from '../panels/organism/sections/format-date.js';
 
 interface VitalityWidgetProps {
   organismId: string;

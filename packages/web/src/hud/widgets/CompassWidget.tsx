@@ -1,10 +1,10 @@
 /**
- * Compass — spatial orientation widget.
+ * CompassWidget — spatial orientation widget.
  *
  * Rendered in the adaptive widget lane for map context.
  */
 
-export function Compass() {
+export function CompassWidget() {
   return (
     <div className="compass">
       <svg width="32" height="32" viewBox="0 0 32 32" role="img" aria-label="Compass pointing north">

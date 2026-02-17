@@ -16,7 +16,6 @@ import {
   usePlatformStaticState,
   usePlatformVisorState,
 } from '../platform/index.js';
-import { Compass } from './Compass.js';
 import { renderMapPanelBody } from './panels/core/panel-body-registry.js';
 import {
   isInteriorHudPanelId,
@@ -27,8 +26,8 @@ import {
 import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
 import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
 import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
-import { VisorWidgetLane } from './panels/widgets/VisorWidgetLane.js';
 import type { TemplateSongCustomization } from './template-values.js';
+import { CompassWidget, VisorWidgetLane } from './widgets/index.js';
 
 type MapPanelId = MapHudPanelId | null;
 
@@ -100,7 +99,7 @@ export function AdaptiveVisorHost() {
     <div className="adaptive-visor-surface">
       {mapShowsCompass && (
         <VisorWidgetLane>
-          <Compass />
+          <CompassWidget />
         </VisorWidgetLane>
       )}
 
