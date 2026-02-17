@@ -94,6 +94,12 @@ The organism tending surface is modeled as a panel in visor context:
 
 When `organism` is main, universal panels are available as collapsed alternatives and can replace main on promotion.
 
+To keep panel boundaries clear:
+
+- regulated proposal creation lives in `propose`, while integration/decline lives in `proposals`
+- `organism` (`Tend`) focuses on organism rendering and tending actions
+- open-trunk append-state is represented by a dedicated `append` panel
+
 ### 6) Unified collapsed rail placement in adaptive mode
 
 Collapsed chips are now governed by shared placement semantics (`panelSlots.collapsed.placement`) and currently use the same viewport location for map and organism templates.

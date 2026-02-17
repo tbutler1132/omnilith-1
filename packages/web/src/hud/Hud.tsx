@@ -12,18 +12,19 @@ import {
   usePlatformActions,
   usePlatformAdaptiveVisorActions,
   usePlatformAdaptiveVisorState,
+  usePlatformStaticState,
   usePlatformVisorState,
 } from '../platform/index.js';
 import { AdaptiveVisorHost } from './AdaptiveVisorHost.js';
-import { Compass } from './Compass.js';
 import { HudCueLayer } from './cues/HudCueLayer.js';
 
 interface HudProps {
-  onLogout: () => void;
+  onLogoutOrLogin: () => void;
 }
 
-export function Hud({ onLogout }: HudProps) {
+export function Hud({ onLogoutOrLogin }: HudProps) {
   const { visorOrganismId } = usePlatformVisorState();
+  const { authMode } = usePlatformStaticState();
   const { closeVisorOrganism } = usePlatformActions();
   const adaptiveVisorState = usePlatformAdaptiveVisorState();
   const adaptiveVisorActions = usePlatformAdaptiveVisorActions();
@@ -59,11 +60,9 @@ export function Hud({ onLogout }: HudProps) {
 
   return (
     <div className="hud" data-visor-policy="adaptive" data-visor-map-panel={activeMapPanel ?? 'none'}>
-      <Compass />
-
-      {/* Floating logout — top-right, always visible */}
-      <button type="button" className="hud-logout" onClick={onLogout}>
-        Log out
+      {/* Floating auth action — top-right, always visible */}
+      <button type="button" className="hud-logout" onClick={onLogoutOrLogin}>
+        {authMode === 'authenticated' ? 'Log out' : 'Log in'}
       </button>
 
       <div className="hud-policy-badge hud-policy-badge--adaptive" data-cue-anchor="adaptive-policy-badge">

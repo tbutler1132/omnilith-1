@@ -1,16 +1,14 @@
 /**
- * useIsSurfaced — checks whether an organism appears on the current map.
+ * useIsSurfaced — checks whether an organism appears on a map.
  *
- * Loads the current map's spatial-map state and checks if the given
- * organism ID appears in the entries array.
+ * Loads the map's spatial-map state and checks if the given organism ID
+ * appears in the entries array.
  */
 
-import { usePlatformMapState } from '../platform/index.js';
 import { useOrganism } from './use-organism.js';
 
-export function useIsSurfaced(organismId: string): { surfaced: boolean; loading: boolean } {
-  const { currentMapId } = usePlatformMapState();
-  const { data, loading } = useOrganism(currentMapId);
+export function useIsSurfaced(mapId: string, organismId: string): { surfaced: boolean; loading: boolean } {
+  const { data, loading } = useOrganism(mapId);
 
   if (loading || !data?.currentState) {
     return { surfaced: false, loading };

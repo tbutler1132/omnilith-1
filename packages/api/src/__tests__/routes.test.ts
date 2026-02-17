@@ -27,6 +27,7 @@ import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
 import { organismRoutes } from '../routes/organisms.js';
 import { proposalRoutes } from '../routes/proposals.js';
+import { publicOrganismRoutes } from '../routes/public-organisms.js';
 import { userRoutes } from '../routes/users.js';
 
 function createTestContainer(): Container {
@@ -100,6 +101,12 @@ function createTestApp(container: Container, testUserId: UserId = 'test-user' as
   });
 
   return { app, testUserId };
+}
+
+function createPublicReadApp(container: Container) {
+  const app = new Hono();
+  app.route('/public/organisms', publicOrganismRoutes(container));
+  return app;
 }
 
 async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: boolean; name?: string }) {
@@ -517,6 +524,33 @@ describe('query and listing routes', () => {
     expect(body.organisms).toHaveLength(2);
   });
 
+  it('GET /organisms filters by name query', async () => {
+    await createTestOrganism(app, { name: 'Alpha Song' });
+    await createTestOrganism(app, { name: 'Beta Draft' });
+    await createTestOrganism(app, { name: 'alpha Notes' });
+
+    const res = await app.request('/organisms?q=ALPHA');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(2);
+    expect(body.organisms.map((entry: { organism: { name: string } }) => entry.organism.name)).toEqual([
+      'Alpha Song',
+      'alpha Notes',
+    ]);
+  });
+
+  it('GET /organisms applies pagination filters', async () => {
+    await createTestOrganism(app, { name: 'First' });
+    await createTestOrganism(app, { name: 'Second' });
+    await createTestOrganism(app, { name: 'Third' });
+
+    const res = await app.request('/organisms?limit=1&offset=1');
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.organisms).toHaveLength(1);
+    expect(body.organisms[0].organism.name).toBe('Second');
+  });
+
   it('GET /organisms/:id/parent returns parent composition record', async () => {
     const { organism: parent } = await createTestOrganism(app);
     const { organism: child } = await createTestOrganism(app);
@@ -771,5 +805,42 @@ describe('authorization enforcement', () => {
 
     const listDenied = await outsiderApp.request(`/organisms/${organism.id}/proposals`);
     expect(listDenied.status).toBe(403);
+  });
+});
+
+describe('public read routes', () => {
+  let container: Container;
+  let ownerApp: Hono<AuthEnv>;
+  let publicApp: Hono;
+
+  beforeEach(() => {
+    resetIdCounter();
+    container = createTestContainer();
+    ownerApp = createTestApp(container, 'owner-user' as UserId).app;
+    publicApp = createPublicReadApp(container);
+  });
+
+  it('guest can read a public organism via /public routes', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+
+    const organismRes = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(organismRes.status).toBe(200);
+
+    const statesRes = await publicApp.request(`/public/organisms/${organism.id}/states`);
+    expect(statesRes.status).toBe(200);
+    const statesBody = await statesRes.json();
+    expect(statesBody.states.length).toBe(1);
+  });
+
+  it('guest receives 404 for non-public organisms via /public routes', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+    await container.visibilityRepository.save({
+      organismId: organism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const res = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(res.status).toBe(404);
   });
 });

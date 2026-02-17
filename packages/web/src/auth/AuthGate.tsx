@@ -7,12 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { fetchSession, login, signup } from '../api/auth.js';
-
-export interface AuthSession {
-  userId: string;
-  personalOrganismId: string | null;
-  homePageOrganismId: string | null;
-}
+import type { AuthSession } from './session.js';
 
 interface AuthGateProps {
   children: React.ReactNode;

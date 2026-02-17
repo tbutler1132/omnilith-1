@@ -29,6 +29,13 @@ export class InMemoryQueryPort implements QueryPort {
       all = all.filter((o) => childIds.has(o.id));
     }
 
+    if (filters.nameQuery) {
+      const normalizedQuery = filters.nameQuery.trim().toLowerCase();
+      if (normalizedQuery.length > 0) {
+        all = all.filter((o) => o.name.toLowerCase().includes(normalizedQuery));
+      }
+    }
+
     const results: OrganismWithState[] = [];
     for (const organism of all) {
       const currentState = await this.states.findCurrentByOrganismId(organism.id);

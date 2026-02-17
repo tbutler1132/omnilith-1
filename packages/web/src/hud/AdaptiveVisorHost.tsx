@@ -7,23 +7,26 @@
  */
 
 import { useState } from 'react';
-import { ThresholdForm } from '../organisms/ThresholdForm.js';
 import { selectActiveMapPanel } from '../platform/adaptive-visor-compositor.js';
 import {
   usePlatformActions,
   usePlatformAdaptiveVisorActions,
   usePlatformAdaptiveVisorState,
   usePlatformMapState,
+  usePlatformStaticState,
   usePlatformVisorState,
 } from '../platform/index.js';
-import { HudMyOrganisms } from './HudMyOrganisms.js';
-import { HudTemplates } from './HudTemplates.js';
-import { HudTemplateValuesPanel } from './HudTemplateValuesPanel.js';
-import { OrganismPanelDeck } from './OrganismPanelDeck.js';
+import { Compass } from './Compass.js';
+import type { HudPanelId } from './panels/core/panel-schema.js';
+import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
+import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
+import { ThresholdForm } from './panels/forms/ThresholdForm.js';
+import { HudMyOrganisms } from './panels/map/HudMyOrganisms.js';
+import { HudTemplates } from './panels/map/HudTemplates.js';
+import { HudTemplateValuesPanel } from './panels/map/HudTemplateValuesPanel.js';
+import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
+import { VisorWidgetLane } from './panels/widgets/VisorWidgetLane.js';
 import type { TemplateSongCustomization } from './template-values.js';
-import type { HudPanelId } from './visor/panel-schema.js';
-import { resolvePanelVisorTemplate } from './visor/template-schema.js';
-import { VisorPanelDeck } from './visor/VisorPanelDeck.js';
 
 type MapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values' | null;
 type ToggleMapPanelId = 'threshold' | 'mine' | 'templates';
@@ -40,6 +43,7 @@ function isInteriorPanelId(panelId: HudPanelId): panelId is InteriorPanelId {
 export function AdaptiveVisorHost() {
   const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
+  const { canWrite } = usePlatformStaticState();
   const { openInVisor, bumpMapRefresh } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
   const adaptiveActions = usePlatformAdaptiveVisorActions();
@@ -50,6 +54,7 @@ export function AdaptiveVisorHost() {
 
   const contextClass = adaptiveState.layoutContext.contextClass;
   const activeMapPanel = selectActiveMapPanel(adaptiveState) as MapPanelId;
+  const mapShowsCompass = contextClass === 'map' && mapTemplate.widgetSlots.allowedWidgets.includes('compass');
 
   function closeActiveMapPanel() {
     if (!activeMapPanel) return;
@@ -93,12 +98,19 @@ export function AdaptiveVisorHost() {
 
   return (
     <div className="adaptive-visor-surface">
+      {mapShowsCompass && (
+        <VisorWidgetLane>
+          <Compass />
+        </VisorWidgetLane>
+      )}
+
       {contextClass === 'map' && adaptiveState.activeWidgets.includes('map-actions') && (
         <VisorPanelDeck
           title="Map panels"
           template={mapTemplate}
           surfaced={false}
           openTrunk={false}
+          canWrite={canWrite}
           templateValuesReady={templateCustomization !== null}
           preferredMainPanelId={activeMapPanel}
           extraCollapsedChips={
@@ -176,6 +188,7 @@ export function AdaptiveVisorHost() {
           template={interiorTemplate}
           surfaced={false}
           openTrunk={false}
+          canWrite={canWrite}
           preferredMainPanelId={null}
           onPromotePanel={(panelId) => {
             if (!isInteriorPanelId(panelId)) return;

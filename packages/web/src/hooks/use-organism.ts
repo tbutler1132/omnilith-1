@@ -24,7 +24,7 @@ interface AsyncState<T> {
   error: Error | undefined;
 }
 
-type OrganismData = {
+export type OrganismData = {
   organism: Awaited<ReturnType<typeof fetchOrganism>>['organism'];
   currentState: Awaited<ReturnType<typeof fetchOrganism>>['currentState'] | undefined;
 };
@@ -32,6 +32,35 @@ type OrganismData = {
 const organismCache = new Map<string, OrganismData>();
 const organismInflight = new Map<string, Promise<OrganismData>>();
 const ORGANISM_BATCH_CONCURRENCY = 4;
+const MAX_ORGANISM_CACHE_SIZE = 500;
+
+export function clearOrganismCache(): void {
+  organismCache.clear();
+  organismInflight.clear();
+}
+
+function getCachedOrganismData(id: string): OrganismData | undefined {
+  const cached = organismCache.get(id);
+  if (!cached) return undefined;
+
+  // Refresh insertion order so frequent reads stay in cache longer (LRU behavior).
+  organismCache.delete(id);
+  organismCache.set(id, cached);
+  return cached;
+}
+
+function setCachedOrganismData(id: string, data: OrganismData): void {
+  if (organismCache.has(id)) {
+    organismCache.delete(id);
+  }
+
+  organismCache.set(id, data);
+
+  if (organismCache.size <= MAX_ORGANISM_CACHE_SIZE) return;
+  const oldestKey = organismCache.keys().next().value as string | undefined;
+  if (!oldestKey) return;
+  organismCache.delete(oldestKey);
+}
 
 function useAsync<T>(fetcher: () => Promise<T>, deps: unknown[]): AsyncState<T> {
   const [state, setState] = useState<AsyncState<T>>({
@@ -74,7 +103,7 @@ function fetchOrganismCached(id: string, refreshKey: number): Promise<OrganismDa
   const inflightKey = refreshKey > 0 ? `${id}:${refreshKey}` : id;
 
   if (refreshKey === 0) {
-    const cached = organismCache.get(id);
+    const cached = getCachedOrganismData(id);
     if (cached) return Promise.resolve(cached);
   }
 
@@ -83,7 +112,7 @@ function fetchOrganismCached(id: string, refreshKey: number): Promise<OrganismDa
 
   const request = fetchOrganismData(id)
     .then((data) => {
-      organismCache.set(id, data);
+      setCachedOrganismData(id, data);
       return data;
     })
     .finally(() => {
@@ -110,7 +139,7 @@ async function fetchOrganismBatch(ids: string[], refreshKey: number): Promise<Re
 }
 
 export function useOrganisms(refreshKey = 0) {
-  return useAsync(() => fetchOrganisms().then((r) => r.organisms), [refreshKey]);
+  return useAsync(() => fetchOrganisms({ limit: 200 }).then((r) => r.organisms), [refreshKey]);
 }
 
 export function useOrganism(id: string, refreshKey = 0) {

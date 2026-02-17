@@ -595,6 +595,28 @@ The detailed architectural record for this decision set is captured in:
 
 - `docs/decisions/019-adaptive-visor-template-slot-architecture.md`
 
+### Move 31: Public Read Path Activated — Login for Write, Not for Encounter
+
+The earlier public-read decision was intentionally deferred (Decision 018) to protect sprint focus. That deferment served its purpose, but it became misaligned with the product's core communicative goal: the medium should explain itself through direct use.
+
+The revision is now explicit:
+
+- unauthenticated visitors can read public organisms
+- unauthenticated visitors cannot perform write actions
+- authentication gates thresholding, proposing, integrating/declining, composing/decomposing, and visibility changes
+
+This preserves the regulatory model while opening Depth 0 encounter for anyone arriving without an account.
+
+The implementation path now includes:
+
+1. public read-only API routes for organism retrieval
+2. guest-aware access semantics in the central access control module
+3. mode-aware rendering that keeps write controls authenticated-only
+
+The detailed decision and rationale are captured in:
+
+- `docs/decisions/020-public-read-path-enabled.md`
+
 ---
 
 ## Summary of What We're Building

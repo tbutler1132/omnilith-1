@@ -22,8 +22,11 @@ interface NavigationEntry {
   label: string;
 }
 
+export type AuthMode = 'guest' | 'authenticated';
+
 export interface PlatformState {
   /** Immutable per session */
+  authMode: AuthMode;
   userId: string;
   personalOrganismId: string | null;
   homePageOrganismId: string | null;
@@ -53,6 +56,8 @@ export interface PlatformState {
 }
 
 export interface PlatformStaticState {
+  authMode: AuthMode;
+  canWrite: boolean;
   userId: string;
   personalOrganismId: string | null;
   homePageOrganismId: string | null;
@@ -221,6 +226,7 @@ const AdaptiveVisorStateContext = createContext<PlatformAdaptiveVisorState | nul
 const AdaptiveVisorActionsContext = createContext<PlatformAdaptiveVisorActions | null>(null);
 
 interface PlatformProviderProps {
+  authMode: AuthMode;
   userId: string;
   personalOrganismId: string | null;
   homePageOrganismId: string | null;
@@ -238,6 +244,7 @@ function buildAdaptiveVisorContext(state: PlatformState) {
 }
 
 export function PlatformProvider({
+  authMode,
   userId,
   personalOrganismId,
   homePageOrganismId,
@@ -249,6 +256,7 @@ export function PlatformProvider({
   const traceEnabled = useMemo(() => isAdaptiveVisorDecisionTraceEnabled(), []);
 
   const initialState: PlatformState = {
+    authMode,
     userId,
     personalOrganismId,
     homePageOrganismId,
@@ -329,12 +337,14 @@ export function PlatformProvider({
 
   const staticState = useMemo<PlatformStaticState>(
     () => ({
-      userId: state.userId,
-      personalOrganismId: state.personalOrganismId,
-      homePageOrganismId: state.homePageOrganismId,
-      worldMapId: state.worldMapId,
+      authMode,
+      canWrite: authMode === 'authenticated',
+      userId,
+      personalOrganismId,
+      homePageOrganismId,
+      worldMapId,
     }),
-    [state.userId, state.personalOrganismId, state.homePageOrganismId, state.worldMapId],
+    [authMode, userId, personalOrganismId, homePageOrganismId, worldMapId],
   );
 
   const mapState = useMemo<PlatformMapState>(

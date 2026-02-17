@@ -9,6 +9,9 @@
  * 2. Check relationship — what relationship does the user have?
  * 3. Check action — is the action permitted given the relationship?
  *
+ * Guest callers (`userId = null`) can view public organisms only.
+ * All guest write actions are denied.
+ *
  * Critical rule: Membership in a community does NOT automatically
  * grant integration authority over organisms inside it. Integration
  * authority must be explicitly assigned per-organism.
@@ -44,7 +47,7 @@ export interface AccessControlDeps {
 }
 
 export async function checkAccess(
-  userId: UserId,
+  userId: UserId | null,
   organismId: OrganismId,
   action: ActionType,
   deps: AccessControlDeps,
@@ -57,6 +60,19 @@ export async function checkAccess(
   // Step 1: Visibility check
   const visibility = await deps.visibilityRepository.findByOrganismId(organismId);
   const level = visibility?.level ?? 'public';
+
+  // Guest caller path: unauthenticated users can only view public organisms.
+  if (userId === null) {
+    if (action !== 'view') {
+      return { allowed: false, reason: 'Authentication required' };
+    }
+
+    if (level !== 'public') {
+      return { allowed: false, reason: 'Organism is not public' };
+    }
+
+    return { allowed: true };
+  }
 
   const relationships = await deps.relationshipRepository.findByUserAndOrganism(userId, organismId);
 

@@ -1,29 +1,93 @@
-import { useCallback, useState } from 'react';
-import { AuthGate, type AuthSession } from './auth/AuthGate.js';
+import { useCallback, useEffect, useState } from 'react';
+import { fetchSession } from './api/auth.js';
+import { AuthDialog } from './auth/AuthDialog.js';
+import type { AuthSession } from './auth/session.js';
+import { clearOrganismCache } from './hooks/use-organism.js';
 import { Platform } from './platform/index.js';
 
-function AuthenticatedApp() {
+function AppShell() {
+  const [checkingSession, setCheckingSession] = useState(true);
   const [session, setSession] = useState<AuthSession | null>(null);
+  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  const handleAuth = useCallback((s: AuthSession) => setSession(s), []);
+  useEffect(() => {
+    const sessionId = localStorage.getItem('sessionId');
+    if (!sessionId) {
+      setCheckingSession(false);
+      return;
+    }
 
-  function handleLogout() {
-    localStorage.removeItem('sessionId');
-    setSession(null);
+    fetchSession()
+      .then((res) => {
+        setSession({
+          userId: res.userId,
+          personalOrganismId: res.personalOrganismId,
+          homePageOrganismId: res.homePageOrganismId,
+        });
+      })
+      .catch(() => {
+        localStorage.removeItem('sessionId');
+        clearOrganismCache();
+        setSession(null);
+      })
+      .finally(() => {
+        setCheckingSession(false);
+      });
+  }, []);
+
+  const handleAuthenticated = useCallback((next: AuthSession) => {
+    clearOrganismCache();
+    setSession(next);
+    setShowAuthDialog(false);
+  }, []);
+
+  const handleLogoutOrLogin = useCallback(() => {
+    if (session) {
+      localStorage.removeItem('sessionId');
+      clearOrganismCache();
+      setSession(null);
+      return;
+    }
+    setShowAuthDialog(true);
+  }, [session]);
+
+  function handleCloseAuthDialog() {
+    setShowAuthDialog(false);
   }
 
+  if (checkingSession) {
+    return (
+      <div className="auth-page">
+        <p className="loading">Loading...</p>
+      </div>
+    );
+  }
+
+  const authMode = session ? 'authenticated' : 'guest';
+  const userId = session?.userId ?? 'guest';
+  const personalOrganismId = session?.personalOrganismId ?? null;
+  const homePageOrganismId = session?.homePageOrganismId ?? null;
+
   return (
-    <AuthGate onAuth={handleAuth}>
-      {session && (
-        <Platform
-          userId={session.userId}
-          personalOrganismId={session.personalOrganismId}
-          homePageOrganismId={session.homePageOrganismId}
-          onLogout={handleLogout}
-        />
+    <>
+      <Platform
+        authMode={authMode}
+        userId={userId}
+        personalOrganismId={personalOrganismId}
+        homePageOrganismId={homePageOrganismId}
+        onLogoutOrLogin={handleLogoutOrLogin}
+      />
+      {showAuthDialog && !session && (
+        <AuthDialog onAuthenticated={handleAuthenticated} onClose={handleCloseAuthDialog} />
       )}
-    </AuthGate>
+    </>
   );
+}
+
+function AuthenticatedApp() {
+  // Retained for compatibility with existing imports/tests that may render App.
+  // The runtime flow now supports guest mode as default.
+  return <AppShell />;
 }
 
 export function App() {
