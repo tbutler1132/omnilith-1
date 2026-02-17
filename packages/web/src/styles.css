@@ -777,10 +777,12 @@ button.secondary:hover {
 }
 
 .space-organism--high:hover {
+  background: transparent;
   border-color: transparent;
 }
 
 .organism-dot {
+  position: relative;
   width: 30%;
   height: 30%;
   border-radius: 50%;
@@ -788,13 +790,24 @@ button.secondary:hover {
   transition: transform 0.15s;
 }
 
-.space-organism--high:hover .organism-dot {
-  transform: scale(1.3);
+.organism-dot::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border: 1px solid rgba(124, 108, 240, 0.45);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
 }
 
-.space-organism--high.space-organism--focused {
-  border-color: transparent;
-  box-shadow: none;
+.space-organism--high:hover .organism-dot {
+  transform: scale(1.15);
+}
+
+.space-organism--high:hover .organism-dot::after {
+  opacity: 1;
+  animation: marker-halo-pulse 1.15s ease-out infinite;
 }
 
 .space-organism--high.space-organism--focused .organism-dot {
@@ -844,6 +857,27 @@ button.secondary:hover {
 .space-organism--song .organism-type-badge {
   border-color: rgba(76, 174, 140, 0.35);
   color: #4cae8c;
+}
+
+/* Keep high-altitude focus treatment dot-only across content types. */
+.space-organism--high.space-organism--focused {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@keyframes marker-halo-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.42;
+  }
+  70% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
 }
 
 .space-organism--loading,
