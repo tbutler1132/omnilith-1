@@ -644,6 +644,51 @@ Important modeling distinction:
 
 No new infrastructure concern is introduced. This is composition + content types + policy evaluation, consistent with the existing model.
 
+### Move 33: Reference-Driven HUD Cues and Transport — Generic References, Capability Actions
+
+A workflow gap appeared while modeling stage-based album composition: stage organisms need lightweight references to candidate works, but contributors also need fast movement between a referenced organism (for example, an `audio` mix) and the boundary where coherence is governed (for example, the containing `song`).
+
+Full scenario context captured for Phase 1 alignment:
+
+- The first surfaced project organism is a Hero's Journey album concept, not a simple single-song organism.
+- The album concept includes stage organisms (for example: Call to Adventure, Ordeal, Return) with each stage carrying:
+  - stage description and narrative intent
+  - candidate song references
+  - proposal flow for adding/removing/reordering candidates
+- Candidate songs are often identified after songs already exist, then slotted into stages as references.
+- A single song may plausibly fit multiple stages, so stage membership must be reference-driven rather than composition ownership.
+- Contributors may want to audition a referenced `audio` organism quickly, then jump to the containing `song` organism to propose source/stems changes where coherence is actually regulated.
+- The desired behavior is:
+  - stage renderer shows a generic reference list
+  - HUD adaptively offers `play-preview`, `open-referenced-organism`, and `open-containing-organism` when available
+  - no music-specific hardcoding in shared content type contracts
+
+The initial temptation was to encode domain actions directly into `composition-reference` ("open mix", "open song"). This was rejected.
+
+The clarification:
+
+- `composition-reference` remains structural and generic (references + arrangement metadata)
+- navigation/action affordances should emerge in rendering/HUD, not in content-type schema
+- actions should be capability-driven ("play preview", "open containing organism"), not music-specific labels
+
+This led to a rendering-layer decision:
+
+1. **Renderer-to-HUD cue contract.** Renderers can emit generic cue intents to the cue lane (`open-referenced-organism`, `open-containing-organism`, `play-preview`).
+2. **Structural parent jumps.** "Open containing organism" resolves through the existing parent relationship; no song/mix coupling.
+3. **HUD transport widget.** Playback control lives in a persistent transport widget, independent of any specific renderer.
+4. **Capability-gated playback.** Preview cues appear only when referenced organisms are playable (initially `audio`).
+5. **No governance change.** Cues improve encounter/tending flow only; proposal/integration boundaries stay where coherence is held.
+
+This preserves the architecture:
+
+- generic content types stay generic
+- domain specificity remains in composition and rendering context
+- no kernel change is required
+
+The detailed decision and staged implementation plan are captured in:
+
+- `docs/decisions/023-reference-driven-hud-cues-and-transport.md`
+
 ---
 
 ## Summary of What We're Building
