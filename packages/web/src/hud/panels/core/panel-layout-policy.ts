@@ -81,6 +81,7 @@ function chooseSecondaryPanels(
   context: HudPanelContext,
   slots: VisorTemplatePanelSlots,
 ): HudPanelId[] {
+  if (mainPanelId == null) return [];
   if (!slots.secondary.enabled || slots.secondary.maxPanels <= 0) return [];
 
   const candidates = availablePanels.filter((panel) => panel.id !== mainPanelId && panel.roleSupport.secondary);

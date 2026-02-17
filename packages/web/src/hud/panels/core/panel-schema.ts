@@ -11,6 +11,7 @@ export type MapHudPanelId = 'threshold' | 'mine' | 'templates' | 'template-value
 export type InteriorHudPanelId = 'interior-actions';
 export type VisorHudPanelId =
   | 'organism'
+  | 'organism-nav'
   | 'composition'
   | 'propose'
   | 'proposals'
@@ -27,6 +28,7 @@ export interface HudPanelContext {
   openTrunk: boolean;
   templateValuesReady: boolean;
   canWrite: boolean;
+  interiorOrigin?: boolean;
 }
 
 export interface HudPanelRoleSupport {
@@ -108,6 +110,16 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 99,
     defaultSecondaryPriority: 0,
     collapsedPriority: 96,
+  },
+  {
+    id: 'organism-nav',
+    label: 'Panel shortcuts',
+    purpose: 'Promote organism tending panels through one secondary action surface.',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin === true,
+    roleSupport: { main: false, secondary: true, collapsed: false },
+    defaultMainPriority: 0,
+    defaultSecondaryPriority: 98,
+    collapsedPriority: 0,
   },
   {
     id: 'composition',
