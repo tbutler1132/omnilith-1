@@ -219,16 +219,20 @@ export function VisorPanelDeck({
             className="hud-action-btn visor-history-btn"
             onClick={() => handleHistoryNavigation(-1)}
             disabled={!previousMainTarget}
+            aria-label="Previous panel"
+            title="Previous panel"
           >
-            Back
+            {'<'}
           </button>
           <button
             type="button"
             className="hud-action-btn visor-history-btn"
             onClick={() => handleHistoryNavigation(1)}
             disabled={!nextMainTarget}
+            aria-label="Next panel"
+            title="Next panel"
           >
-            Forward
+            {'>'}
           </button>
         </div>
       )}

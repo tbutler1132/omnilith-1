@@ -47,7 +47,7 @@ describe('VisorPanelDeck', () => {
     const html = renderDeck({ templateContext: 'interior', preferredMainPanelId: null });
 
     expect(html).toContain('visor-panel-collapsed-rail--viewport-bottom-left');
-    expect(html).toContain('Tend current');
+    expect(html).toContain('Collaborate here');
     expect(html).not.toContain('visor-panel-main-slot');
   });
 

@@ -69,13 +69,13 @@ export function AdaptiveVisorHost() {
           canWrite={canWrite}
           preferredMainPanelId={activeMapPanel}
           extraCollapsedChips={
-            focusedOrganismId
+            focusedOrganismId && adaptiveState.altitude === 'close'
               ? [
                   {
                     id: `tend-${focusedOrganismId}`,
-                    label: 'Tend focused',
+                    label: 'Collaborate focused',
                     className: 'visor-panel-collapsed-chip--tend',
-                    title: 'Tend focused organism',
+                    title: 'Collaborate on focused organism',
                     onClick: () => openInVisor(focusedOrganismId),
                   },
                 ]

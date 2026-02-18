@@ -3273,22 +3273,29 @@ button.secondary:hover {
 
 .visor-history-nav {
   position: fixed;
-  top: 58px;
-  left: 16px;
-  z-index: 66;
+  top: 122px;
+  right: 16px;
+  left: auto;
+  z-index: 46;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 6px;
+  gap: 4px;
+  width: 48px;
+  padding: 4px;
   border: 1px solid var(--hud-border);
   border-radius: 8px;
-  background: rgba(10, 10, 15, 0.66);
+  background: rgba(10, 10, 15, 0.74);
   box-shadow: var(--hud-glow);
+  pointer-events: auto;
 }
 
 .visor-history-btn {
-  font-size: 10px;
-  padding: 4px 8px;
+  width: 100%;
+  font-size: 12px;
+  line-height: 1;
+  padding: 4px 0;
+  text-align: center;
 }
 
 .visor-history-btn:disabled {
@@ -3502,36 +3509,62 @@ button.secondary:hover {
   color: var(--hud-text-bright);
 }
 
+.adaptive-visor-surface .visor-panel-deck--map,
 .adaptive-visor-surface .visor-panel-deck--visor-organism {
   margin-top: 0;
   gap: 8px;
+  --visor-panel-top: 12vh;
+  --visor-panel-left-margin: 16px;
+  --visor-panel-gap: 0px;
+  --visor-panel-secondary-width: 0px;
+  --visor-panel-widget-lane-width: 168px;
+  --visor-panel-widget-lane-gap: 28px;
+  --visor-panel-right-reserved: calc(var(--visor-panel-widget-lane-width) + var(--visor-panel-widget-lane-gap));
 }
 
+.adaptive-visor-surface .visor-panel-deck--visor-organism {
+  --visor-panel-gap: 12px;
+  --visor-panel-secondary-width: 220px;
+}
+
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-deck-header,
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-deck-header {
   display: none;
 }
 
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-secondary-row {
+  display: none;
+}
+
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-secondary-row,
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-secondary-row {
   position: fixed;
-  left: calc(50% + min(490px, calc((100vw - 220px) / 2)) + 12px);
-  top: 53%;
-  transform: translateY(-50%);
-  width: min(220px, calc(100vw - 32px));
+  left: auto;
+  right: calc(var(--visor-panel-left-margin) + var(--visor-panel-right-reserved));
+  top: var(--visor-panel-top);
+  transform: none;
+  width: min(var(--visor-panel-secondary-width), calc(100vw - (var(--visor-panel-left-margin) * 2)));
   grid-template-columns: minmax(0, 1fr);
   z-index: 67;
 }
 
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-slot,
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-slot {
   position: fixed;
-  left: 50%;
-  top: 53%;
-  transform: translate(-50%, -50%);
-  width: min(980px, calc(100vw - 220px));
+  left: var(--visor-panel-left-margin);
+  right: calc(
+    var(--visor-panel-left-margin) + var(--visor-panel-right-reserved) + var(--visor-panel-secondary-width) +
+      var(--visor-panel-gap)
+  );
+  top: var(--visor-panel-top);
+  transform: none;
+  width: auto;
   max-height: 80vh;
   pointer-events: none;
   z-index: 58;
 }
 
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-main,
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main {
   pointer-events: auto;
   background: rgba(10, 10, 15, 0.74);
@@ -3545,6 +3578,7 @@ button.secondary:hover {
   flex-direction: column;
 }
 
+.adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-body,
 .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-body {
   max-height: calc(80vh - 52px);
   overflow-y: auto;
@@ -3556,46 +3590,9 @@ button.secondary:hover {
   gap: 6px;
 }
 
-.visor-panel-deck--map {
-  margin-top: 0;
-  gap: 8px;
-}
-
-.visor-panel-deck--map .visor-panel-deck-header,
-.visor-panel-deck--map .visor-panel-secondary-row {
-  display: none;
-}
-
-.visor-panel-deck--map .visor-panel-main-slot {
-  position: fixed;
-  left: 50%;
-  top: 53%;
-  transform: translate(-50%, -50%);
-  width: min(920px, calc(100vw - 220px));
-  max-height: 80vh;
-  pointer-events: none;
-  z-index: 58;
-}
-
-.visor-panel-deck--map .visor-panel-main {
-  pointer-events: auto;
-  background: rgba(10, 10, 15, 0.74);
-  border-color: var(--hud-border-active);
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.45),
-    0 0 18px rgba(124, 108, 240, 0.14);
-  backdrop-filter: blur(7px);
-  max-height: 80vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.visor-panel-deck--map .visor-panel-main-body {
-  max-height: calc(80vh - 52px);
-  overflow-y: auto;
-}
-
-.visor-panel-deck--map .visor-panel-collapsed-chip {
+.visor-panel-deck--map .visor-panel-collapsed-chip,
+.visor-panel-deck--visor-organism .visor-panel-collapsed-chip,
+.visor-panel-deck--interior .visor-panel-collapsed-chip {
   padding: 7px 12px;
   font-size: 10px;
   letter-spacing: 1px;
@@ -3958,30 +3955,21 @@ button.secondary:hover {
     grid-template-columns: 1fr;
   }
 
-  .visor-panel-deck--map .visor-panel-main-slot {
-    top: 48%;
-    width: calc(100vw - 20px);
-    max-height: 74vh;
-  }
-
-  .visor-panel-deck--map .visor-panel-main {
-    max-height: 74vh;
-  }
-
-  .visor-panel-deck--map .visor-panel-main-body {
-    max-height: calc(74vh - 48px);
-  }
-
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-slot,
   .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-slot {
     top: 48%;
-    width: calc(100vw - 20px);
+    left: 10px;
+    right: 10px;
+    width: auto;
     max-height: 74vh;
   }
 
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main,
   .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main {
     max-height: 74vh;
   }
 
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-body,
   .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-body {
     max-height: calc(74vh - 48px);
   }
@@ -4032,8 +4020,10 @@ button.secondary:hover {
   }
 
   .visor-history-nav {
-    top: 58px;
-    left: 10px;
+    top: 116px;
+    right: 10px;
+    left: auto;
+    width: 48px;
   }
 
   .visor-view {

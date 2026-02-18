@@ -109,7 +109,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   },
   {
     id: 'interior-actions',
-    label: 'Tend current',
+    label: 'Collaborate here',
     purpose: 'Open the currently entered organism in the visor.',
     availableIn: (context) => context.contextClass === 'interior',
     roleSupport: { main: false, secondary: false, collapsed: true },
