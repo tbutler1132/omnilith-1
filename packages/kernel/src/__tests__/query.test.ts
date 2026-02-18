@@ -49,6 +49,7 @@ describe('query port', () => {
       stateRepository,
       proposalRepository,
       compositionRepository,
+      eventPublisher,
       relationshipRepository,
     );
   });
@@ -306,6 +307,77 @@ describe('query port', () => {
 
       const results = await queryPort.findProposalsByUser(unrelated);
       expect(results).toHaveLength(0);
+    });
+  });
+
+  describe('getOrganismContributions', () => {
+    it('aggregates state, proposal, resolver, and event contributions by user', async () => {
+      const owner = testUserId('owner');
+      const proposer = testUserId('proposer');
+      const integrator = testUserId('integrator');
+
+      const { organism } = await createOrganism(
+        {
+          name: 'Shared Work',
+          contentTypeId: testContentTypeId(),
+          payload: { v: 1 },
+          createdBy: owner,
+        },
+        createDeps(),
+      );
+
+      await openProposal(
+        {
+          organismId: organism.id,
+          proposedContentTypeId: testContentTypeId(),
+          proposedPayload: { v: 2 },
+          proposedBy: proposer,
+        },
+        {
+          organismRepository,
+          stateRepository,
+          proposalRepository,
+          contentTypeRegistry,
+          eventPublisher,
+          identityGenerator,
+          visibilityRepository,
+          relationshipRepository,
+          compositionRepository,
+        },
+      );
+
+      const [open] = await proposalRepository.findByOrganismId(organism.id);
+      expect(open).toBeDefined();
+      if (!open) {
+        throw new Error('Expected open proposal');
+      }
+
+      await proposalRepository.update({
+        ...open,
+        status: 'integrated',
+        resolvedBy: integrator,
+        resolvedAt: identityGenerator.timestamp(),
+      });
+
+      await eventPublisher.publish({
+        id: identityGenerator.eventId(),
+        type: 'proposal.integrated',
+        organismId: organism.id,
+        actorId: integrator,
+        occurredAt: identityGenerator.timestamp(),
+        payload: { proposalId: open.id },
+      });
+
+      const contributions = await queryPort.getOrganismContributions(organism.id);
+      expect(contributions.organismId).toBe(organism.id);
+      expect(contributions.contributors.length).toBeGreaterThanOrEqual(3);
+
+      const byUser = new Map(contributions.contributors.map((entry) => [entry.userId, entry]));
+
+      expect(byUser.get(owner)?.stateCount).toBe(1);
+      expect(byUser.get(proposer)?.proposalCount).toBe(1);
+      expect(byUser.get(integrator)?.integrationCount).toBe(1);
+      expect(byUser.get(integrator)?.eventTypeCounts['proposal.integrated']).toBeGreaterThan(0);
     });
   });
 });

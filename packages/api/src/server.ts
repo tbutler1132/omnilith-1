@@ -8,8 +8,10 @@ import { logger } from 'hono/logger';
 import type { Container } from './container.js';
 import { type AuthEnv, authMiddleware } from './middleware/auth.js';
 import { authRoutes } from './routes/auth.js';
+import { interestRoutes } from './routes/interest.js';
 import { organismRoutes } from './routes/organisms.js';
 import { proposalRoutes } from './routes/proposals.js';
+import { publicFileRoutes } from './routes/public-files.js';
 import { publicOrganismRoutes } from './routes/public-organisms.js';
 import { templateRoutes } from './routes/templates.js';
 import { userRoutes } from './routes/users.js';
@@ -36,6 +38,7 @@ export function createServer(container: Container, config?: ServerConfig) {
 
   // Public routes
   app.route('/auth', authRoutes(container));
+  app.route('/interest', interestRoutes(container));
 
   // Platform info (public)
   app.get('/platform/world-map', (c) => {
@@ -45,6 +48,7 @@ export function createServer(container: Container, config?: ServerConfig) {
 
   // Public read-only organism routes
   app.route('/public/organisms', publicOrganismRoutes(container));
+  app.route('/public/files', publicFileRoutes());
 
   // Authenticated routes
   const authenticated = new Hono<AuthEnv>();

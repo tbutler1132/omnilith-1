@@ -13,7 +13,7 @@ import type { OrganismId } from './identity.js';
 import type { Organism } from './organism/organism.js';
 import type { OrganismState } from './organism/organism-state.js';
 import type { Proposal } from './proposals/proposal.js';
-import type { OrganismWithState, VitalityData } from './query/query-port.js';
+import type { OrganismContributions, OrganismWithState, VitalityData } from './query/query-port.js';
 import type { Relationship } from './relationships/relationship.js';
 import type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';
 
@@ -153,6 +153,11 @@ export interface FetchVitalityResponse {
 /** GET /organisms/:id/events */
 export interface FetchEventsResponse {
   readonly events: ReadonlyArray<DomainEvent>;
+}
+
+/** GET /organisms/:id/contributions */
+export interface FetchContributionsResponse {
+  readonly contributions: OrganismContributions;
 }
 
 /** GET /organisms/:id/relationships */

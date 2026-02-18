@@ -20,6 +20,7 @@ export interface HudCueDefinition {
   priority: number;
   title: string;
   message: string;
+  playLabel?: string;
   target: HudCueTarget;
 }
 
@@ -32,6 +33,7 @@ export const HUD_CUE_REGISTRY: HudCueDefinition[] = [
     priority: 100,
     title: 'Adaptive HUD',
     message: 'Use collapsed panel chips to promote map panels into the centered main slot.',
+    playLabel: 'Play intro',
     target: {
       type: 'hud-anchor',
       anchorId: 'adaptive-policy-badge',

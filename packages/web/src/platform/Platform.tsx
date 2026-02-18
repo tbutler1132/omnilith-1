@@ -34,10 +34,9 @@ interface PlatformProps {
   userId: string;
   personalOrganismId: string | null;
   homePageOrganismId: string | null;
-  onLogoutOrLogin: () => void;
 }
 
-export function Platform({ authMode, userId, personalOrganismId, homePageOrganismId, onLogoutOrLogin }: PlatformProps) {
+export function Platform({ authMode, userId, personalOrganismId, homePageOrganismId }: PlatformProps) {
   const [worldMapId, setWorldMapId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,9 +51,6 @@ export function Platform({ authMode, userId, personalOrganismId, homePageOrganis
       <div className="platform">
         <div className="platform-error">
           <p>{error}</p>
-          <button type="button" onClick={onLogoutOrLogin}>
-            {authMode === 'authenticated' ? 'Log out' : 'Log in'}
-          </button>
         </div>
       </div>
     );
@@ -79,7 +75,7 @@ export function Platform({ authMode, userId, personalOrganismId, homePageOrganis
       <div className="platform">
         <Space />
         <SpaceNavBar />
-        <Hud onLogoutOrLogin={onLogoutOrLogin} />
+        <Hud />
         <UrlSync />
       </div>
     </PlatformProvider>

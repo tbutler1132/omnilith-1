@@ -77,6 +77,15 @@ export function publicOrganismRoutes(container: Container) {
     return c.json({ events });
   });
 
+  app.get('/:id/contributions', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const accessError = await requirePublicOrganismView(c, container, id);
+    if (accessError) return accessError;
+
+    const contributions = await container.queryPort.getOrganismContributions(id);
+    return c.json({ contributions });
+  });
+
   app.get('/:id/relationships', async (c) => {
     const id = c.req.param('id') as OrganismId;
     const accessError = await requirePublicOrganismView(c, container, id);

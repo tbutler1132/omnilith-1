@@ -5,9 +5,11 @@
  * Feels like a record sleeve — title prominent, metadata quiet.
  */
 
+import { resolvePublicFileUrl } from '../api/files.js';
 import type { RendererProps } from './registry.js';
 
 interface AudioPayload {
+  fileReference?: string;
   durationSeconds?: number;
   format?: string;
   sampleRate?: number;
@@ -29,6 +31,7 @@ function formatDuration(seconds: number): string {
 export function AudioRenderer({ state, zoom: _zoom, focused: _focused }: RendererProps) {
   const payload = state.payload as AudioPayload;
   const meta = payload?.metadata ?? {};
+  const fileReference = payload?.fileReference;
   const duration = payload?.durationSeconds ?? meta.duration;
   const format = payload?.format ?? meta.format;
   const sampleRate = payload?.sampleRate ?? meta.sampleRate;
@@ -41,6 +44,12 @@ export function AudioRenderer({ state, zoom: _zoom, focused: _focused }: Rendere
         {duration != null && <span className="audio-duration">{formatDuration(duration)}</span>}
         {format && <span className="audio-badge">{format}</span>}
       </div>
+      {fileReference ? (
+        <audio className="audio-player" controls preload="none" src={resolvePublicFileUrl(fileReference)}>
+          <track kind="captions" src="data:text/vtt,WEBVTT%0A" srcLang="en" label="English captions" />
+          Your browser does not support audio playback.
+        </audio>
+      ) : null}
       {sampleRate != null && <span className="audio-sample-rate">{(sampleRate / 1000).toFixed(1)} kHz</span>}
     </div>
   );

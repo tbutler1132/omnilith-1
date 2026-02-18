@@ -15,6 +15,7 @@ import type {
   DeclineProposalResponse,
   DecomposeChildResponse,
   FetchChildrenResponse,
+  FetchContributionsResponse,
   FetchEventsResponse,
   FetchOrganismResponse,
   FetchOrganismsResponse,
@@ -102,6 +103,10 @@ export function fetchRelationships(id: string) {
 
 export function fetchEvents(id: string) {
   return apiFetch<FetchEventsResponse>(readPath(`/organisms/${id}/events`));
+}
+
+export function fetchContributions(id: string) {
+  return apiFetch<FetchContributionsResponse>(readPath(`/organisms/${id}/contributions`));
 }
 
 export function thresholdOrganism(input: ThresholdOrganismRequest) {

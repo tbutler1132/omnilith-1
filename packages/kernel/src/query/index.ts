@@ -1,4 +1,6 @@
 export type {
+  OrganismContributions,
+  OrganismContributor,
   OrganismWithState,
   QueryFilters,
   QueryPort,

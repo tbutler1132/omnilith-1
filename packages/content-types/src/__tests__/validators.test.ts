@@ -3,6 +3,7 @@ import { validateAudio } from '../audio/validator.js';
 import { validateCommunity } from '../community/validator.js';
 import { validateCompositionReference } from '../composition-reference/validator.js';
 import { validateDawProject } from '../daw-project/validator.js';
+import { validateHeroJourneyScene } from '../hero-journey-scene/validator.js';
 import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
 import { validateSong } from '../song/validator.js';
@@ -309,6 +310,23 @@ describe('stems-bundle validator', () => {
       stemCount: 12,
       sampleRate: 48000,
       bitDepth: 24,
+    });
+    expect(result.valid).toBe(true);
+  });
+});
+
+describe('hero-journey-scene validator', () => {
+  it('accepts valid hero journey scene payload', () => {
+    const result = validateHeroJourneyScene({
+      title: "Hero's Journey",
+      subtitle: 'Concept album demo',
+      chapters: [
+        {
+          phase: 'Call',
+          title: 'The Signal',
+          summary: 'A quiet transmission breaks the ordinary world.',
+        },
+      ],
     });
     expect(result.valid).toBe(true);
   });

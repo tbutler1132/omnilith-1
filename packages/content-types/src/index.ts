@@ -19,6 +19,11 @@ export {
   type DawProjectPayload,
   dawProjectContentType,
 } from './daw-project/index.js';
+export {
+  type HeroJourneyChapter,
+  type HeroJourneyScenePayload,
+  heroJourneySceneContentType,
+} from './hero-journey-scene/index.js';
 export { type ImageFormat, type ImagePayload, imageContentType } from './image/index.js';
 export { type IntegrationPolicyPayload, integrationPolicyContentType } from './integration-policy/index.js';
 export {
@@ -59,6 +64,7 @@ import { audioContentType } from './audio/index.js';
 import { communityContentType } from './community/index.js';
 import { compositionReferenceContentType } from './composition-reference/index.js';
 import { dawProjectContentType } from './daw-project/index.js';
+import { heroJourneySceneContentType } from './hero-journey-scene/index.js';
 import { imageContentType } from './image/index.js';
 import { integrationPolicyContentType } from './integration-policy/index.js';
 import { responsePolicyContentType } from './response-policy/index.js';
@@ -85,6 +91,7 @@ export const allContentTypes: ReadonlyArray<ContentTypeContract> = [
   responsePolicyContentType,
   templateContentType,
   songContentType,
+  heroJourneySceneContentType,
   dawProjectContentType,
   stemsBundleContentType,
 ];

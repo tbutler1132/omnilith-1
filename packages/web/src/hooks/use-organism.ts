@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import {
   fetchChildren,
+  fetchContributions,
   fetchEvents,
   fetchOrganism,
   fetchOrganisms,
@@ -178,6 +179,10 @@ export function useRelationships(id: string) {
 
 export function useEvents(id: string) {
   return useAsync(() => fetchEvents(id).then((r) => r.events), [id]);
+}
+
+export function useContributions(id: string, refreshKey = 0) {
+  return useAsync(() => fetchContributions(id).then((r) => r.contributions), [id, refreshKey]);
 }
 
 export function useUserOrganisms(refreshKey = 0) {

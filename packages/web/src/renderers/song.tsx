@@ -5,6 +5,7 @@
  * listening variants are composed as child organisms inside the boundary.
  */
 
+import { resolvePublicFileUrl } from '../api/files.js';
 import { useChildren, useOrganismsByIds } from '../hooks/use-organism.js';
 import type { RendererProps } from './registry.js';
 
@@ -21,6 +22,7 @@ interface ChildSummary {
   id: string;
   name: string;
   contentTypeId: string;
+  fileReference?: string;
 }
 
 function sectionLabel(contentTypeId: string) {
@@ -64,11 +66,15 @@ export function SongRenderer({ state, zoom: _zoom, focused: _focused }: Renderer
   for (const childId of childIds) {
     const data = childById?.[childId];
     const typeId = data?.currentState?.contentTypeId ?? 'unknown';
+    const childPayload = (data?.currentState?.payload ?? null) as Record<string, unknown> | null;
+    const fileReference =
+      childPayload && typeof childPayload.fileReference === 'string' ? childPayload.fileReference : undefined;
     const list = grouped.get(typeId) ?? [];
     list.push({
       id: childId,
       name: data?.organism.name ?? childId,
       contentTypeId: typeId,
+      fileReference,
     });
     grouped.set(typeId, list);
   }
@@ -107,6 +113,17 @@ export function SongRenderer({ state, zoom: _zoom, focused: _focused }: Renderer
                   <li key={row.id} data-rendered-child="true">
                     <span className="song-section-type">{row.contentTypeId}</span>
                     <span className="song-section-name">{row.name}</span>
+                    {row.contentTypeId === 'audio' && row.fileReference ? (
+                      <audio
+                        className="song-section-audio-player"
+                        controls
+                        preload="none"
+                        src={resolvePublicFileUrl(row.fileReference)}
+                      >
+                        <track kind="captions" src="data:text/vtt,WEBVTT%0A" srcLang="en" label="English captions" />
+                        Your browser does not support audio playback.
+                      </audio>
+                    ) : null}
                   </li>
                 ))}
               </ul>

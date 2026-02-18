@@ -22,7 +22,7 @@ async function start() {
   const worldMapId = await seedWorldMap(container);
   console.log(`World map seeded: ${worldMapId}`);
 
-  // Dev seed — rich test data (safe to run repeatedly, skips if already applied)
+  // Seed profile (default: focused v1-demo, configurable via OMNILITH_SEED_PROFILE)
   await seedDev(container);
 
   const app = createServer(container, { worldMapId });

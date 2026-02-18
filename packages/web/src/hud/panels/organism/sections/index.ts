@@ -1,6 +1,7 @@
 export { AppendSection } from './AppendSection.js';
 export { ComponentsSection } from './ComponentsSection.js';
 export { CompositionSection } from './CompositionSection.js';
+export { ContributionsSection } from './ContributionsSection.js';
 export { formatDate } from './format-date.js';
 export { GovernanceSection } from './GovernanceSection.js';
 export { ProposalsSection } from './ProposalsSection.js';

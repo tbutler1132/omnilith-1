@@ -8,6 +8,7 @@
 import { useMemo, useState } from 'react';
 import { useUserProposals } from '../../../hooks/use-organism.js';
 import { usePlatformStaticState } from '../../../platform/index.js';
+import { GuestAccessPrompt } from '../core/GuestAccessPrompt.js';
 import { PanelCardErrorWithAction, PanelCardLoading } from '../core/panel-ux.js';
 import { formatDate } from '../organism/sections/format-date.js';
 import { type ProposalStatus, presentMyProposals } from './my-proposals-presenter.js';
@@ -33,10 +34,12 @@ export function HudMyProposalsPanel() {
 
   if (!canWrite) {
     return (
-      <div className="hud-my-proposals-state">
-        <h3>Proposals</h3>
-        <p>Log in to view your authored proposals.</p>
-      </div>
+      <GuestAccessPrompt
+        sourcePanel="my-proposals"
+        title="Proposals"
+        interestMessage="Authoring proposals is not open in this demo yet. Register interest to join the first cohort."
+        loginMessage="Log in to view your authored proposals."
+      />
     );
   }
 

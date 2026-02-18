@@ -1,10 +1,10 @@
 /**
- * Dev seed — populates the database with a rich development world.
+ * Full dev seed — populates the database with a rich development world.
  *
  * Creates a dev user, a variety of organisms across content types,
  * composes them into meaningful structures, and surfaces them on the
- * world map. Run once against a fresh database after the world map
- * seed has completed.
+ * world map. This profile runs when OMNILITH_SEED_PROFILE=full-dev.
+ * The default startup profile is the focused v1-demo seed.
  *
  * Uses kernel use cases so all validation, events, and relationships
  * are properly established.
@@ -16,11 +16,13 @@ import { appendState, composeOrganism, createOrganism, openProposal } from '@omn
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
 import { organisms, platformConfig, sessions, users } from './db/schema.js';
+import { seedV1Demo } from './seed-v1-demo.js';
 
 const DEV_SEED_KEY = 'dev_seed_complete';
 const SONG_STARTER_TEMPLATE_KEY = 'dev_song_starter_template_id';
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
+const DEFAULT_SEED_PROFILE = 'v1-demo';
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -144,6 +146,15 @@ async function ensureSongStarterTemplate(container: Container, devUserId: UserId
 }
 
 export async function seedDev(container: Container): Promise<void> {
+  const seedProfile = (process.env.OMNILITH_SEED_PROFILE ?? DEFAULT_SEED_PROFILE).trim();
+  if (seedProfile === 'v1-demo') {
+    await seedV1Demo(container);
+    return;
+  }
+  if (seedProfile !== 'full-dev') {
+    console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to full-dev seed.`);
+  }
+
   // Skip if already seeded
   const existing = await container.db.select().from(platformConfig).where(eq(platformConfig.key, DEV_SEED_KEY));
 

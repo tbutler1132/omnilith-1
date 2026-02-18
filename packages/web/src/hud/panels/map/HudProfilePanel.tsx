@@ -6,6 +6,7 @@
  */
 
 import { usePlatformStaticState } from '../../../platform/index.js';
+import { GuestAccessPrompt } from '../core/GuestAccessPrompt.js';
 
 export function HudProfilePanel() {
   const { authMode, userId, personalOrganismId, homePageOrganismId } = usePlatformStaticState();
@@ -37,7 +38,12 @@ export function HudProfilePanel() {
           </div>
         </dl>
       ) : (
-        <p className="hud-profile-panel-note">Log in to see your personal organism links.</p>
+        <GuestAccessPrompt
+          sourcePanel="profile"
+          title="Profile"
+          interestMessage="Profile tending is invite-only in this demo. Register interest and we will follow up."
+          loginMessage="Log in to view your personal organism links."
+        />
       )}
     </div>
   );

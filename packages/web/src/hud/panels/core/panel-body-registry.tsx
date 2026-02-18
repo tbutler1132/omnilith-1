@@ -12,6 +12,7 @@ import { HudProfilePanel } from '../map/HudProfilePanel.js';
 import {
   AppendSection,
   CompositionSection,
+  ContributionsSection,
   GovernanceSection,
   ProposalsSection,
   ProposeSection,
@@ -74,6 +75,7 @@ export const UNIVERSAL_VISOR_PANEL_BODY_RENDERERS = {
     />
   ),
   relationships: (context) => <RelationshipsSection organismId={context.organismId} />,
+  contributions: (context) => <ContributionsSection organismId={context.organismId} refreshKey={context.refreshKey} />,
   history: (context) => <StateHistorySection organismId={context.organismId} refreshKey={context.refreshKey} />,
   governance: (context) => <GovernanceSection organismId={context.organismId} />,
 } satisfies Record<UniversalVisorHudPanelId, UniversalVisorPanelBodyRenderer>;
@@ -192,6 +194,7 @@ export const VISOR_MAIN_PANEL_BODY_RENDERERS = {
   proposals: (context) => renderUniversalVisorPanelBody('proposals', context.universal),
   append: (context) => renderUniversalVisorPanelBody('append', context.universal),
   relationships: (context) => renderUniversalVisorPanelBody('relationships', context.universal),
+  contributions: (context) => renderUniversalVisorPanelBody('contributions', context.universal),
   history: (context) => renderUniversalVisorPanelBody('history', context.universal),
   governance: (context) => renderUniversalVisorPanelBody('governance', context.universal),
 } satisfies Record<VisorMainHudPanelId, VisorPanelBodyRenderer>;

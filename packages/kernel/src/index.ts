@@ -15,6 +15,7 @@ export type {
   DeclineProposalResponse,
   DecomposeChildResponse,
   FetchChildrenResponse,
+  FetchContributionsResponse,
   FetchEventsResponse,
   FetchOrganismResponse,
   FetchOrganismsResponse,
@@ -130,6 +131,8 @@ export type { Proposal, ProposalStatus } from './proposals/proposal.js';
 export type { ProposalRepository } from './proposals/proposal-repository.js';
 // Query
 export type {
+  OrganismContributions,
+  OrganismContributor,
   OrganismWithState,
   QueryFilters,
   QueryPort,
