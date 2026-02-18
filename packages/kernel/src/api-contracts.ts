@@ -97,6 +97,7 @@ export interface FetchParentResponse {
 export interface OpenProposalRequest {
   readonly proposedContentTypeId: string;
   readonly proposedPayload: unknown;
+  readonly description?: string;
 }
 
 export interface OpenProposalResponse {

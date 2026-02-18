@@ -98,6 +98,7 @@ export const proposals = pgTable(
       .references(() => organisms.id),
     proposedContentTypeId: text('proposed_content_type_id').notNull(),
     proposedPayload: jsonb('proposed_payload'),
+    description: text('description'),
     proposedBy: text('proposed_by')
       .notNull()
       .references(() => users.id),

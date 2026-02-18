@@ -54,6 +54,7 @@ export async function evaluateProposal(proposal: Proposal, deps: EvaluateProposa
     const proposalForEvaluation: ProposalForEvaluation = {
       proposedPayload: proposal.proposedPayload,
       proposedContentTypeId: proposal.proposedContentTypeId,
+      description: proposal.description,
       proposedBy: proposal.proposedBy,
     };
 

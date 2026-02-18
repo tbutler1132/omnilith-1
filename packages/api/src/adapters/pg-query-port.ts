@@ -153,6 +153,7 @@ function toProposal(row: typeof proposals.$inferSelect): Proposal {
     organismId: row.organismId as OrganismId,
     proposedContentTypeId: row.proposedContentTypeId as ContentTypeId,
     proposedPayload: row.proposedPayload,
+    description: row.description ?? undefined,
     proposedBy: row.proposedBy as UserId,
     status: row.status as ProposalStatus,
     createdAt: row.createdAt.getTime() as Timestamp,

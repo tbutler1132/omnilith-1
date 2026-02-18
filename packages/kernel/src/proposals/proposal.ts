@@ -19,6 +19,7 @@ export interface Proposal {
   readonly organismId: OrganismId;
   readonly proposedContentTypeId: ContentTypeId;
   readonly proposedPayload: unknown;
+  readonly description?: string;
   readonly proposedBy: UserId;
   readonly status: ProposalStatus;
   readonly createdAt: Timestamp;

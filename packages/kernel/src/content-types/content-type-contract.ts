@@ -26,6 +26,7 @@ export interface EvaluationResult {
 export interface ProposalForEvaluation {
   readonly proposedPayload: unknown;
   readonly proposedContentTypeId: ContentTypeId;
+  readonly description?: string;
   readonly proposedBy: UserId;
 }
 

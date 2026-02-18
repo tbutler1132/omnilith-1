@@ -689,6 +689,54 @@ The detailed decision and staged implementation plan are captured in:
 
 - `docs/decisions/023-reference-driven-hud-cues-and-transport.md`
 
+### Move 34: Organism Links in Text vs Structured References
+
+A recurring modeling question surfaced around references: should the platform introduce a generic "reference" content type for all cross-organism links, or should textual content itself support links to organisms?
+
+The decision is to keep two complementary mechanisms, with no kernel change:
+
+1. **Inline links in text rendering.** `text` should support organism-aware links for narrative writing and lightweight contextual references.
+2. **Structured references remain explicit.** `composition-reference` continues to represent arranged reference sets (ordering/grouping intent).
+3. **No catch-all reference type by default.** A new dedicated reference content type should only be introduced when stronger typed-role/query semantics are required beyond current structured arrangements.
+
+This preserves the architecture's separation of concerns:
+
+- kernel remains universal physics
+- content types carry domain semantics
+- rendering handles perceptual link behavior
+
+This also avoids over-generalization while keeping authoring expressive.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/024-organism-links-in-text-vs-structured-references.md`
+
+### Move 35: Composition Boundaries vs Generic Edges
+
+A strategic question surfaced about whether composition should be replaced with a generic edge model in the kernel.
+
+The answer for Omnilith Phase 1 is no.
+
+Composition remains containment because it provides clear boundary semantics for:
+
+- visibility and access
+- proposal evaluation scope
+- fork behavior
+
+Generic cross-boundary connections are still supported, but through typed relationships (not kernel composition), including:
+
+- `membership`
+- `integrator-assignment`
+- `stewardship`
+- `lineage`
+- `reference`
+
+This preserves kernel coherence while retaining flexibility in the relationship layer. It also keeps authority-impacting logic centralized in one capability-resolution module.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/025-composition-boundaries-and-typed-relationships.md`
+
 ---
 
 ## Summary of What We're Building

@@ -152,8 +152,8 @@ export function appendState(organismId: string, contentTypeId: string, payload: 
   });
 }
 
-export function openProposal(organismId: string, contentTypeId: string, payload: unknown) {
-  const body: OpenProposalRequest = { proposedContentTypeId: contentTypeId, proposedPayload: payload };
+export function openProposal(organismId: string, contentTypeId: string, payload: unknown, description?: string) {
+  const body: OpenProposalRequest = { proposedContentTypeId: contentTypeId, proposedPayload: payload, description };
   return apiFetch<OpenProposalResponse>(`/organisms/${organismId}/proposals`, {
     method: 'POST',
     body: JSON.stringify(body),

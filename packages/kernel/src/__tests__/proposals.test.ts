@@ -109,6 +109,7 @@ describe('proposals', () => {
         organismId: organism.id,
         proposedContentTypeId: testContentTypeId(),
         proposedPayload: { v: 2 },
+        description: 'Advance to v2 after review.',
         proposedBy: userId,
       },
       openDeps(),
@@ -116,6 +117,7 @@ describe('proposals', () => {
 
     expect(proposal.status).toBe('open');
     expect(proposal.proposedPayload).toEqual({ v: 2 });
+    expect(proposal.description).toBe('Advance to v2 after review.');
   });
 
   it('opening a proposal requires view access', async () => {

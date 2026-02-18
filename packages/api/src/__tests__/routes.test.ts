@@ -364,12 +364,14 @@ describe('proposal routes', () => {
       body: JSON.stringify({
         proposedContentTypeId: 'text',
         proposedPayload: { content: 'v2', format: 'plaintext' },
+        description: 'Refine wording and tone.',
       }),
     });
 
     expect(propRes.status).toBe(201);
     const { proposal } = await propRes.json();
     expect(proposal.status).toBe('open');
+    expect(proposal.description).toBe('Refine wording and tone.');
 
     // Integrate (test user is the steward)
     const intRes = await app.request(`/proposals/${proposal.id}/integrate`, {

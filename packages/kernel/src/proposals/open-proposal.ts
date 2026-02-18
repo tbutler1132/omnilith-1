@@ -28,6 +28,7 @@ export interface OpenProposalInput {
   readonly organismId: OrganismId;
   readonly proposedContentTypeId: ContentTypeId;
   readonly proposedPayload: unknown;
+  readonly description?: string;
   readonly proposedBy: UserId;
 }
 
@@ -78,6 +79,7 @@ export async function openProposal(input: OpenProposalInput, deps: OpenProposalD
     organismId: input.organismId,
     proposedContentTypeId: input.proposedContentTypeId,
     proposedPayload: input.proposedPayload,
+    description: input.description,
     proposedBy: input.proposedBy,
     status: 'open',
     createdAt: now,

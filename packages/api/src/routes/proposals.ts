@@ -36,6 +36,7 @@ export function proposalRoutes(container: Container) {
           organismId,
           proposedContentTypeId: body.proposedContentTypeId as ContentTypeId,
           proposedPayload: body.proposedPayload,
+          description: body.description,
           proposedBy: userId,
         },
         {
