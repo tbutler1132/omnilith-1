@@ -131,7 +131,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'relationships',
   ] as HudPanelId[],
   compositorPanelIds: ['interior-actions', 'my-proposals', 'profile', 'visor-view'] as const,
-  widgetIds: ['compass', 'history-navigation', 'map-actions', 'vitality'] as VisorWidgetId[],
+  widgetIds: ['compass', 'history-navigation', 'map-actions', 'map-legend', 'vitality'] as VisorWidgetId[],
   cueIds: ['adaptive-help'] as HudCueId[],
   cueAnchorIds: ['adaptive-policy-badge', 'visor-pill'] as HudCueTargetAnchorId[],
   layoutScenarios: [
@@ -351,7 +351,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       events: [],
       expected: {
         activePanels: [],
-        activeWidgets: ['map-actions', 'history-navigation', 'compass'],
+        activeWidgets: ['map-actions', 'history-navigation', 'compass', 'map-legend'],
         activeMapPanel: null,
         anchors: ['navigation-back', 'dismiss'],
         intentStack: [],
@@ -390,7 +390,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       ],
       expected: {
         activePanels: [],
-        activeWidgets: ['map-actions', 'history-navigation', 'compass'],
+        activeWidgets: ['map-actions', 'history-navigation', 'compass', 'map-legend'],
         activeMapPanel: null,
         anchors: ['navigation-back', 'dismiss'],
         intentStack: [],
@@ -412,7 +412,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       ],
       expected: {
         activePanels: ['profile'],
-        activeWidgets: ['map-actions', 'history-navigation', 'compass'],
+        activeWidgets: ['map-actions', 'history-navigation', 'compass', 'map-legend'],
         activeMapPanel: 'profile',
         anchors: ['navigation-back', 'dismiss'],
         intentStack: [],
@@ -435,7 +435,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       ],
       expected: {
         activePanels: [],
-        activeWidgets: ['map-actions', 'history-navigation', 'compass'],
+        activeWidgets: ['map-actions', 'history-navigation', 'compass', 'map-legend'],
         activeMapPanel: null,
         anchors: ['navigation-back', 'dismiss'],
         intentStack: [],

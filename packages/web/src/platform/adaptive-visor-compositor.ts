@@ -197,7 +197,7 @@ function recomputeForContext(context: AdaptiveVisorLayoutContext): {
 
 function resolveWidgetsForContext(context: AdaptiveVisorLayoutContext): AdaptiveVisorWidgetId[] {
   if (context.contextClass === 'map') {
-    return ['map-actions', 'history-navigation', 'compass'];
+    return ['map-actions', 'history-navigation', 'compass', 'map-legend'];
   }
   if (context.contextClass === 'visor-organism' && context.visorOrganismId) {
     return ['history-navigation', 'vitality'];

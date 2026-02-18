@@ -8,7 +8,7 @@ describe('resolveVisorTemplate', () => {
     expect(template.id).toBe('map-core');
     expect(template.panelSlots.main.allowEmpty).toBe(true);
     expect(template.panelSlots.collapsed.placement).toBe('viewport-bottom-left');
-    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(template.widgetSlots.allowedWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
   });
 
   it('returns the organism template with empty-main support and collapsed rail capacity', () => {

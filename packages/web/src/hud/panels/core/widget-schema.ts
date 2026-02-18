@@ -5,7 +5,7 @@
  * orchestration policies can reference one stable vocabulary.
  */
 
-export const VISOR_WIDGET_IDS = ['map-actions', 'history-navigation', 'compass', 'vitality'] as const;
+export const VISOR_WIDGET_IDS = ['map-actions', 'history-navigation', 'compass', 'map-legend', 'vitality'] as const;
 export type VisorWidgetId = (typeof VISOR_WIDGET_IDS)[number];
 
 export interface VisorWidgetDefinition {
@@ -29,6 +29,11 @@ export const VISOR_WIDGET_REGISTRY: VisorWidgetDefinition[] = [
     id: 'compass',
     label: 'Compass',
     purpose: 'Spatial orientation indicator in map context.',
+  },
+  {
+    id: 'map-legend',
+    label: 'Map legend',
+    purpose: 'Legend for content-type marker shapes in spatial-map context.',
   },
   {
     id: 'vitality',

@@ -80,7 +80,7 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
       },
     },
     widgetSlots: {
-      allowedWidgets: ['map-actions', 'history-navigation', 'compass'],
+      allowedWidgets: ['map-actions', 'history-navigation', 'compass', 'map-legend'],
     },
     cueSlots: {
       enabled: true,

@@ -6,6 +6,7 @@
  * collapsed rail placement rules.
  */
 
+import { useOrganism } from '../hooks/use-organism.js';
 import { selectActiveMapPanel } from '../platform/adaptive-visor-compositor.js';
 import {
   usePlatformActions,
@@ -16,6 +17,7 @@ import {
   usePlatformVisorState,
 } from '../platform/index.js';
 import { renderMapPanelBody } from './panels/core/panel-body-registry.js';
+import { resolveVisorPanelLayout } from './panels/core/panel-layout-policy.js';
 import {
   isInteriorHudPanelId,
   isMapHudPanelId,
@@ -23,24 +25,27 @@ import {
   type MapHudPanelId,
 } from './panels/core/panel-schema.js';
 import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
+import { useMainPanelHistoryNavigation } from './panels/core/use-main-panel-history-navigation.js';
 import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
 import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
-import { CompassWidget, VisorWidgetLane } from './widgets/index.js';
+import { CompassWidget, HistoryNavigationWidget, MapLegendWidget, VisorWidgetLane } from './widgets/index.js';
 
 type MapPanelId = MapHudPanelId | null;
 
 export function AdaptiveVisorHost() {
-  const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
+  const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
   const { canWrite } = usePlatformStaticState();
   const { openInVisor } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
   const adaptiveActions = usePlatformAdaptiveVisorActions();
+  const { data: currentMapData } = useOrganism(currentMapId);
 
   const mapTemplate = resolvePanelVisorTemplate('map');
   const interiorTemplate = resolvePanelVisorTemplate('interior');
 
   const contextClass = adaptiveState.layoutContext.contextClass;
+  const isSpatialMap = currentMapData?.currentState?.contentTypeId === 'spatial-map';
   const activeMapPanel = selectActiveMapPanel(adaptiveState) as MapPanelId;
   const activeWidgets = new Set(adaptiveState.activeWidgets);
   const mapShowsCompass =
@@ -51,12 +56,47 @@ export function AdaptiveVisorHost() {
     contextClass === 'map' &&
     activeWidgets.has('history-navigation') &&
     mapTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
+  const mapShowsLegend =
+    contextClass === 'map' &&
+    isSpatialMap &&
+    activeWidgets.has('map-legend') &&
+    mapTemplate.widgetSlots.allowedWidgets.includes('map-legend');
+  const mapLayout = resolveVisorPanelLayout({
+    context: {
+      contextClass: 'map',
+      surfaced: false,
+      openTrunk: false,
+      templateValuesReady: false,
+      canWrite,
+    },
+    preferredMainPanelId: activeMapPanel,
+    slots: mapTemplate.panelSlots,
+  });
+  const mapHistoryNavigation = useMainPanelHistoryNavigation({
+    contextClass,
+    currentMainPanelId: contextClass === 'map' ? mapLayout.mainPanelId : null,
+    availablePanelIds: contextClass === 'map' ? mapLayout.availablePanelIds : [],
+    enabled: mapHistoryNavigationEnabled,
+    onPromotePanel: (panelId) => {
+      if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
+    },
+  });
+  const mapShowsHistoryNavigation = contextClass === 'map' && mapHistoryNavigation.hasTargets;
 
   return (
     <div className="adaptive-visor-surface">
-      {mapShowsCompass && (
+      {(mapShowsCompass || mapShowsLegend || mapShowsHistoryNavigation) && (
         <VisorWidgetLane>
-          <CompassWidget />
+          {mapShowsCompass && <CompassWidget />}
+          {mapShowsLegend && <MapLegendWidget />}
+          {mapShowsHistoryNavigation && (
+            <HistoryNavigationWidget
+              canGoPrevious={mapHistoryNavigation.canGoPrevious}
+              canGoNext={mapHistoryNavigation.canGoNext}
+              onGoPrevious={mapHistoryNavigation.goPrevious}
+              onGoNext={mapHistoryNavigation.goNext}
+            />
+          )}
         </VisorWidgetLane>
       )}
 
@@ -87,7 +127,6 @@ export function AdaptiveVisorHost() {
           onCollapseMainPanel={(panelId) => {
             if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
-          historyNavigationEnabled={mapHistoryNavigationEnabled}
           renderPanelBody={(panelId) => {
             if (!isMapHudPanelId(panelId)) return null;
             return renderMapPanelBody(panelId);

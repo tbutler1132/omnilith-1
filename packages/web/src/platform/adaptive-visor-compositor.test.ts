@@ -23,7 +23,7 @@ describe('adaptive visor compositor', () => {
   it('a map context exposes map actions with no major panel selected', () => {
     const state = createAdaptiveVisorCompositorState(true, createContext());
 
-    expect(state.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(state.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
     expect(state.activePanels).toEqual([]);
   });
 
@@ -117,7 +117,7 @@ describe('adaptive visor compositor', () => {
     const recomputed = computeNextAdaptiveVisorLayout(mutated, { type: 'close-visor-organism' });
 
     expect(selectActiveMapPanel(recomputed)).toBeNull();
-    expect(recomputed.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(recomputed.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
   });
 
   it('anchors remain available after context transitions and mutation events', () => {
@@ -144,7 +144,7 @@ describe('adaptive visor compositor', () => {
     expect(entry?.eventType).toBe('toggle-map-panel');
     expect(entry?.decision).toBe('toggle-map-panel-open');
     expect(entry?.activePanels).toEqual(['my-proposals']);
-    expect(entry?.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(entry?.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
     expect(entry?.sequence).toBe(1);
   });
 

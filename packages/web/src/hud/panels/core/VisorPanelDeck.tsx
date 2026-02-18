@@ -21,11 +21,6 @@ interface ExtraCollapsedChip {
 
 type VisorPanelDeckTemplate = VisorTemplateDefinition & { contextClass: HudContextClass };
 
-interface VisorHistoryTarget {
-  index: number;
-  panelId: HudPanelId;
-}
-
 interface VisorPanelDeckProps {
   title?: string;
   template: VisorPanelDeckTemplate;
@@ -37,34 +32,11 @@ interface VisorPanelDeckProps {
   rendererPreviewFullBleed?: boolean;
   templateValuesReady?: boolean;
   preferredMainPanelId: HudPanelId | null;
-  historyNavigationEnabled?: boolean;
   extraCollapsedChips?: ExtraCollapsedChip[];
   onPromotePanel: (panelId: HudPanelId) => void;
   onCollapseMainPanel: (panelId: HudPanelId) => void;
   renderPanelBody: (panelId: HudPanelId) => ReactNode;
   renderSecondaryBody?: (panelId: HudPanelId) => ReactNode;
-}
-
-interface MainNavState {
-  history: HudPanelId[];
-  index: number;
-}
-
-function findHistoryTarget(
-  navState: MainNavState,
-  availablePanelIds: HudPanelId[],
-  direction: -1 | 1,
-): VisorHistoryTarget | null {
-  const available = new Set(availablePanelIds);
-  let idx = navState.index + direction;
-
-  while (idx >= 0 && idx < navState.history.length) {
-    const panelId = navState.history[idx];
-    if (available.has(panelId)) return { index: idx, panelId };
-    idx += direction;
-  }
-
-  return null;
 }
 
 export function VisorPanelDeck({
@@ -78,7 +50,6 @@ export function VisorPanelDeck({
   rendererPreviewFullBleed = false,
   templateValuesReady = false,
   preferredMainPanelId,
-  historyNavigationEnabled,
   extraCollapsedChips = [],
   onPromotePanel,
   onCollapseMainPanel,
@@ -88,11 +59,9 @@ export function VisorPanelDeck({
   const SWAP_EXIT_MS = 180;
   const SWAP_ENTER_MS = 260;
   const [displayedMainPanelId, setDisplayedMainPanelId] = useState<HudPanelId | null>(null);
-  const [mainNav, setMainNav] = useState<MainNavState>({ history: [], index: -1 });
   const [swapPhase, setSwapPhase] = useState<'idle' | 'exiting' | 'entering'>('idle');
   const exitTimerRef = useRef<number | null>(null);
   const enterTimerRef = useRef<number | null>(null);
-  const contextClassRef = useRef(template.contextClass);
 
   const layout = useMemo(
     () =>
@@ -122,10 +91,6 @@ export function VisorPanelDeck({
       preferredMainPanelId,
     ],
   );
-  const historyWidgetEnabled =
-    historyNavigationEnabled ?? template.widgetSlots.allowedWidgets.includes('history-navigation');
-  const previousMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, -1), [mainNav, layout]);
-  const nextMainTarget = useMemo(() => findHistoryTarget(mainNav, layout.availablePanelIds, 1), [mainNav, layout]);
 
   useEffect(
     () => () => {
@@ -134,35 +99,6 @@ export function VisorPanelDeck({
     },
     [],
   );
-
-  useEffect(() => {
-    const currentMainPanelId = layout.mainPanelId;
-    const contextChanged = contextClassRef.current !== template.contextClass;
-
-    if (contextChanged) contextClassRef.current = template.contextClass;
-
-    setMainNav((currentNav) => {
-      if (contextChanged) {
-        return currentMainPanelId ? { history: [currentMainPanelId], index: 0 } : { history: [], index: -1 };
-      }
-
-      if (!currentMainPanelId) return currentNav;
-      if (currentNav.index >= 0 && currentNav.history[currentNav.index] === currentMainPanelId) return currentNav;
-
-      const baseHistory = currentNav.index >= 0 ? currentNav.history.slice(0, currentNav.index + 1) : [];
-      if (baseHistory[baseHistory.length - 1] === currentMainPanelId) {
-        return { history: baseHistory, index: baseHistory.length - 1 };
-      }
-
-      const withCurrent = [...baseHistory, currentMainPanelId];
-      if (withCurrent.length <= 24) {
-        return { history: withCurrent, index: withCurrent.length - 1 };
-      }
-
-      const trimmed = withCurrent.slice(withCurrent.length - 24);
-      return { history: trimmed, index: trimmed.length - 1 };
-    });
-  }, [layout.mainPanelId, template.contextClass]);
 
   useEffect(() => {
     const nextMainPanelId = layout.mainPanelId;
@@ -194,14 +130,6 @@ export function VisorPanelDeck({
     }, SWAP_EXIT_MS);
   }, [layout.mainPanelId, displayedMainPanelId]);
 
-  function handleHistoryNavigation(direction: -1 | 1) {
-    const target = direction === -1 ? previousMainTarget : nextMainTarget;
-    if (!target) return;
-
-    setMainNav((currentNav) => ({ ...currentNav, index: target.index }));
-    onPromotePanel(target.panelId);
-  }
-
   const mainPanelId = displayedMainPanelId ?? layout.mainPanelId;
 
   return (
@@ -209,31 +137,6 @@ export function VisorPanelDeck({
       {title && (
         <div className="visor-panel-deck-header">
           <span className="hud-info-label">{title}</span>
-        </div>
-      )}
-
-      {historyWidgetEnabled && (previousMainTarget || nextMainTarget) && (
-        <div className="visor-history-nav" role="toolbar" aria-label="Visor history navigation">
-          <button
-            type="button"
-            className="hud-action-btn visor-history-btn"
-            onClick={() => handleHistoryNavigation(-1)}
-            disabled={!previousMainTarget}
-            aria-label="Previous panel"
-            title="Previous panel"
-          >
-            {'<'}
-          </button>
-          <button
-            type="button"
-            className="hud-action-btn visor-history-btn"
-            onClick={() => handleHistoryNavigation(1)}
-            disabled={!nextMainTarget}
-            aria-label="Next panel"
-            title="Next panel"
-          >
-            {'>'}
-          </button>
         </div>
       )}
 

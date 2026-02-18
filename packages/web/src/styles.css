@@ -760,6 +760,19 @@ button.secondary:hover {
   will-change: transform;
 }
 
+.space-organism,
+.map-legend-marker {
+  --space-marker-fill: var(--accent-dim);
+  --space-marker-focused-fill: var(--accent);
+  --space-marker-focus-ring: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  --space-marker-halo-border: rgba(124, 108, 240, 0.45);
+  --space-marker-shape-radius: 50%;
+  --space-marker-shape-transform: none;
+  --space-marker-badge-border: var(--border);
+  --space-marker-badge-text: var(--text-dim);
+  --space-organism-focus-border: var(--accent);
+}
+
 .space-organism {
   position: absolute;
   border-radius: 12px;
@@ -780,8 +793,8 @@ button.secondary:hover {
 }
 
 .space-organism--focused {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  border-color: var(--space-organism-focus-border);
+  box-shadow: var(--space-marker-focus-ring);
 }
 
 .space-organism--high {
@@ -801,8 +814,9 @@ button.secondary:hover {
   position: relative;
   width: 30%;
   height: 30%;
-  border-radius: 50%;
-  background: var(--accent-dim);
+  border-radius: var(--space-marker-shape-radius);
+  background: var(--space-marker-fill);
+  transform: var(--space-marker-shape-transform);
   transition: transform 0.15s;
 }
 
@@ -810,7 +824,7 @@ button.secondary:hover {
   content: '';
   position: absolute;
   inset: -9px;
-  border: 1px solid rgba(124, 108, 240, 0.45);
+  border: 1px solid var(--space-marker-halo-border);
   border-radius: 999px;
   opacity: 0;
   transform: scale(0.85);
@@ -827,52 +841,39 @@ button.secondary:hover {
 }
 
 .space-organism--high.space-organism--focused .organism-dot {
-  background: var(--accent);
-  box-shadow: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  background: var(--space-marker-focused-fill);
+  box-shadow: var(--space-marker-focus-ring);
 }
 
 /* ── Community organism distinction ── */
 
-.space-organism--community .organism-dot {
-  background: #e09050;
-}
-
-.space-organism--community.space-organism--focused .organism-dot {
-  background: #f0a060;
-  box-shadow: 0 0 0 3px rgba(240, 160, 96, 0.3);
-}
-
-.space-organism--community.space-organism--focused {
-  border-color: #e09050;
-  box-shadow: 0 0 0 3px rgba(240, 160, 96, 0.3);
-}
-
-.space-organism--community .organism-type-badge {
-  border-color: rgba(224, 144, 80, 0.3);
-  color: #e09050;
+.space-organism--community,
+.map-legend-marker--community {
+  --space-marker-fill: #e09050;
+  --space-marker-focused-fill: #f0a060;
+  --space-marker-focus-ring: 0 0 0 3px rgba(240, 160, 96, 0.3);
+  --space-marker-badge-border: rgba(224, 144, 80, 0.3);
+  --space-marker-badge-text: #e09050;
+  --space-organism-focus-border: #e09050;
 }
 
 /* ── Song organism distinction ── */
 
-.space-organism--song .organism-dot {
-  background: #4cae8c;
-  border-radius: 6px;
-  transform: rotate(45deg);
+.space-organism--song,
+.map-legend-marker--song {
+  --space-marker-fill: #4cae8c;
+  --space-marker-focused-fill: #6bc8a7;
+  --space-marker-focus-ring: 0 0 0 3px rgba(107, 200, 167, 0.3);
+  --space-marker-shape-radius: 6px;
+  --space-marker-shape-transform: rotate(45deg);
+  --space-marker-badge-border: rgba(76, 174, 140, 0.35);
+  --space-marker-badge-text: #4cae8c;
+  --space-organism-focus-border: #4cae8c;
 }
 
-.space-organism--song.space-organism--focused .organism-dot {
-  background: #6bc8a7;
-  box-shadow: 0 0 0 3px rgba(107, 200, 167, 0.32);
-}
-
-.space-organism--song.space-organism--focused {
-  border-color: #4cae8c;
-  box-shadow: 0 0 0 3px rgba(107, 200, 167, 0.3);
-}
-
-.space-organism--song .organism-type-badge {
-  border-color: rgba(76, 174, 140, 0.35);
-  color: #4cae8c;
+.space-organism .organism-type-badge {
+  border-color: var(--space-marker-badge-border);
+  color: var(--space-marker-badge-text);
 }
 
 /* Keep high-altitude focus treatment dot-only across content types. */
@@ -974,6 +975,11 @@ button.secondary:hover {
   position: absolute;
   inset: 0;
   pointer-events: none;
+  --visor-widget-lane-top: 56px;
+  --visor-widget-lane-right: 16px;
+  --visor-widget-lane-width: 168px;
+  --visor-widget-slot-height: 56px;
+  --visor-widget-slot-gap: 8px;
 }
 
 .adaptive-visor-surface .visor-panel-deck {
@@ -2044,17 +2050,21 @@ button.secondary:hover {
 
 .visor-widget-lane {
   position: fixed;
-  top: 56px;
-  right: 16px;
+  top: var(--visor-widget-lane-top);
+  right: var(--visor-widget-lane-right);
+  width: var(--visor-widget-lane-width);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: var(--visor-widget-slot-gap);
   z-index: 45;
   pointer-events: none;
 }
 
 .visor-widget,
 .compass {
+  width: 100%;
+  min-height: var(--visor-widget-slot-height);
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2069,7 +2079,7 @@ button.secondary:hover {
 }
 
 .visor-widget {
-  min-width: 140px;
+  min-width: 0;
   align-items: stretch;
   gap: 6px;
 }
@@ -2110,6 +2120,48 @@ button.secondary:hover {
   font-size: 9px;
   color: var(--hud-text);
   opacity: 0.75;
+}
+
+.map-legend-widget {
+  width: 100%;
+  min-width: 0;
+}
+
+.map-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  color: var(--hud-text);
+}
+
+.map-legend-marker {
+  width: 14px;
+  height: 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.map-legend-marker .organism-dot {
+  width: 10px;
+  height: 10px;
+  transition: none;
+}
+
+.map-legend-marker .organism-dot::after {
+  display: none;
 }
 
 /* ── Altitude Controls ── */
@@ -3272,17 +3324,15 @@ button.secondary:hover {
 }
 
 .visor-history-nav {
-  position: fixed;
-  top: 122px;
-  right: 16px;
-  left: auto;
-  z-index: 46;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  width: 48px;
-  padding: 4px;
+  position: static;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 6px;
+  width: 100%;
+  min-height: var(--visor-widget-slot-height);
+  box-sizing: border-box;
+  padding: 6px;
   border: 1px solid var(--hud-border);
   border-radius: 8px;
   background: rgba(10, 10, 15, 0.74);
@@ -3294,7 +3344,7 @@ button.secondary:hover {
   width: 100%;
   font-size: 12px;
   line-height: 1;
-  padding: 4px 0;
+  padding: 5px 0;
   text-align: center;
 }
 
@@ -3833,9 +3883,10 @@ button.secondary:hover {
     right: 10px;
   }
 
-  .visor-widget-lane {
-    top: 52px;
-    right: 10px;
+  .adaptive-visor-surface {
+    --visor-widget-lane-top: 52px;
+    --visor-widget-lane-right: 10px;
+    --visor-widget-lane-width: min(168px, calc(100vw - 20px));
   }
 
   .altitude-controls {
@@ -4017,13 +4068,6 @@ button.secondary:hover {
 
   .space-nav-location {
     max-width: min(64vw, 320px);
-  }
-
-  .visor-history-nav {
-    top: 116px;
-    right: 10px;
-    left: auto;
-    width: 48px;
   }
 
   .visor-view {
