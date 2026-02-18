@@ -7,11 +7,8 @@
  */
 
 import type { ReactNode } from 'react';
-import type { TemplateSongCustomization } from '../../template-values.js';
-import { ThresholdForm } from '../forms/ThresholdForm.js';
-import { HudMyOrganisms } from '../map/HudMyOrganisms.js';
-import { HudTemplates } from '../map/HudTemplates.js';
-import { HudTemplateValuesPanel } from '../map/HudTemplateValuesPanel.js';
+import { HudMyProposalsPanel } from '../map/HudMyProposalsPanel.js';
+import { HudProfilePanel } from '../map/HudProfilePanel.js';
 import {
   AppendSection,
   CompositionSection,
@@ -23,45 +20,15 @@ import {
 } from '../organism/sections/index.js';
 import type { MapHudPanelId, UniversalVisorHudPanelId, VisorMainHudPanelId } from './panel-schema.js';
 
-interface MapPanelBodyContext {
-  templateCustomization: TemplateSongCustomization | null;
-  onThresholdCreated: (organismId: string) => void;
-  onCloseMapPanel: () => void;
-  onOrganismSelect: (organismId: string) => void;
-  onTemplateInstantiated: (organismId: string) => void;
-  onTemplateValuesRequested: (customization: TemplateSongCustomization) => void;
-  onCloseTemplateValues: () => void;
-}
-
-type MapPanelBodyRenderer = (context: MapPanelBodyContext) => ReactNode;
+type MapPanelBodyRenderer = () => ReactNode;
 
 export const MAP_PANEL_BODY_RENDERERS = {
-  threshold: (context) => (
-    <ThresholdForm inline onCreated={context.onThresholdCreated} onClose={context.onCloseMapPanel} />
-  ),
-  mine: (context) => <HudMyOrganisms onSelect={context.onOrganismSelect} />,
-  templates: (context) => (
-    <HudTemplates
-      onTemplateInstantiated={context.onTemplateInstantiated}
-      onTemplateValuesRequested={context.onTemplateValuesRequested}
-    />
-  ),
-  'template-values': (context) =>
-    context.templateCustomization ? (
-      <HudTemplateValuesPanel
-        customization={context.templateCustomization}
-        onCancel={context.onCloseTemplateValues}
-        onTemplateInstantiated={context.onTemplateInstantiated}
-      />
-    ) : (
-      <div className="hud-panel-empty">
-        <span className="hud-info-dim">Select a template first to edit template values.</span>
-      </div>
-    ),
+  profile: () => <HudProfilePanel />,
+  'my-proposals': () => <HudMyProposalsPanel />,
 } satisfies Record<MapHudPanelId, MapPanelBodyRenderer>;
 
-export function renderMapPanelBody(panelId: MapHudPanelId, context: MapPanelBodyContext): ReactNode {
-  return MAP_PANEL_BODY_RENDERERS[panelId](context);
+export function renderMapPanelBody(panelId: MapHudPanelId): ReactNode {
+  return MAP_PANEL_BODY_RENDERERS[panelId]();
 }
 
 interface UniversalVisorPanelBodyContext {
@@ -133,6 +100,9 @@ interface OrganismMainPanelBodyContext {
   onCloseVisor: () => void;
   onVisit: () => void;
   onSurface: () => void;
+  previewMode: 'thermal' | 'true-renderer';
+  onSelectThermalPreview: () => void;
+  onSelectTrueRendererPreview: () => void;
 }
 
 export function renderOrganismMainPanelBody(context: OrganismMainPanelBodyContext): ReactNode {
@@ -145,6 +115,23 @@ export function renderOrganismMainPanelBody(context: OrganismMainPanelBodyContex
         </div>
 
         <div className="visor-organism-panel-controls">
+          <fieldset className="visor-renderer-preview-toggle" aria-label="Renderer preview mode">
+            <button
+              type="button"
+              className={`hud-action-btn ${context.previewMode === 'thermal' ? 'hud-action-btn--active' : ''}`}
+              onClick={context.onSelectThermalPreview}
+            >
+              Thermal view
+            </button>
+            <button
+              type="button"
+              className={`hud-action-btn ${context.previewMode === 'true-renderer' ? 'hud-action-btn--active' : ''}`}
+              onClick={context.onSelectTrueRendererPreview}
+            >
+              Renderer view
+            </button>
+          </fieldset>
+
           {context.canWrite && context.openTrunk && (
             <button type="button" className="hud-action-btn" onClick={context.onOpenAppend}>
               Append
@@ -169,7 +156,9 @@ export function renderOrganismMainPanelBody(context: OrganismMainPanelBodyContex
         </div>
       </div>
 
-      <div className="visor-view-renderer">{context.organismRenderer}</div>
+      <div className={`visor-view-renderer visor-view-renderer--${context.previewMode}`}>
+        {context.organismRenderer}
+      </div>
 
       <div className="visor-view-actions">
         {!context.surfaceLoading && context.surfaced && (

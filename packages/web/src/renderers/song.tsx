@@ -104,7 +104,7 @@ export function SongRenderer({ state, zoom: _zoom, focused: _focused }: Renderer
               <h2>{sectionLabel(typeId)}</h2>
               <ul>
                 {rows.map((row) => (
-                  <li key={row.id}>
+                  <li key={row.id} data-rendered-child="true">
                     <span className="song-section-type">{row.contentTypeId}</span>
                     <span className="song-section-name">{row.name}</span>
                   </li>

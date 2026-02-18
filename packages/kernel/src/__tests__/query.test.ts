@@ -242,12 +242,12 @@ describe('query port', () => {
       expect(results[0].proposedBy).toBe(proposer);
     });
 
-    it('returns proposals on organisms the user has integration authority over', async () => {
+    it('does not return proposals solely from integration authority', async () => {
       const { organism } = await makeOrganism('Song', { userId: 'owner' });
       const integrator = testUserId('integrator');
       const proposer = testUserId('someone');
 
-      // Grant integration authority
+      // Integration authority does not affect authored proposal lookup.
       await relationshipRepository.save({
         id: identityGenerator.relationshipId(),
         type: 'integration-authority',
@@ -277,8 +277,7 @@ describe('query port', () => {
       );
 
       const results = await queryPort.findProposalsByUser(integrator);
-      expect(results).toHaveLength(1);
-      expect(results[0].organismId).toBe(organism.id);
+      expect(results).toHaveLength(0);
     });
 
     it('does not return proposals on unrelated organisms', async () => {

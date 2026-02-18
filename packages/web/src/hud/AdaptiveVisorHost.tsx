@@ -6,7 +6,7 @@
  * collapsed rail placement rules.
  */
 
-import { useState } from 'react';
+import { useOrganism } from '../hooks/use-organism.js';
 import { selectActiveMapPanel } from '../platform/adaptive-visor-compositor.js';
 import {
   usePlatformActions,
@@ -17,6 +17,7 @@ import {
   usePlatformVisorState,
 } from '../platform/index.js';
 import { renderMapPanelBody } from './panels/core/panel-body-registry.js';
+import { resolveVisorPanelLayout } from './panels/core/panel-layout-policy.js';
 import {
   isInteriorHudPanelId,
   isMapHudPanelId,
@@ -24,26 +25,27 @@ import {
   type MapHudPanelId,
 } from './panels/core/panel-schema.js';
 import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
+import { useMainPanelHistoryNavigation } from './panels/core/use-main-panel-history-navigation.js';
 import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
 import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
-import type { TemplateSongCustomization } from './template-values.js';
-import { CompassWidget, VisorWidgetLane } from './widgets/index.js';
+import { CompassWidget, HistoryNavigationWidget, MapLegendWidget, VisorWidgetLane } from './widgets/index.js';
 
 type MapPanelId = MapHudPanelId | null;
 
 export function AdaptiveVisorHost() {
-  const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
+  const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
   const { canWrite } = usePlatformStaticState();
-  const { openInVisor, bumpMapRefresh } = usePlatformActions();
+  const { openInVisor } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
   const adaptiveActions = usePlatformAdaptiveVisorActions();
+  const { data: currentMapData } = useOrganism(currentMapId);
 
-  const [templateCustomization, setTemplateCustomization] = useState<TemplateSongCustomization | null>(null);
   const mapTemplate = resolvePanelVisorTemplate('map');
   const interiorTemplate = resolvePanelVisorTemplate('interior');
 
   const contextClass = adaptiveState.layoutContext.contextClass;
+  const isSpatialMap = currentMapData?.currentState?.contentTypeId === 'spatial-map';
   const activeMapPanel = selectActiveMapPanel(adaptiveState) as MapPanelId;
   const activeWidgets = new Set(adaptiveState.activeWidgets);
   const mapShowsCompass =
@@ -54,52 +56,47 @@ export function AdaptiveVisorHost() {
     contextClass === 'map' &&
     activeWidgets.has('history-navigation') &&
     mapTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
-
-  function closeActiveMapPanel() {
-    if (!activeMapPanel) return;
-
-    if (activeMapPanel === 'template-values') {
-      adaptiveActions.closeTemporaryPanel();
-      return;
-    }
-
-    adaptiveActions.toggleMapPanel(activeMapPanel);
-  }
-
-  function handleThresholdCreated(organismId: string) {
-    adaptiveActions.bumpMutationToken();
-    closeActiveMapPanel();
-    openInVisor(organismId);
-  }
-
-  function handleOrganismSelect(organismId: string) {
-    closeActiveMapPanel();
-    openInVisor(organismId);
-  }
-
-  function handleTemplateInstantiated(organismId: string) {
-    setTemplateCustomization(null);
-    adaptiveActions.bumpMutationToken();
-    closeActiveMapPanel();
-    openInVisor(organismId);
-    bumpMapRefresh();
-  }
-
-  function handleTemplateValuesRequested(customization: TemplateSongCustomization) {
-    setTemplateCustomization(customization);
-    adaptiveActions.openTemplateValuesPanel();
-  }
-
-  function closeTemplateValues() {
-    setTemplateCustomization(null);
-    adaptiveActions.closeTemporaryPanel();
-  }
+  const mapShowsLegend =
+    contextClass === 'map' &&
+    isSpatialMap &&
+    activeWidgets.has('map-legend') &&
+    mapTemplate.widgetSlots.allowedWidgets.includes('map-legend');
+  const mapLayout = resolveVisorPanelLayout({
+    context: {
+      contextClass: 'map',
+      surfaced: false,
+      openTrunk: false,
+      templateValuesReady: false,
+      canWrite,
+    },
+    preferredMainPanelId: activeMapPanel,
+    slots: mapTemplate.panelSlots,
+  });
+  const mapHistoryNavigation = useMainPanelHistoryNavigation({
+    contextClass,
+    currentMainPanelId: contextClass === 'map' ? mapLayout.mainPanelId : null,
+    availablePanelIds: contextClass === 'map' ? mapLayout.availablePanelIds : [],
+    enabled: mapHistoryNavigationEnabled,
+    onPromotePanel: (panelId) => {
+      if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
+    },
+  });
+  const mapShowsHistoryNavigation = contextClass === 'map' && mapHistoryNavigation.hasTargets;
 
   return (
     <div className="adaptive-visor-surface">
-      {mapShowsCompass && (
+      {(mapShowsCompass || mapShowsLegend || mapShowsHistoryNavigation) && (
         <VisorWidgetLane>
-          <CompassWidget />
+          {mapShowsCompass && <CompassWidget />}
+          {mapShowsLegend && <MapLegendWidget />}
+          {mapShowsHistoryNavigation && (
+            <HistoryNavigationWidget
+              canGoPrevious={mapHistoryNavigation.canGoPrevious}
+              canGoNext={mapHistoryNavigation.canGoNext}
+              onGoPrevious={mapHistoryNavigation.goPrevious}
+              onGoNext={mapHistoryNavigation.goNext}
+            />
+          )}
         </VisorWidgetLane>
       )}
 
@@ -110,49 +107,29 @@ export function AdaptiveVisorHost() {
           surfaced={false}
           openTrunk={false}
           canWrite={canWrite}
-          templateValuesReady={templateCustomization !== null}
           preferredMainPanelId={activeMapPanel}
           extraCollapsedChips={
-            focusedOrganismId
+            focusedOrganismId && adaptiveState.altitude === 'close'
               ? [
                   {
                     id: `tend-${focusedOrganismId}`,
-                    label: 'Tend focused',
+                    label: 'Collaborate focused',
                     className: 'visor-panel-collapsed-chip--tend',
-                    title: 'Tend focused organism',
+                    title: 'Collaborate on focused organism',
                     onClick: () => openInVisor(focusedOrganismId),
                   },
                 ]
               : []
           }
           onPromotePanel={(panelId) => {
-            if (panelId === 'template-values') {
-              if (templateCustomization) adaptiveActions.openTemplateValuesPanel();
-              return;
-            }
             if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
           onCollapseMainPanel={(panelId) => {
-            if (panelId === 'template-values') {
-              // Collapse should demote to the rail, not restore prior flow state.
-              adaptiveActions.bumpMutationToken();
-              adaptiveActions.closeTemporaryPanel();
-              return;
-            }
             if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
-          historyNavigationEnabled={mapHistoryNavigationEnabled}
           renderPanelBody={(panelId) => {
             if (!isMapHudPanelId(panelId)) return null;
-            return renderMapPanelBody(panelId, {
-              templateCustomization,
-              onThresholdCreated: handleThresholdCreated,
-              onCloseMapPanel: closeActiveMapPanel,
-              onOrganismSelect: handleOrganismSelect,
-              onTemplateInstantiated: handleTemplateInstantiated,
-              onTemplateValuesRequested: handleTemplateValuesRequested,
-              onCloseTemplateValues: closeTemplateValues,
-            });
+            return renderMapPanelBody(panelId);
           }}
         />
       )}

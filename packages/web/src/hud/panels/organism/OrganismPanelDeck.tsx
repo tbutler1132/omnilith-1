@@ -18,8 +18,9 @@ import {
   usePlatformViewportMeta,
 } from '../../../platform/index.js';
 import { FallbackRenderer, getRenderer } from '../../../renderers/index.js';
-import { VisorWidgetLane, VitalityWidget } from '../../widgets/index.js';
+import { HistoryNavigationWidget, VisorWidgetLane, VitalityWidget } from '../../widgets/index.js';
 import { renderVisorPanelBody } from '../core/panel-body-registry.js';
+import { resolveVisorPanelLayout } from '../core/panel-layout-policy.js';
 import {
   isVisorHudPanelId,
   isVisorMainHudPanelId,
@@ -27,7 +28,9 @@ import {
   type VisorHudPanelId,
 } from '../core/panel-schema.js';
 import { resolvePanelVisorTemplate } from '../core/template-schema.js';
+import { useMainPanelHistoryNavigation } from '../core/use-main-panel-history-navigation.js';
 import { VisorPanelDeck } from '../core/VisorPanelDeck.js';
+import { ComponentsSection } from './sections/index.js';
 
 interface OrganismPanelDeckProps {
   organismId: string;
@@ -37,6 +40,8 @@ interface OrganismShortcutAction {
   panelId: UniversalVisorHudPanelId;
   label: string;
 }
+
+type RendererPreviewMode = 'thermal' | 'true-renderer';
 
 export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const { worldMapId, canWrite } = usePlatformStaticState();
@@ -51,6 +56,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [surfacing, setSurfacing] = useState(false);
   const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(initialPanelId);
+  const [previewMode, setPreviewMode] = useState<RendererPreviewMode>('thermal');
   const organismTemplate = resolvePanelVisorTemplate('visor-organism');
   const activeWidgets = new Set(adaptiveVisorState.activeWidgets);
   const vitalityWidgetEnabled =
@@ -58,13 +64,39 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const historyNavigationEnabled =
     activeWidgets.has('history-navigation') &&
     organismTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
-
+  const thermalRendererPreview = preferredPanelId === 'organism' && previewMode === 'thermal';
+  const rendererPreviewFullBleed = preferredPanelId === 'organism' && previewMode === 'true-renderer';
   const { data: organism } = useOrganism(organismId, refreshKey);
   const { surfaced, loading: surfaceLoading } = useIsSurfaced(worldMapId, organismId);
+  const openTrunk = organism?.organism.openTrunk ?? false;
+  const organismLayout = resolveVisorPanelLayout({
+    context: {
+      contextClass: 'visor-organism',
+      surfaced,
+      openTrunk,
+      templateValuesReady: false,
+      canWrite,
+      interiorOrigin,
+      thermalRendererPreview,
+      rendererPreviewFullBleed,
+    },
+    preferredMainPanelId: preferredPanelId,
+    slots: organismTemplate.panelSlots,
+  });
+  const historyNavigation = useMainPanelHistoryNavigation({
+    contextClass: 'visor-organism',
+    currentMainPanelId: organismLayout.mainPanelId,
+    availablePanelIds: organismLayout.availablePanelIds,
+    enabled: historyNavigationEnabled,
+    onPromotePanel: (panelId) => {
+      if (!isVisorHudPanelId(panelId)) return;
+      setPreferredPanelId(panelId);
+    },
+  });
+  const showHistoryNavigationWidget = historyNavigation.hasTargets;
 
   const name = organism?.organism.name ?? '...';
   const contentType = organism?.currentState?.contentTypeId ?? '...';
-  const openTrunk = organism?.organism.openTrunk ?? false;
 
   const Renderer = organism?.currentState
     ? (getRenderer(organism.currentState.contentTypeId) ?? FallbackRenderer)
@@ -78,9 +110,11 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
     if (canWrite) secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
     secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
   }
-  secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
-  secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });
-  secondaryShortcutActions.push({ panelId: 'relationships', label: 'Open relationships' });
+  if (!interiorOrigin) {
+    secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
+    secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });
+    secondaryShortcutActions.push({ panelId: 'relationships', label: 'Open relationships' });
+  }
 
   function handleVisit() {
     focusOrganism(organismId);
@@ -100,11 +134,21 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
 
   return (
     <>
-      {vitalityWidgetEnabled && preferredPanelId !== null && (
+      {(vitalityWidgetEnabled && preferredPanelId !== null) || showHistoryNavigationWidget ? (
         <VisorWidgetLane>
-          <VitalityWidget organismId={organismId} refreshKey={refreshKey} />
+          {showHistoryNavigationWidget && (
+            <HistoryNavigationWidget
+              canGoPrevious={historyNavigation.canGoPrevious}
+              canGoNext={historyNavigation.canGoNext}
+              onGoPrevious={historyNavigation.goPrevious}
+              onGoNext={historyNavigation.goNext}
+            />
+          )}
+          {vitalityWidgetEnabled && preferredPanelId !== null && (
+            <VitalityWidget organismId={organismId} refreshKey={refreshKey} />
+          )}
         </VisorWidgetLane>
-      )}
+      ) : null}
 
       <VisorPanelDeck
         title="Organism panels"
@@ -113,8 +157,9 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
         openTrunk={openTrunk}
         canWrite={canWrite}
         interiorOrigin={interiorOrigin}
+        thermalRendererPreview={thermalRendererPreview}
+        rendererPreviewFullBleed={rendererPreviewFullBleed}
         preferredMainPanelId={preferredPanelId}
-        historyNavigationEnabled={historyNavigationEnabled}
         onPromotePanel={(panelId) => {
           if (!isVisorHudPanelId(panelId)) return;
           setPreferredPanelId(panelId);
@@ -140,7 +185,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
               surfacing,
               organismRenderer:
                 Renderer && organism?.currentState ? (
-                  <Renderer state={organism.currentState} zoom={1} focused={false} />
+                  <Renderer state={organism.currentState} zoom={1} focused={false} previewMode={previewMode} />
                 ) : null,
               onOpenAppend: () => setPreferredPanelId('append'),
               onOpenPropose: () => setPreferredPanelId('propose'),
@@ -148,6 +193,9 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
               onCloseVisor: () => closeVisorOrganism(),
               onVisit: handleVisit,
               onSurface: handleSurface,
+              previewMode,
+              onSelectThermalPreview: () => setPreviewMode('thermal'),
+              onSelectTrueRendererPreview: () => setPreviewMode('true-renderer'),
             },
             universal: {
               organismId,
@@ -161,6 +209,16 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
           });
         }}
         renderSecondaryBody={(panelId) => {
+          if (panelId === 'components') {
+            return (
+              <ComponentsSection
+                organismId={organismId}
+                refreshKey={refreshKey}
+                supportsRendererHotspots={contentType === 'song'}
+              />
+            );
+          }
+
           if (panelId !== 'organism-nav') return null;
 
           return (

@@ -17,7 +17,7 @@ export function userRoutes(container: Container) {
     return c.json({ organisms });
   });
 
-  // Current user's proposals (authored or on organisms they can integrate)
+  // Current user's authored proposals
   app.get('/me/proposals', async (c) => {
     const userId = c.get('userId');
     const proposals = await container.queryPort.findProposalsByUser(userId);

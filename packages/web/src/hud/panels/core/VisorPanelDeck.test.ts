@@ -36,7 +36,7 @@ describe('VisorPanelDeck', () => {
   it('an organism template starts with only the tend chip collapsed', () => {
     const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: null });
 
-    expect(html).toContain('Tend');
+    expect(html).toContain('Renderer preview');
     expect(html).not.toContain('Composition');
     expect(html).not.toContain('Open proposal');
     expect(html).not.toContain('State history');
@@ -47,31 +47,30 @@ describe('VisorPanelDeck', () => {
     const html = renderDeck({ templateContext: 'interior', preferredMainPanelId: null });
 
     expect(html).toContain('visor-panel-collapsed-rail--viewport-bottom-left');
-    expect(html).toContain('Tend current');
+    expect(html).toContain('Collaborate here');
     expect(html).not.toContain('visor-panel-main-slot');
   });
 
   it('a map template keeps main empty until a panel is preferred', () => {
     const html = renderDeck({ templateContext: 'map', preferredMainPanelId: null });
 
-    expect(html).toContain('Templates');
-    expect(html).toContain('Threshold');
-    expect(html).toContain('My organisms');
+    expect(html).toContain('Profile');
+    expect(html).toContain('Proposals');
     expect(html).not.toContain('visor-panel-main-slot');
   });
 
   it('a preferred map panel renders in the main slot without bypassing the deck', () => {
-    const html = renderDeck({ templateContext: 'map', preferredMainPanelId: 'templates' });
+    const html = renderDeck({ templateContext: 'map', preferredMainPanelId: 'my-proposals' });
 
-    expect(html).toContain('<h4>Templates</h4>');
-    expect(html).toContain('body-templates');
+    expect(html).toContain('<h4>Proposals</h4>');
+    expect(html).toContain('body-my-proposals');
     expect(html).toContain('Collapse');
   });
 
   it('opening tend in organism context renders one secondary action card', () => {
     const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: 'organism' });
 
-    expect(html).toContain('<h4>Tend</h4>');
+    expect(html).toContain('<h4>Renderer preview</h4>');
     expect(html).toContain('visor-panel-secondary-row');
     expect(html).toContain('Composition');
   });

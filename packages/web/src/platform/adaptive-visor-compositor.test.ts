@@ -23,7 +23,7 @@ describe('adaptive visor compositor', () => {
   it('a map context exposes map actions with no major panel selected', () => {
     const state = createAdaptiveVisorCompositorState(true, createContext());
 
-    expect(state.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(state.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
     expect(state.activePanels).toEqual([]);
   });
 
@@ -86,37 +86,43 @@ describe('adaptive visor compositor', () => {
 
   it('toggling a map panel opens and closes it deterministically', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
-    const opened = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'threshold' });
-    const closed = computeNextAdaptiveVisorLayout(opened, { type: 'toggle-map-panel', panelId: 'threshold' });
+    const opened = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'profile' });
+    const closed = computeNextAdaptiveVisorLayout(opened, { type: 'toggle-map-panel', panelId: 'profile' });
 
-    expect(selectActiveMapPanel(opened)).toBe('threshold');
+    expect(selectActiveMapPanel(opened)).toBe('profile');
     expect(selectActiveMapPanel(closed)).toBeNull();
   });
 
-  it('closing a temporary template values flow restores the prior map panel when unchanged', () => {
+  it('leaving map context and returning restores the prior map panel when unchanged', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
-    const templates = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'templates' });
-    const templateValues = computeNextAdaptiveVisorLayout(templates, { type: 'open-template-values' });
-    const restored = computeNextAdaptiveVisorLayout(templateValues, { type: 'close-temporary-panel' });
+    const profile = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'profile' });
+    const visor = computeNextAdaptiveVisorLayout(profile, {
+      type: 'open-visor-organism',
+      organismId: 'organism-2',
+    });
+    const restored = computeNextAdaptiveVisorLayout(visor, { type: 'close-visor-organism' });
 
-    expect(selectActiveMapPanel(templateValues)).toBe('template-values');
-    expect(selectActiveMapPanel(restored)).toBe('templates');
+    expect(selectActiveMapPanel(profile)).toBe('profile');
+    expect(selectActiveMapPanel(restored)).toBe('profile');
   });
 
-  it('a mutation token bump forces recompute instead of restoring a temporary flow', () => {
+  it('a mutation token bump forces recompute instead of restoring a map panel', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
-    const templates = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'templates' });
-    const templateValues = computeNextAdaptiveVisorLayout(templates, { type: 'open-template-values' });
-    const mutated = computeNextAdaptiveVisorLayout(templateValues, { type: 'mutation' });
-    const recomputed = computeNextAdaptiveVisorLayout(mutated, { type: 'close-temporary-panel' });
+    const profile = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'profile' });
+    const visor = computeNextAdaptiveVisorLayout(profile, {
+      type: 'open-visor-organism',
+      organismId: 'organism-2',
+    });
+    const mutated = computeNextAdaptiveVisorLayout(visor, { type: 'mutation' });
+    const recomputed = computeNextAdaptiveVisorLayout(mutated, { type: 'close-visor-organism' });
 
     expect(selectActiveMapPanel(recomputed)).toBeNull();
-    expect(recomputed.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(recomputed.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
   });
 
   it('anchors remain available after context transitions and mutation events', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
-    const toggled = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'mine' });
+    const toggled = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'my-proposals' });
     const changedContext = computeNextAdaptiveVisorLayout(toggled, {
       type: 'open-visor-organism',
       organismId: 'organism-2',
@@ -130,15 +136,15 @@ describe('adaptive visor compositor', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext(), { traceEnabled: true });
     const nextState = computeNextAdaptiveVisorLayout(initialState, {
       type: 'toggle-map-panel',
-      panelId: 'mine',
+      panelId: 'my-proposals',
     });
     const entry = nextState.decisionTrace[nextState.decisionTrace.length - 1];
 
     expect(entry).toBeDefined();
     expect(entry?.eventType).toBe('toggle-map-panel');
     expect(entry?.decision).toBe('toggle-map-panel-open');
-    expect(entry?.activePanels).toEqual(['mine']);
-    expect(entry?.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass']);
+    expect(entry?.activePanels).toEqual(['my-proposals']);
+    expect(entry?.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
     expect(entry?.sequence).toBe(1);
   });
 
@@ -146,7 +152,7 @@ describe('adaptive visor compositor', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext(), { traceEnabled: false });
     const nextState = computeNextAdaptiveVisorLayout(initialState, {
       type: 'toggle-map-panel',
-      panelId: 'mine',
+      panelId: 'my-proposals',
     });
 
     expect(nextState.decisionTrace).toHaveLength(0);

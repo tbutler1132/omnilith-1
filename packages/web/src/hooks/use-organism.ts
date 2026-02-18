@@ -15,6 +15,7 @@ import {
   fetchRelationships,
   fetchStateHistory,
   fetchUserOrganisms,
+  fetchUserProposals,
   fetchVitality,
 } from '../api/organisms.js';
 
@@ -181,4 +182,11 @@ export function useEvents(id: string) {
 
 export function useUserOrganisms(refreshKey = 0) {
   return useAsync(() => fetchUserOrganisms().then((r) => r.organisms), [refreshKey]);
+}
+
+export function useUserProposals(refreshKey = 0, enabled = true) {
+  return useAsync(
+    () => (enabled ? fetchUserProposals().then((r) => r.proposals) : Promise.resolve([])),
+    [refreshKey, enabled],
+  );
 }

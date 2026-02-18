@@ -16,9 +16,9 @@ import type {
   UserId,
   VitalityData,
 } from '@omnilith/kernel';
-import { and, count, desc, eq, max, or, type SQL, sql } from 'drizzle-orm';
+import { and, count, desc, eq, max, type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
-import { composition, organismStates, organisms, proposals, relationships } from '../db/schema.js';
+import { composition, organismStates, organisms, proposals } from '../db/schema.js';
 
 export class PgQueryPort implements QueryPort {
   constructor(private readonly db: Database) {}
@@ -129,19 +129,7 @@ export class PgQueryPort implements QueryPort {
   }
 
   async findProposalsByUser(userId: UserId): Promise<ReadonlyArray<Proposal>> {
-    const rows = await this.db
-      .select()
-      .from(proposals)
-      .where(
-        or(
-          eq(proposals.proposedBy, userId),
-          sql`${proposals.organismId} IN (
-            SELECT ${relationships.organismId} FROM ${relationships}
-            WHERE ${relationships.userId} = ${userId}
-            AND ${relationships.type} = 'integration-authority'
-          )`,
-        ),
-      );
+    const rows = await this.db.select().from(proposals).where(eq(proposals.proposedBy, userId));
 
     return rows.map(toProposal);
   }

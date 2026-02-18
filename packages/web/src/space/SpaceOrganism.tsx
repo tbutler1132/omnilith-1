@@ -60,7 +60,7 @@ function SpaceOrganismImpl({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (focused) {
+    if (focused && altitude === 'close') {
       if (!data?.currentState) return;
       if (data?.currentState?.contentTypeId === 'community') {
         const payload = data.currentState.payload as { mapOrganismId: string };

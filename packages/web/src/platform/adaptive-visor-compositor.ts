@@ -12,11 +12,10 @@ import type { Altitude } from '../space/viewport-math.js';
 export type AdaptiveVisorContextClass = 'map' | 'interior' | 'visor-organism';
 export type AdaptiveVisorSpatialLocation = 'map' | 'interior';
 export type AdaptiveVisorMajorPanelId = 'visor-view' | 'interior-actions';
-export type AdaptiveVisorMapPanelId = 'threshold' | 'mine' | 'templates' | 'template-values';
+export type AdaptiveVisorMapPanelId = 'profile' | 'my-proposals';
 export type AdaptiveVisorPanelId = AdaptiveVisorMajorPanelId | AdaptiveVisorMapPanelId;
 export type AdaptiveVisorWidgetId = VisorWidgetId;
 export type AdaptiveVisorAnchorId = 'navigation-back' | 'dismiss';
-export type AdaptiveVisorIntentId = 'template-values-flow';
 export type AdaptiveVisorDecision = string;
 
 export interface AdaptiveVisorLayoutContext {
@@ -47,7 +46,7 @@ export interface AdaptiveVisorCompositorState {
   activeWidgets: AdaptiveVisorWidgetId[];
   anchors: AdaptiveVisorAnchorId[];
   layoutHistory: AdaptiveVisorLayoutSnapshot[];
-  intentStack: AdaptiveVisorIntentId[];
+  intentStack: string[];
   lastMutationToken: number;
   decisionTrace: AdaptiveVisorDecisionTraceEntry[];
   nextDecisionTraceSequence: number;
@@ -71,9 +70,7 @@ export type AdaptiveVisorCompositorEvent =
   | { type: 'open-visor-organism'; organismId: string }
   | { type: 'close-visor-organism' }
   | { type: 'set-altitude'; altitude: Altitude }
-  | { type: 'toggle-map-panel'; panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'> }
-  | { type: 'open-template-values' }
-  | { type: 'close-temporary-panel' }
+  | { type: 'toggle-map-panel'; panelId: AdaptiveVisorMapPanelId }
   | { type: 'mutation' };
 
 const ANCHORS: AdaptiveVisorAnchorId[] = ['navigation-back', 'dismiss'];
@@ -160,13 +157,11 @@ function constrainPanels(activePanels: AdaptiveVisorPanelId[]): AdaptiveVisorPan
 }
 
 function isMapPanel(panelId: AdaptiveVisorPanelId): panelId is AdaptiveVisorMapPanelId {
-  return panelId === 'threshold' || panelId === 'mine' || panelId === 'templates' || panelId === 'template-values';
+  return panelId === 'profile' || panelId === 'my-proposals';
 }
 
-function isRestorableMapPanel(
-  panelId: AdaptiveVisorPanelId,
-): panelId is Exclude<AdaptiveVisorMapPanelId, 'template-values'> {
-  return panelId === 'threshold' || panelId === 'mine' || panelId === 'templates';
+function isRestorableMapPanel(panelId: AdaptiveVisorPanelId): panelId is AdaptiveVisorMapPanelId {
+  return panelId === 'profile' || panelId === 'my-proposals';
 }
 
 function popLatestRestorableSnapshot(
@@ -202,7 +197,7 @@ function recomputeForContext(context: AdaptiveVisorLayoutContext): {
 
 function resolveWidgetsForContext(context: AdaptiveVisorLayoutContext): AdaptiveVisorWidgetId[] {
   if (context.contextClass === 'map') {
-    return ['map-actions', 'history-navigation', 'compass'];
+    return ['map-actions', 'history-navigation', 'compass', 'map-legend'];
   }
   if (context.contextClass === 'visor-organism' && context.visorOrganismId) {
     return ['history-navigation', 'vitality'];
@@ -288,7 +283,7 @@ function handleContextChanged(
 
 function handleToggleMapPanel(
   state: AdaptiveVisorCompositorState,
-  panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>,
+  panelId: AdaptiveVisorMapPanelId,
 ): AdaptiveVisorPolicyResult {
   if (state.layoutContext.contextClass !== 'map') {
     return { nextState: state, decision: 'ignore-toggle-map-panel-not-eligible' };
@@ -303,80 +298,9 @@ function handleToggleMapPanel(
       activePanels: nextPanel ? [nextPanel] : [],
       activeWidgets: resolveWidgetsForContext(state.layoutContext),
       anchors: ANCHORS,
-      intentStack: currentlyActive === 'template-values' ? [] : state.intentStack,
+      intentStack: [],
     },
     decision: nextPanel ? 'toggle-map-panel-open' : 'toggle-map-panel-close',
-  };
-}
-
-function handleOpenTemplateValues(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
-  if (state.layoutContext.contextClass !== 'map') {
-    return { nextState: state, decision: 'ignore-open-template-values-not-eligible' };
-  }
-
-  return {
-    nextState: {
-      ...state,
-      activePanels: ['template-values'],
-      activeWidgets: resolveWidgetsForContext(state.layoutContext),
-      anchors: ANCHORS,
-      layoutHistory: pushHistory(state),
-      intentStack: [...state.intentStack, 'template-values-flow'],
-    },
-    decision: 'open-template-values-panel',
-  };
-}
-
-function handleCloseTemporaryPanel(state: AdaptiveVisorCompositorState): AdaptiveVisorPolicyResult {
-  const topIntent = state.intentStack[state.intentStack.length - 1];
-  if (topIntent !== 'template-values-flow') {
-    if (selectActiveMapPanel(state) !== 'template-values') {
-      return { nextState: state, decision: 'ignore-close-temporary-no-template-values-panel' };
-    }
-    return {
-      nextState: {
-        ...state,
-        activePanels: [],
-        activeWidgets: resolveWidgetsForContext(state.layoutContext),
-        anchors: ANCHORS,
-        intentStack: [],
-      },
-      decision: 'close-template-values-no-restore',
-    };
-  }
-
-  const { restored, nextHistory } = popLatestRestorableSnapshot(
-    state.layoutHistory,
-    state.layoutContext.contextClass,
-    state.lastMutationToken,
-  );
-
-  const intentStack = state.intentStack.slice(0, -1);
-
-  if (!restored) {
-    return {
-      nextState: {
-        ...state,
-        activePanels: [],
-        activeWidgets: resolveWidgetsForContext(state.layoutContext),
-        anchors: ANCHORS,
-        intentStack,
-        layoutHistory: nextHistory,
-      },
-      decision: 'close-template-values-recompute',
-    };
-  }
-
-  return {
-    nextState: {
-      ...state,
-      activePanels: selectRestorableMapPanels(restored),
-      activeWidgets: resolveWidgetsForContext(state.layoutContext),
-      anchors: ANCHORS,
-      intentStack,
-      layoutHistory: nextHistory,
-    },
-    decision: 'close-template-values-restore',
   };
 }
 
@@ -539,13 +463,7 @@ export function computeNextAdaptiveVisorLayout(
   state: AdaptiveVisorCompositorState,
   event: AdaptiveVisorCompositorEvent,
 ): AdaptiveVisorCompositorState {
-  if (
-    !state.adaptiveEnabled &&
-    (event.type === 'toggle-map-panel' ||
-      event.type === 'open-template-values' ||
-      event.type === 'close-temporary-panel' ||
-      event.type === 'mutation')
-  ) {
+  if (!state.adaptiveEnabled && (event.type === 'toggle-map-panel' || event.type === 'mutation')) {
     return applyDecisionTrace(state, event, {
       nextState: state,
       decision: 'ignore-policy-event-adaptive-disabled',
@@ -584,14 +502,6 @@ export function computeNextAdaptiveVisorLayout(
 
     case 'toggle-map-panel':
       result = handleToggleMapPanel(state, event.panelId);
-      break;
-
-    case 'open-template-values':
-      result = handleOpenTemplateValues(state);
-      break;
-
-    case 'close-temporary-panel':
-      result = handleCloseTemporaryPanel(state);
       break;
 
     case 'mutation':

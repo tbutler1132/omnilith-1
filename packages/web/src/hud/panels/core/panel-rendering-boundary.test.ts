@@ -17,7 +17,7 @@ function readRelative(relativePath: string): string {
 describe('adaptive panel rendering boundary', () => {
   it('keeps map panel body routing out of AdaptiveVisorHost', () => {
     const source = readRelative('../../AdaptiveVisorHost.tsx');
-    expect(source).toMatch(/renderMapPanelBody\(panelId,/);
+    expect(source).toMatch(/renderMapPanelBody\(panelId\)/);
     expect(source).not.toMatch(/renderPanelBody=\{\(panelId\)\s*=>\s*{[\s\S]*panelId\s*===/);
   });
 
