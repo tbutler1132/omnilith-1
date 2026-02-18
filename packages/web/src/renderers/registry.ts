@@ -12,6 +12,7 @@ export interface RendererProps {
   state: OrganismState;
   zoom: number;
   focused: boolean;
+  previewMode?: 'thermal' | 'true-renderer';
 }
 
 const renderers = new Map<string, ComponentType<RendererProps>>();

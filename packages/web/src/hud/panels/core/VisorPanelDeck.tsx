@@ -33,6 +33,8 @@ interface VisorPanelDeckProps {
   openTrunk: boolean;
   canWrite: boolean;
   interiorOrigin?: boolean;
+  thermalRendererPreview?: boolean;
+  rendererPreviewFullBleed?: boolean;
   templateValuesReady?: boolean;
   preferredMainPanelId: HudPanelId | null;
   historyNavigationEnabled?: boolean;
@@ -72,6 +74,8 @@ export function VisorPanelDeck({
   openTrunk,
   canWrite,
   interiorOrigin = false,
+  thermalRendererPreview = false,
+  rendererPreviewFullBleed = false,
   templateValuesReady = false,
   preferredMainPanelId,
   historyNavigationEnabled,
@@ -100,11 +104,23 @@ export function VisorPanelDeck({
           templateValuesReady,
           canWrite,
           interiorOrigin,
+          thermalRendererPreview,
+          rendererPreviewFullBleed,
         },
         preferredMainPanelId,
         slots: template.panelSlots,
       }),
-    [template, surfaced, openTrunk, canWrite, interiorOrigin, templateValuesReady, preferredMainPanelId],
+    [
+      template,
+      surfaced,
+      openTrunk,
+      canWrite,
+      interiorOrigin,
+      thermalRendererPreview,
+      rendererPreviewFullBleed,
+      templateValuesReady,
+      preferredMainPanelId,
+    ],
   );
   const historyWidgetEnabled =
     historyNavigationEnabled ?? template.widgetSlots.allowedWidgets.includes('history-navigation');

@@ -8,10 +8,10 @@
 
 export type HudContextClass = 'map' | 'interior' | 'visor-organism';
 
-export const MAP_HUD_PANEL_IDS = ['threshold', 'mine', 'templates', 'template-values'] as const;
+export const MAP_HUD_PANEL_IDS = ['profile', 'my-proposals'] as const;
 export type MapHudPanelId = (typeof MAP_HUD_PANEL_IDS)[number];
 
-export const TOGGLE_MAP_HUD_PANEL_IDS = ['threshold', 'mine', 'templates'] as const;
+export const TOGGLE_MAP_HUD_PANEL_IDS = ['profile', 'my-proposals'] as const;
 export type ToggleMapHudPanelId = (typeof TOGGLE_MAP_HUD_PANEL_IDS)[number];
 
 export const INTERIOR_HUD_PANEL_IDS = ['interior-actions'] as const;
@@ -20,6 +20,7 @@ export type InteriorHudPanelId = (typeof INTERIOR_HUD_PANEL_IDS)[number];
 export const VISOR_HUD_PANEL_IDS = [
   'organism',
   'organism-nav',
+  'components',
   'composition',
   'propose',
   'proposals',
@@ -62,6 +63,8 @@ export interface HudPanelContext {
   templateValuesReady: boolean;
   canWrite: boolean;
   interiorOrigin?: boolean;
+  thermalRendererPreview?: boolean;
+  rendererPreviewFullBleed?: boolean;
 }
 
 export interface HudPanelRoleSupport {
@@ -85,44 +88,24 @@ export interface HudPanelRegistryEntry extends HudPanelDefinition {}
 
 export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   {
-    id: 'templates',
-    label: 'Templates',
-    purpose: 'Browse and instantiate template organisms on the current map.',
-    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
+    id: 'profile',
+    label: 'Profile',
+    purpose: 'Map-level profile placeholder that will absorb regulation-oriented profile context over time.',
+    availableIn: (context) => context.contextClass === 'map',
     roleSupport: { main: true, secondary: true, collapsed: true },
-    defaultMainPriority: 88,
-    defaultSecondaryPriority: 86,
-    collapsedPriority: 82,
-  },
-  {
-    id: 'threshold',
-    label: 'Threshold',
-    purpose: 'Introduce a new organism and assume stewardship.',
-    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
-    roleSupport: { main: true, secondary: true, collapsed: true },
-    defaultMainPriority: 86,
+    defaultMainPriority: 84,
     defaultSecondaryPriority: 84,
     collapsedPriority: 81,
   },
   {
-    id: 'mine',
-    label: 'My organisms',
-    purpose: 'Find and open organisms you can tend.',
-    availableIn: (context) => context.contextClass === 'map' && context.canWrite,
+    id: 'my-proposals',
+    label: 'Proposals',
+    purpose: "Review the current user's authored proposals grouped by status.",
+    availableIn: (context) => context.contextClass === 'map',
     roleSupport: { main: true, secondary: true, collapsed: true },
-    defaultMainPriority: 84,
-    defaultSecondaryPriority: 83,
-    collapsedPriority: 80,
-  },
-  {
-    id: 'template-values',
-    label: 'Template values',
-    purpose: 'Customize template parameters before instantiation.',
-    availableIn: (context) => context.contextClass === 'map' && context.templateValuesReady && context.canWrite,
-    roleSupport: { main: true, secondary: true, collapsed: true },
-    defaultMainPriority: 95,
-    defaultSecondaryPriority: 90,
-    collapsedPriority: 89,
+    defaultMainPriority: 88,
+    defaultSecondaryPriority: 87,
+    collapsedPriority: 84,
   },
   {
     id: 'interior-actions',
@@ -136,8 +119,8 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   },
   {
     id: 'organism',
-    label: 'Tend',
-    purpose: 'Render the organism and perform direct tending actions.',
+    label: 'Renderer preview',
+    purpose: 'Preview the organism renderer with thermal and true-renderer views while preserving tending actions.',
     availableIn: (context) => context.contextClass === 'visor-organism',
     roleSupport: { main: true, secondary: false, collapsed: true },
     defaultMainPriority: 99,
@@ -155,6 +138,16 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     collapsedPriority: 0,
   },
   {
+    id: 'components',
+    label: 'Components',
+    purpose: 'Inspect children rendered inside the current organism preview.',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.thermalRendererPreview === true,
+    roleSupport: { main: false, secondary: true, collapsed: false },
+    defaultMainPriority: 0,
+    defaultSecondaryPriority: 120,
+    collapsedPriority: 0,
+  },
+  {
     id: 'composition',
     label: 'Composition',
     purpose: 'Compose organisms inside the current boundary.',
@@ -162,7 +155,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 90,
     defaultSecondaryPriority: 85,
-    collapsedPriority: 90,
+    collapsedPriority: 86,
   },
   {
     id: 'propose',
@@ -172,7 +165,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
-    collapsedPriority: 89,
+    collapsedPriority: 85,
   },
   {
     id: 'proposals',
@@ -182,7 +175,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 86,
     defaultSecondaryPriority: 84,
-    collapsedPriority: 87,
+    collapsedPriority: 94,
   },
   {
     id: 'append',
@@ -192,13 +185,13 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
-    collapsedPriority: 88,
+    collapsedPriority: 92,
   },
   {
     id: 'relationships',
     label: 'Relationships',
     purpose: 'Inspect membership, stewardship, and integration authority relationships.',
-    availableIn: (context) => context.contextClass === 'visor-organism',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 73,
     defaultSecondaryPriority: 77,
@@ -208,7 +201,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'history',
     label: 'State history',
     purpose: 'Inspect organism state history over time.',
-    availableIn: (context) => context.contextClass === 'visor-organism',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 74,
     defaultSecondaryPriority: 78,
@@ -218,7 +211,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'governance',
     label: 'Governance',
     purpose: 'Inspect policy organisms and regulatory mode.',
-    availableIn: (context) => context.contextClass === 'visor-organism',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 72,
     defaultSecondaryPriority: 76,

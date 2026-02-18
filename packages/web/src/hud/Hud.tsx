@@ -46,11 +46,7 @@ export function Hud({ onLogoutOrLogin }: HudProps) {
 
       if (activeMapPanel) {
         e.preventDefault();
-        if (activeMapPanel === 'template-values') {
-          adaptiveVisorActions.closeTemporaryPanel();
-        } else {
-          adaptiveVisorActions.toggleMapPanel(activeMapPanel);
-        }
+        adaptiveVisorActions.toggleMapPanel(activeMapPanel);
       }
     }
 
@@ -64,10 +60,6 @@ export function Hud({ onLogoutOrLogin }: HudProps) {
       <button type="button" className="hud-logout" onClick={onLogoutOrLogin}>
         {authMode === 'authenticated' ? 'Log out' : 'Log in'}
       </button>
-
-      <div className="hud-policy-badge hud-policy-badge--adaptive" data-cue-anchor="adaptive-policy-badge">
-        Adaptive HUD
-      </div>
 
       <HudCueLayer />
 

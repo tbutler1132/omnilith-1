@@ -83,6 +83,7 @@ function chooseSecondaryPanels(
 ): HudPanelId[] {
   if (mainPanelId == null) return [];
   if (!slots.secondary.enabled || slots.secondary.maxPanels <= 0) return [];
+  if (context.rendererPreviewFullBleed && mainPanelId === 'organism') return [];
 
   const candidates = availablePanels.filter((panel) => panel.id !== mainPanelId && panel.roleSupport.secondary);
   return sortByScore(candidates, (panel) => contextualSecondaryPriority(panel, context))

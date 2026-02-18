@@ -40,10 +40,10 @@ describe('resolveVisorPanelLayout', () => {
 
     expect(layout.mainPanelId).toBe('organism');
     expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual(['propose', 'proposals', 'relationships', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual(['proposals', 'propose', 'relationships', 'governance', 'history']);
   });
 
-  it('opening tend from an entered organism promotes interior nav into the secondary slot', () => {
+  it('thermal renderer preview promotes components into the secondary slot', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -52,14 +52,36 @@ describe('resolveVisorPanelLayout', () => {
         templateValuesReady: false,
         canWrite: true,
         interiorOrigin: true,
+        thermalRendererPreview: true,
       },
       preferredMainPanelId: 'organism',
       slots: organismSlots,
     });
 
     expect(layout.mainPanelId).toBe('organism');
-    expect(layout.secondaryPanelIds).toEqual(['organism-nav']);
+    expect(layout.secondaryPanelIds).toEqual(['components']);
+    expect(layout.availablePanelIds).not.toContain('relationships');
+    expect(layout.availablePanelIds).not.toContain('governance');
+    expect(layout.availablePanelIds).not.toContain('history');
     expect(layout.collapsedPanelIds).toContain('composition');
+  });
+
+  it('true renderer preview suppresses secondary panels for full-width focus', () => {
+    const layout = resolveVisorPanelLayout({
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+        rendererPreviewFullBleed: true,
+      },
+      preferredMainPanelId: 'organism',
+      slots: organismSlots,
+    });
+
+    expect(layout.mainPanelId).toBe('organism');
+    expect(layout.secondaryPanelIds).toEqual([]);
   });
 
   it('an open-trunk organism exposes append and omits regulated proposal panels', () => {
@@ -147,10 +169,10 @@ describe('resolveVisorPanelLayout', () => {
       slots: mapSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['templates', 'threshold', 'mine']);
+    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals']);
     expect(layout.mainPanelId).toBeNull();
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['templates', 'threshold', 'mine']);
+    expect(layout.collapsedPanelIds).toEqual(['my-proposals', 'profile']);
   });
 
   it('secondary slot count is template-driven and can enable secondary cards', () => {
@@ -190,14 +212,14 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.collapsedPanelIds).toEqual(['interior-actions']);
   });
 
-  it('a guest map context has no write panels available', () => {
+  it('a guest map context still exposes profile and proposals panels', () => {
     const layout = resolveVisorPanelLayout({
       context: { contextClass: 'map', surfaced: false, openTrunk: false, templateValuesReady: false, canWrite: false },
       preferredMainPanelId: null,
       slots: mapSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual([]);
+    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals']);
+    expect(layout.collapsedPanelIds).toEqual(['my-proposals', 'profile']);
   });
 });

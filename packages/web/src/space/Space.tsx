@@ -200,7 +200,7 @@ export function Space() {
       <div className="space" ref={containerRef}>
         <div className="space-empty">
           <p>This space is empty.</p>
-          <p className="space-hint">Open the visor to threshold organisms and compose them here.</p>
+          <p className="space-hint">Open the visor to review your profile and proposal activity.</p>
         </div>
       </div>
     );

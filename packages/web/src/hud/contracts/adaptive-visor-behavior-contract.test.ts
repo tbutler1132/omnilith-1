@@ -97,14 +97,6 @@ function toCompositorEvent(event: ContractCompositorEvent): AdaptiveVisorComposi
     };
   }
 
-  if (event.type === 'open-template-values') {
-    return { type: 'open-template-values' };
-  }
-
-  if (event.type === 'close-temporary-panel') {
-    return { type: 'close-temporary-panel' };
-  }
-
   return { type: 'mutation' };
 }
 
@@ -171,18 +163,14 @@ describe('adaptive visor behavior contract', () => {
       'close-visor-organism': true,
       'set-altitude': true,
       'toggle-map-panel': true,
-      'open-template-values': true,
-      'close-temporary-panel': true,
       mutation: true,
     };
 
     const declaredCompositorPanelIds: Record<AdaptiveVisorPanelId, true> = {
       'visor-view': true,
       'interior-actions': true,
-      threshold: true,
-      mine: true,
-      templates: true,
-      'template-values': true,
+      profile: true,
+      'my-proposals': true,
     };
 
     const declaredCueAnchors: Record<HudCueTargetAnchorId, true> = {
@@ -228,6 +216,7 @@ describe('adaptive visor behavior contract', () => {
         templateValuesReady: scenario.context.templateValuesReady,
         canWrite: scenario.context.canWrite,
         interiorOrigin: scenario.context.interiorOrigin,
+        thermalRendererPreview: scenario.context.thermalRendererPreview,
       };
 
       const layout = resolveVisorPanelLayout({

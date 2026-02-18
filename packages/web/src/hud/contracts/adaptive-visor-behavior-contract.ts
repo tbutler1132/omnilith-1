@@ -54,13 +54,7 @@ export type ContractCompositorEvent =
     }
   | {
       type: 'toggle-map-panel';
-      panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>;
-    }
-  | {
-      type: 'open-template-values';
-    }
-  | {
-      type: 'close-temporary-panel';
+      panelId: AdaptiveVisorMapPanelId;
     }
   | {
       type: 'mutation';
@@ -75,6 +69,7 @@ export interface AdaptiveVisorLayoutScenario {
     templateValuesReady: boolean;
     canWrite: boolean;
     interiorOrigin?: boolean;
+    thermalRendererPreview?: boolean;
   };
   preferredMainPanelId: HudPanelId | null;
   expected: {
@@ -118,8 +113,6 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'close-visor-organism',
     'set-altitude',
     'toggle-map-panel',
-    'open-template-values',
-    'close-temporary-panel',
     'mutation',
   ] as ContractCompositorEvent['type'][],
   panelIds: [
@@ -128,17 +121,16 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'governance',
     'history',
     'interior-actions',
-    'mine',
+    'my-proposals',
     'organism',
     'organism-nav',
+    'components',
     'proposals',
     'propose',
+    'profile',
     'relationships',
-    'template-values',
-    'templates',
-    'threshold',
   ] as HudPanelId[],
-  compositorPanelIds: ['interior-actions', 'mine', 'template-values', 'templates', 'threshold', 'visor-view'] as const,
+  compositorPanelIds: ['interior-actions', 'my-proposals', 'profile', 'visor-view'] as const,
   widgetIds: ['compass', 'history-navigation', 'map-actions', 'vitality'] as VisorWidgetId[],
   cueIds: ['adaptive-help'] as HudCueId[],
   cueAnchorIds: ['adaptive-policy-badge', 'visor-pill'] as HudCueTargetAnchorId[],
@@ -154,14 +146,14 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: ['templates', 'threshold', 'mine'],
+        availablePanelIds: ['profile', 'my-proposals'],
         mainPanelId: null,
         secondaryPanelIds: [],
-        collapsedPanelIds: ['templates', 'threshold', 'mine'],
+        collapsedPanelIds: ['my-proposals', 'profile'],
       },
     },
     {
-      id: 'map-preferred-threshold',
+      id: 'map-preferred-proposals',
       contextClass: 'map',
       context: {
         surfaced: false,
@@ -169,29 +161,12 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         templateValuesReady: false,
         canWrite: true,
       },
-      preferredMainPanelId: 'threshold',
+      preferredMainPanelId: 'my-proposals',
       expected: {
-        availablePanelIds: ['templates', 'threshold', 'mine'],
-        mainPanelId: 'threshold',
+        availablePanelIds: ['profile', 'my-proposals'],
+        mainPanelId: 'my-proposals',
         secondaryPanelIds: [],
-        collapsedPanelIds: ['templates', 'mine'],
-      },
-    },
-    {
-      id: 'map-template-values-flow',
-      contextClass: 'map',
-      context: {
-        surfaced: false,
-        openTrunk: false,
-        templateValuesReady: true,
-        canWrite: true,
-      },
-      preferredMainPanelId: 'template-values',
-      expected: {
-        availablePanelIds: ['templates', 'threshold', 'mine', 'template-values'],
-        mainPanelId: 'template-values',
-        secondaryPanelIds: [],
-        collapsedPanelIds: ['templates', 'threshold', 'mine'],
+        collapsedPanelIds: ['profile'],
       },
     },
     {
@@ -205,10 +180,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: [],
+        availablePanelIds: ['profile', 'my-proposals'],
         mainPanelId: null,
         secondaryPanelIds: [],
-        collapsedPanelIds: [],
+        collapsedPanelIds: ['my-proposals', 'profile'],
       },
     },
     {
@@ -258,7 +233,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         ],
         mainPanelId: 'organism',
         secondaryPanelIds: ['composition'],
-        collapsedPanelIds: ['propose', 'proposals', 'relationships', 'governance', 'history'],
+        collapsedPanelIds: ['proposals', 'propose', 'relationships', 'governance', 'history'],
       },
     },
     {
@@ -270,22 +245,14 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         templateValuesReady: false,
         canWrite: true,
         interiorOrigin: true,
+        thermalRendererPreview: true,
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: [
-          'organism',
-          'organism-nav',
-          'composition',
-          'propose',
-          'proposals',
-          'relationships',
-          'history',
-          'governance',
-        ],
+        availablePanelIds: ['organism', 'organism-nav', 'components', 'composition', 'propose', 'proposals'],
         mainPanelId: 'organism',
-        secondaryPanelIds: ['organism-nav'],
-        collapsedPanelIds: ['composition', 'propose', 'proposals', 'relationships', 'governance', 'history'],
+        secondaryPanelIds: ['components'],
+        collapsedPanelIds: ['proposals', 'composition', 'propose'],
       },
     },
     {
@@ -418,8 +385,8 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         altitude: 'high',
       },
       events: [
-        { type: 'toggle-map-panel', panelId: 'threshold' },
-        { type: 'toggle-map-panel', panelId: 'threshold' },
+        { type: 'toggle-map-panel', panelId: 'profile' },
+        { type: 'toggle-map-panel', panelId: 'profile' },
       ],
       expected: {
         activePanels: [],
@@ -431,7 +398,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
     },
     {
-      id: 'template-values-restores-prior-panel',
+      id: 'map-panel-restores-after-visor-roundtrip',
       initialContext: {
         visorOrganismId: null,
         enteredOrganismId: null,
@@ -439,21 +406,21 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         altitude: 'high',
       },
       events: [
-        { type: 'toggle-map-panel', panelId: 'templates' },
-        { type: 'open-template-values' },
-        { type: 'close-temporary-panel' },
+        { type: 'toggle-map-panel', panelId: 'profile' },
+        { type: 'open-visor-organism', organismId: 'org-2' },
+        { type: 'close-visor-organism' },
       ],
       expected: {
-        activePanels: ['templates'],
+        activePanels: ['profile'],
         activeWidgets: ['map-actions', 'history-navigation', 'compass'],
-        activeMapPanel: 'templates',
+        activeMapPanel: 'profile',
         anchors: ['navigation-back', 'dismiss'],
         intentStack: [],
         lastMutationToken: 0,
       },
     },
     {
-      id: 'mutation-breaks-template-restore',
+      id: 'mutation-breaks-map-panel-restore',
       initialContext: {
         visorOrganismId: null,
         enteredOrganismId: null,
@@ -461,10 +428,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         altitude: 'high',
       },
       events: [
-        { type: 'toggle-map-panel', panelId: 'templates' },
-        { type: 'open-template-values' },
+        { type: 'toggle-map-panel', panelId: 'profile' },
+        { type: 'open-visor-organism', organismId: 'org-2' },
         { type: 'mutation' },
-        { type: 'close-temporary-panel' },
+        { type: 'close-visor-organism' },
       ],
       expected: {
         activePanels: [],
@@ -484,7 +451,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         altitude: 'high',
       },
       events: [
-        { type: 'toggle-map-panel', panelId: 'mine' },
+        { type: 'toggle-map-panel', panelId: 'my-proposals' },
         { type: 'open-visor-organism', organismId: 'org-2' },
       ],
       expected: {

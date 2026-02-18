@@ -84,9 +84,7 @@ export interface PlatformViewportMetaState {
 export interface PlatformAdaptiveVisorState extends AdaptiveVisorCompositorState {}
 
 export interface PlatformAdaptiveVisorActions {
-  toggleMapPanel: (panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>) => void;
-  openTemplateValuesPanel: () => void;
-  closeTemporaryPanel: () => void;
+  toggleMapPanel: (panelId: AdaptiveVisorMapPanelId) => void;
   bumpMutationToken: () => void;
 }
 
@@ -330,13 +328,9 @@ export function PlatformProvider({
   }, []);
   const setViewportCenter = useCallback((x: number, y: number) => dispatch({ type: 'SET_VIEWPORT_CENTER', x, y }), []);
   const bumpMapRefresh = useCallback(() => dispatch({ type: 'BUMP_MAP_REFRESH' }), []);
-  const toggleMapPanel = useCallback(
-    (panelId: Exclude<AdaptiveVisorMapPanelId, 'template-values'>) =>
-      adaptiveVisorDispatch({ type: 'toggle-map-panel', panelId }),
-    [],
-  );
-  const openTemplateValuesPanel = useCallback(() => adaptiveVisorDispatch({ type: 'open-template-values' }), []);
-  const closeTemporaryPanel = useCallback(() => adaptiveVisorDispatch({ type: 'close-temporary-panel' }), []);
+  const toggleMapPanel = useCallback((panelId: AdaptiveVisorMapPanelId) => {
+    adaptiveVisorDispatch({ type: 'toggle-map-panel', panelId });
+  }, []);
   const bumpMutationToken = useCallback(() => adaptiveVisorDispatch({ type: 'mutation' }), []);
 
   const staticState = useMemo<PlatformStaticState>(
@@ -387,11 +381,9 @@ export function PlatformProvider({
   const adaptiveActions = useMemo<PlatformAdaptiveVisorActions>(
     () => ({
       toggleMapPanel,
-      openTemplateValuesPanel,
-      closeTemporaryPanel,
       bumpMutationToken,
     }),
-    [toggleMapPanel, openTemplateValuesPanel, closeTemporaryPanel, bumpMutationToken],
+    [toggleMapPanel, bumpMutationToken],
   );
 
   const actions = useMemo<PlatformActions>(

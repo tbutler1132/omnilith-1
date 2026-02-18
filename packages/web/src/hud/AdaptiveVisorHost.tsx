@@ -6,7 +6,6 @@
  * collapsed rail placement rules.
  */
 
-import { useState } from 'react';
 import { selectActiveMapPanel } from '../platform/adaptive-visor-compositor.js';
 import {
   usePlatformActions,
@@ -26,7 +25,6 @@ import {
 import { resolvePanelVisorTemplate } from './panels/core/template-schema.js';
 import { VisorPanelDeck } from './panels/core/VisorPanelDeck.js';
 import { OrganismPanelDeck } from './panels/organism/OrganismPanelDeck.js';
-import type { TemplateSongCustomization } from './template-values.js';
 import { CompassWidget, VisorWidgetLane } from './widgets/index.js';
 
 type MapPanelId = MapHudPanelId | null;
@@ -35,11 +33,10 @@ export function AdaptiveVisorHost() {
   const { focusedOrganismId, enteredOrganismId } = usePlatformMapState();
   const { visorOrganismId } = usePlatformVisorState();
   const { canWrite } = usePlatformStaticState();
-  const { openInVisor, bumpMapRefresh } = usePlatformActions();
+  const { openInVisor } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
   const adaptiveActions = usePlatformAdaptiveVisorActions();
 
-  const [templateCustomization, setTemplateCustomization] = useState<TemplateSongCustomization | null>(null);
   const mapTemplate = resolvePanelVisorTemplate('map');
   const interiorTemplate = resolvePanelVisorTemplate('interior');
 
@@ -54,46 +51,6 @@ export function AdaptiveVisorHost() {
     contextClass === 'map' &&
     activeWidgets.has('history-navigation') &&
     mapTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
-
-  function closeActiveMapPanel() {
-    if (!activeMapPanel) return;
-
-    if (activeMapPanel === 'template-values') {
-      adaptiveActions.closeTemporaryPanel();
-      return;
-    }
-
-    adaptiveActions.toggleMapPanel(activeMapPanel);
-  }
-
-  function handleThresholdCreated(organismId: string) {
-    adaptiveActions.bumpMutationToken();
-    closeActiveMapPanel();
-    openInVisor(organismId);
-  }
-
-  function handleOrganismSelect(organismId: string) {
-    closeActiveMapPanel();
-    openInVisor(organismId);
-  }
-
-  function handleTemplateInstantiated(organismId: string) {
-    setTemplateCustomization(null);
-    adaptiveActions.bumpMutationToken();
-    closeActiveMapPanel();
-    openInVisor(organismId);
-    bumpMapRefresh();
-  }
-
-  function handleTemplateValuesRequested(customization: TemplateSongCustomization) {
-    setTemplateCustomization(customization);
-    adaptiveActions.openTemplateValuesPanel();
-  }
-
-  function closeTemplateValues() {
-    setTemplateCustomization(null);
-    adaptiveActions.closeTemporaryPanel();
-  }
 
   return (
     <div className="adaptive-visor-surface">
@@ -110,7 +67,6 @@ export function AdaptiveVisorHost() {
           surfaced={false}
           openTrunk={false}
           canWrite={canWrite}
-          templateValuesReady={templateCustomization !== null}
           preferredMainPanelId={activeMapPanel}
           extraCollapsedChips={
             focusedOrganismId
@@ -126,33 +82,15 @@ export function AdaptiveVisorHost() {
               : []
           }
           onPromotePanel={(panelId) => {
-            if (panelId === 'template-values') {
-              if (templateCustomization) adaptiveActions.openTemplateValuesPanel();
-              return;
-            }
             if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
           onCollapseMainPanel={(panelId) => {
-            if (panelId === 'template-values') {
-              // Collapse should demote to the rail, not restore prior flow state.
-              adaptiveActions.bumpMutationToken();
-              adaptiveActions.closeTemporaryPanel();
-              return;
-            }
             if (isToggleMapHudPanelId(panelId)) adaptiveActions.toggleMapPanel(panelId);
           }}
           historyNavigationEnabled={mapHistoryNavigationEnabled}
           renderPanelBody={(panelId) => {
             if (!isMapHudPanelId(panelId)) return null;
-            return renderMapPanelBody(panelId, {
-              templateCustomization,
-              onThresholdCreated: handleThresholdCreated,
-              onCloseMapPanel: closeActiveMapPanel,
-              onOrganismSelect: handleOrganismSelect,
-              onTemplateInstantiated: handleTemplateInstantiated,
-              onTemplateValuesRequested: handleTemplateValuesRequested,
-              onCloseTemplateValues: closeTemplateValues,
-            });
+            return renderMapPanelBody(panelId);
           }}
         />
       )}

@@ -13,7 +13,7 @@ export class InMemoryQueryPort implements QueryPort {
     private readonly states: InMemoryStateRepository,
     private readonly proposals: InMemoryProposalRepository,
     private readonly composition: InMemoryCompositionRepository,
-    private readonly relationships?: InMemoryRelationshipRepository,
+    _relationships?: InMemoryRelationshipRepository,
   ) {}
 
   async findOrganismsWithState(filters: QueryFilters): Promise<ReadonlyArray<OrganismWithState>> {
@@ -76,31 +76,15 @@ export class InMemoryQueryPort implements QueryPort {
   }
 
   async findProposalsByUser(userId: UserId): Promise<ReadonlyArray<Proposal>> {
-    // Collect all proposals authored by this user
+    // Collect all proposals authored by this user.
     const allOrganisms = this.organisms.getAll();
-    const seen = new Set<string>();
     const results: Proposal[] = [];
 
     for (const organism of allOrganisms) {
       const proposals = await this.proposals.findByOrganismId(organism.id);
       for (const p of proposals) {
-        if (p.proposedBy === userId && !seen.has(p.id)) {
-          seen.add(p.id);
+        if (p.proposedBy === userId) {
           results.push(p);
-        }
-      }
-    }
-
-    // Also include proposals on organisms where user has integration authority
-    if (this.relationships) {
-      const integrationRels = await this.relationships.findByUser(userId, 'integration-authority');
-      for (const rel of integrationRels) {
-        const proposals = await this.proposals.findByOrganismId(rel.organismId);
-        for (const p of proposals) {
-          if (!seen.has(p.id)) {
-            seen.add(p.id);
-            results.push(p);
-          }
         }
       }
     }

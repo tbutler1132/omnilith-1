@@ -1129,28 +1129,6 @@ button.secondary:hover {
   box-shadow: var(--hud-glow-hover);
 }
 
-.hud-policy-badge {
-  position: absolute;
-  top: 108px;
-  right: 16px;
-  pointer-events: none;
-  border: 1px solid var(--hud-border);
-  border-radius: 6px;
-  padding: 4px 8px;
-  font-family: var(--hud-mono);
-  font-size: 10px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--hud-text);
-  background: rgba(8, 8, 16, 0.88);
-  box-shadow: var(--hud-glow);
-}
-
-.hud-policy-badge--adaptive {
-  border-color: rgba(76, 174, 140, 0.55);
-  color: #7bd2b0;
-}
-
 .hud-cue-layer {
   position: fixed;
   inset: 0;
@@ -1679,6 +1657,181 @@ button.secondary:hover {
 .hud-my-organisms-state p {
   font-size: 12px;
   color: rgba(224, 224, 232, 0.65);
+}
+
+.hud-profile-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.hud-profile-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hud-profile-panel-header h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--hud-text-bright);
+}
+
+.hud-profile-panel-status {
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--hud-text);
+}
+
+.hud-profile-panel-note {
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.7);
+}
+
+.hud-profile-panel-facts {
+  display: grid;
+  gap: 8px;
+}
+
+.hud-profile-panel-facts div {
+  border: 1px solid var(--hud-border);
+  border-radius: 8px;
+  background: rgba(8, 8, 16, 0.36);
+  padding: 8px 10px;
+}
+
+.hud-profile-panel-facts dt {
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: rgba(224, 224, 232, 0.7);
+}
+
+.hud-profile-panel-facts dd {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-proposals {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hud-my-proposals-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.hud-my-proposals-header h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-proposals-header p {
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.6);
+}
+
+.hud-my-proposals-count {
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  color: var(--hud-text);
+}
+
+.hud-my-proposals-state {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 2px;
+}
+
+.hud-my-proposals-state h3 {
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  text-transform: uppercase;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-proposals-state p {
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.65);
+}
+
+.hud-my-proposals-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.hud-my-proposals-group {
+  border: 1px solid var(--hud-border);
+  border-radius: 10px;
+  background: rgba(10, 10, 15, 0.3);
+  padding: 10px;
+}
+
+.hud-my-proposals-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.hud-my-proposals-group-header h4 {
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hud-text-bright);
+}
+
+.hud-my-proposals-group-header span {
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  color: var(--hud-text);
+}
+
+.hud-my-proposals-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin: 0;
+  padding: 0;
+}
+
+.hud-my-proposals-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hud-my-proposals-empty {
+  font-size: 12px;
+  color: var(--hud-text);
+  opacity: 0.6;
 }
 
 .hud-organism-list {
@@ -2670,6 +2823,12 @@ button.secondary:hover {
   box-shadow: var(--hud-glow-hover);
 }
 
+.hud-action-btn--active {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+  background: rgba(124, 108, 240, 0.16);
+}
+
 .hud-action-btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
@@ -2935,6 +3094,18 @@ button.secondary:hover {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
+}
+
+.visor-renderer-preview-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  border: 0;
+  min-inline-size: 0;
+  padding: 0 4px 0 0;
+  border-right: 1px solid rgba(124, 108, 240, 0.2);
 }
 
 .visor-organism-panel-propose {
@@ -3011,6 +3182,29 @@ button.secondary:hover {
   pointer-events: none;
   z-index: 1;
   border-radius: 8px;
+}
+
+.visor-view-renderer--thermal {
+  background: linear-gradient(
+    180deg,
+    rgba(244, 173, 84, 0.06) 0%,
+    rgba(124, 108, 240, 0.05) 55%,
+    rgba(67, 180, 168, 0.05) 100%
+  );
+  border: 1px solid rgba(244, 173, 84, 0.3);
+  border-radius: 10px;
+  padding: 10px;
+  box-shadow:
+    inset 0 0 0 1px rgba(244, 173, 84, 0.08),
+    0 0 20px rgba(244, 173, 84, 0.08);
+}
+
+.visor-view-renderer--thermal [data-rendered-child='true'] {
+  border: 1px solid rgba(252, 207, 106, 0.55);
+  border-radius: 8px;
+  background: rgba(252, 207, 106, 0.1);
+  box-shadow: 0 0 14px rgba(252, 207, 106, 0.14);
+  transition: box-shadow 220ms ease, border-color 220ms ease;
 }
 
 .visor-view-actions {
@@ -3640,13 +3834,6 @@ button.secondary:hover {
   .hud-logout {
     top: 10px;
     right: 10px;
-  }
-
-  .hud-policy-badge {
-    top: 102px;
-    right: 10px;
-    font-size: 9px;
-    padding: 3px 7px;
   }
 
   .visor-widget-lane {

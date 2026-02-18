@@ -29,6 +29,13 @@
       "when": 1771226400000,
       "tag": "0003_serious_guardrails",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771419870179,
+      "tag": "0004_lyrical_cobalt_man",
+      "breakpoints": true
     }
   ]
 }

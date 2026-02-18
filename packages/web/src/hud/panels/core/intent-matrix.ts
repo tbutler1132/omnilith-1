@@ -27,16 +27,14 @@ interface IntentMatrixRule {
 const MAP_RULE: IntentMatrixRule = {
   mainPriority: {
     base: {
-      templates: 4,
-      threshold: 2,
-      'template-values': 7,
+      'my-proposals': 5,
+      profile: 3,
     },
   },
   secondaryPriority: {
     base: {
-      mine: 4,
-      templates: 3,
-      threshold: 2,
+      'my-proposals': 4,
+      profile: 3,
     },
   },
 };
@@ -60,6 +58,9 @@ const ORGANISM_RULE: IntentMatrixRule = {
     },
   },
   secondaryPriority: {
+    base: {
+      components: 20,
+    },
     surfaced: {
       proposals: 3,
       composition: 3,
