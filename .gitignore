@@ -9,3 +9,4 @@ coverage/
 docs/private
 .claude/settings.local.json
 /tmp
+/packages/web/tmp/
