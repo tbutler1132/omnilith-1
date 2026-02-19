@@ -107,9 +107,10 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   if (openTrunk) {
     if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
   } else {
-    if (canWrite) secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
+    secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
     secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
   }
+  secondaryShortcutActions.push({ panelId: 'contributions', label: 'Open contributions' });
   if (!interiorOrigin) {
     secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
     secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });

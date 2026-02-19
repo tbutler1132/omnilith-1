@@ -1,0 +1,65 @@
+{
+  "name": "Hero's Journey",
+  "subtitle": "A concept album moving from call to return.",
+  "songs": [
+    {
+      "key": "signal",
+      "title": "I. Signal in the Noise",
+      "artistCredit": "Tim Butler",
+      "status": "draft",
+      "notes": "Demo seed song for Hero's Journey concept arc.",
+      "mix": {
+        "fileReference": "https://pub-6534b0d9c04249c28e7c62bff1eb1d16.r2.dev/artifacts/songs/all-the-things-you-love/trunk/audio/mix/all-the-things-you-love-mix-trunk-10-14-25.wav",
+        "durationSeconds": 212
+      }
+    },
+    {
+      "key": "trial",
+      "title": "II. Trial Corridor",
+      "artistCredit": "Tim Butler",
+      "status": "mixing",
+      "notes": "Demo seed song for Hero's Journey concept arc.",
+      "mix": {
+        "fileReference": "https://pub-6534b0d9c04249c28e7c62bff1eb1d16.r2.dev/artifacts/songs/between-this-world-and-the-next/trunk/audio/mix/between-this-world-and-the-next-mix-trunk-1-26-26.wav",
+        "durationSeconds": 248
+      }
+    },
+    {
+      "key": "return",
+      "title": "III. Different Morning",
+      "artistCredit": "Tim Butler",
+      "status": "mastered",
+      "notes": "Demo seed song for Hero's Journey concept arc.",
+      "mix": {
+        "fileReference": "https://pub-6534b0d9c04249c28e7c62bff1eb1d16.r2.dev/artifacts/songs/stars/trunk/audio/mix/stars-mix-trunk-1-26-26.wav",
+        "durationSeconds": 236
+      }
+    }
+  ],
+  "stages": [
+    {
+      "stageId": "call",
+      "phase": "Call",
+      "title": "Signal in the Noise",
+      "summary": "An unexpected transmission interrupts a familiar routine.",
+      "accentColor": "#64b2d0",
+      "candidateSongKeys": ["signal", "trial"]
+    },
+    {
+      "stageId": "descent",
+      "phase": "Descent",
+      "title": "The Trial Corridor",
+      "summary": "New terrain, uncertain companions, and escalating pressure.",
+      "accentColor": "#5e9dc5",
+      "candidateSongKeys": ["trial", "signal"]
+    },
+    {
+      "stageId": "return",
+      "phase": "Return",
+      "title": "A Different Morning",
+      "summary": "The same world, but the listener has changed.",
+      "accentColor": "#86c8db",
+      "candidateSongKeys": ["return", "trial"]
+    }
+  ]
+}

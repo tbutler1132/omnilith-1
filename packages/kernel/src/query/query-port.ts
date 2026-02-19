@@ -6,6 +6,7 @@
  * should remain stable.
  */
 
+import type { EventType } from '../events/event.js';
 import type { ContentTypeId, OrganismId, Timestamp, UserId } from '../identity.js';
 import type { Organism } from '../organism/organism.js';
 import type { OrganismState } from '../organism/organism-state.js';
@@ -23,6 +24,22 @@ export interface VitalityData {
   readonly lastActivityAt?: Timestamp;
 }
 
+export interface OrganismContributor {
+  readonly userId: UserId;
+  readonly stateCount: number;
+  readonly proposalCount: number;
+  readonly integrationCount: number;
+  readonly declineCount: number;
+  readonly eventCount: number;
+  readonly eventTypeCounts: Readonly<Partial<Record<EventType, number>>>;
+  readonly lastContributedAt?: Timestamp;
+}
+
+export interface OrganismContributions {
+  readonly organismId: OrganismId;
+  readonly contributors: ReadonlyArray<OrganismContributor>;
+}
+
 export interface QueryFilters {
   readonly contentTypeId?: ContentTypeId;
   readonly createdBy?: UserId;
@@ -35,6 +52,7 @@ export interface QueryFilters {
 export interface QueryPort {
   findOrganismsWithState(filters: QueryFilters): Promise<ReadonlyArray<OrganismWithState>>;
   getVitality(organismId: OrganismId): Promise<VitalityData>;
+  getOrganismContributions(organismId: OrganismId): Promise<OrganismContributions>;
   findOrganismsByUser(userId: UserId): Promise<ReadonlyArray<OrganismWithState>>;
   findProposalsByUser(userId: UserId): Promise<ReadonlyArray<Proposal>>;
 }

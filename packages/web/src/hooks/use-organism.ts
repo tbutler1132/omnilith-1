@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import {
   fetchChildren,
+  fetchContributions,
   fetchEvents,
   fetchOrganism,
   fetchOrganisms,
@@ -160,6 +161,28 @@ export function useChildren(id: string, refreshKey = 0) {
   return useAsync(() => fetchChildren(id).then((r) => r.children), [id, refreshKey]);
 }
 
+async function fetchChildrenBatch(
+  parentIds: string[],
+): Promise<Record<string, Awaited<ReturnType<typeof fetchChildren>>['children']>> {
+  const out: Record<string, Awaited<ReturnType<typeof fetchChildren>>['children']> = {};
+  const uniqueIds = Array.from(new Set(parentIds));
+
+  for (let i = 0; i < uniqueIds.length; i += ORGANISM_BATCH_CONCURRENCY) {
+    const chunk = uniqueIds.slice(i, i + ORGANISM_BATCH_CONCURRENCY);
+    const childLists = await Promise.all(chunk.map((id) => fetchChildren(id).then((r) => r.children)));
+    chunk.forEach((id, idx) => {
+      out[id] = childLists[idx];
+    });
+  }
+
+  return out;
+}
+
+export function useChildrenByParentIds(parentIds: string[], refreshKey = 0) {
+  const key = parentIds.join(',');
+  return useAsync(() => fetchChildrenBatch(parentIds), [key, refreshKey]);
+}
+
 export function useParent(id: string, refreshKey = 0) {
   return useAsync(() => fetchParent(id).then((r) => r.parent), [id, refreshKey]);
 }
@@ -178,6 +201,10 @@ export function useRelationships(id: string) {
 
 export function useEvents(id: string) {
   return useAsync(() => fetchEvents(id).then((r) => r.events), [id]);
+}
+
+export function useContributions(id: string, refreshKey = 0) {
+  return useAsync(() => fetchContributions(id).then((r) => r.contributions), [id, refreshKey]);
 }
 
 export function useUserOrganisms(refreshKey = 0) {

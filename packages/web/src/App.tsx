@@ -1,17 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
 import { fetchSession } from './api/auth.js';
 import { AuthDialog } from './auth/AuthDialog.js';
+import { subscribeToAuthDialogRequests } from './auth/auth-request.js';
 import type { AuthSession } from './auth/session.js';
+import { runtimeFlags } from './config/runtime-flags.js';
 import { clearOrganismCache } from './hooks/use-organism.js';
 import { AdaptiveVisorHarness } from './hud/panels/core/AdaptiveVisorHarness.js';
 import { Platform } from './platform/index.js';
 
 function AppShell() {
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(runtimeFlags.authEnabled);
   const [session, setSession] = useState<AuthSession | null>(null);
   const [showAuthDialog, setShowAuthDialog] = useState(false);
 
   useEffect(() => {
+    if (!runtimeFlags.authEnabled) {
+      localStorage.removeItem('sessionId');
+      clearOrganismCache();
+      setSession(null);
+      setCheckingSession(false);
+      return;
+    }
+
     const sessionId = localStorage.getItem('sessionId');
     if (!sessionId) {
       setCheckingSession(false);
@@ -36,25 +46,23 @@ function AppShell() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!runtimeFlags.authEnabled) return;
+    return subscribeToAuthDialogRequests(() => {
+      if (session) return;
+      setShowAuthDialog(true);
+    });
+  }, [session]);
+
   const handleAuthenticated = useCallback((next: AuthSession) => {
     clearOrganismCache();
     setSession(next);
     setShowAuthDialog(false);
   }, []);
 
-  const handleLogoutOrLogin = useCallback(() => {
-    if (session) {
-      localStorage.removeItem('sessionId');
-      clearOrganismCache();
-      setSession(null);
-      return;
-    }
-    setShowAuthDialog(true);
-  }, [session]);
-
-  function handleCloseAuthDialog() {
+  const handleCloseAuthDialog = useCallback(() => {
     setShowAuthDialog(false);
-  }
+  }, []);
 
   if (checkingSession) {
     return (
@@ -76,11 +84,10 @@ function AppShell() {
         userId={userId}
         personalOrganismId={personalOrganismId}
         homePageOrganismId={homePageOrganismId}
-        onLogoutOrLogin={handleLogoutOrLogin}
       />
-      {showAuthDialog && !session && (
+      {runtimeFlags.authEnabled && showAuthDialog && !session ? (
         <AuthDialog onAuthenticated={handleAuthenticated} onClose={handleCloseAuthDialog} />
-      )}
+      ) : null}
     </>
   );
 }

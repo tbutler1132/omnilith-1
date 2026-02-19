@@ -40,7 +40,14 @@ describe('resolveVisorPanelLayout', () => {
 
     expect(layout.mainPanelId).toBe('organism');
     expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual(['proposals', 'propose', 'relationships', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual([
+      'proposals',
+      'propose',
+      'contributions',
+      'relationships',
+      'governance',
+      'history',
+    ]);
   });
 
   it('thermal renderer preview promotes components into the secondary slot', () => {
@@ -63,7 +70,9 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.availablePanelIds).not.toContain('relationships');
     expect(layout.availablePanelIds).not.toContain('governance');
     expect(layout.availablePanelIds).not.toContain('history');
+    expect(layout.availablePanelIds).toContain('contributions');
     expect(layout.collapsedPanelIds).toContain('composition');
+    expect(layout.collapsedPanelIds).toContain('contributions');
   });
 
   it('true renderer preview suppresses secondary panels for full-width focus', () => {
@@ -102,6 +111,7 @@ describe('resolveVisorPanelLayout', () => {
       'composition',
       'append',
       'relationships',
+      'contributions',
       'history',
       'governance',
     ]);
@@ -123,7 +133,7 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual(['append', 'relationships', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual(['append', 'contributions', 'relationships', 'governance', 'history']);
   });
 
   it('an organism context keeps main empty until a panel is promoted', () => {

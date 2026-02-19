@@ -160,3 +160,19 @@ export const platformConfig = pgTable('platform_config', {
   key: varchar('key', { length: 255 }).primaryKey(),
   value: text('value').notNull(),
 });
+
+export const interestSignups = pgTable(
+  'interest_signups',
+  {
+    id: text('id').primaryKey(),
+    email: text('email').notNull(),
+    sourcePanel: text('source_panel').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    forwardedAt: timestamp('forwarded_at', { withTimezone: true }),
+    forwardError: text('forward_error'),
+  },
+  (table) => [
+    index('idx_interest_signups_created_at').on(table.createdAt),
+    index('idx_interest_signups_email').on(table.email),
+  ],
+);

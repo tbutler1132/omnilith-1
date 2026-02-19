@@ -7,7 +7,8 @@
 
 import { useState } from 'react';
 import { useOrganism } from '../../../../hooks/use-organism.js';
-import { PanelInfoAuthRequired, PanelInfoEmpty, PanelSection } from '../../core/panel-ux.js';
+import { GuestAccessPrompt } from '../../core/GuestAccessPrompt.js';
+import { PanelInfoEmpty, PanelSection } from '../../core/panel-ux.js';
 import { ProposeForm } from '../../forms/ProposeForm.js';
 
 interface ProposeSectionProps {
@@ -31,7 +32,14 @@ export function ProposeSection({ organismId, refreshKey: parentRefresh, canWrite
   }
 
   if (!canWrite) {
-    return <PanelInfoAuthRequired label="Open proposal" message="Log in to open proposals." />;
+    return (
+      <GuestAccessPrompt
+        sourcePanel="open-proposal"
+        title="Open proposal"
+        interestMessage="Proposal authoring is paused during this public demo. Register interest to get early write access."
+        loginMessage="Log in to open proposals."
+      />
+    );
   }
 
   if (!currentState) {

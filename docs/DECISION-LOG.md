@@ -737,6 +737,27 @@ The detailed decision record is captured in:
 
 - `docs/decisions/025-composition-boundaries-and-typed-relationships.md`
 
+### Move 36: Demo-First Canonical Guest Flow with Parallel Auth Development and Contributions
+
+A focused V1 delivery decision was made to ship a strong public encounter quickly while preserving a clean path to full authenticated tending.
+
+The practical model is:
+
+- guest encounter is canonical in V1 (login hidden in demo mode)
+- auth remains available via runtime switches, not codebase forks
+- guest write attempts route to interest capture
+- Hero's Journey V1 rendering uses a bespoke `hero-journey-scene` content type/renderer
+- media/file serving is wired for realistic demo playback
+- tutorial cues prioritize positioning and can hand off to main-panel playback
+- demo/auth development run in parallel profiles with separate ports, databases, and seed strategies
+- organism contribution credit becomes first-class via query/read model + dedicated Contributions panel
+
+This keeps one branch shippable while avoiding demo throwaway architecture. It also reinforces stewardship legibility by surfacing who contributed to each organism.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/026-demo-first-canonical-guest-flow-and-contributions.md`
+
 ---
 
 ## Summary of What We're Building

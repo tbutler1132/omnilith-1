@@ -33,7 +33,8 @@ function readSeenCueIdsFromSession(): HudCueId[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter((value): value is HudCueId => value === 'adaptive-help');
+    const knownIds = new Set(HUD_CUE_REGISTRY.map((cue) => cue.id));
+    return parsed.filter((value): value is HudCueId => typeof value === 'string' && knownIds.has(value as HudCueId));
   } catch {
     return [];
   }
@@ -52,10 +53,12 @@ interface CueBubbleProps {
   anchorId: string;
   title: string;
   message: string;
+  playLabel?: string;
   onDismiss: () => void;
+  onPlay?: () => void;
 }
 
-function CueBubble({ cueId, anchorId, title, message, onDismiss }: CueBubbleProps) {
+function CueBubble({ cueId, anchorId, title, message, playLabel, onDismiss, onPlay }: CueBubbleProps) {
   const bubbleRef = useRef<HTMLDivElement | null>(null);
   const [placement, setPlacement] = useState<{ left: number; top: number; side: 'top' | 'bottom' } | null>(null);
 
@@ -89,9 +92,27 @@ function CueBubble({ cueId, anchorId, title, message, onDismiss }: CueBubbleProp
     }
 
     updatePosition();
+    const mutationObserver = new MutationObserver(updatePosition);
+    mutationObserver.observe(document.body, {
+      attributes: true,
+      childList: true,
+      subtree: true,
+      attributeFilter: ['class', 'style'],
+    });
     window.addEventListener('resize', updatePosition);
     window.addEventListener('scroll', updatePosition, true);
+
+    let resizeObserver: ResizeObserver | null = null;
+    if (typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(updatePosition);
+      const anchor = document.querySelector<HTMLElement>(`[data-cue-anchor="${anchorId}"]`);
+      if (anchor) resizeObserver.observe(anchor);
+      if (bubbleRef.current) resizeObserver.observe(bubbleRef.current);
+    }
+
     return () => {
+      mutationObserver.disconnect();
+      resizeObserver?.disconnect();
       window.removeEventListener('resize', updatePosition);
       window.removeEventListener('scroll', updatePosition, true);
     };
@@ -106,9 +127,23 @@ function CueBubble({ cueId, anchorId, title, message, onDismiss }: CueBubbleProp
     >
       <div className="hud-cue-title">{title}</div>
       <p className="hud-cue-message">{message}</p>
-      <button type="button" className="hud-cue-dismiss" onClick={onDismiss}>
-        Got it
-      </button>
+      <div className="hud-cue-actions">
+        {onPlay && playLabel ? (
+          <button
+            type="button"
+            className="hud-cue-play"
+            onClick={() => {
+              onPlay();
+              onDismiss();
+            }}
+          >
+            {playLabel}
+          </button>
+        ) : null}
+        <button type="button" className="hud-cue-dismiss" onClick={onDismiss}>
+          Dismiss
+        </button>
+      </div>
     </div>
   );
 }
@@ -154,6 +189,14 @@ export function HudCueLayer() {
           anchorId={cue.target.anchorId}
           title={cue.title}
           message={cue.message}
+          playLabel={cue.playLabel}
+          onPlay={() => {
+            window.dispatchEvent(
+              new CustomEvent('omnilith:cue-play', {
+                detail: { cueId: cue.id },
+              }),
+            );
+          }}
           onDismiss={() => setDismissedCueIds((cur) => (cur.includes(cue.id) ? cur : [...cur, cue.id]))}
         />
       ))}

@@ -6,13 +6,14 @@
  */
 
 interface MapLegendEntry {
-  contentTypeId: 'community' | 'song';
+  contentTypeId: 'community' | 'song' | 'hero-journey-scene';
   label: string;
 }
 
 const MAP_LEGEND_ENTRIES: readonly MapLegendEntry[] = [
   { contentTypeId: 'community', label: 'Community' },
   { contentTypeId: 'song', label: 'Song' },
+  { contentTypeId: 'hero-journey-scene', label: 'Hero Journey Scene' },
 ];
 
 export function MapLegendWidget() {

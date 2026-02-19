@@ -12,19 +12,13 @@ import {
   usePlatformActions,
   usePlatformAdaptiveVisorActions,
   usePlatformAdaptiveVisorState,
-  usePlatformStaticState,
   usePlatformVisorState,
 } from '../platform/index.js';
 import { AdaptiveVisorHost } from './AdaptiveVisorHost.js';
 import { HudCueLayer } from './cues/HudCueLayer.js';
 
-interface HudProps {
-  onLogoutOrLogin: () => void;
-}
-
-export function Hud({ onLogoutOrLogin }: HudProps) {
+export function Hud() {
   const { visorOrganismId } = usePlatformVisorState();
-  const { authMode } = usePlatformStaticState();
   const { closeVisorOrganism } = usePlatformActions();
   const adaptiveVisorState = usePlatformAdaptiveVisorState();
   const adaptiveVisorActions = usePlatformAdaptiveVisorActions();
@@ -56,11 +50,6 @@ export function Hud({ onLogoutOrLogin }: HudProps) {
 
   return (
     <div className="hud" data-visor-policy="adaptive" data-visor-map-panel={activeMapPanel ?? 'none'}>
-      {/* Floating auth action — top-right, always visible */}
-      <button type="button" className="hud-logout" onClick={onLogoutOrLogin}>
-        {authMode === 'authenticated' ? 'Log out' : 'Log in'}
-      </button>
-
       <HudCueLayer />
 
       <div className="hud-fade hud-fade--visible">

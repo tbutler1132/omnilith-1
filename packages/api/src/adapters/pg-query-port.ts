@@ -4,6 +4,9 @@
 
 import type {
   ContentTypeId,
+  EventType,
+  OrganismContributions,
+  OrganismContributor,
   OrganismId,
   OrganismWithState,
   Proposal,
@@ -18,7 +21,7 @@ import type {
 } from '@omnilith/kernel';
 import { and, count, desc, eq, max, type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
-import { composition, organismStates, organisms, proposals } from '../db/schema.js';
+import { composition, events, organismStates, organisms, proposals } from '../db/schema.js';
 
 export class PgQueryPort implements QueryPort {
   constructor(private readonly db: Database) {}
@@ -104,6 +107,188 @@ export class PgQueryPort implements QueryPort {
       recentStateChanges: stateCount.count,
       openProposalCount: proposalCount.count,
       lastActivityAt: lastState?.createdAt?.getTime() as Timestamp | undefined,
+    };
+  }
+
+  async getOrganismContributions(organismId: OrganismId): Promise<OrganismContributions> {
+    const stateRows = await this.db
+      .select({
+        userId: organismStates.createdBy,
+        count: count(),
+        lastContributedAt: max(organismStates.createdAt),
+      })
+      .from(organismStates)
+      .where(eq(organismStates.organismId, organismId))
+      .groupBy(organismStates.createdBy);
+
+    const proposalRows = await this.db
+      .select({
+        userId: proposals.proposedBy,
+        count: count(),
+        lastContributedAt: max(proposals.createdAt),
+      })
+      .from(proposals)
+      .where(eq(proposals.organismId, organismId))
+      .groupBy(proposals.proposedBy);
+
+    const integrationRows = await this.db
+      .select({
+        userId: proposals.resolvedBy,
+        count: count(),
+        lastContributedAt: max(proposals.resolvedAt),
+      })
+      .from(proposals)
+      .where(and(eq(proposals.organismId, organismId), eq(proposals.status, 'integrated')))
+      .groupBy(proposals.resolvedBy);
+
+    const declineRows = await this.db
+      .select({
+        userId: proposals.resolvedBy,
+        count: count(),
+        lastContributedAt: max(proposals.resolvedAt),
+      })
+      .from(proposals)
+      .where(and(eq(proposals.organismId, organismId), eq(proposals.status, 'declined')))
+      .groupBy(proposals.resolvedBy);
+
+    const eventRows = await this.db
+      .select({
+        userId: events.actorId,
+        type: events.type,
+        count: count(),
+        lastContributedAt: max(events.occurredAt),
+      })
+      .from(events)
+      .where(eq(events.organismId, organismId))
+      .groupBy(events.actorId, events.type);
+
+    const byUser = new Map<UserId, OrganismContributor>();
+
+    const ensureContributor = (userId: UserId): OrganismContributor => {
+      const existing = byUser.get(userId);
+      if (existing) return existing;
+      const created: OrganismContributor = {
+        userId,
+        stateCount: 0,
+        proposalCount: 0,
+        integrationCount: 0,
+        declineCount: 0,
+        eventCount: 0,
+        eventTypeCounts: {},
+      };
+      byUser.set(userId, created);
+      return created;
+    };
+
+    const mergeLastContributedAt = (contributor: OrganismContributor, lastContributedAt: Date | null) => {
+      if (!lastContributedAt) return contributor;
+      const timestamp = lastContributedAt.getTime() as Timestamp;
+      return {
+        ...contributor,
+        lastContributedAt:
+          contributor.lastContributedAt === undefined
+            ? timestamp
+            : (Math.max(contributor.lastContributedAt, timestamp) as Timestamp),
+      };
+    };
+
+    for (const row of stateRows) {
+      const userId = row.userId as UserId;
+      const contributor = ensureContributor(userId);
+      byUser.set(
+        userId,
+        mergeLastContributedAt(
+          {
+            ...contributor,
+            stateCount: contributor.stateCount + row.count,
+          },
+          row.lastContributedAt,
+        ),
+      );
+    }
+
+    for (const row of proposalRows) {
+      const userId = row.userId as UserId;
+      const contributor = ensureContributor(userId);
+      byUser.set(
+        userId,
+        mergeLastContributedAt(
+          {
+            ...contributor,
+            proposalCount: contributor.proposalCount + row.count,
+          },
+          row.lastContributedAt,
+        ),
+      );
+    }
+
+    for (const row of integrationRows) {
+      if (!row.userId) continue;
+      const userId = row.userId as UserId;
+      const contributor = ensureContributor(userId);
+      byUser.set(
+        userId,
+        mergeLastContributedAt(
+          {
+            ...contributor,
+            integrationCount: contributor.integrationCount + row.count,
+          },
+          row.lastContributedAt,
+        ),
+      );
+    }
+
+    for (const row of declineRows) {
+      if (!row.userId) continue;
+      const userId = row.userId as UserId;
+      const contributor = ensureContributor(userId);
+      byUser.set(
+        userId,
+        mergeLastContributedAt(
+          {
+            ...contributor,
+            declineCount: contributor.declineCount + row.count,
+          },
+          row.lastContributedAt,
+        ),
+      );
+    }
+
+    for (const row of eventRows) {
+      const userId = row.userId as UserId;
+      const contributor = ensureContributor(userId);
+      const currentTypeCount = contributor.eventTypeCounts[row.type as EventType] ?? 0;
+      const eventTypeCounts = {
+        ...contributor.eventTypeCounts,
+        [row.type as EventType]: currentTypeCount + row.count,
+      } as Readonly<Partial<Record<EventType, number>>>;
+
+      byUser.set(
+        userId,
+        mergeLastContributedAt(
+          {
+            ...contributor,
+            eventCount: contributor.eventCount + row.count,
+            eventTypeCounts,
+          },
+          row.lastContributedAt,
+        ),
+      );
+    }
+
+    const contributors = [...byUser.values()].sort((a, b) => {
+      const totalA = a.stateCount + a.proposalCount + a.integrationCount + a.declineCount + a.eventCount;
+      const totalB = b.stateCount + b.proposalCount + b.integrationCount + b.declineCount + b.eventCount;
+      if (totalA !== totalB) return totalB - totalA;
+      const lastA = a.lastContributedAt ?? 0;
+      const lastB = b.lastContributedAt ?? 0;
+      if (lastA !== lastB) return lastB - lastA;
+      return a.userId.localeCompare(b.userId);
+    });
+
+    return {
+      organismId,
+      contributors,
     };
   }
 

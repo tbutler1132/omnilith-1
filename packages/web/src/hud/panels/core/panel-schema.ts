@@ -26,6 +26,7 @@ export const VISOR_HUD_PANEL_IDS = [
   'proposals',
   'append',
   'relationships',
+  'contributions',
   'history',
   'governance',
 ] as const;
@@ -38,6 +39,7 @@ export const VISOR_MAIN_HUD_PANEL_IDS = [
   'proposals',
   'append',
   'relationships',
+  'contributions',
   'history',
   'governance',
 ] as const;
@@ -49,6 +51,7 @@ export const UNIVERSAL_VISOR_HUD_PANEL_IDS = [
   'proposals',
   'append',
   'relationships',
+  'contributions',
   'history',
   'governance',
 ] as const;
@@ -161,7 +164,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'propose',
     label: 'Open proposal',
     purpose: 'Offer a regulated state proposal for the organism.',
-    availableIn: (context) => context.contextClass === 'visor-organism' && !context.openTrunk && context.canWrite,
+    availableIn: (context) => context.contextClass === 'visor-organism' && !context.openTrunk,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
@@ -196,6 +199,16 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 73,
     defaultSecondaryPriority: 77,
     collapsedPriority: 80,
+  },
+  {
+    id: 'contributions',
+    label: 'Contributions',
+    purpose: 'Inspect credited contributions across states, proposals, and tending actions.',
+    availableIn: (context) => context.contextClass === 'visor-organism',
+    roleSupport: { main: true, secondary: true, collapsed: true },
+    defaultMainPriority: 75,
+    defaultSecondaryPriority: 79,
+    collapsedPriority: 82,
   },
   {
     id: 'history',

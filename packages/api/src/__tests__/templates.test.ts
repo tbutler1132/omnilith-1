@@ -53,6 +53,7 @@ function createTestContainer(): Container {
       stateRepository,
       proposalRepository,
       compositionRepository,
+      eventPublisher,
       relationshipRepository,
     ),
     db: null as unknown as Container['db'],

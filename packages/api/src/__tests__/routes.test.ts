@@ -59,6 +59,7 @@ function createTestContainer(): Container {
       stateRepository,
       proposalRepository,
       compositionRepository,
+      eventPublisher,
       relationshipRepository,
     ),
     db: null as unknown as Container['db'], // Not used in these tests
@@ -601,6 +602,16 @@ describe('query and listing routes', () => {
     expect(body.events[0].organismId).toBe(organism.id);
   });
 
+  it('GET /organisms/:id/contributions returns contribution aggregates', async () => {
+    const { organism } = await createTestOrganism(app);
+
+    const res = await app.request(`/organisms/${organism.id}/contributions`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.contributions.organismId).toBe(organism.id);
+    expect(body.contributions.contributors.length).toBeGreaterThan(0);
+  });
+
   it('GET /organisms/:id/relationships returns relationships for an organism', async () => {
     const { organism } = await createTestOrganism(app);
 
@@ -710,6 +721,7 @@ describe('authorization enforcement', () => {
       `/organisms/${organism.id}/children`,
       `/organisms/${organism.id}/vitality`,
       `/organisms/${organism.id}/events`,
+      `/organisms/${organism.id}/contributions`,
       `/organisms/${organism.id}/relationships`,
       `/organisms/${organism.id}/visibility`,
       `/organisms/${organism.id}/proposals`,
@@ -832,6 +844,9 @@ describe('public read routes', () => {
     expect(statesRes.status).toBe(200);
     const statesBody = await statesRes.json();
     expect(statesBody.states.length).toBe(1);
+
+    const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
+    expect(contributionsRes.status).toBe(200);
   });
 
   it('guest receives 404 for non-public organisms via /public routes', async () => {
@@ -844,5 +859,8 @@ describe('public read routes', () => {
 
     const res = await publicApp.request(`/public/organisms/${organism.id}`);
     expect(res.status).toBe(404);
+
+    const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
+    expect(contributionsRes.status).toBe(404);
   });
 });

@@ -261,6 +261,17 @@ export function organismRoutes(container: Container) {
     return c.json({ events });
   });
 
+  // Contributions
+  app.get('/:id/contributions', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const accessError = await requireOrganismAccess(c, container, userId, id, 'view');
+    if (accessError) return accessError;
+
+    const contributions = await container.queryPort.getOrganismContributions(id);
+    return c.json({ contributions });
+  });
+
   // Relationships
   app.get('/:id/relationships', async (c) => {
     const userId = c.get('userId');
