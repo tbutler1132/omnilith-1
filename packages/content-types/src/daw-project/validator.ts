@@ -1,3 +1,10 @@
+/**
+ * validateDawProject — validate daw-project state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed daw-project
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { DawProjectPayload } from './schema.js';
 import { DAW_NAMES, DAW_PROJECT_FORMATS } from './schema.js';

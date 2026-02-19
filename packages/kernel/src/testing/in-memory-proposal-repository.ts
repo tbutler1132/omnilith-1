@@ -1,3 +1,10 @@
+/**
+ * InMemoryProposalRepository — test adapter for proposal state.
+ *
+ * Enables proposal workflow tests, including resolution transitions,
+ * without relying on persistent storage.
+ */
+
 import type { OrganismId, ProposalId } from '../identity.js';
 import type { Proposal } from '../proposals/proposal.js';
 import type { ProposalRepository } from '../proposals/proposal-repository.js';

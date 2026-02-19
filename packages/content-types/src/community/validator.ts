@@ -1,3 +1,10 @@
+/**
+ * validateCommunity — validate community state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed community
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { CommunityPayload } from './schema.js';
 

@@ -1,3 +1,10 @@
+/**
+ * InMemoryStateRepository — test adapter for immutable organism states.
+ *
+ * Preserves append and history semantics in memory so state management
+ * behavior can be validated quickly in kernel tests.
+ */
+
 import type { OrganismId, StateId } from '../identity.js';
 import type { OrganismState } from '../organism/organism-state.js';
 import type { StateRepository } from '../organism/state-repository.js';

@@ -1,3 +1,10 @@
+/**
+ * validateSong — validate song state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed song
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { SongPayload } from './schema.js';
 import { SONG_STATUSES } from './schema.js';

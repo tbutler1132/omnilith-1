@@ -1,3 +1,10 @@
+/**
+ * validateText — validate text state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed text
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { TextPayload } from './schema.js';
 

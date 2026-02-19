@@ -1,3 +1,10 @@
+/**
+ * validateStemsBundle — validate stems-bundle state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed stems-bundle
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { StemsBundlePayload } from './schema.js';
 import { STEMS_BIT_DEPTHS, STEMS_BUNDLE_FORMATS } from './schema.js';

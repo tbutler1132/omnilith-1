@@ -1,3 +1,10 @@
+/**
+ * App — top-level rendering shell.
+ *
+ * Resolves auth/session state and routes into the platform rendering
+ * flow, including the adaptive visor harness mode.
+ */
+
 import { useCallback, useEffect, useState } from 'react';
 import { fetchSession } from './api/auth.js';
 import { AuthDialog } from './auth/AuthDialog.js';

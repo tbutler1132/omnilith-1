@@ -1,3 +1,10 @@
+/**
+ * validateHeroJourneyStage — validate hero-journey-stage state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed hero-journey-stage
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { HeroJourneyStagePayload } from './schema.js';
 

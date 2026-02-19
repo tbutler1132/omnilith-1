@@ -1,3 +1,10 @@
+/**
+ * validateAudio — validate audio state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed audio
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { AudioPayload } from './schema.js';
 import { AUDIO_FORMATS } from './schema.js';

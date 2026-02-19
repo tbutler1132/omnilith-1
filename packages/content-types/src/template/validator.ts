@@ -1,3 +1,10 @@
+/**
+ * validateTemplate — validate template state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed template
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { TemplatePayload, TemplateRecipeStep } from './schema.js';
 

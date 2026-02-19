@@ -1,3 +1,10 @@
+/**
+ * validateIntegrationPolicy — validate integration-policy state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed integration-policy
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { IntegrationPolicyPayload } from './schema.js';
 

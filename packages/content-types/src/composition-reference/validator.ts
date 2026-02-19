@@ -1,3 +1,10 @@
+/**
+ * validateCompositionReference — validate composition-reference state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed composition-reference
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { CompositionReferencePayload } from './schema.js';
 

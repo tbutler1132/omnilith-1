@@ -1,3 +1,10 @@
+/**
+ * InMemoryEventPublisher — in-memory event publisher and repository.
+ *
+ * Captures emitted events for assertions so tests can verify mutation
+ * observability without external event infrastructure.
+ */
+
 import type { DomainEvent, EventType } from '../events/event.js';
 import type { EventPublisher } from '../events/event-publisher.js';
 import type { EventRepository } from '../events/event-repository.js';

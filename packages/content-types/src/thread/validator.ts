@@ -1,3 +1,10 @@
+/**
+ * validateThread — validate thread state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed thread
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { ThreadPayload, ThreadPostPayload } from './schema.js';
 

@@ -1,3 +1,10 @@
+/**
+ * validateImage — validate image state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed image
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationResult } from '@omnilith/kernel';
 import type { ImagePayload } from './schema.js';
 import { IMAGE_FORMATS } from './schema.js';

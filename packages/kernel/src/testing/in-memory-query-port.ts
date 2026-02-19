@@ -1,3 +1,10 @@
+/**
+ * InMemoryQueryPort — in-memory query adapter for kernel tests.
+ *
+ * Composes repository test adapters to provide cross-cutting retrieval
+ * behavior used by query and rendering-facing test scenarios.
+ */
+
 import type { EventType } from '../events/event.js';
 import type { EventRepository } from '../events/event-repository.js';
 import type { OrganismId, Timestamp, UserId } from '../identity.js';

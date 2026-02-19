@@ -1,3 +1,10 @@
+/**
+ * InMemoryVisibilityRepository — test adapter for visibility records.
+ *
+ * Provides in-memory visibility lookups for access control and policy
+ * evaluation tests.
+ */
+
 import type { OrganismId } from '../identity.js';
 import type { VisibilityRecord } from '../visibility/visibility.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';

@@ -1,3 +1,10 @@
+/**
+ * InMemoryOrganismRepository — test adapter for organism identity records.
+ *
+ * Stores organisms in memory to support deterministic kernel tests with
+ * no database dependency.
+ */
+
 import type { OrganismId } from '../identity.js';
 import type { Organism } from '../organism/organism.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';

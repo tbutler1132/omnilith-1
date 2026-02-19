@@ -1,3 +1,10 @@
+/**
+ * Access route helpers.
+ *
+ * Centralizes HTTP-friendly access checks so route handlers can enforce
+ * visibility and interaction capabilities with consistent responses.
+ */
+
 import { type ActionType, checkAccess, type OrganismId, type UserId } from '@omnilith/kernel';
 import type { Context } from 'hono';
 import type { Container } from '../container.js';

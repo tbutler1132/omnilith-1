@@ -1,0 +1,52 @@
+name: Intent Headers PR
+
+on:
+  pull_request:
+    paths:
+      - "packages/**/*.ts"
+      - "packages/**/*.tsx"
+      - "packages/**/*.mts"
+      - "packages/**/*.cts"
+      - "scripts/check-intent-headers.mjs"
+      - "scripts/intent-header-baseline.json"
+      - ".github/workflows/intent-headers-pr.yml"
+  workflow_dispatch:
+
+jobs:
+  strict-changed-files:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Capture changed files
+        id: changed
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            git diff --name-only --diff-filter=ACMR \
+              "${{ github.event.pull_request.base.sha }}" \
+              "${{ github.event.pull_request.head.sha }}" > /tmp/changed-files.txt
+          else
+            if git rev-parse HEAD~1 >/dev/null 2>&1; then
+              git diff --name-only --diff-filter=ACMR HEAD~1 HEAD > /tmp/changed-files.txt
+            else
+              git ls-files > /tmp/changed-files.txt
+            fi
+          fi
+
+          changed_count="$(wc -l < /tmp/changed-files.txt | tr -d '[:space:]')"
+          echo "changed_count=${changed_count}" >> "$GITHUB_OUTPUT"
+
+      - name: Run strict intent header check on changed files
+        if: steps.changed.outputs.changed_count != '0'
+        run: node scripts/check-intent-headers.mjs --strict --files-file /tmp/changed-files.txt

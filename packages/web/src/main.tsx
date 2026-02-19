@@ -1,3 +1,10 @@
+/**
+ * Web entrypoint.
+ *
+ * Registers content-type renderers and mounts the root React app into
+ * the browser document.
+ */
+
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { App } from './App.js';

@@ -1,3 +1,10 @@
+/**
+ * InMemoryRelationshipRepository — test adapter for relationships.
+ *
+ * Supports membership and authority assertions in tests by keeping
+ * relationship records in memory.
+ */
+
 import type { OrganismId, RelationshipId, UserId } from '../identity.js';
 import type { Relationship, RelationshipType } from '../relationships/relationship.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';

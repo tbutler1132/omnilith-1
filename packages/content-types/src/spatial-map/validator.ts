@@ -1,3 +1,10 @@
+/**
+ * validateSpatialMap — validate spatial-map state payloads.
+ *
+ * Guards state appends and proposals by rejecting malformed spatial-map
+ * payloads before they can enter state history.
+ */
+
 import type { ValidationContext, ValidationResult } from '@omnilith/kernel';
 import type { SpatialMapPayload } from './schema.js';
 

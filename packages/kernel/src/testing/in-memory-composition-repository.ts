@@ -1,3 +1,10 @@
+/**
+ * InMemoryCompositionRepository — test adapter for composition records.
+ *
+ * Provides fast in-memory persistence so composition behavior can be
+ * specified in kernel tests without external storage dependencies.
+ */
+
 import type { CompositionRecord } from '../composition/composition.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
 import type { OrganismId } from '../identity.js';
