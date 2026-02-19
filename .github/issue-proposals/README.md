@@ -2,6 +2,16 @@
 
 One proposal per file to reduce merge conflicts.
 
+This directory is the proposal-first intake path. It is compatible with the
+slice system in `docs/DEVELOPMENT-SYSTEM.md`.
+
+Recommended default intake is the GitHub issue form:
+
+- `.github/ISSUE_TEMPLATE/agent-execution.yml` (Slice Intake)
+
+Use this JSON path when you want to queue proposals asynchronously and let
+automation mint GitHub issues after merge.
+
 - File format: JSON object in `.json` files only
 - File naming: `YYYYMMDD-short-proposal-id.json`
 - Required fields: `proposalId`, `title`, `body`
@@ -19,6 +29,16 @@ Example:
   "aiAuthored": true
 }
 ```
+
+To keep this path aligned with the unified slice system, include slice-ready
+details in `body`:
+
+- intent (user outcome)
+- boundary (in / out)
+- touchpoints (kernel / API / rendering / content types)
+- risks
+- acceptance checks
+- verification evidence
 
 Notes:
 

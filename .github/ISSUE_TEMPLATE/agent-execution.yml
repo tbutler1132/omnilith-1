@@ -1,37 +1,106 @@
-name: Agent Execution
-description: Define machine-executable work for the agent lane.
-title: "agent: "
+name: Slice Intake
+description: Define one Phase 1 slice that is ready for agent execution.
+title: "slice: "
 labels:
   - agent
-  - ai-authored
 body:
-  - type: textarea
-    id: objective
+  - type: markdown
     attributes:
-      label: Objective
-      description: What should be implemented?
-      placeholder: Implement X so Y outcome is possible.
+      value: |
+        Use this form to define one bounded slice from `docs/DEVELOPMENT-SYSTEM.md`.
+        Keep scope Phase 1 only.
+
+  - type: textarea
+    id: intent
+    attributes:
+      label: Intent
+      description: One-sentence user outcome for this slice.
+      placeholder: A founder can compose and decompose organisms from the systems view while boundary behavior is preserved.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: lane
+    attributes:
+      label: Lane
+      description: Choose exactly one operating lane.
+      options:
+        - core-integrity
+        - experience
+        - throughput
+    validations:
+      required: true
+
+  - type: dropdown
+    id: size
+    attributes:
+      label: Size
+      description: S and M are preferred. Split L before starting.
+      options:
+        - S
+        - M
+        - L
     validations:
       required: true
 
   - type: textarea
-    id: context
+    id: boundary
     attributes:
-      label: Context
-      description: Domain context, constraints, and architecture boundaries.
-      placeholder: Include relevant files, docs, and constraints.
-    validations:
-      required: true
-
-  - type: textarea
-    id: acceptance_criteria
-    attributes:
-      label: Acceptance Criteria
-      description: Checklist of expected behavior.
+      label: Boundary
+      description: Define in-scope and out-of-scope explicitly.
       placeholder: |
-        - [ ] Behavior A
-        - [ ] Behavior B
-        - [ ] Tests cover key domain behavior
+        In scope:
+        - ...
+
+        Out of scope:
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: touchpoints
+    attributes:
+      label: Touchpoints
+      description: Call out the layer touchpoints for this slice.
+      placeholder: |
+        Kernel touchpoints:
+        - ...
+
+        API touchpoints:
+        - ...
+
+        Rendering touchpoints:
+        - ...
+
+        Content types affected:
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks
+      description: Risks, constraints, or faultlines to watch while implementing.
+      placeholder: |
+        - ...
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance_checks
+    attributes:
+      label: Acceptance Checks
+      description: Copy and keep this checklist aligned with slice Definition Of Done.
+      placeholder: |
+        - [ ] User outcome is demonstrably true.
+        - [ ] Domain rule behavior is implemented or explicitly unchanged.
+        - [ ] Tests read like domain statements and cover changed behavior.
+        - [ ] Rendering states are complete (loading/empty/error/auth-required) where applicable.
+        - [ ] Unknown state handling is safe and legible.
+        - [ ] `pnpm run check` passes.
+        - [ ] Follow-up work is captured as new slices.
     validations:
       required: true
 
@@ -39,13 +108,38 @@ body:
     id: verification
     attributes:
       label: Verification
-      description: Commands or manual checks that prove completion.
+      description: Automated and manual checks that prove completion.
       placeholder: |
-        pnpm run check
+        Automated verification:
+        - pnpm run check
+
+        Manual verification:
+        - ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: Domain context, architecture boundaries, linked docs/files, and non-goals.
+      placeholder: |
+        Relevant docs/files:
+        - docs/FOUNDATION.md
+        - docs/ORGANISM-MODEL.md
+        - ...
+
+        Non-goals:
+        - ...
 
   - type: textarea
     id: implementation_notes
     attributes:
       label: Implementation Notes
-      description: Optional details for sequencing, risks, and non-goals.
+      description: Optional sequencing details.
       placeholder: Keep phase scope tight. No unrelated refactors.
+
+  - type: markdown
+    attributes:
+      value: |
+        After merge/completion, reflect outcomes in `docs/SLICE-TRACKER.md` and add `docs/decisions/NNN-title.md` if system shape changes.

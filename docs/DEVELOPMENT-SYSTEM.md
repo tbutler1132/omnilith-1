@@ -134,6 +134,76 @@ Minimum required fields:
 - acceptance checks
 - evidence (tests + manual verification)
 
+## Unified Intake System
+
+Use one intake shape for all development work, regardless of where it starts.
+
+Primary intake path:
+
+1. Open an issue using `.github/ISSUE_TEMPLATE/agent-execution.yml` (Slice Intake).
+2. Ensure issue content matches the required slice fields above.
+3. Add/confirm lane labels and keep `agent` when the slice should be picked up automatically.
+
+Proposal-first compatibility path (optional):
+
+1. Add a proposal JSON file in `.github/issue-proposals/`.
+2. Merge proposal file so automation creates the GitHub issue.
+3. Ensure created issue body contains the same slice details (intent, boundary, touchpoints, risks, acceptance checks, verification).
+
+Default recommendation:
+
+- Use issue form intake for day-to-day planning and execution.
+- Keep proposal JSON intake for asynchronous or batched backlog seeding.
+
+## GitHub Projects Operating Model
+
+Use one project as the cycle control plane.
+
+Recommended project:
+
+- Name: `Omnilith Phase 1 Slices`
+- Scope: only active and near-term Phase 1 slices
+
+Recommended custom fields:
+
+- `Lane` (`core-integrity`, `experience`, `throughput`)
+- `Size` (`S`, `M`, `L`)
+- `Status` (`planned`, `active`, `blocked`, `done`, `dropped`)
+- `Cycle` (text, e.g. `2026-W08`)
+- `Risk` (`low`, `medium`, `high`)
+- `Needs Decision` (`yes`, `no`)
+
+Recommended views:
+
+1. Board by `Status` (daily operating view)
+2. Table grouped by `Lane` (cycle planning view)
+3. Blocked-only table (unblock queue)
+4. Done in current `Cycle` (Friday demo prep)
+
+## GitHub Projects Roadmap
+
+Phase 0 (now, manual but reliable):
+
+1. Intake every slice through the Slice Intake issue form.
+2. Add each issue to project and set `Lane`, `Size`, `Status`, `Cycle`.
+3. Keep max one `active` slice per lane and max three active total.
+4. Use `docs/SLICE-TRACKER.md` as the weekly source of truth and mirror status changes in project.
+
+Phase 1 (light automation):
+
+1. Add issue template guidance for lane/size labels if labels are preferred in addition to project fields.
+2. Add workflow automation to:
+   - auto-add new `agent` issues to project
+   - initialize `Status=planned`
+   - post guardrail warning comment if lane concurrency exceeds one active slice
+3. Add saved project filters for each lane owner/steward.
+
+Phase 2 (policy enforcement):
+
+1. Add CI check that validates issue body includes required slice sections before dispatch.
+2. Add CI check that `L` slices require linked child slices before `Status=active`.
+3. Add cycle-close report automation (done/dropped/blocked summary to an issue comment or docs update draft).
+
 ## Suggested Meeting Cadence (Solo Or Team)
 
 - Monday: choose 3 slices and non-goals (15-30 min)
