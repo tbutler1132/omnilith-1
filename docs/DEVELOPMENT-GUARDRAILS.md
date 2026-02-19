@@ -1,5 +1,10 @@
 # Development Guardrails
 
+Status: Active operational guide  
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Operational reference
+
 Use this checklist to keep local development reversible and keep `main` stable.
 
 ## Local Setup

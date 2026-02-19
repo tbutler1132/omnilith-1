@@ -88,35 +88,31 @@ export interface PlatformAdaptiveVisorActions {
   bumpMutationToken: () => void;
 }
 
+interface PlatformReducerState {
+  navigationStack: NavigationEntry[];
+  currentMapId: string;
+  altitude: Altitude;
+  viewportCenter: { x: number; y: number };
+  mapRefreshKey: number;
+}
+
 type PlatformAction =
-  | { type: 'FOCUS_ORGANISM'; id: string | null }
   | { type: 'ENTER_MAP'; mapId: string; label: string }
   | { type: 'EXIT_MAP' }
   | { type: 'NAVIGATE_TO_MAP'; mapId: string }
-  | { type: 'OPEN_IN_VISOR'; id: string }
-  | { type: 'CLOSE_VISOR_ORGANISM' }
   | { type: 'SET_ALTITUDE'; altitude: Altitude }
-  | { type: 'ENTER_ORGANISM'; id: string }
-  | { type: 'EXIT_ORGANISM' }
   | { type: 'SET_VIEWPORT_CENTER'; x: number; y: number }
   | { type: 'BUMP_MAP_REFRESH' };
 
 const VIEWPORT_CENTER_EPSILON = 24;
 
-function reducer(state: PlatformState, action: PlatformAction): PlatformState {
+function reducer(state: PlatformReducerState, action: PlatformAction): PlatformReducerState {
   switch (action.type) {
-    case 'FOCUS_ORGANISM':
-      return {
-        ...state,
-        focusedOrganismId: action.id,
-      };
-
     case 'ENTER_MAP':
       return {
         ...state,
         navigationStack: [...state.navigationStack, { mapId: action.mapId, label: action.label }],
         currentMapId: action.mapId,
-        focusedOrganismId: null,
       };
 
     case 'EXIT_MAP': {
@@ -126,7 +122,6 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
         ...state,
         navigationStack: newStack,
         currentMapId: newStack[newStack.length - 1].mapId,
-        focusedOrganismId: null,
       };
     }
 
@@ -138,33 +133,12 @@ function reducer(state: PlatformState, action: PlatformAction): PlatformState {
         ...state,
         navigationStack: newStack,
         currentMapId: newStack[newStack.length - 1].mapId,
-        focusedOrganismId: null,
       };
     }
-
-    case 'OPEN_IN_VISOR':
-      return { ...state, visorOrganismId: action.id };
-
-    case 'CLOSE_VISOR_ORGANISM':
-      return { ...state, visorOrganismId: null };
 
     case 'SET_ALTITUDE':
       if (state.altitude === action.altitude) return state;
       return { ...state, altitude: action.altitude };
-
-    case 'ENTER_ORGANISM':
-      return {
-        ...state,
-        enteredOrganismId: action.id,
-        focusedOrganismId: action.id,
-        visorOrganismId: null,
-      };
-
-    case 'EXIT_ORGANISM':
-      return {
-        ...state,
-        enteredOrganismId: null,
-      };
 
     case 'SET_VIEWPORT_CENTER':
       if (
@@ -232,15 +206,6 @@ interface PlatformProviderProps {
   children: ReactNode;
 }
 
-function buildAdaptiveVisorContext(state: PlatformState) {
-  return deriveAdaptiveVisorContext({
-    visorOrganismId: state.visorOrganismId,
-    enteredOrganismId: state.enteredOrganismId,
-    focusedOrganismId: state.focusedOrganismId,
-    altitude: state.altitude,
-  });
-}
-
 export function PlatformProvider({
   authMode,
   userId,
@@ -253,17 +218,9 @@ export function PlatformProvider({
   const adaptiveEnabled = true;
   const traceEnabled = useMemo(() => isAdaptiveVisorDecisionTraceEnabled(), []);
 
-  const initialState: PlatformState = {
-    authMode,
-    userId,
-    personalOrganismId,
-    homePageOrganismId,
-    worldMapId,
+  const initialState: PlatformReducerState = {
     navigationStack: [{ mapId: worldMapId, label: 'World' }],
     currentMapId: worldMapId,
-    focusedOrganismId: null,
-    enteredOrganismId: null,
-    visorOrganismId: initialOrganismId,
     altitude: 'high',
     viewportCenter: { x: 2500, y: 2500 },
     mapRefreshKey: 0,
@@ -272,9 +229,16 @@ export function PlatformProvider({
   const [state, dispatch] = useReducer(reducer, initialState);
   const [adaptiveVisorState, adaptiveVisorDispatch] = useReducer(
     computeNextAdaptiveVisorLayout,
-    createAdaptiveVisorCompositorState(adaptiveEnabled, buildAdaptiveVisorContext(initialState), {
-      traceEnabled,
-    }),
+    createAdaptiveVisorCompositorState(
+      adaptiveEnabled,
+      deriveAdaptiveVisorContext({
+        visorOrganismId: initialOrganismId,
+        enteredOrganismId: null,
+        focusedOrganismId: null,
+        altitude: initialState.altitude,
+      }),
+      { traceEnabled },
+    ),
   );
   const lastLoggedTraceSequence = useRef(0);
 

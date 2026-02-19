@@ -1,13 +1,19 @@
 # Adaptive Visor Panel Feature Playbook
 
 Status: Working draft  
-Updated: February 17, 2026
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Active working draft (defers to decision records)
 
 Related decisions:
 
 - `docs/decisions/019-adaptive-visor-template-slot-architecture.md`
 - `docs/decisions/021-adaptive-visor-panel-taxonomy-and-intent-matrix.md`
 - `docs/decisions/022-adaptive-visor-layout-variants-and-collapsed-overflow.md`
+
+Extension workflow:
+
+- `docs/ADAPTIVE-VISOR-EXTENSION-GUIDE.md`
 
 Primary implementation files:
 
@@ -109,23 +115,9 @@ Checklist:
 
 ## Current Panel Registry Checklist
 
-### `threshold` (map)
+### `profile` (map)
 
-Purpose: introduce a new organism and assume stewardship.
-
-Write scope:
-
-- `thresholdOrganism`
-
-Checklist focus:
-
-- [ ] Post-threshold flow opens the new organism in visor.
-- [ ] Form copy keeps threshold lightweight and clear.
-- [ ] Open-trunk explanation is explicit and short.
-
-### `mine` (map)
-
-Purpose: find organisms you can tend.
+Purpose: map-level profile surface for orientation and identity context.
 
 Write scope:
 
@@ -133,37 +125,23 @@ Write scope:
 
 Checklist focus:
 
-- [ ] Loading and empty states help orientation.
-- [ ] Selection always routes to visor organism context.
-- [ ] List supports quick scanning (content type + name + preview).
+- [ ] Guest and authenticated states remain explicit.
+- [ ] Empty/loading/error states preserve orientation.
+- [ ] Any organism navigation from this panel opens in visor context.
 
-### `templates` (map)
+### `my-proposals` (map)
 
-Purpose: instantiate template organisms.
-
-Write scope:
-
-- template instantiation flow
-
-Checklist focus:
-
-- [ ] Instantiation defaults are coherent without template-values.
-- [ ] `template-values` handoff is reversible and clear.
-- [ ] Successful instantiation bumps map refresh and opens visor.
-
-### `template-values` (map temporary)
-
-Purpose: customize template parameters before instantiation.
+Purpose: review authored proposals by status and quickly jump into the relevant organism context.
 
 Write scope:
 
-- template instantiation with explicit customization
+- none (read and navigate)
 
 Checklist focus:
 
-- [ ] Temporary panel close returns to prior map flow.
-- [ ] Validation errors anchor to specific fields.
-- [ ] Completion path is identical to `templates` success path.
+- [ ] Grouping by proposal status remains clear at a glance.
+- [ ] Empty/loading/error states are explicit and useful.
+- [ ] Selecting a proposal routes to the corresponding organism in visor context.
 
 ### `interior-actions` (interior collapsed action)
 
@@ -326,9 +304,8 @@ Use these as initial defaults while iterating.
 
 Map context:
 
-- Main `templates` -> Secondary `mine`
-- Main `threshold` -> Secondary `templates`
-- Main `template-values` -> Secondary none (temporary focus)
+- Main `my-proposals` -> Secondary none (map template currently `maxPanels = 0`)
+- Main `profile` -> Secondary none (map template currently `maxPanels = 0`)
 
 Regulated visor-organism:
 

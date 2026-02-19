@@ -1,5 +1,10 @@
 # Omnilith — The Organism Model
 
+Status: Active canonical  
+Updated: February 19, 2026  
+Audience: Founders, maintainers, agents  
+Canonicality: Core source of truth (priority 2)
+
 ## What This Document Is
 
 This document captures a refined architectural and philosophical model for Omnilith that emerged from a series of conversations building on the original Foundation document. It reframes the fundamental pattern around a single, higher-level primitive — the organism — and clarifies the boundaries between what is an organism, what is infrastructure, what is a relationship, and what is rendering. It should be read alongside the Foundation document, not as a replacement, but as an evolution of its core ideas.

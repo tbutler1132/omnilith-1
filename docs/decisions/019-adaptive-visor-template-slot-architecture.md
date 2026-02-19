@@ -47,7 +47,7 @@ Legacy components remain only for non-adaptive fallback:
 
 A typed template layer now defines adaptive layout behavior:
 
-- `packages/web/src/hud/visor/template-schema.ts`
+- `packages/web/src/hud/panels/core/template-schema.ts`
 
 Template schema includes:
 
@@ -68,7 +68,7 @@ Current templates:
 
 Panel role resolution (`main`, `secondary`, `collapsed`) is no longer controlled by ad hoc per-screen flags.
 
-- `packages/web/src/hud/visor/panel-layout-policy.ts`
+- `packages/web/src/hud/panels/core/panel-layout-policy.ts`
 
 The policy now takes `slots` from template config and resolves panel roles deterministically using:
 
@@ -81,7 +81,7 @@ The policy now takes `slots` from template config and resolves panel roles deter
 
 `VisorPanelDeck` is the shared panel role engine, not a legacy component:
 
-- `packages/web/src/hud/visor/VisorPanelDeck.tsx`
+- `packages/web/src/hud/panels/core/VisorPanelDeck.tsx`
 
 It now receives a typed `template` object and derives slot behavior from it, including collapsed rail placement.
 

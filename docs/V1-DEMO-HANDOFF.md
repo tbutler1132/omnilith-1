@@ -1,6 +1,9 @@
 # V1 Demo Handoff
 
-Status date: February 19, 2026
+Status: Active handoff (time-bound)  
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Temporary implementation handoff (defers to decisions and core docs)
 Owner context: Tim + Codex session handoff
 
 ## Purpose
@@ -157,4 +160,3 @@ When resuming later:
 5. Re-run:
    - `pnpm run db:reset:demo`
    - `pnpm run check`
-

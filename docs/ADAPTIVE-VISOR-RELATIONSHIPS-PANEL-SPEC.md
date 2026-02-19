@@ -1,7 +1,9 @@
 # Adaptive Visor Relationships Panel Spec
 
 Status: Implemented (Phase 1 read path)  
-Updated: February 17, 2026
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Active panel specification (implemented baseline)
 
 ## Intent
 

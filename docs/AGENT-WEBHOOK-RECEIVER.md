@@ -1,5 +1,10 @@
 # Agent Webhook Receiver
 
+Status: Active operational reference  
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Optional infrastructure reference
+
 This is a reference receiver for `.github/workflows/agent-dispatch.yml`.
 It accepts `agent` issue dispatch events, stores payloads to disk, and can optionally trigger a local command hook.
 

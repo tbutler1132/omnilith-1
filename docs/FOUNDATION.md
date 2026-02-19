@@ -1,5 +1,10 @@
 # Omnilith — Foundation
 
+Status: Active canonical  
+Updated: February 19, 2026  
+Audience: Founders, maintainers, agents  
+Canonicality: Core source of truth (priority 1)
+
 ## What This Document Is
 
 This document captures every philosophical, architectural, and strategic decision underlying Omnilith. It is the single source of truth for the build. If a question arises during development about why something is the way it is, the answer should be here.

@@ -1,5 +1,10 @@
 # Omnilith — What Is This?
 
+Status: Active orientation narrative  
+Updated: February 19, 2026  
+Audience: New collaborators, visitors, agents  
+Canonicality: Orientation document (non-normative; defers to Foundation and Organism Model)
+
 ## The short version
 
 Omnilith is a platform where creative work comes to live. Not to be stored, not to be shared, not to be optimized — to live. You bring something you've made, give it an identity, and tend it over time. It grows, changes, finds collaborators, and composes into larger things.

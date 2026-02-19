@@ -17,7 +17,7 @@ Adaptive visor behavior is now driven by an explicit panel taxonomy and an inten
 
 ### 1) Panel taxonomy is explicit in registry
 
-`packages/web/src/hud/visor/panel-schema.ts` is the source of truth for panel identity and purpose.
+`packages/web/src/hud/panels/core/panel-schema.ts` is the source of truth for panel identity and purpose.
 
 Each panel now declares a `purpose` string so panel responsibility is legible in one place.
 
@@ -57,9 +57,8 @@ Widgets remain a separate lane from panels.
 
 In `map` context, collapsed panel set remains:
 
-- `templates`
-- `threshold`
-- `mine`
+- `profile`
+- `my-proposals`
 
 ## Intent Matrix
 

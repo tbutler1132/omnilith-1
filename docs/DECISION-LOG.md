@@ -1,5 +1,10 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
+Status: Active canonical  
+Updated: February 19, 2026  
+Audience: Founders, maintainers, agents  
+Canonicality: Core source of truth (priority 3)
+
 ## Purpose
 
 This document captures the reasoning process, key debates, and design decisions that led to the Organism Model document. It exists so that future sessions can pick up with full context — not just what was decided, but why, what alternatives were considered, and where open questions remain.

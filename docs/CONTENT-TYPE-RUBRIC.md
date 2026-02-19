@@ -1,5 +1,10 @@
 # Content Type Rubric
 
+Status: Active implementation rubric  
+Updated: February 19, 2026  
+Audience: Maintainers, agents  
+Canonicality: Secondary guide (defers to Foundation, Organism Model, Decision Log)
+
 This rubric helps decide when to create a new content type versus using templates, composition, or policy organisms.
 
 Use this with:
@@ -60,4 +65,3 @@ Before merging a new content type, answer:
 4. Which domain tests specify intended behavior?
 5. Which kernel files changed?
 Expected answer: none.
-
