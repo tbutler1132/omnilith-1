@@ -782,6 +782,32 @@ The detailed decision record is captured in:
 
 - `docs/decisions/027-llm-embedded-policy-selection-and-bounded-autonomy.md`
 
+### Move 38: Proposal-Integration-Triggered GitHub Issue-to-PR Cybernetic Loop
+
+The first concrete cybernetic loop selected for validation connects internal governance to external implementation:
+
+- a user opens a proposal for feature/bug intent
+- a human integrator evaluates and either integrate or decline
+- only integration triggers GitHub issue creation through an adapter action
+- a sensor organism detects issue events
+- a response policy applies guardrails (scope/risk/cooldown/allowlists)
+- if permitted, Codex executes and opens a PR
+
+The governance anchor is explicit: human integration remains the threshold for consequential downstream action, while automation is bounded by policy organisms and full event tracing.
+
+Required safety properties include:
+
+- idempotent transitions from proposal -> issue -> PR
+- repository/branch/path allowlists for automation
+- event emission at each loop stage for observability and queryability
+- human merge/integration gate on high-impact paths
+
+This validates the model's claim that cybernetic behavior can emerge through composition and adapters without introducing a new kernel concern.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/028-proposal-integration-triggered-github-issue-to-pr-cybernetic-loop.md`
+
 ---
 
 ## Summary of What We're Building
