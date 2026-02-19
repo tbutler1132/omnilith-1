@@ -252,9 +252,19 @@
   overflow-y: auto;
 }
 
+.organism-interior-content--hero-journey-scene {
+  max-width: none;
+  max-height: 100vh;
+  height: 100vh;
+  padding: 0;
+}
+
+.organism-interior-content--hero-journey-scene .hero-journey-scene {
+  min-height: 100vh;
+}
+
 .organism-interior-loading,
 .organism-interior-error {
   color: var(--text-dim);
   font-size: 14px;
 }
-
