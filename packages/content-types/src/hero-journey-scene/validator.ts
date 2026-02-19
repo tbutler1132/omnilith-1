@@ -2,6 +2,9 @@ import type { ValidationResult } from '@omnilith/kernel';
 import type { HeroJourneyChapter, HeroJourneyScenePayload } from './schema.js';
 
 function validateChapter(chapter: HeroJourneyChapter, index: number, issues: string[]): void {
+  if (chapter.stageId !== undefined && (typeof chapter.stageId !== 'string' || chapter.stageId.trim().length === 0)) {
+    issues.push(`chapters[${index}].stageId must be a non-empty string when provided`);
+  }
   if (typeof chapter.phase !== 'string' || chapter.phase.trim().length === 0) {
     issues.push(`chapters[${index}].phase must be a non-empty string`);
   }
@@ -32,9 +35,9 @@ export function validateHeroJourneyScene(payload: unknown): ValidationResult {
     issues.push('subtitle must be a string when provided');
   }
 
-  if (!Array.isArray(p.chapters) || p.chapters.length === 0) {
-    issues.push('chapters must be a non-empty array');
-  } else {
+  if (p.chapters !== undefined && !Array.isArray(p.chapters)) {
+    issues.push('chapters must be an array when provided');
+  } else if (Array.isArray(p.chapters)) {
     p.chapters.forEach((chapter, index) => {
       validateChapter(chapter as HeroJourneyChapter, index, issues);
     });

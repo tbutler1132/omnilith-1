@@ -12,6 +12,8 @@ import { appendState, composeOrganism, createOrganism } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
 import { platformConfig, users } from './db/schema.js';
+import { loadHeroJourneyV1DemoBlueprint } from './seed-blueprints/load-hero-journey-v1-demo-blueprint.js';
+import { seedHeroJourney } from './seed-helpers/hero-journey.js';
 
 const V1_DEMO_SEED_KEY = 'v1_demo_seed_complete';
 const DEMO_USER_EMAIL = 'demo@omnilith.local';
@@ -66,115 +68,8 @@ export async function seedV1Demo(container: Container): Promise<void> {
     passwordHash: hashPassword(DEMO_USER_PASSWORD),
   });
 
-  const heroScene = await createOrganism(
-    {
-      name: "Hero's Journey",
-      contentTypeId: 'hero-journey-scene' as ContentTypeId,
-      payload: {
-        title: "Hero's Journey",
-        subtitle: 'A concept album moving from call to return.',
-        chapters: [
-          {
-            phase: 'Call',
-            title: 'Signal in the Noise',
-            summary: 'An unexpected transmission interrupts a familiar routine.',
-            accentColor: '#64b2d0',
-          },
-          {
-            phase: 'Descent',
-            title: 'The Trial Corridor',
-            summary: 'New terrain, uncertain companions, and escalating pressure.',
-            accentColor: '#5e9dc5',
-          },
-          {
-            phase: 'Return',
-            title: 'A Different Morning',
-            summary: 'The same world, but the listener has changed.',
-            accentColor: '#86c8db',
-          },
-        ],
-      },
-      createdBy: demoUserId,
-    },
-    createDeps,
-  );
-
-  const songDefinitions = [
-    {
-      name: 'I. Signal in the Noise',
-      status: 'draft',
-      fileReference: 'dev/audio/heros-journey-01-signal.wav',
-      durationSeconds: 212,
-    },
-    {
-      name: 'II. Trial Corridor',
-      status: 'mixing',
-      fileReference: 'dev/audio/heros-journey-02-trial.wav',
-      durationSeconds: 248,
-    },
-    {
-      name: 'III. Different Morning',
-      status: 'mastered',
-      fileReference: 'dev/audio/heros-journey-03-return.wav',
-      durationSeconds: 236,
-    },
-  ] as const;
-
-  for (const [index, songDef] of songDefinitions.entries()) {
-    const song = await createOrganism(
-      {
-        name: songDef.name,
-        contentTypeId: 'song' as ContentTypeId,
-        payload: {
-          title: songDef.name,
-          artistCredit: 'Tim Butler',
-          status: songDef.status,
-          notes: "Demo seed song for Hero's Journey concept arc.",
-        },
-        createdBy: demoUserId,
-      },
-      createDeps,
-    );
-
-    const mix = await createOrganism(
-      {
-        name: `${songDef.name} Mix`,
-        contentTypeId: 'audio' as ContentTypeId,
-        payload: {
-          fileReference: songDef.fileReference,
-          durationSeconds: songDef.durationSeconds,
-          format: 'wav',
-          sampleRate: 48000,
-          metadata: {
-            title: `${songDef.name} Mix`,
-            artist: 'Tim Butler',
-          },
-        },
-        createdBy: demoUserId,
-      },
-      createDeps,
-    );
-
-    await composeOrganism(
-      {
-        parentId: song.organism.id,
-        childId: mix.organism.id,
-        composedBy: demoUserId,
-        position: 0,
-      },
-      composeDeps,
-    );
-
-    await composeOrganism(
-      {
-        parentId: heroScene.organism.id,
-        childId: song.organism.id,
-        composedBy: demoUserId,
-        position: index,
-      },
-      composeDeps,
-    );
-  }
+  const heroJourneyBlueprint = await loadHeroJourneyV1DemoBlueprint();
+  const heroJourney = await seedHeroJourney(container, demoUserId, heroJourneyBlueprint);
 
   const weeklyUpdates = await createOrganism(
     {
@@ -249,7 +144,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [
-          { organismId: heroScene.organism.id, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
+          { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
         ],
         width: 5000,
@@ -265,7 +160,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
     value: new Date().toISOString(),
   });
 
-  console.log(`  Hero's Journey: ${heroScene.organism.id}`);
+  console.log(`  Hero's Journey: ${heroJourney.sceneOrganismId}`);
   console.log(`  Weekly Updates: ${weeklyUpdates.organism.id}`);
   console.log('V1 demo seed complete.');
 }

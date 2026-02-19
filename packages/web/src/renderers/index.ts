@@ -10,6 +10,7 @@ import { CommunityRenderer } from './community.js';
 import { CompositionReferenceRenderer } from './composition-reference.js';
 import { DawProjectRenderer } from './daw-project.js';
 import { HeroJourneySceneRenderer } from './hero-journey-scene.js';
+import { HeroJourneyStageRenderer } from './hero-journey-stage.js';
 import { ImageRenderer } from './image.js';
 import { registerRenderer } from './registry.js';
 import { SongRenderer } from './song.js';
@@ -24,6 +25,7 @@ export function registerAllRenderers() {
   registerRenderer('community', CommunityRenderer);
   registerRenderer('song', SongRenderer);
   registerRenderer('hero-journey-scene', HeroJourneySceneRenderer);
+  registerRenderer('hero-journey-stage', HeroJourneyStageRenderer);
   registerRenderer('daw-project', DawProjectRenderer);
   registerRenderer('stems-bundle', StemsBundleRenderer);
 }

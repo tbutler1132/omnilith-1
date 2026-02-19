@@ -2698,6 +2698,31 @@ button.secondary:hover {
   line-height: 1.35;
 }
 
+.hero-journey-scene-candidates-label {
+  margin: 10px 0 4px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  color: color-mix(in srgb, var(--hero-scene-accent) 72%, var(--text));
+}
+
+.hero-journey-scene-candidates-list {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.hero-journey-scene-candidates-list li {
+  margin-bottom: 2px;
+  font-size: 12px;
+}
+
+.hero-journey-scene-candidates-empty {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
 .hero-journey-scene-songs {
   border: 1px solid var(--border);
   border-radius: 10px;
@@ -2724,6 +2749,34 @@ button.secondary:hover {
 
 .hero-journey-scene-empty {
   margin: 0;
+  color: var(--text-dim);
+}
+
+.hero-journey-stage-renderer {
+  max-width: 520px;
+  margin: 0 auto;
+  border: 1px solid color-mix(in srgb, var(--hero-stage-accent) 50%, transparent);
+  border-radius: 12px;
+  padding: 14px;
+  background: rgba(11, 16, 20, 0.72);
+}
+
+.hero-journey-stage-phase {
+  margin: 0 0 6px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--hero-stage-accent);
+}
+
+.hero-journey-stage-renderer h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.hero-journey-stage-summary {
+  margin: 6px 0 0;
   color: var(--text-dim);
 }
 

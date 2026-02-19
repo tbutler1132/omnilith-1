@@ -6,6 +6,7 @@
  */
 
 export interface HeroJourneyChapter {
+  readonly stageId?: string;
   readonly phase: string;
   readonly title: string;
   readonly summary: string;
@@ -15,5 +16,5 @@ export interface HeroJourneyChapter {
 export interface HeroJourneyScenePayload {
   readonly title: string;
   readonly subtitle?: string;
-  readonly chapters: ReadonlyArray<HeroJourneyChapter>;
+  readonly chapters?: ReadonlyArray<HeroJourneyChapter>;
 }

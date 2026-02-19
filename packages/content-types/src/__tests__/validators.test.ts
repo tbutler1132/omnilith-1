@@ -4,6 +4,7 @@ import { validateCommunity } from '../community/validator.js';
 import { validateCompositionReference } from '../composition-reference/validator.js';
 import { validateDawProject } from '../daw-project/validator.js';
 import { validateHeroJourneyScene } from '../hero-journey-scene/validator.js';
+import { validateHeroJourneyStage } from '../hero-journey-stage/validator.js';
 import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
 import { validateSong } from '../song/validator.js';
@@ -316,6 +317,14 @@ describe('stems-bundle validator', () => {
 });
 
 describe('hero-journey-scene validator', () => {
+  it('accepts hero journey scene payload without inline chapters', () => {
+    const result = validateHeroJourneyScene({
+      title: "Hero's Journey",
+      subtitle: 'Composed stages carry narrative structure.',
+    });
+    expect(result.valid).toBe(true);
+  });
+
   it('accepts valid hero journey scene payload', () => {
     const result = validateHeroJourneyScene({
       title: "Hero's Journey",
@@ -329,5 +338,28 @@ describe('hero-journey-scene validator', () => {
       ],
     });
     expect(result.valid).toBe(true);
+  });
+});
+
+describe('hero-journey-stage validator', () => {
+  it('accepts valid hero journey stage payload', () => {
+    const result = validateHeroJourneyStage({
+      stageId: 'call-to-adventure',
+      phase: 'Call',
+      title: 'Call to Adventure',
+      summary: 'The ordinary world is interrupted by a signal.',
+      accentColor: '#64b2d0',
+    });
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects missing stageId', () => {
+    const result = validateHeroJourneyStage({
+      phase: 'Call',
+      title: 'Call to Adventure',
+      summary: 'The ordinary world is interrupted by a signal.',
+    });
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('stageId must be a non-empty string');
   });
 });
