@@ -763,6 +763,25 @@ The detailed decision record is captured in:
 
 - `docs/decisions/026-demo-first-canonical-guest-flow-and-contributions.md`
 
+### Move 37: LLM Embedded Policy Selection with Bounded Autonomy
+
+A follow-on AI architecture clarification was made while stress-testing the organism primitive against high-complexity cybernetic scenarios (including viable-systems-style recursion and external action loops).
+
+The key outcome:
+
+- no kernel change is required
+- LLM behavior belongs in adapters/periphery, not infrastructure
+- LLMs should select among bounded, pre-composed policy organisms rather than mutate state directly
+- policy organisms remain the deterministic execution path
+- creative trajectory decisions remain human-stewarded (AI can propose; humans primarily integrate/decline)
+- external action loops are valid when they remain evented, allowlisted, and boundary-governed
+
+This preserves the architecture's core promise: probabilistic model judgment can participate as input, while identity, state transition, composition boundary, and governance remain in the existing kernel operations.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/027-llm-embedded-policy-selection-and-bounded-autonomy.md`
+
 ---
 
 ## Summary of What We're Building
