@@ -76,9 +76,6 @@ importers:
 
   packages/web:
     dependencies:
-      '@omnilith/kernel':
-        specifier: workspace:*
-        version: link:../kernel
       react:
         specifier: ^19.2.4
         version: 19.2.4
