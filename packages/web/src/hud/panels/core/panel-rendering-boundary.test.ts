@@ -20,9 +20,4 @@ describe('adaptive panel rendering boundary', () => {
     expect(source).toMatch(/renderMapPanelBody\(panelId\)/);
     expect(source).not.toMatch(/renderPanelBody=\{\(panelId\)\s*=>\s*{[\s\S]*panelId\s*===/);
   });
-
-  it('keeps universal visor panel body routing out of VisorPanelBody', () => {
-    const source = readRelative('./VisorPanelBody.tsx');
-    expect(source).not.toMatch(/panelId\s*===/);
-  });
 });

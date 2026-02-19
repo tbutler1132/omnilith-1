@@ -7,7 +7,7 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { fetchOrganisms } from '../api/organisms.js';
+import { fetchOrganisms } from '../../../../api/organisms.js';
 
 interface OrganismPickerProps {
   excludeIds: string[];

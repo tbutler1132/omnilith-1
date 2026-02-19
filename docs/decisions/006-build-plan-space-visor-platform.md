@@ -78,8 +78,8 @@ Modify `packages/web/src/api/organisms.ts`:
 
 ### Reused without changes
 - `api/client.ts`, `api/auth.ts`, `auth/AuthGate.tsx`, `hooks/use-organism.ts`
-- `organisms/Vitality.tsx`, `organisms/StateHistory.tsx`, `organisms/Governance.tsx`
-- `organisms/ThresholdForm.tsx`, `organisms/OrganismPicker.tsx`
+- `hud/panels/organism/sections/VitalitySection.tsx`, `hud/panels/organism/sections/StateHistorySection.tsx`, `hud/panels/organism/sections/GovernanceSection.tsx`
+- `hud/panels/forms/ThresholdForm.tsx`, `hud/panels/organism/sections/OrganismPicker.tsx`
 - `docs/*` (entire docs section)
 
 ---
@@ -188,7 +188,7 @@ Modify `packages/web/src/renderers/registry.ts` — change RendererProps to pass
 
 ## Phase F: Integration & Polish
 
-- Wire proposal integrate/decline buttons in `organisms/Proposals.tsx`
+- Wire proposal integrate/decline buttons in `hud/panels/organism/sections/ProposalsSection.tsx`
 - End-to-end surfacing flow
 - End-to-end template instantiation
 - Keyboard navigation (`use-keyboard.ts`): backtick for visor, arrows for pan, +/- for zoom, Escape to close
