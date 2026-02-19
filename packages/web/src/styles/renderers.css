@@ -287,124 +287,571 @@
 /* Hero journey scene renderer */
 
 .hero-journey-scene {
-  max-width: 900px;
-  margin: 0 auto;
-  display: grid;
-  gap: 18px;
-}
-
-.hero-journey-scene-header {
-  border: 1px solid rgba(79, 152, 180, 0.3);
-  border-radius: 14px;
-  padding: 16px;
-  background: linear-gradient(160deg, rgba(22, 37, 48, 0.8), rgba(12, 17, 22, 0.86));
-}
-
-.hero-journey-scene-header h1 {
-  margin: 6px 0 4px;
-  font-size: clamp(22px, 3.5vw, 34px);
-}
-
-.hero-journey-scene-header p {
+  --hero-scene-accent: #79d0ff;
+  --hero-scene-progress: 0;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: none;
   margin: 0;
-  color: var(--text-dim);
-  line-height: 1.45;
-}
-
-.hero-journey-scene-eyebrow {
-  font-family: var(--hud-mono);
-  font-size: 10px;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: #88d0ec;
-}
-
-.hero-journey-scene-chapters {
+  border: 0;
+  border-radius: 0;
+  padding: clamp(18px, 2.8vw, 30px);
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 22px;
+  background: #010101;
+  box-shadow: none;
+}
+
+.hero-journey-scene::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  box-shadow: inset 0 0 110px rgba(0, 0, 0, 0.62);
+}
+
+.hero-journey-scene > * {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-journey-scene-cinema-header {
+  display: grid;
   gap: 10px;
 }
 
-.hero-journey-scene-chapter {
-  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 50%, transparent);
-  border-radius: 10px;
-  padding: 12px;
-  background: rgba(11, 16, 20, 0.72);
-}
-
-.hero-journey-scene-phase {
-  margin: 0 0 6px;
-  font-family: var(--hud-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--hero-scene-accent);
-}
-
-.hero-journey-scene-chapter h2 {
+.hero-journey-scene-cinema-header h1 {
   margin: 0;
-  font-size: 15px;
+  font-size: clamp(32px, 5.6vw, 58px);
+  line-height: 1;
+  letter-spacing: -0.025em;
 }
 
-.hero-journey-scene-chapter p {
-  margin: 6px 0 0;
-  font-size: 13px;
+.hero-journey-scene-cinema-eyebrow {
+  margin: 0;
+  font-family: var(--hud-mono);
+  font-size: 11px;
+  letter-spacing: 1.25px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--hero-scene-accent) 72%, white 8%);
+}
+
+.hero-journey-scene-cinema-subtitle {
+  margin: 0;
+  max-width: 64ch;
   color: var(--text-dim);
-  line-height: 1.35;
+  line-height: 1.58;
 }
 
-.hero-journey-scene-candidates-label {
-  margin: 10px 0 4px;
+.hero-journey-scene-cinema-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.hero-journey-scene-cinema-stat {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 20%, #2f2f2f);
+  border-radius: 13px;
+  padding: 11px 12px;
+  background: rgba(5, 5, 5, 0.85);
+  display: grid;
+  gap: 2px;
+}
+
+.hero-journey-scene-cinema-stat p {
+  margin: 0;
   font-family: var(--hud-mono);
   font-size: 10px;
+  letter-spacing: 1px;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
+  color: var(--text-dim);
+}
+
+.hero-journey-scene-cinema-stat strong {
+  margin: 0;
+  font-size: 25px;
+  line-height: 1.2;
+}
+
+.hero-journey-scene-cinema-layout {
+  display: grid;
+  grid-template-columns: minmax(250px, 0.85fr) minmax(340px, 1.15fr);
+  gap: 14px;
+}
+
+.hero-journey-scene-cinema-rail,
+.hero-journey-scene-cinema-experience,
+.hero-journey-scene-cinema-songs {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 22%, #2b2b2b);
+  border-radius: 16px;
+  background: rgba(4, 4, 4, 0.84);
+}
+
+.hero-journey-scene-cinema-rail {
+  padding: 14px;
+  display: grid;
+  align-content: start;
+  gap: 10px;
+}
+
+.hero-journey-scene-cinema-label {
+  margin: 0;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.hero-journey-scene-cinema-rail-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 8px;
+}
+
+.hero-journey-scene-cinema-rail-button {
+  --hero-scene-accent: #79d0ff;
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 30%, #333);
+  border-radius: 12px;
+  padding: 10px;
+  background: #080808;
+  color: inherit;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    transform 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.hero-journey-scene-cinema-rail-button:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--hero-scene-accent) 56%, #dadada 9%);
+}
+
+.hero-journey-scene-cinema-rail-button.is-active {
+  border-color: color-mix(in srgb, var(--hero-scene-accent) 78%, #f2f2f2 10%);
+  background: color-mix(in srgb, var(--hero-scene-accent) 8%, #070707);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--hero-scene-accent) 40%, transparent),
+    0 0 16px color-mix(in srgb, var(--hero-scene-accent) 18%, transparent);
+}
+
+.hero-journey-scene-cinema-rail-button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--hero-scene-accent) 78%, #fff 10%);
+  outline-offset: 2px;
+}
+
+.hero-journey-scene-cinema-rail-index {
+  font-family: var(--hud-mono);
+  font-size: 10px;
   color: color-mix(in srgb, var(--hero-scene-accent) 72%, var(--text));
 }
 
-.hero-journey-scene-candidates-list {
-  margin: 0;
-  padding-left: 16px;
+.hero-journey-scene-cinema-rail-copy {
+  display: grid;
+  gap: 2px;
 }
 
-.hero-journey-scene-candidates-list li {
-  margin-bottom: 2px;
-  font-size: 12px;
+.hero-journey-scene-cinema-rail-copy strong {
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.hero-journey-scene-candidates-empty {
-  margin: 0;
-  font-size: 12px;
-  color: var(--text-dim);
-}
-
-.hero-journey-scene-songs {
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 12px;
-}
-
-.hero-journey-scene-songs-label {
-  margin: 0 0 8px;
+.hero-journey-scene-cinema-rail-copy small {
   font-family: var(--hud-mono);
   font-size: 10px;
+  letter-spacing: 0.75px;
   text-transform: uppercase;
-  letter-spacing: 1px;
   color: var(--text-dim);
 }
 
-.hero-journey-scene-songs ul {
-  margin: 0;
-  padding-left: 16px;
+.hero-journey-scene-cinema-experience {
+  padding: 14px;
+  display: grid;
+  gap: 16px;
 }
 
-.hero-journey-scene-songs li {
-  margin-bottom: 4px;
+.hero-journey-scene-cinema-sticky {
+  position: sticky;
+  top: 16px;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(190px, 0.7fr) minmax(260px, 1.3fr);
+  gap: 14px;
+}
+
+.hero-journey-scene-cinema-orb {
+  position: relative;
+  width: min(34vw, 280px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 38%, #363636);
+  justify-self: center;
+  align-self: center;
+  transform: scale(calc(0.92 + (var(--hero-scene-progress) * 0.14)));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 0 calc(26px + (var(--hero-scene-progress) * 50px))
+      color-mix(in srgb, var(--hero-scene-accent) calc(18% + (var(--hero-scene-progress) * 24%)), transparent);
+}
+
+.hero-journey-scene-cinema-ring,
+.hero-journey-scene-cinema-core,
+.hero-journey-scene-cinema-ray,
+.hero-journey-scene-cinema-noise {
+  position: absolute;
+  inset: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.hero-journey-scene-cinema-ring {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 44%, #282828);
+}
+
+.hero-journey-scene-cinema-ring--one {
+  width: 30%;
+  height: 30%;
+}
+
+.hero-journey-scene-cinema-ring--two {
+  width: 54%;
+  height: 54%;
+}
+
+.hero-journey-scene-cinema-ring--three {
+  width: 78%;
+  height: 78%;
+}
+
+.hero-journey-scene-cinema-core {
+  width: 13%;
+  height: 13%;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--hero-scene-accent) 70%, white 16%);
+  box-shadow: 0 0 24px color-mix(in srgb, var(--hero-scene-accent) 62%, transparent);
+}
+
+.hero-journey-scene-cinema-ray {
+  width: 74%;
+  height: 1px;
+  background: color-mix(in srgb, var(--hero-scene-accent) 52%, transparent);
+  opacity: 0.24;
+}
+
+.hero-journey-scene-cinema-ray--a {
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.hero-journey-scene-cinema-ray--b {
+  transform: translate(-50%, -50%) rotate(62deg);
+}
+
+.hero-journey-scene-cinema-ray--c {
+  transform: translate(-50%, -50%) rotate(124deg);
+}
+
+.hero-journey-scene-cinema-noise {
+  width: 88%;
+  height: 88%;
+  border-radius: 999px;
+  border: 1px dashed color-mix(in srgb, var(--hero-scene-accent) 32%, #343434);
+  opacity: calc(0.26 + (var(--hero-scene-progress) * 0.26));
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.02),
+    0 0 12px color-mix(in srgb, var(--hero-scene-accent) 15%, transparent);
+}
+
+.hero-journey-scene-cinema-orb--spark .hero-journey-scene-cinema-core {
+  box-shadow: 0 0 34px color-mix(in srgb, var(--hero-scene-accent) 72%, transparent);
+}
+
+.hero-journey-scene-cinema-orb--crossing .hero-journey-scene-cinema-ring--two {
+  border-style: dashed;
+}
+
+.hero-journey-scene-cinema-orb--abyss {
+  border-color: color-mix(in srgb, var(--hero-scene-accent) 32%, #6f2525);
+}
+
+.hero-journey-scene-cinema-orb--abyss .hero-journey-scene-cinema-core {
+  background: color-mix(in srgb, var(--hero-scene-accent) 40%, #d16f6f 60%);
+}
+
+.hero-journey-scene-cinema-orb--ascent .hero-journey-scene-cinema-ring--one {
+  width: 26%;
+  height: 26%;
+}
+
+.hero-journey-scene-cinema-orb--return .hero-journey-scene-cinema-ring--three {
+  border-color: color-mix(in srgb, var(--hero-scene-accent) 62%, #ffffff 14%);
+}
+
+.hero-journey-scene-cinema-active {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 24%, #303030);
+  border-radius: 14px;
+  padding: 14px;
+  background: #060606;
+  display: grid;
+  gap: 10px;
+}
+
+.hero-journey-scene-cinema-active h2 {
+  margin: 0;
+  font-size: clamp(23px, 3.5vw, 33px);
+  line-height: 1.06;
+}
+
+.hero-journey-scene-cinema-active-summary {
+  margin: 0;
+  color: var(--text-dim);
+  line-height: 1.56;
+}
+
+.hero-journey-scene-cinema-active-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-journey-scene-cinema-active-meta span {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 30%, #2f2f2f);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.85px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--hero-scene-accent) 74%, var(--text));
+}
+
+.hero-journey-scene-cinema-active-candidates,
+.hero-journey-scene-cinema-panel-candidates {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hero-journey-scene-cinema-active-candidates li,
+.hero-journey-scene-cinema-panel-candidates li {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 24%, #353535);
+  border-radius: 999px;
+  padding: 5px 9px;
+  font-size: 12px;
+  color: var(--text);
+}
+
+.hero-journey-scene-cinema-active-candidates li.is-uncomposed,
+.hero-journey-scene-cinema-panel-candidates li.is-uncomposed {
+  border-style: dashed;
+  color: var(--text-dim);
+}
+
+.hero-journey-scene-cinema-track {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 12px;
+}
+
+.hero-journey-scene-cinema-panel {
+  --hero-scene-accent: #79d0ff;
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 28%, #313131);
+  border-radius: 14px;
+  min-height: clamp(260px, 62vh, 540px);
+  background: #050505;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.02);
+}
+
+.hero-journey-scene-cinema-panel.is-active {
+  border-color: color-mix(in srgb, var(--hero-scene-accent) 72%, #e9e9e9 8%);
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--hero-scene-accent) 38%, transparent),
+    0 0 22px color-mix(in srgb, var(--hero-scene-accent) 20%, transparent);
+}
+
+.hero-journey-scene-cinema-panel-hit {
+  width: 100%;
+  min-height: inherit;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 16px;
+  text-align: left;
+  display: grid;
+  align-content: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.hero-journey-scene-cinema-panel-hit:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--hero-scene-accent) 80%, #fff 8%);
+  outline-offset: 2px;
+}
+
+.hero-journey-scene-cinema-panel h3 {
+  margin: 0;
+  font-size: clamp(24px, 4vw, 36px);
+  line-height: 1.04;
+}
+
+.hero-journey-scene-cinema-panel-summary {
+  margin: 0;
+  max-width: 62ch;
+  color: var(--text-dim);
+  line-height: 1.55;
+}
+
+.hero-journey-scene-cinema-panel-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-journey-scene-cinema-panel-meta span {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 30%, #323232);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--hero-scene-accent) 70%, var(--text));
+}
+
+.hero-journey-scene-cinema-songs {
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+}
+
+.hero-journey-scene-cinema-songs-header {
+  display: grid;
+  gap: 3px;
+}
+
+.hero-journey-scene-cinema-songs-copy {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.hero-journey-scene-cinema-song-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.hero-journey-scene-cinema-song-card {
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 16%, #303030);
+  border-radius: 12px;
+  padding: 11px;
+  background: #060606;
+  display: grid;
+  gap: 6px;
+}
+
+.hero-journey-scene-cinema-song-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.hero-journey-scene-cinema-song-copy {
+  margin: 0;
+  color: var(--text-dim);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.hero-journey-scene-cinema-song-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.hero-journey-scene-cinema-song-pill {
+  --hero-scene-accent: #79d0ff;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid color-mix(in srgb, var(--hero-scene-accent) 34%, #3a3a3a);
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-family: var(--hud-mono);
+  font-size: 10px;
+  letter-spacing: 0.84px;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--hero-scene-accent) 70%, var(--text));
+  background: #080808;
+}
+
+.hero-journey-scene-cinema-song-pill--unmapped {
+  border-color: #414141;
+  color: var(--text-dim);
 }
 
 .hero-journey-scene-empty {
   margin: 0;
   color: var(--text-dim);
+  font-size: 13px;
+}
+
+@media (max-width: 1100px) {
+  .hero-journey-scene-cinema-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .hero-journey-scene-cinema-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .hero-journey-scene-cinema-sticky {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-journey-scene-cinema-orb {
+    width: min(64vw, 240px);
+  }
+}
+
+@media (max-width: 640px) {
+  .hero-journey-scene {
+    padding: 14px;
+  }
+
+  .hero-journey-scene-cinema-song-list {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-journey-scene-cinema-panel {
+    min-height: 220px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-journey-scene-cinema-rail-button,
+  .hero-journey-scene-cinema-panel {
+    transition: none;
+  }
 }
 
 .hero-journey-stage-renderer {
@@ -606,4 +1053,3 @@
   overflow-x: auto;
   white-space: pre-wrap;
 }
-

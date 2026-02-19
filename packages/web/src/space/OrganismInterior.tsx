@@ -16,6 +16,7 @@ interface OrganismInteriorProps {
 
 export function OrganismInterior({ organismId, opacity }: OrganismInteriorProps) {
   const { data, loading, error } = useOrganism(organismId);
+  const contentTypeId = data?.currentState?.contentTypeId;
 
   const Renderer = data?.currentState ? (getRenderer(data.currentState.contentTypeId) ?? FallbackRenderer) : null;
 
@@ -24,7 +25,9 @@ export function OrganismInterior({ organismId, opacity }: OrganismInteriorProps)
       {loading && <div className="organism-interior-loading">Loading...</div>}
       {error && <div className="organism-interior-error">Failed to load organism.</div>}
       {Renderer && data?.currentState && (
-        <div className="organism-interior-content">
+        <div
+          className={`organism-interior-content${contentTypeId ? ` organism-interior-content--${contentTypeId}` : ''}`}
+        >
           <Renderer state={data.currentState} zoom={1} focused />
         </div>
       )}
