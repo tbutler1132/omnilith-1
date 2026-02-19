@@ -41,6 +41,8 @@ For a fresh coding session that needs current implementation context fast:
 - Adaptive visor panel planning: `docs/ADAPTIVE-VISOR-PANEL-FEATURE-PLAYBOOK.md`
 - Relationships panel specification: `docs/ADAPTIVE-VISOR-RELATIONSHIPS-PANEL-SPEC.md`
 - Content type decision rubric: `docs/CONTENT-TYPE-RUBRIC.md`
+- Development system: `docs/DEVELOPMENT-SYSTEM.md`
+- Slice tracker template: `docs/SLICE-TRACKER.md`
 - Development guardrails: `docs/DEVELOPMENT-GUARDRAILS.md`
 - V1 demo handoff: `docs/V1-DEMO-HANDOFF.md`
 
