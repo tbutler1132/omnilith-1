@@ -1,0 +1,540 @@
+/* Universal layer */
+
+.universal-layer {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  border-top: 1px solid var(--border);
+  padding-top: 32px;
+}
+
+.universal-layer section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.universal-layer section h3 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.universal-layer ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.universal-layer li {
+  font-size: 14px;
+  color: var(--text);
+}
+
+/* Modal */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 24px;
+}
+
+/* Threshold Form */
+
+.threshold-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 32px;
+  width: 100%;
+  max-width: min(760px, calc(100vw - 48px));
+  max-height: calc(100vh - 48px);
+  overflow-y: auto;
+}
+
+.threshold-form-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.threshold-form-close {
+  flex-shrink: 0;
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+.threshold-form h2 {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.threshold-form p {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.threshold-progress {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.threshold-progress span {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 11px;
+  text-align: center;
+  color: var(--text-dim);
+  background: rgba(10, 10, 15, 0.3);
+}
+
+.threshold-progress .is-complete {
+  border-color: rgba(124, 108, 240, 0.6);
+  color: var(--text);
+}
+
+.threshold-form form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.threshold-form label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.threshold-field-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dim);
+}
+
+.threshold-form input,
+.threshold-form select,
+.threshold-form textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  font-family: inherit;
+  outline: none;
+  resize: vertical;
+  transition: border-color 0.15s;
+}
+
+.threshold-form input:focus,
+.threshold-form select:focus,
+.threshold-form textarea:focus {
+  border-color: var(--accent);
+}
+
+.threshold-content-types {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.threshold-content-type {
+  background: rgba(10, 10, 15, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.threshold-content-type:hover {
+  border-color: var(--accent);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.threshold-content-type strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-content-type span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.threshold-content-type--selected {
+  border-color: rgba(124, 108, 240, 0.75);
+  background: rgba(124, 108, 240, 0.12);
+}
+
+.threshold-payload-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.threshold-example-btn {
+  font-size: 12px;
+  padding: 5px 10px;
+}
+
+.threshold-mode {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.threshold-mode-fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.threshold-mode-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.threshold-mode-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  background: rgba(10, 10, 15, 0.3);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 10px;
+  text-align: left;
+  transition: border-color 0.15s, background 0.15s;
+  cursor: pointer;
+}
+
+.threshold-mode-option input[type='radio'] {
+  accent-color: var(--accent);
+  margin-top: 2px;
+}
+
+.threshold-mode-option > span {
+  display: flex;
+  flex-direction: column;
+}
+
+.threshold-mode-option:hover {
+  border-color: var(--accent);
+  background: rgba(124, 108, 240, 0.08);
+}
+
+.threshold-mode-option strong {
+  display: block;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-mode-option small {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--text-dim);
+  line-height: 1.35;
+}
+
+.threshold-mode-option--selected {
+  border-color: rgba(124, 108, 240, 0.75);
+  background: rgba(124, 108, 240, 0.12);
+}
+
+.threshold-mode-note {
+  margin: 0;
+  font-size: 12px;
+  color: rgba(224, 224, 232, 0.72);
+}
+
+.threshold-next {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.22);
+  padding: 9px 10px;
+}
+
+.threshold-next-label {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-dim);
+}
+
+.threshold-next p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-form .checkbox-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--text);
+  cursor: pointer;
+}
+
+.threshold-form .checkbox-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  margin-top: 2px;
+}
+
+.threshold-form .checkbox-label span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.threshold-form .checkbox-label small {
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.threshold-summary {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(10, 10, 15, 0.3);
+  padding: 9px 10px;
+}
+
+.threshold-summary p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.threshold-form .error {
+  color: #f87171;
+  font-size: 13px;
+}
+
+.threshold-form .form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Composition children */
+
+.composition-children {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.composition-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  transition: border-color 0.15s;
+}
+
+.composition-child:hover {
+  border-color: var(--accent);
+}
+
+.composition-child-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: inherit;
+  text-decoration: none;
+  min-width: 0;
+  flex: 1;
+}
+
+.composition-child-info:hover {
+  text-decoration: none;
+}
+
+.composition-child-info .content-type {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.composition-child-preview {
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid #f87171;
+  color: #f87171;
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 8px;
+  transition: background 0.15s;
+}
+
+.btn-danger:hover {
+  background: rgba(248, 113, 113, 0.1);
+}
+
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Composition actions */
+
+.composition-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.composition-actions button {
+  font-size: 13px;
+  padding: 6px 14px;
+}
+
+/* Organism picker */
+
+.organism-picker {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.organism-picker-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.organism-picker-header button {
+  font-size: 11px;
+  padding: 3px 10px;
+}
+
+.organism-picker-loading,
+.organism-picker-empty {
+  padding: 12px;
+  font-size: 13px;
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.organism-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  transition: background 0.1s;
+  border-radius: 0;
+}
+
+.organism-picker-item:last-child {
+  border-bottom: none;
+}
+
+.organism-picker-item:hover {
+  background: var(--surface-hover);
+}
+
+.organism-picker-item .content-type {
+  display: inline-block;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 1px 6px;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.organism-picker-preview {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.organism-picker-id {
+  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+/* Error */
+
+.error {
+  color: #f87171;
+  font-size: 13px;
+}
+
+/* Loading */
+
+.loading {
+  color: var(--text-dim);
+  font-size: 14px;
+  padding: 40px;
+  text-align: center;
+}
+

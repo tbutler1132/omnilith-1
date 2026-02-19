@@ -1,0 +1,166 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #0a0a0f;
+  --surface: #14141f;
+  --surface-hover: #1c1c2e;
+  --border: #2a2a3d;
+  --text: #e0e0e8;
+  --text-dim: #8888a0;
+  --accent: #7c6cf0;
+  --accent-dim: #5a4ec0;
+  --green: #4ade80;
+  --amber: #fbbf24;
+
+  /* HUD wireframe tokens */
+  --hud-border: rgba(124, 108, 240, 0.2);
+  --hud-border-hover: rgba(124, 108, 240, 0.5);
+  --hud-border-active: rgba(124, 108, 240, 0.7);
+  --hud-glow: 0 0 8px rgba(124, 108, 240, 0.08);
+  --hud-glow-hover: 0 0 12px rgba(124, 108, 240, 0.15);
+  --hud-text: rgba(224, 224, 232, 0.6);
+  --hud-text-bright: rgba(224, 224, 232, 0.9);
+  --hud-mono: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Auth */
+
+.auth-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.auth-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 40px;
+  width: 100%;
+  max-width: 380px;
+}
+
+.auth-card h1 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.auth-card p {
+  color: var(--text-dim);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.auth-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.auth-card input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.auth-card input:focus {
+  border-color: var(--accent);
+}
+
+.auth-card .error {
+  color: #f87171;
+  font-size: 13px;
+}
+
+.auth-card .switch {
+  color: var(--text-dim);
+  font-size: 13px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.auth-card .switch button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.auth-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: rgba(5, 5, 10, 0.7);
+}
+
+.auth-dialog-card {
+  width: 100%;
+  max-width: 420px;
+}
+
+/* Buttons */
+
+button, .btn {
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+button:hover, .btn:hover {
+  background: var(--accent-dim);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.secondary {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+button.secondary:hover {
+  background: var(--surface-hover);
+}
+

@@ -1,0 +1,260 @@
+/* ── Platform ── */
+
+.platform {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.platform-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+.platform-error {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  height: 100%;
+  color: var(--text-dim);
+  font-size: 14px;
+}
+
+/* ── Space ── */
+
+.space {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.space-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.space-viewport--panning {
+  cursor: grabbing;
+}
+
+.space-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.space-organism,
+.map-legend-marker {
+  --space-marker-fill: var(--accent-dim);
+  --space-marker-focused-fill: var(--accent);
+  --space-marker-focus-ring: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  --space-marker-halo-border: rgba(124, 108, 240, 0.45);
+  --space-marker-shape-radius: 50%;
+  --space-marker-shape-transform: none;
+  --space-marker-badge-border: var(--border);
+  --space-marker-badge-text: var(--text-dim);
+  --space-organism-focus-border: var(--accent);
+}
+
+.space-organism {
+  position: absolute;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 2px solid transparent;
+  transition: border-color 0.15s;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.space-organism:hover {
+  border-color: var(--border);
+}
+
+.space-organism--focused {
+  border-color: var(--space-organism-focus-border);
+  box-shadow: var(--space-marker-focus-ring);
+}
+
+.space-organism--high {
+  background: transparent;
+  border-color: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.space-organism--high:hover {
+  background: transparent;
+  border-color: transparent;
+}
+
+.organism-dot {
+  position: relative;
+  width: 30%;
+  height: 30%;
+  border-radius: var(--space-marker-shape-radius);
+  background: var(--space-marker-fill);
+  transform: var(--space-marker-shape-transform);
+  transition: transform 0.15s;
+}
+
+.organism-dot::after {
+  content: '';
+  position: absolute;
+  inset: -9px;
+  border: 1px solid var(--space-marker-halo-border);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.space-organism--high:hover .organism-dot {
+  transform: scale(1.15);
+}
+
+.space-organism--high:hover .organism-dot::after {
+  opacity: 1;
+  animation: marker-halo-pulse 1.15s ease-out infinite;
+}
+
+.space-organism--high.space-organism--focused .organism-dot {
+  background: var(--space-marker-focused-fill);
+  box-shadow: var(--space-marker-focus-ring);
+}
+
+/* ── Community organism distinction ── */
+
+.space-organism--community,
+.map-legend-marker--community {
+  --space-marker-fill: #e09050;
+  --space-marker-focused-fill: #f0a060;
+  --space-marker-focus-ring: 0 0 0 3px rgba(240, 160, 96, 0.3);
+  --space-marker-badge-border: rgba(224, 144, 80, 0.3);
+  --space-marker-badge-text: #e09050;
+  --space-organism-focus-border: #e09050;
+}
+
+/* ── Song organism distinction ── */
+
+.space-organism--song,
+.map-legend-marker--song {
+  --space-marker-fill: #4cae8c;
+  --space-marker-focused-fill: #6bc8a7;
+  --space-marker-focus-ring: 0 0 0 3px rgba(107, 200, 167, 0.3);
+  --space-marker-shape-radius: 6px;
+  --space-marker-shape-transform: rotate(45deg);
+  --space-marker-badge-border: rgba(76, 174, 140, 0.35);
+  --space-marker-badge-text: #4cae8c;
+  --space-organism-focus-border: #4cae8c;
+}
+
+/* ── Hero journey scene distinction ── */
+
+.space-organism--hero-journey-scene,
+.map-legend-marker--hero-journey-scene {
+  --space-marker-fill: #4f98b4;
+  --space-marker-focused-fill: #6ab6d5;
+  --space-marker-focus-ring: 0 0 0 3px rgba(79, 152, 180, 0.28);
+  --space-marker-shape-radius: 10px;
+  --space-marker-badge-border: rgba(79, 152, 180, 0.35);
+  --space-marker-badge-text: #67c4e7;
+  --space-organism-focus-border: #5fb3d3;
+}
+
+.space-organism .organism-type-badge {
+  border-color: var(--space-marker-badge-border);
+  color: var(--space-marker-badge-text);
+}
+
+/* Keep high-altitude focus treatment dot-only across content types. */
+.space-organism--high.space-organism--focused {
+  border-color: transparent;
+  box-shadow: none;
+}
+
+@keyframes marker-halo-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.42;
+  }
+  70% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.space-organism--loading,
+.space-organism--error {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.space-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-dim);
+  font-size: 14px;
+  text-align: center;
+  padding: 24px;
+}
+
+.space-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  opacity: 0.7;
+  margin-top: 8px;
+}
+
+/* ── Organism Interior ── */
+
+.organism-interior {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+}
+
+.organism-interior-content {
+  width: 100%;
+  max-width: 800px;
+  max-height: 100vh;
+  padding: 64px 24px;
+  overflow-y: auto;
+}
+
+.organism-interior-loading,
+.organism-interior-error {
+  color: var(--text-dim);
+  font-size: 14px;
+}
+

@@ -1,0 +1,256 @@
+/* ── Responsive ── */
+
+@media (max-width: 1024px) {
+  .hud-panel {
+    width: min(360px, calc(100vw - 32px));
+  }
+
+  .visor-view .visor-panel-deck--visor-organism {
+    width: min(920px, calc(100vw - 80px));
+  }
+
+  .visor-sidebar {
+    width: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .threshold-form {
+    padding: 18px;
+  }
+
+  .threshold-form-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .threshold-progress {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .threshold-content-types {
+    grid-template-columns: 1fr;
+  }
+
+  .threshold-mode-options {
+    grid-template-columns: 1fr;
+  }
+
+  .hud-bar {
+    padding: 0 10px;
+  }
+
+  .hud-logout {
+    top: 10px;
+    right: 10px;
+  }
+
+  .adaptive-visor-surface {
+    --visor-widget-lane-top: 52px;
+    --visor-widget-lane-right: 10px;
+    --visor-widget-lane-width: min(168px, calc(100vw - 20px));
+  }
+
+  .altitude-controls {
+    right: 10px;
+    bottom: 72px;
+  }
+
+  .hud-map-actions-container {
+    left: 10px;
+    right: 10px;
+    bottom: 72px;
+  }
+
+  .hud-map-actions {
+    flex-wrap: wrap;
+  }
+
+  .hud-panel {
+    width: calc(100vw - 20px);
+    max-height: 55vh;
+  }
+
+  .hud-panel--threshold {
+    width: calc(100vw - 20px);
+    max-height: 78vh;
+  }
+
+  .hud-panel--threshold .hud-panel-inner {
+    max-height: 78vh;
+    padding: 14px;
+  }
+
+  .hud-panel--mine {
+    width: calc(100vw - 20px);
+    max-height: 74vh;
+  }
+
+  .hud-panel--mine .hud-panel-inner {
+    max-height: 74vh;
+    padding: 12px;
+  }
+
+  .hud-panel--templates {
+    width: calc(100vw - 20px);
+    max-height: 74vh;
+  }
+
+  .hud-panel--templates .hud-panel-inner {
+    max-height: 74vh;
+    padding: 12px;
+  }
+
+  .hud-panel--adaptive {
+    width: calc(100vw - 20px);
+    max-height: 74vh;
+  }
+
+  .hud-panel--adaptive .hud-panel-inner {
+    max-height: 74vh;
+    padding: 12px;
+  }
+
+  .hud-panel--template-values {
+    width: calc(100vw - 20px);
+    max-height: 78vh;
+  }
+
+  .hud-panel--template-values .hud-panel-inner {
+    max-height: 78vh;
+    padding: 14px;
+  }
+
+  .hud-panel-inner {
+    max-height: 55vh;
+  }
+
+  .visor-view {
+    flex-direction: column;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .visor-view-shell {
+    inset: 12px 8px 12px;
+    padding: 0 2px 16px;
+  }
+
+  .visor-view .visor-panel-deck--visor-organism {
+    width: calc(100vw - 20px);
+  }
+
+  .visor-view .visor-panel-deck--visor-organism .visor-panel-main-body {
+    max-height: 70vh;
+  }
+
+  .visor-organism-panel-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .visor-organism-panel-controls {
+    justify-content: space-between;
+  }
+
+  .visor-view-content {
+    padding: 16px;
+  }
+
+  .visor-sidebar {
+    width: 100%;
+    max-height: 38vh;
+    border-left: none;
+    border-top: 1px solid rgba(124, 108, 240, 0.15);
+    padding: 12px;
+  }
+
+  .visor-panel-secondary-row {
+    grid-template-columns: 1fr;
+  }
+
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-slot,
+  .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-slot {
+    top: 48%;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-height: 74vh;
+  }
+
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main,
+  .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main {
+    max-height: 74vh;
+  }
+
+  .adaptive-visor-surface .visor-panel-deck--map .visor-panel-main-body,
+  .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-main-body {
+    max-height: calc(74vh - 48px);
+  }
+
+  .adaptive-visor-surface .visor-panel-deck--visor-organism .visor-panel-secondary-row {
+    left: 10px;
+    width: calc(100vw - 20px);
+    bottom: 124px;
+    top: auto;
+    transform: none;
+  }
+
+  .visor-panel-collapsed-rail--viewport-bottom-left {
+    left: 10px;
+    width: calc(100vw - 20px);
+    bottom: 72px;
+  }
+
+  .visor-sidebar--collapsed {
+    width: 100%;
+    max-height: 44px;
+    padding: 10px 12px;
+  }
+
+  .asset-meta-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .hud-map-btn {
+    padding: 7px 12px;
+    font-size: 9px;
+    letter-spacing: 1px;
+  }
+
+  .space-nav-bar {
+    top: 6px;
+    left: 10px;
+  }
+
+  .space-nav-content {
+    max-width: calc(100vw - 20px);
+  }
+
+  .space-nav-location {
+    max-width: min(64vw, 320px);
+  }
+
+  .visor-view {
+    top: 40px;
+  }
+
+  .visor-view-shell {
+    inset: 8px 6px 12px;
+  }
+
+  .visor-organism-panel-controls .hud-action-btn {
+    padding: 7px 10px;
+    font-size: 11px;
+  }
+
+  .visor-view-header {
+    margin-bottom: 14px;
+  }
+
+  .visor-view-actions {
+    margin-top: 14px;
+    padding-top: 10px;
+  }
+}
