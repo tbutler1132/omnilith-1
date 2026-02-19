@@ -1,11 +1,11 @@
 /**
  * Organism API functions — typed wrappers for organism endpoints.
  *
- * Domain types and contract types come from @omnilith/kernel so the
- * frontend and backend share a single source of truth for request
- * and response shapes.
+ * Request/response contracts come from the local API types module so
+ * rendering stays decoupled from kernel package imports.
  */
 
+import { apiFetch } from './client.js';
 import type {
   AppendStateRequest,
   AppendStateResponse,
@@ -33,8 +33,7 @@ import type {
   OpenProposalResponse,
   ThresholdOrganismRequest,
   ThresholdOrganismResponse,
-} from '@omnilith/kernel';
-import { apiFetch } from './client.js';
+} from './types.js';
 
 interface InstantiateTemplateStepOverride {
   readonly name?: string;

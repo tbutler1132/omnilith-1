@@ -5,7 +5,7 @@
  * section component can stay focused on data loading and layout.
  */
 
-import type { Relationship, RelationshipType } from '@omnilith/kernel';
+import type { Relationship, RelationshipType } from '../../../../api/types.js';
 
 export interface RelationshipLike {
   readonly id: string;
