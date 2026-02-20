@@ -14,9 +14,9 @@ import {
 } from '../platform/index.js';
 
 const ALTITUDE_LABELS: Record<string, string> = {
-  high: 'High',
-  mid: 'Mid',
-  close: 'Close',
+  high: 'Wide view',
+  mid: 'Near view',
+  close: 'Close view',
 };
 
 const ALTIMETER_LEVEL: Record<string, 0 | 1 | 2> = {
@@ -50,7 +50,7 @@ export function SpaceNavBar() {
     <div className="space-nav-bar">
       <div className="space-nav-content">
         {showBack && (
-          <button type="button" className="hud-back" onClick={handleBack} aria-label="Back">
+          <button type="button" className="space-nav-back-btn" onClick={handleBack} aria-label="Back">
             &larr;
           </button>
         )}
@@ -59,17 +59,23 @@ export function SpaceNavBar() {
         ) : isInside && enteredOrganismId ? (
           <InteriorLocation organismId={enteredOrganismId} />
         ) : (
-          <div className="hud-altitude">
-            <span className="hud-location hud-altitude-label">{ALTITUDE_LABELS[altitude] ?? 'High'}</span>
-            <span className="hud-altimeter" aria-hidden>
+          <div className="space-nav-altitude">
+            <span className="space-nav-label space-nav-altitude-label">{ALTITUDE_LABELS[altitude] ?? 'High'}</span>
+            <span className="space-nav-altimeter" aria-hidden>
               <span
-                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 0 ? 'hud-altimeter-step--active' : ''}`}
+                className={`space-nav-altimeter-step ${
+                  ALTIMETER_LEVEL[altitude] >= 0 ? 'space-nav-altimeter-step--active' : ''
+                }`}
               />
               <span
-                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 1 ? 'hud-altimeter-step--active' : ''}`}
+                className={`space-nav-altimeter-step ${
+                  ALTIMETER_LEVEL[altitude] >= 1 ? 'space-nav-altimeter-step--active' : ''
+                }`}
               />
               <span
-                className={`hud-altimeter-step ${ALTIMETER_LEVEL[altitude] >= 2 ? 'hud-altimeter-step--active' : ''}`}
+                className={`space-nav-altimeter-step ${
+                  ALTIMETER_LEVEL[altitude] >= 2 ? 'space-nav-altimeter-step--active' : ''
+                }`}
               />
             </span>
           </div>
@@ -84,8 +90,8 @@ function VisorLocation({ organismId }: { organismId: string }) {
   const name = data?.organism.name ?? '...';
 
   return (
-    <span className="hud-location space-nav-location">
-      Visor &middot; <span className="hud-location-name">{name}</span>
+    <span className="space-nav-label space-nav-location">
+      In visor: <span className="space-nav-location-name">{name}</span>
     </span>
   );
 }
@@ -95,8 +101,8 @@ function InteriorLocation({ organismId }: { organismId: string }) {
   const name = data?.organism.name ?? '...';
 
   return (
-    <span className="hud-location space-nav-location">
-      Inside <span className="hud-location-name">{name}</span>
+    <span className="space-nav-label space-nav-location">
+      Inside: <span className="space-nav-location-name">{name}</span>
     </span>
   );
 }

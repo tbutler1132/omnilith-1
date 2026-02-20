@@ -54,6 +54,12 @@
   will-change: transform;
 }
 
+.space-ambient-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .space-organism,
 .map-legend-marker {
   --space-marker-fill: var(--accent-dim);
