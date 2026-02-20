@@ -4,8 +4,13 @@ import { evaluateIntegrationPolicy } from '../integration-policy/evaluator.js';
 
 describe('integration policy evaluator', () => {
   const makeProposal = (proposedBy?: string): ProposalForEvaluation => ({
+    mutation: {
+      kind: 'append-state',
+      contentTypeId: 'test-type' as ContentTypeId,
+      payload: { v: 2 },
+    },
     proposedPayload: { v: 2 },
-    proposedContentTypeId: 'test-type' as ContentTypeId,
+    proposedContentTypeId: 'test-type',
     proposedBy: (proposedBy ?? 'usr-proposer') as UserId,
   });
 

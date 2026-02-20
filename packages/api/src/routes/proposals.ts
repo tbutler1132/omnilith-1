@@ -6,6 +6,8 @@ import type {
   ContentTypeId,
   DeclineProposalRequest,
   DomainError,
+  OpenMutationProposalRequest,
+  OpenProposalMutationRequest,
   OpenProposalRequest,
   OrganismId,
   ProposalId,
@@ -31,26 +33,32 @@ export function proposalRoutes(container: Container) {
     if (accessError) return accessError;
 
     try {
-      const proposal = await openProposal(
-        {
-          organismId,
-          proposedContentTypeId: body.proposedContentTypeId as ContentTypeId,
-          proposedPayload: body.proposedPayload,
-          description: body.description,
-          proposedBy: userId,
-        },
-        {
-          organismRepository: container.organismRepository,
-          stateRepository: container.stateRepository,
-          proposalRepository: container.proposalRepository,
-          contentTypeRegistry: container.contentTypeRegistry,
-          eventPublisher: container.eventPublisher,
-          identityGenerator: container.identityGenerator,
-          visibilityRepository: container.visibilityRepository,
-          relationshipRepository: container.relationshipRepository,
-          compositionRepository: container.compositionRepository,
-        },
-      );
+      const openInput = isOpenMutationProposalRequest(body)
+        ? {
+            organismId,
+            mutation: toKernelMutation(body.mutation),
+            description: body.description,
+            proposedBy: userId,
+          }
+        : {
+            organismId,
+            proposedContentTypeId: body.proposedContentTypeId as ContentTypeId,
+            proposedPayload: body.proposedPayload,
+            description: body.description,
+            proposedBy: userId,
+          };
+
+      const proposal = await openProposal(openInput, {
+        organismRepository: container.organismRepository,
+        stateRepository: container.stateRepository,
+        proposalRepository: container.proposalRepository,
+        contentTypeRegistry: container.contentTypeRegistry,
+        eventPublisher: container.eventPublisher,
+        identityGenerator: container.identityGenerator,
+        visibilityRepository: container.visibilityRepository,
+        relationshipRepository: container.relationshipRepository,
+        compositionRepository: container.compositionRepository,
+      });
 
       return c.json({ proposal }, 201);
     } catch (err) {
@@ -140,4 +148,35 @@ export function proposalRoutes(container: Container) {
   });
 
   return app;
+}
+
+function isOpenMutationProposalRequest(body: OpenProposalRequest): body is OpenMutationProposalRequest {
+  return typeof body === 'object' && body !== null && 'mutation' in body;
+}
+
+function toKernelMutation(mutation: OpenProposalMutationRequest) {
+  switch (mutation.kind) {
+    case 'append-state':
+      return {
+        kind: mutation.kind,
+        contentTypeId: mutation.contentTypeId as ContentTypeId,
+        payload: mutation.payload,
+      };
+    case 'compose':
+      return {
+        kind: mutation.kind,
+        childId: mutation.childId as OrganismId,
+        position: mutation.position,
+      };
+    case 'decompose':
+      return {
+        kind: mutation.kind,
+        childId: mutation.childId as OrganismId,
+      };
+    case 'change-visibility':
+      return {
+        kind: mutation.kind,
+        level: mutation.level,
+      };
+  }
 }

@@ -386,6 +386,58 @@ describe('proposal routes', () => {
     expect(intBody.newState.sequenceNumber).toBe(2);
   });
 
+  it('proposal lifecycle supports mutation intents (compose)', async () => {
+    const parentRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Parent',
+        contentTypeId: 'text',
+        payload: { content: 'parent', format: 'plaintext' },
+      }),
+    });
+    const { organism: parent } = await parentRes.json();
+
+    const childRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Child',
+        contentTypeId: 'text',
+        payload: { content: 'child', format: 'plaintext' },
+      }),
+    });
+    const { organism: child } = await childRes.json();
+
+    const openRes = await app.request(`/organisms/${parent.id}/proposals`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mutation: {
+          kind: 'compose',
+          childId: child.id,
+          position: 1,
+        },
+      }),
+    });
+    expect(openRes.status).toBe(201);
+    const { proposal } = await openRes.json();
+
+    const integrateRes = await app.request(`/proposals/${proposal.id}/integrate`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+    expect(integrateRes.status).toBe(200);
+    const integrated = await integrateRes.json();
+    expect(integrated.proposal.status).toBe('integrated');
+    expect(integrated.newState).toBeUndefined();
+
+    const childrenRes = await app.request(`/organisms/${parent.id}/children`);
+    const { children } = await childrenRes.json();
+    expect(children).toHaveLength(1);
+    expect(children[0].childId).toBe(child.id);
+  });
+
   it('full proposal lifecycle: open → decline', async () => {
     const createRes = await app.request('/organisms', {
       method: 'POST',

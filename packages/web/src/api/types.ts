@@ -55,6 +55,25 @@ export interface CompositionRecord {
 export interface Proposal {
   readonly id: string;
   readonly organismId: string;
+  readonly mutation:
+    | {
+        readonly kind: 'append-state';
+        readonly contentTypeId: string;
+        readonly payload: unknown;
+      }
+    | {
+        readonly kind: 'compose';
+        readonly childId: string;
+        readonly position?: number;
+      }
+    | {
+        readonly kind: 'decompose';
+        readonly childId: string;
+      }
+    | {
+        readonly kind: 'change-visibility';
+        readonly level: VisibilityLevel;
+      };
   readonly proposedContentTypeId: string;
   readonly proposedPayload: unknown;
   readonly description?: string;
@@ -168,11 +187,38 @@ export interface FetchParentResponse {
   readonly parent: CompositionRecord | null;
 }
 
-export interface OpenProposalRequest {
+export type OpenProposalMutationRequest =
+  | {
+      readonly kind: 'append-state';
+      readonly contentTypeId: string;
+      readonly payload: unknown;
+    }
+  | {
+      readonly kind: 'compose';
+      readonly childId: string;
+      readonly position?: number;
+    }
+  | {
+      readonly kind: 'decompose';
+      readonly childId: string;
+    }
+  | {
+      readonly kind: 'change-visibility';
+      readonly level: VisibilityLevel;
+    };
+
+export interface OpenLegacyStateProposalRequest {
   readonly proposedContentTypeId: string;
   readonly proposedPayload: unknown;
   readonly description?: string;
 }
+
+export interface OpenMutationProposalRequest {
+  readonly mutation: OpenProposalMutationRequest;
+  readonly description?: string;
+}
+
+export type OpenProposalRequest = OpenLegacyStateProposalRequest | OpenMutationProposalRequest;
 
 export interface OpenProposalResponse {
   readonly proposal: Proposal;
@@ -183,7 +229,7 @@ export interface FetchProposalsResponse {
 }
 
 export type IntegrateProposalResponse =
-  | { readonly proposal: Proposal; readonly newState: OrganismState }
+  | { readonly proposal: Proposal; readonly newState?: OrganismState }
   | { readonly proposal: Proposal; readonly policyDeclined: true };
 
 export interface DeclineProposalRequest {

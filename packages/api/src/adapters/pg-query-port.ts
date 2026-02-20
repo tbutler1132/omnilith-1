@@ -2,26 +2,30 @@
  * PostgreSQL implementation of QueryPort — cross-cutting retrieval.
  */
 
-import type {
-  ContentTypeId,
-  EventType,
-  OrganismContributions,
-  OrganismContributor,
-  OrganismId,
-  OrganismWithState,
-  Proposal,
-  ProposalId,
-  ProposalStatus,
-  QueryFilters,
-  QueryPort,
-  StateId,
-  Timestamp,
-  UserId,
-  VitalityData,
+import {
+  type ContentTypeId,
+  decodeProposalMutation,
+  type EventType,
+  type OrganismContributions,
+  type OrganismContributor,
+  type OrganismId,
+  type OrganismWithState,
+  type Proposal,
+  type ProposalId,
+  type ProposalStatus,
+  type QueryFilters,
+  type QueryPort,
+  type StateId,
+  type Timestamp,
+  toLegacyProposalFields,
+  type UserId,
+  type VitalityData,
 } from '@omnilith/kernel';
 import { and, count, desc, eq, max, type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { composition, events, organismStates, organisms, proposals } from '../db/schema.js';
+
+const VITALITY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
 
 export class PgQueryPort implements QueryPort {
   constructor(private readonly db: Database) {}
@@ -87,11 +91,6 @@ export class PgQueryPort implements QueryPort {
   }
 
   async getVitality(organismId: OrganismId): Promise<VitalityData> {
-    const [stateCount] = await this.db
-      .select({ count: count() })
-      .from(organismStates)
-      .where(eq(organismStates.organismId, organismId));
-
     const [proposalCount] = await this.db
       .select({ count: count() })
       .from(proposals)
@@ -101,12 +100,40 @@ export class PgQueryPort implements QueryPort {
       .select({ createdAt: max(organismStates.createdAt) })
       .from(organismStates)
       .where(eq(organismStates.organismId, organismId));
+    const [lastProposal] = await this.db
+      .select({ createdAt: max(proposals.createdAt), resolvedAt: max(proposals.resolvedAt) })
+      .from(proposals)
+      .where(eq(proposals.organismId, organismId));
+    const [lastEvent] = await this.db
+      .select({ occurredAt: max(events.occurredAt) })
+      .from(events)
+      .where(eq(events.organismId, organismId));
+
+    const candidateTimes = [
+      lastState?.createdAt,
+      lastProposal?.createdAt,
+      lastProposal?.resolvedAt,
+      lastEvent?.occurredAt,
+    ]
+      .filter((value): value is Date => value instanceof Date)
+      .map((value) => value.getTime());
+    const lastActivityAt = candidateTimes.length > 0 ? (Math.max(...candidateTimes) as Timestamp) : undefined;
+    const windowStart = lastActivityAt !== undefined ? new Date(lastActivityAt - VITALITY_WINDOW_MS) : undefined;
+    const recentStateChanges =
+      windowStart === undefined
+        ? 0
+        : (
+            await this.db
+              .select({ count: count() })
+              .from(organismStates)
+              .where(and(eq(organismStates.organismId, organismId), sql`${organismStates.createdAt} >= ${windowStart}`))
+          )[0].count;
 
     return {
       organismId,
-      recentStateChanges: stateCount.count,
+      recentStateChanges,
       openProposalCount: proposalCount.count,
-      lastActivityAt: lastState?.createdAt?.getTime() as Timestamp | undefined,
+      lastActivityAt,
     };
   }
 
@@ -321,11 +348,17 @@ export class PgQueryPort implements QueryPort {
 }
 
 function toProposal(row: typeof proposals.$inferSelect): Proposal {
+  const mutation = decodeProposalMutation({
+    proposedContentTypeId: row.proposedContentTypeId,
+    proposedPayload: row.proposedPayload,
+  });
+  const legacy = toLegacyProposalFields(mutation);
   return {
     id: row.id as ProposalId,
     organismId: row.organismId as OrganismId,
-    proposedContentTypeId: row.proposedContentTypeId as ContentTypeId,
-    proposedPayload: row.proposedPayload,
+    mutation,
+    proposedContentTypeId: legacy.proposedContentTypeId,
+    proposedPayload: legacy.proposedPayload,
     description: row.description ?? undefined,
     proposedBy: row.proposedBy as UserId,
     status: row.status as ProposalStatus,

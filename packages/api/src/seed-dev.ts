@@ -182,6 +182,8 @@ export async function seedDev(container: Container): Promise<void> {
   const composeDeps = {
     organismRepository: container.organismRepository,
     compositionRepository: container.compositionRepository,
+    visibilityRepository: container.visibilityRepository,
+    relationshipRepository: container.relationshipRepository,
     eventPublisher: container.eventPublisher,
     identityGenerator: container.identityGenerator,
   };

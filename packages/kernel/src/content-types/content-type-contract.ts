@@ -8,6 +8,7 @@
  */
 
 import type { ContentTypeId, UserId } from '../identity.js';
+import type { ProposalMutation } from '../proposals/proposal.js';
 
 export interface ValidationResult {
   readonly valid: boolean;
@@ -24,8 +25,9 @@ export interface EvaluationResult {
 }
 
 export interface ProposalForEvaluation {
+  readonly mutation: ProposalMutation;
   readonly proposedPayload: unknown;
-  readonly proposedContentTypeId: ContentTypeId;
+  readonly proposedContentTypeId: string;
   readonly description?: string;
   readonly proposedBy: UserId;
 }
