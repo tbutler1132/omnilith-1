@@ -61,6 +61,30 @@ function AppShell() {
     });
   }, [session]);
 
+  useEffect(() => {
+    if (!runtimeFlags.authEnabled || session) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('auth') === '1') {
+      setShowAuthDialog(true);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (!runtimeFlags.authEnabled) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (session) return;
+      const isModifierPressed = event.metaKey || event.ctrlKey;
+      if (!isModifierPressed || !event.shiftKey) return;
+      if (event.key.toLowerCase() !== 'l') return;
+      event.preventDefault();
+      setShowAuthDialog(true);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [session]);
+
   const handleAuthenticated = useCallback((next: AuthSession) => {
     clearOrganismCache();
     setSession(next);

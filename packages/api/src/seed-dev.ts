@@ -1,10 +1,9 @@
 /**
- * Full dev seed — populates the database with a rich development world.
+ * Seed profile router + legacy full-dev seed implementation.
  *
- * Creates a dev user, a variety of organisms across content types,
- * composes them into meaningful structures, and surfaces them on the
- * world map. This profile runs when OMNILITH_SEED_PROFILE=full-dev.
- * The default startup profile is the focused v1-demo seed.
+ * Default profile is v1-demo (focused unified local environment).
+ * The full-dev seed remains available as an explicit legacy profile
+ * for deep local experimentation.
  *
  * Uses kernel use cases so all validation, events, and relationships
  * are properly established.
@@ -147,13 +146,15 @@ async function ensureSongStarterTemplate(container: Container, devUserId: UserId
 
 export async function seedDev(container: Container): Promise<void> {
   const seedProfile = (process.env.OMNILITH_SEED_PROFILE ?? DEFAULT_SEED_PROFILE).trim();
-  if (seedProfile === 'v1-demo') {
+  if (seedProfile !== 'full-dev') {
+    if (seedProfile !== 'v1-demo') {
+      console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to v1-demo seed.`);
+    }
     await seedV1Demo(container);
     return;
   }
-  if (seedProfile !== 'full-dev') {
-    console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to full-dev seed.`);
-  }
+
+  console.warn('Using legacy OMNILITH_SEED_PROFILE=full-dev seed profile.');
 
   // Skip if already seeded
   const existing = await container.db.select().from(platformConfig).where(eq(platformConfig.key, DEV_SEED_KEY));

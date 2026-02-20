@@ -13,9 +13,9 @@ This document captures the implementation context for the current V1 demo direct
 ## Canonical decisions
 
 - Demo-first guest encounter is the canonical V1 path.
-- Auth is hidden by configuration in demo mode, not removed from architecture.
+- Auth is enabled in local runtime, with guest-first panel gating and hidden login entrypoints.
 - Guest write actions are gated through interest capture.
-- Demo and auth development run in parallel profiles (ports + databases + seed profiles).
+- Local development runs on one unified profile (single DB/ports/seed), with legacy script aliases preserved.
 - Hero's Journey uses a bounded bespoke renderer/content type path for V1.
 - Organism contribution credit is first-class in API + panel rendering.
 
@@ -23,14 +23,14 @@ Primary records:
 - `docs/decisions/026-demo-first-canonical-guest-flow-and-contributions.md`
 - `docs/DECISION-LOG.md` (Move 36)
 
-## Runtime profiles and commands
+## Runtime profile and commands
 
 Use these from repo root:
 
-- Demo profile: `pnpm run dev:demo`
-- Auth profile: `pnpm run dev:auth`
-- Reset demo DB: `pnpm run db:reset:demo`
-- Reset auth DB: `pnpm run db:reset:auth`
+- Unified profile: `pnpm run dev:unified`
+- Legacy aliases: `pnpm run dev:demo`, `pnpm run dev:auth`
+- Reset unified DB: `pnpm run db:reset:unified`
+- Legacy reset aliases: `pnpm run db:reset:demo`, `pnpm run db:reset:auth`
 - Full verification: `pnpm run check`
 
 Current profile wiring is in:
@@ -40,15 +40,15 @@ Current profile wiring is in:
 
 ## Known local DB gotcha
 
-Observed repeatedly during demo reset:
-- `db:reset:demo` can fail because `drizzle.__drizzle_migrations` already exists after dropping/recreating `public`.
+Observed repeatedly during local reset:
+- `db:reset:unified` can fail because `drizzle.__drizzle_migrations` already exists after dropping/recreating `public`.
 - Symptom: `relation "platform_config" does not exist` during reset flow.
 
 Workaround used successfully in this session:
 
 ```sh
-psql postgres://localhost:5432/omnilith_demo -c "DROP SCHEMA IF EXISTS drizzle CASCADE;"
-pnpm run db:reset:demo
+psql postgres://localhost:5432/omnilith_dev -c "DROP SCHEMA IF EXISTS drizzle CASCADE;"
+pnpm run db:reset:unified
 ```
 
 ## Hero's Journey modeling (clean, no hardcoded stage-song map in renderer)
@@ -137,11 +137,12 @@ Web usage:
 
 ## Seed outcomes from this session
 
-Latest successful demo reset output in this session:
+Latest successful unified reset output in this session:
 
-- Hero's Journey organism: `1b43f5ea-2c90-4655-9468-aa0bc1f21141`
-- Weekly Updates organism: `21a7763f-a70a-4708-b0e3-c5c4202197a1`
-- World map organism: `de223600-3ce9-48cf-9b7d-e14a737dd57e`
+- Hero's Journey organism: `72a26da7-0804-4f7e-82ec-1d92b2e817dc`
+- Weekly Updates organism: `e94a1a15-6d89-4aa3-9251-41e965fb41dd`
+- Community organism (private): `cf06b830-0eae-44b8-a2ee-41efbd4efcdb`
+- World map organism: `9659def6-334a-4564-a0ae-4343e6e9ae8b`
 
 These IDs are ephemeral and change on reset; included only as execution confirmation.
 
@@ -149,14 +150,15 @@ These IDs are ephemeral and change on reset; included only as execution confirma
 
 When resuming later:
 
-1. Run `pnpm run db:reset:demo` (if it fails, drop `drizzle` schema then rerun).
-2. Run `pnpm run dev:demo`.
+1. Run `pnpm run db:reset:unified` (if it fails, drop `drizzle` schema then rerun).
+2. Run `pnpm run dev:unified`.
 3. Open Hero's Journey and verify:
    - stage cards render,
    - candidate songs render from stage composition-reference,
    - audio playback works from R2 URLs.
+   - private community marker appears as restricted when unauthenticated.
 4. If expanding songs/stages, edit only:
    - `packages/api/src/seed-blueprints/hero-journey-v1-demo.json`
 5. Re-run:
-   - `pnpm run db:reset:demo`
+   - `pnpm run db:reset:unified`
    - `pnpm run check`
