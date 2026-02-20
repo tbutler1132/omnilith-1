@@ -857,6 +857,23 @@ The detailed decision record is captured in:
 
 - `docs/decisions/031-canonical-natural-space-with-optional-digital-visor-map-overlay.md`
 
+### Move 42: Digital Map Staged Delivery via Near Full-Screen Panel First
+
+Implementation sequencing was clarified for delivery safety and architectural leverage:
+
+- digital map should ship first as a near full-screen adaptive visor panel
+- a mini-map widget can be added for lightweight orientation
+- map interaction in this mode is preview-only until explicit commitment
+- selecting a location requires explicit `Fast travel`
+- `Fast travel` commits canonical Space movement and then closes digital map view
+- true field-of-vision overlay remains a later enhancement, not a prerequisite
+
+This preserves the Space/Visor distinction while reusing existing panel infrastructure and reducing first implementation risk.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/032-digital-map-staged-delivery-panel-first-overlay-later.md`
+
 ---
 
 ## Summary of What We're Building
