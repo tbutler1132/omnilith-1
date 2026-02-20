@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { fetchSession } from './api/auth.js';
+import { fetchSession, logout } from './api/auth.js';
 import { AuthDialog } from './auth/AuthDialog.js';
 import { subscribeToAuthDialogRequests } from './auth/auth-request.js';
 import type { AuthSession } from './auth/session.js';
@@ -61,6 +61,30 @@ function AppShell() {
     });
   }, [session]);
 
+  useEffect(() => {
+    if (!runtimeFlags.authEnabled || session) return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('auth') === '1') {
+      setShowAuthDialog(true);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (!runtimeFlags.authEnabled) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (session) return;
+      const isModifierPressed = event.metaKey || event.ctrlKey;
+      if (!isModifierPressed || !event.shiftKey) return;
+      if (event.key.toLowerCase() !== 'l') return;
+      event.preventDefault();
+      setShowAuthDialog(true);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [session]);
+
   const handleAuthenticated = useCallback((next: AuthSession) => {
     clearOrganismCache();
     setSession(next);
@@ -69,6 +93,19 @@ function AppShell() {
 
   const handleCloseAuthDialog = useCallback(() => {
     setShowAuthDialog(false);
+  }, []);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      await logout();
+    } catch {
+      // Best effort: clear local session state even if server logout fails.
+    } finally {
+      localStorage.removeItem('sessionId');
+      clearOrganismCache();
+      setSession(null);
+      setShowAuthDialog(false);
+    }
   }, []);
 
   if (checkingSession) {
@@ -87,11 +124,17 @@ function AppShell() {
   return (
     <>
       <Platform
+        key={`${authMode}:${userId}`}
         authMode={authMode}
         userId={userId}
         personalOrganismId={personalOrganismId}
         homePageOrganismId={homePageOrganismId}
       />
+      {runtimeFlags.authEnabled && session ? (
+        <button type="button" className="hud-logout" onClick={handleLogout}>
+          Log out
+        </button>
+      ) : null}
       {runtimeFlags.authEnabled && showAuthDialog && !session ? (
         <AuthDialog onAuthenticated={handleAuthenticated} onClose={handleCloseAuthDialog} />
       ) : null}

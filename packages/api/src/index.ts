@@ -13,7 +13,7 @@ import { seedDev } from './seed-dev.js';
 import { createServer } from './server.js';
 
 const port = parseInt(process.env.PORT ?? '3000', 10);
-const databaseUrl = process.env.DATABASE_URL ?? 'postgres://localhost:5432/omnilith';
+const databaseUrl = process.env.DATABASE_URL ?? 'postgres://localhost:5432/omnilith_dev';
 
 const db = createDatabase(databaseUrl);
 const container = createContainer(db);

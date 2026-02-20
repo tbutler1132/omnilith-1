@@ -37,7 +37,7 @@ function assertSafeToReset(databaseUrl: string): void {
 }
 
 async function main(): Promise<void> {
-  const databaseUrl = process.env.DATABASE_URL ?? 'postgres://localhost:5432/omnilith';
+  const databaseUrl = process.env.DATABASE_URL ?? 'postgres://localhost:5432/omnilith_dev';
   assertSafeToReset(databaseUrl);
 
   const client = postgres(databaseUrl, { max: 1 });
