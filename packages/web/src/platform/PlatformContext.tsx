@@ -6,7 +6,17 @@
  * through this context.
  */
 
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useRef,
+  useState,
+} from 'react';
 import type { Altitude } from '../space/viewport-math.js';
 import {
   type AdaptiveVisorCompositorState,
@@ -227,6 +237,8 @@ export function PlatformProvider({
   };
 
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
+  const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [adaptiveVisorState, adaptiveVisorDispatch] = useReducer(
     computeNextAdaptiveVisorLayout,
     createAdaptiveVisorCompositorState(
@@ -260,24 +272,34 @@ export function PlatformProvider({
     lastLoggedTraceSequence.current = latestEntry.sequence;
   }, [adaptiveVisorState.traceEnabled, adaptiveVisorState.decisionTrace]);
 
-  const focusOrganism = useCallback(
-    (id: string | null) => adaptiveVisorDispatch({ type: 'focus-organism', organismId: id }),
-    [],
-  );
-  const enterOrganism = useCallback(
-    (id: string) => adaptiveVisorDispatch({ type: 'enter-organism', organismId: id }),
-    [],
-  );
-  const exitOrganism = useCallback(() => adaptiveVisorDispatch({ type: 'exit-organism' }), []);
+  const focusOrganism = useCallback((id: string | null) => {
+    setFocusedOrganismId(id);
+    adaptiveVisorDispatch({ type: 'focus-organism', organismId: id });
+  }, []);
+  const enterOrganism = useCallback((id: string) => {
+    setFocusedOrganismId(id);
+    setEnteredOrganismId(id);
+    adaptiveVisorDispatch({ type: 'enter-organism', organismId: id });
+  }, []);
+  const exitOrganism = useCallback(() => {
+    setEnteredOrganismId(null);
+    adaptiveVisorDispatch({ type: 'exit-organism' });
+  }, []);
   const enterMap = useCallback((mapId: string, label: string) => {
+    setFocusedOrganismId(null);
+    setEnteredOrganismId(null);
     dispatch({ type: 'ENTER_MAP', mapId, label });
     adaptiveVisorDispatch({ type: 'enter-map' });
   }, []);
   const exitMap = useCallback(() => {
+    setFocusedOrganismId(null);
+    setEnteredOrganismId(null);
     dispatch({ type: 'EXIT_MAP' });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
   const navigateToMap = useCallback((mapId: string) => {
+    setFocusedOrganismId(null);
+    setEnteredOrganismId(null);
     dispatch({ type: 'NAVIGATE_TO_MAP', mapId });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
@@ -313,15 +335,10 @@ export function PlatformProvider({
     () => ({
       navigationStack: state.navigationStack,
       currentMapId: state.currentMapId,
-      focusedOrganismId: adaptiveVisorState.focusedOrganismId,
-      enteredOrganismId: adaptiveVisorState.enteredOrganismId,
+      focusedOrganismId,
+      enteredOrganismId,
     }),
-    [
-      state.navigationStack,
-      state.currentMapId,
-      adaptiveVisorState.focusedOrganismId,
-      adaptiveVisorState.enteredOrganismId,
-    ],
+    [state.navigationStack, state.currentMapId, focusedOrganismId, enteredOrganismId],
   );
 
   const visorState = useMemo<PlatformVisorState>(

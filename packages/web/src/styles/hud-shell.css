@@ -57,8 +57,8 @@
 
 .space-nav-bar {
   position: fixed;
-  top: 6px;
-  left: 12px;
+  top: 10px;
+  left: 14px;
   z-index: 67;
   pointer-events: none;
 }
@@ -67,40 +67,42 @@
   pointer-events: auto;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   max-width: min(68vw, 680px);
-  padding: 6px 10px;
-  border: 1px solid var(--hud-border);
-  border-radius: 8px;
-  background: rgba(10, 10, 15, 0.66);
-  box-shadow: var(--hud-glow);
+  padding: 9px 12px;
+  border: 1px solid rgba(130, 97, 71, 0.45);
+  border-radius: 12px;
+  background: rgba(74, 55, 41, 0.94);
+  box-shadow:
+    0 6px 18px rgba(19, 11, 7, 0.34),
+    inset 0 1px 0 rgba(223, 186, 143, 0.12);
 }
 
-.hud-back {
-  background: transparent;
-  border: 1px solid var(--hud-border);
-  color: var(--hud-text);
-  font-family: var(--hud-mono);
+.space-nav-back-btn {
+  background: rgba(104, 76, 56, 0.68);
+  border: 1px solid rgba(181, 138, 98, 0.5);
+  color: rgba(255, 236, 212, 0.9);
+  font-family: inherit;
   font-size: 13px;
   padding: 4px 10px;
-  border-radius: 6px;
+  border-radius: 999px;
   cursor: pointer;
-  box-shadow: var(--hud-glow);
-  transition: border-color 200ms ease, color 200ms ease, box-shadow 200ms ease;
+  box-shadow: 0 3px 10px rgba(26, 14, 8, 0.35);
+  transition: border-color 200ms ease, color 200ms ease, background-color 200ms ease;
 }
 
-.hud-back:hover {
-  border-color: var(--hud-border-hover);
-  color: var(--hud-text-bright);
-  box-shadow: var(--hud-glow-hover);
+.space-nav-back-btn:hover {
+  border-color: rgba(238, 195, 147, 0.72);
+  color: rgba(255, 243, 224, 0.98);
+  background: rgba(94, 66, 46, 0.62);
 }
 
-.hud-location {
-  font-family: var(--hud-mono);
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: var(--hud-text);
+.space-nav-label {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(233, 205, 174, 0.9);
 }
 
 .space-nav-location {
@@ -111,48 +113,48 @@
   text-overflow: ellipsis;
 }
 
-.hud-location-name {
-  color: var(--hud-text-bright);
+.space-nav-location-name {
+  color: rgba(253, 234, 208, 0.98);
 }
 
-.hud-altitude {
+.space-nav-altitude {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-.hud-altitude-label {
+.space-nav-altitude-label {
   display: inline-block;
-  width: 5ch;
+  width: auto;
 }
 
-.hud-altimeter {
+.space-nav-altimeter {
   display: inline-flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 3px;
   height: 10px;
 }
 
-.hud-altimeter-step {
+.space-nav-altimeter-step {
   width: 2px;
   border-radius: 1px;
-  background: var(--hud-border);
+  background: rgba(180, 139, 99, 0.72);
 }
 
-.hud-altimeter-step:nth-child(1) {
+.space-nav-altimeter-step:nth-child(1) {
   height: 4px;
 }
 
-.hud-altimeter-step:nth-child(2) {
+.space-nav-altimeter-step:nth-child(2) {
   height: 7px;
 }
 
-.hud-altimeter-step:nth-child(3) {
+.space-nav-altimeter-step:nth-child(3) {
   height: 10px;
 }
 
-.hud-altimeter-step--active {
-  background: var(--hud-text-bright);
+.space-nav-altimeter-step--active {
+  background: rgba(248, 214, 169, 0.98);
 }
 
 /* Floating logout — top-right */
@@ -1376,4 +1378,3 @@
 .altitude-pip--active {
   background: var(--accent);
 }
-

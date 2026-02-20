@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePlatformActions, usePlatformMapState, usePlatformViewportMeta } from '../platform/index.js';
 import { AltitudeControls } from './AltitudeControls.js';
+import { SpaceAmbientLayerHost } from './ambient/SpaceAmbientLayerHost.js';
 import { GroundPlane } from './GroundPlane.js';
 import { OrganismInterior } from './OrganismInterior.js';
 import { SpaceLayer } from './SpaceLayer.js';
@@ -216,6 +217,17 @@ export function Space() {
         onClearFocus={() => focusOrganism(null)}
         disabled={phase !== 'map'}
       >
+        <SpaceAmbientLayerHost
+          context={{
+            mapId: currentMapId,
+            entries,
+            viewport,
+            screenSize,
+            altitude,
+            focusedOrganismId,
+            enteredOrganismId,
+          }}
+        />
         <GroundPlane width={width} height={height} altitude={altitude} />
         <SpaceLayer
           entries={entries}

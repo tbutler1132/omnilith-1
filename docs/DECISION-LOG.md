@@ -842,6 +842,21 @@ The detailed decision record is captured in:
 
 - `docs/decisions/030-visor-hud-extension-host-default-first-delivery.md`
 
+### Move 41: Canonical Natural Space with Optional Digital Visor Map Overlay
+
+A rendering direction clarification was made for map evolution:
+
+- canonical Space should move toward a more natural, lived, and human environmental aesthetic
+- the current digital/grid-forward map language remains useful and should be preserved
+- digital map treatment should be offered as a Visor overlay mode
+- this overlay is interpretive (Visor), not canonical (Space)
+
+This keeps the Space/Visor boundary coherent while enabling both immersion and precision workflows.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/031-canonical-natural-space-with-optional-digital-visor-map-overlay.md`
+
 ---
 
 ## Summary of What We're Building
