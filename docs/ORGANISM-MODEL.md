@@ -61,7 +61,7 @@ This is biologically honest. A neuron does not think. Neurons wired together pro
 
 Regulation is not built into the primitive. It is what happens when an organism contains policy organisms. A bare organism with no regulatory children is open — anyone can change it. An organism containing an integration-policy organism whose state says "single approver: this person" now requires that person's approval for state changes. An organism containing a governance-policy organism with more complex rules gets more complex regulatory behavior.
 
-This means regulatory patterns are not hardcoded. They are themselves organisms, composed inside the things they regulate. New regulatory patterns can be invented by creating new policy organisms with new content types. The platform does not need to anticipate every possible governance model. It just needs to support the universal mechanism: when a state change is proposed to an organism, check for policy organisms inside it and let them evaluate.
+This means regulatory patterns are not hardcoded. They are themselves organisms, composed inside the things they regulate. New regulatory patterns can be invented by creating new policy organisms with new content types. The platform does not need to anticipate every possible governance model. It just needs to support the universal mechanism: when a mutation is proposed to an organism (state, composition, or visibility), check for policy organisms inside it and let them evaluate.
 
 ### Vitality
 
@@ -77,7 +77,7 @@ Vitality also provides a natural path to dormancy. An organism whose vitality ha
 
 ### The Proposal
 
-The central interaction between people and organisms is the proposal. You do not edit an organism directly (unless it is fully open). You propose a new state. The organism's regulatory apparatus — whatever policy organisms it contains — evaluates the proposal. The result is integration or decline.
+The central interaction between people and organisms is the proposal. You do not edit an organism directly (unless it is fully open). You propose a mutation. That mutation may append a new state, adjust composition, or change visibility. The organism's regulatory apparatus — whatever policy organisms it contains — evaluates the proposal. The result is integration or decline.
 
 This frames the relationship between people and their work as collaborative rather than manipulative. You work with organisms, not on them. Even your own work, once it has crossed the identity threshold, has integrity that you respect through the proposal process. This mirrors how serious creative work actually feels — you do not dominate the material. You listen to it, respond to it, and offer things that might belong.
 
@@ -95,7 +95,7 @@ The physics of the system. What makes organisms possible. Infrastructure does no
 2. **State management.** Append immutable states. Retrieve current state. Retrieve history. This is what gives organisms their trajectory — their identity-through-change.
 3. **Composition.** Place organisms inside other organisms. Remove them. Query containment. This is the entire mechanism for emergence — without it, organisms are isolated and nothing interesting happens.
 4. **Visibility and access.** Who can see an organism. Who can interact with it. This is the outer boundary check that happens before any other interaction. It cannot be an organism itself because of the chicken-and-egg problem — you need to see an organism to read its policy organisms, but visibility determines whether you can see it at all.
-5. **Proposal evaluation.** When a state change is proposed, consult policy organisms inside the target and evaluate. This could theoretically be an emergent behavior of composition, but it earns its place as infrastructure because a bug here means someone bypasses governance entirely. Safety-critical operations belong in the physics.
+5. **Proposal evaluation.** When a mutation is proposed, consult policy organisms inside the target and evaluate. This could theoretically be an emergent behavior of composition, but it earns its place as infrastructure because a bug here means someone bypasses governance entirely. Safety-critical operations belong in the physics.
 6. **Event emission.** Every mutation emits an event. Other organisms can observe events. This is how the system develops memory and how the cybernetic layer has something to sense.
 7. **Content type registration.** A plugin system for registering handlers that give meaning to state payloads — rendering, diffing, validation, and possibly evaluation logic. The infrastructure says "I don't know what this payload means" and delegates to a registered handler. New capabilities enter the system through this gate.
 8. **Querying.** Cross-cutting retrieval across organisms, states, composition, and relationships. "Show me all organisms inside this community with open proposals." "Show me everything I have integration authority over." "Show me this organism's history filtered by time range." If querying is too weak, the rendering layer has to do enormous work to assemble views. Rich querying makes views fall out naturally.
@@ -449,7 +449,7 @@ Several tracks reveal a shared quality. The musician recognizes a higher-order i
 
 ### Collaboration
 
-The musician invites a trusted collaborator. The collaborator joins the community organism. They encounter the work, resonate with it, and begin contributing. Contributions arrive as proposals — new states offered to existing organisms. The regulatory function (held by whoever has integration authority) evaluates each proposal against the organism's coherence. Some are integrated. Some are declined. Some spark conversations that lead to unexpected directions.
+The musician invites a trusted collaborator. The collaborator joins the community organism. They encounter the work, resonate with it, and begin contributing. Contributions arrive as proposals — offered mutations to existing organisms. The regulatory function (held by whoever has integration authority) evaluates each proposal against the organism's coherence. Some are integrated. Some are declined. Some spark conversations that lead to unexpected directions.
 
 ### Self-Awareness
 

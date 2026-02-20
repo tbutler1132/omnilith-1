@@ -102,9 +102,9 @@ These terms have precise meanings. Use them exactly as written — in code, file
 | Term               | Meaning                                                                    | Never call it                         |
 | ------------------ | -------------------------------------------------------------------------- | ------------------------------------- |
 | **threshold**      | The act of introducing something to the platform. Assuming stewardship.    | upload, create, register              |
-| **proposal**       | An offered new state for an organism. Subject to regulatory evaluation.    | pull request, PR, merge request, edit |
-| **integrate**      | To accept a proposal. The organism's state advances.                       | merge, approve, accept                |
-| **decline**        | To reject a proposal. The organism's state remains.                        | reject, deny, close                   |
+| **proposal**       | An offered mutation for an organism (state, composition, visibility). Subject to regulatory evaluation. | pull request, PR, merge request, edit |
+| **integrate**      | To accept a proposal. The offered mutation is applied.                     | merge, approve, accept                |
+| **decline**        | To reject a proposal. The offered mutation is not applied.                 | reject, deny, close                   |
 | **tend**           | The ongoing act of maintaining an organism's coherence.                    | manage, maintain, admin               |
 | **fork**           | Copying an organism across boundaries. Independent with preserved lineage. | clone, duplicate                      |
 | **surface** (verb) | To place an organism on a map with coordinates. A curatorial act.          | publish, display, show                |
@@ -159,7 +159,7 @@ The kernel implements exactly eight infrastructure concerns. These are the compl
 2. **State management** — append immutable state, retrieve current, retrieve history
 3. **Composition** — place inside, remove, query containment
 4. **Visibility and access** — who can see, who can interact
-5. **Proposal evaluation** — consult policy organisms, evaluate proposed state changes
+5. **Proposal evaluation** — consult policy organisms, evaluate proposed mutations
 6. **Event emission** — record every mutation, make observable
 7. **Content type registration** — register schema, renderer, differ, validator, evaluator
 8. **Querying** — cross-cutting retrieval across organisms, states, composition, relationships, vitality
@@ -253,12 +253,12 @@ Every module starts with a short comment block explaining **what this is and why
 
 ```typescript
 /**
- * Proposal — an offered new state for an organism.
+ * Proposal — an offered mutation for an organism.
  *
  * Proposals are the central interaction between people and organisms.
  * When a proposal arrives, the infrastructure checks for policy organisms
  * inside the target organism and lets them evaluate. The result is
- * integration (state advances) or decline (state remains).
+ * integration (mutation applies) or decline (mutation does not apply).
  *
  * Proposals work identically whether the source is an internal
  * contributor or a cross-boundary fork.

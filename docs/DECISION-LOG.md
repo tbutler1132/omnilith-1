@@ -874,6 +874,35 @@ The detailed decision record is captured in:
 
 - `docs/decisions/032-digital-map-staged-delivery-panel-first-overlay-later.md`
 
+### Move 43: Proposal Mutation Intents and Kernel Coherence Hardening
+
+Kernel and API behavior were aligned to restore a single coherent mutation model:
+
+- proposals are canonicalized as offered mutations (not state-only)
+- mutation intents include `append-state`, `compose`, `decompose`, and `change-visibility`
+- composition and visibility mutations now follow kernel-governed paths with event emission
+- vitality semantics now reflect recent, multi-signal activity (states, proposals, events)
+
+This preserves the core architecture promise: one governance mechanism for meaningful change, with policy evaluation at the kernel boundary and content-type/adapters extending behavior without introducing a new kernel concern.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/033-proposal-mutation-intents-and-kernel-coherence-hardening.md`
+
+### Move 44: Deferred Decisions Register for Pre-Decision Architecture Questions
+
+A lightweight pre-decision register was added so important unresolved questions can be tracked without polluting accepted decision records:
+
+- use `docs/DEFERRED-DECISIONS.md` for open architecture questions that are not yet ready to settle
+- keep decision records in `docs/decisions/` for accepted outcomes only
+- link resolved deferred items to their final decision records
+
+Initial deferred item captured:
+
+- `DD-001` spatial map as true boundary vs rendering surface
+
+This reduces re-litigation overhead while preserving clean separation between open questions and accepted architecture.
+
 ---
 
 ## Summary of What We're Building
