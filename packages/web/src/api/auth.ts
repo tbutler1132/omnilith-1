@@ -20,6 +20,12 @@ export function fetchSession() {
   return apiFetch<SessionInfo>('/auth/me');
 }
 
+export function logout() {
+  return apiFetch<{ ok: boolean }>('/auth/logout', {
+    method: 'POST',
+  });
+}
+
 export async function login(email: string, password: string) {
   const res = await apiFetch<AuthResponse>('/auth/login', {
     method: 'POST',

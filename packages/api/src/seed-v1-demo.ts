@@ -248,20 +248,35 @@ export async function seedV1Demo(container: Container): Promise<void> {
     appendDeps,
   );
 
-  const privateCommunityOrganismIds = [
-    undergrowth.organism.id,
-    undergrowthMap.organism.id,
-    communityText.organism.id,
-    communityAudio.organism.id,
-  ] as const;
+  await container.relationshipRepository.save({
+    id: container.identityGenerator.relationshipId(),
+    type: 'membership',
+    userId: demoUserId,
+    organismId: undergrowth.organism.id,
+    role: 'member',
+    createdAt: container.identityGenerator.timestamp(),
+  });
 
-  for (const organismId of privateCommunityOrganismIds) {
-    await container.visibilityRepository.save({
-      organismId,
-      level: 'private',
-      updatedAt: container.identityGenerator.timestamp(),
-    });
-  }
+  await container.visibilityRepository.save({
+    organismId: undergrowth.organism.id,
+    level: 'private',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+  await container.visibilityRepository.save({
+    organismId: undergrowthMap.organism.id,
+    level: 'members',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+  await container.visibilityRepository.save({
+    organismId: communityText.organism.id,
+    level: 'members',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+  await container.visibilityRepository.save({
+    organismId: communityAudio.organism.id,
+    level: 'members',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
 
   const worldMapRow = await container.db.select().from(platformConfig).where(eq(platformConfig.key, 'world_map_id'));
   if (worldMapRow.length === 0) {
