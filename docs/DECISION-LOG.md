@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 19, 2026  
+Updated: February 20, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -807,6 +807,22 @@ This validates the model's claim that cybernetic behavior can emerge through com
 The detailed decision record is captured in:
 
 - `docs/decisions/028-proposal-integration-triggered-github-issue-to-pr-cybernetic-loop.md`
+
+### Move 39: Song Release Contributor Baseline Credit Covenant
+
+The founder raised a practical trust question for early music collaboration: if a Song organism may later be released to DSPs, how do contributors know they will be credited without creating heavy process overhead?
+
+The decision establishes a floor-first covenant:
+
+- Any user listed as a contributor on a Song organism receives base credit on release.
+- Role-specific release credits (for example: primary artist, featured artist, songwriter, producer, performer, mixer) are handled explicitly in a release credit state.
+- Split percentages and any role-specific credit changes must use proposals and integrate before external delivery.
+
+This resolves the trust concern for early participation while preserving governance clarity for release-critical metadata. Contributor listing guarantees recognition; release-specific attribution remains explicit and governed.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/029-song-release-contributor-baseline-credit-covenant.md`
 
 ---
 
