@@ -23,6 +23,8 @@ import type { InMemoryProposalRepository } from './in-memory-proposal-repository
 import type { InMemoryRelationshipRepository } from './in-memory-relationship-repository.js';
 import type { InMemoryStateRepository } from './in-memory-state-repository.js';
 
+const VITALITY_WINDOW_MS = 30 * 24 * 60 * 60 * 1000;
+
 export class InMemoryQueryPort implements QueryPort {
   constructor(
     private readonly organisms: InMemoryOrganismRepository,
@@ -71,14 +73,25 @@ export class InMemoryQueryPort implements QueryPort {
 
   async getVitality(organismId: OrganismId): Promise<VitalityData> {
     const history = await this.states.findHistoryByOrganismId(organismId);
+    const proposals = await this.proposals.findByOrganismId(organismId);
+    const events = await this.events.findByOrganismId(organismId);
     const openProposals = await this.proposals.findOpenByOrganismId(organismId);
-    const lastState = history.length > 0 ? history[history.length - 1] : undefined;
+    const stateTimes = history.map((state) => state.createdAt);
+    const proposalTimes = proposals.flatMap((proposal) =>
+      proposal.resolvedAt !== undefined ? [proposal.createdAt, proposal.resolvedAt] : [proposal.createdAt],
+    );
+    const eventTimes = events.map((event) => event.occurredAt);
+    const allTimes = [...stateTimes, ...proposalTimes, ...eventTimes];
+    const lastActivityAt = allTimes.length > 0 ? (Math.max(...allTimes) as Timestamp) : undefined;
+    const windowStart = lastActivityAt !== undefined ? lastActivityAt - VITALITY_WINDOW_MS : undefined;
+    const recentStateChanges =
+      windowStart === undefined ? 0 : history.filter((state) => state.createdAt >= windowStart).length;
 
     return {
       organismId,
-      recentStateChanges: history.length,
+      recentStateChanges,
       openProposalCount: openProposals.length,
-      lastActivityAt: lastState?.createdAt,
+      lastActivityAt,
     };
   }
 

@@ -192,6 +192,9 @@ describe('proposals', () => {
     expect(result.outcome).toBe('integrated');
     expect(result.proposal.status).toBe('integrated');
     if (result.outcome === 'integrated') {
+      if (!result.newState) {
+        throw new Error('Expected integrated append-state proposal to include newState');
+      }
       expect(result.newState.payload).toEqual({ v: 2 });
       expect(result.newState.sequenceNumber).toBe(2);
     }
@@ -224,6 +227,72 @@ describe('proposals', () => {
 
     const currentState = await stateRepository.findCurrentByOrganismId(organism.id);
     expect(currentState!.id).toBe(initialState.id);
+  });
+
+  it('integrating a compose proposal applies the composition mutation', async () => {
+    const steward = testUserId('steward');
+    const { organism: parent } = await createOrganism(
+      { name: 'Parent', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      createDeps(),
+    );
+    const { organism: child } = await createOrganism(
+      { name: 'Child', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      createDeps(),
+    );
+
+    const proposal = await openProposal(
+      {
+        organismId: parent.id,
+        mutation: {
+          kind: 'compose',
+          childId: child.id,
+          position: 1,
+        },
+        proposedBy: testUserId('contributor'),
+      },
+      openDeps(),
+    );
+
+    const result = await integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps());
+    expect(result.outcome).toBe('integrated');
+    if (result.outcome !== 'integrated') {
+      throw new Error('Expected proposal to integrate');
+    }
+    expect(result.newState).toBeUndefined();
+
+    const composition = await compositionRepository.findParent(child.id);
+    expect(composition).toBeDefined();
+    expect(composition?.parentId).toBe(parent.id);
+  });
+
+  it('integrating a visibility proposal updates visibility without appending state', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Visibility Target', contentTypeId: testContentTypeId(), payload: { v: 1 }, createdBy: steward },
+      createDeps(),
+    );
+
+    const proposal = await openProposal(
+      {
+        organismId: organism.id,
+        mutation: {
+          kind: 'change-visibility',
+          level: 'members',
+        },
+        proposedBy: testUserId('contributor'),
+      },
+      openDeps(),
+    );
+
+    const result = await integrateProposal({ proposalId: proposal.id, integratedBy: steward }, integrateDeps());
+    expect(result.outcome).toBe('integrated');
+    if (result.outcome !== 'integrated') {
+      throw new Error('Expected proposal to integrate');
+    }
+    expect(result.newState).toBeUndefined();
+
+    const visibility = await visibilityRepository.findByOrganismId(organism.id);
+    expect(visibility?.level).toBe('members');
   });
 
   it('a user without integration authority cannot integrate a proposal', async () => {
@@ -315,7 +384,14 @@ describe('proposals', () => {
 
     await composeOrganism(
       { parentId: album.id, childId: policy.id, composedBy: steward },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     // Open a proposal to the album
@@ -371,11 +447,25 @@ describe('proposals', () => {
     // Compose: album contains song AND policy
     await composeOrganism(
       { parentId: album.id, childId: song.id, composedBy: steward },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
     await composeOrganism(
       { parentId: album.id, childId: policy.id, composedBy: steward },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     // Proposal to the SONG should NOT be affected by album's policy
@@ -426,7 +516,14 @@ describe('proposals', () => {
 
     await composeOrganism(
       { parentId: parent.id, childId: policy.id, composedBy: steward },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const proposal = await openProposal(

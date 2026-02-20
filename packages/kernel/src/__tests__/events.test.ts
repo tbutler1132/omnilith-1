@@ -21,6 +21,7 @@ import {
   testContentTypeId,
   testUserId,
 } from '../testing/test-helpers.js';
+import { changeVisibility } from '../visibility/change-visibility.js';
 
 describe('events', () => {
   let organismRepository: InMemoryOrganismRepository;
@@ -119,7 +120,14 @@ describe('events', () => {
 
     await composeOrganism(
       { parentId: parent.id, childId: child.id, composedBy: userId },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const events = eventPublisher.findByType('organism.composed');
@@ -141,14 +149,28 @@ describe('events', () => {
 
     await composeOrganism(
       { parentId: parent.id, childId: child.id, composedBy: userId },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     eventPublisher.clear();
 
     await decomposeOrganism(
       { parentId: parent.id, childId: child.id, decomposedBy: userId },
-      { compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const events = eventPublisher.findByType('organism.decomposed');
@@ -284,6 +306,37 @@ describe('events', () => {
     const events = eventPublisher.findByType('proposal.declined');
     expect(events).toHaveLength(1);
     expect(events[0].payload.reason).toBe('No thanks');
+  });
+
+  it('changing visibility emits visibility.changed', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    eventPublisher.clear();
+
+    await changeVisibility(
+      {
+        organismId: organism.id,
+        level: 'members',
+        changedBy: steward,
+      },
+      {
+        organismRepository,
+        visibilityRepository,
+        relationshipRepository,
+        compositionRepository,
+        eventPublisher,
+        identityGenerator,
+      },
+    );
+
+    const events = eventPublisher.findByType('visibility.changed');
+    expect(events).toHaveLength(1);
+    expect(events[0].organismId).toBe(organism.id);
+    expect(events[0].payload.level).toBe('members');
   });
 
   it('every event has a unique id and timestamp', async () => {

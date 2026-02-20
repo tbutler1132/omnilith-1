@@ -6,7 +6,9 @@
  * as integrated.
  */
 
+import { composeOrganism } from '../composition/compose-organism.js';
 import type { CompositionRepository } from '../composition/composition-repository.js';
+import { decomposeOrganism } from '../composition/decompose-organism.js';
 import type { ContentTypeRegistry } from '../content-types/content-type-registry.js';
 import {
   AccessDeniedError,
@@ -23,6 +25,7 @@ import type { OrganismState } from '../organism/organism-state.js';
 import type { StateRepository } from '../organism/state-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
+import { changeVisibility } from '../visibility/change-visibility.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import { evaluateProposal } from './evaluate-proposal.js';
 import type { Proposal } from './proposal.js';
@@ -46,7 +49,7 @@ export interface IntegrateProposalDeps {
 }
 
 export type IntegrateProposalResult =
-  | { readonly outcome: 'integrated'; readonly proposal: Proposal; readonly newState: OrganismState }
+  | { readonly outcome: 'integrated'; readonly proposal: Proposal; readonly newState?: OrganismState }
   | { readonly outcome: 'policy-declined'; readonly proposal: Proposal };
 
 export async function integrateProposal(
@@ -118,31 +121,95 @@ export async function integrateProposal(
     return { outcome: 'policy-declined', proposal: declinedProposal };
   }
 
-  // Advance state
-  const currentState = await deps.stateRepository.findCurrentByOrganismId(proposal.organismId);
-  const contract = deps.contentTypeRegistry.get(proposal.proposedContentTypeId);
-  if (!contract) {
-    throw new ContentTypeNotRegisteredError(proposal.proposedContentTypeId);
-  }
-  const validation = contract.validate(proposal.proposedPayload, { previousPayload: currentState?.payload });
-  if (!validation.valid) {
-    throw new ValidationFailedError(proposal.proposedContentTypeId, validation.issues);
-  }
-
   const now = deps.identityGenerator.timestamp();
+  let newState: OrganismState | undefined;
 
-  const newState: OrganismState = {
-    id: deps.identityGenerator.stateId(),
-    organismId: proposal.organismId,
-    contentTypeId: proposal.proposedContentTypeId,
-    payload: proposal.proposedPayload,
-    createdAt: now,
-    createdBy: proposal.proposedBy,
-    sequenceNumber: currentState ? currentState.sequenceNumber + 1 : 1,
-    parentStateId: currentState?.id,
-  };
+  switch (proposal.mutation.kind) {
+    case 'append-state': {
+      const currentState = await deps.stateRepository.findCurrentByOrganismId(proposal.organismId);
+      const contract = deps.contentTypeRegistry.get(proposal.mutation.contentTypeId);
+      if (!contract) {
+        throw new ContentTypeNotRegisteredError(proposal.mutation.contentTypeId);
+      }
+      const validation = contract.validate(proposal.mutation.payload, { previousPayload: currentState?.payload });
+      if (!validation.valid) {
+        throw new ValidationFailedError(proposal.mutation.contentTypeId, validation.issues);
+      }
 
-  await deps.stateRepository.append(newState);
+      const appendedState: OrganismState = {
+        id: deps.identityGenerator.stateId(),
+        organismId: proposal.organismId,
+        contentTypeId: proposal.mutation.contentTypeId,
+        payload: proposal.mutation.payload,
+        createdAt: now,
+        createdBy: proposal.proposedBy,
+        sequenceNumber: currentState ? currentState.sequenceNumber + 1 : 1,
+        parentStateId: currentState?.id,
+      };
+
+      await deps.stateRepository.append(appendedState);
+      newState = appendedState;
+      break;
+    }
+
+    case 'compose':
+      await composeOrganism(
+        {
+          parentId: proposal.organismId,
+          childId: proposal.mutation.childId,
+          composedBy: input.integratedBy,
+          position: proposal.mutation.position,
+          enforceAccess: false,
+        },
+        {
+          organismRepository: deps.organismRepository,
+          compositionRepository: deps.compositionRepository,
+          visibilityRepository: deps.visibilityRepository,
+          relationshipRepository: deps.relationshipRepository,
+          eventPublisher: deps.eventPublisher,
+          identityGenerator: deps.identityGenerator,
+        },
+      );
+      break;
+
+    case 'decompose':
+      await decomposeOrganism(
+        {
+          parentId: proposal.organismId,
+          childId: proposal.mutation.childId,
+          decomposedBy: input.integratedBy,
+          enforceAccess: false,
+        },
+        {
+          organismRepository: deps.organismRepository,
+          compositionRepository: deps.compositionRepository,
+          visibilityRepository: deps.visibilityRepository,
+          relationshipRepository: deps.relationshipRepository,
+          eventPublisher: deps.eventPublisher,
+          identityGenerator: deps.identityGenerator,
+        },
+      );
+      break;
+
+    case 'change-visibility':
+      await changeVisibility(
+        {
+          organismId: proposal.organismId,
+          level: proposal.mutation.level,
+          changedBy: input.integratedBy,
+          enforceAccess: false,
+        },
+        {
+          organismRepository: deps.organismRepository,
+          visibilityRepository: deps.visibilityRepository,
+          relationshipRepository: deps.relationshipRepository,
+          compositionRepository: deps.compositionRepository,
+          eventPublisher: deps.eventPublisher,
+          identityGenerator: deps.identityGenerator,
+        },
+      );
+      break;
+  }
 
   // Mark integrated
   const integratedProposal: Proposal = {
@@ -164,11 +231,16 @@ export async function integrateProposal(
     occurredAt: now,
     payload: {
       proposalId: proposal.id,
-      stateId: newState.id,
-      sequenceNumber: newState.sequenceNumber,
+      mutationKind: proposal.mutation.kind,
+      ...(newState
+        ? {
+            stateId: newState.id,
+            sequenceNumber: newState.sequenceNumber,
+          }
+        : {}),
     },
   };
   await deps.eventPublisher.publish(event);
 
-  return { outcome: 'integrated', proposal: integratedProposal, newState };
+  return { outcome: 'integrated', proposal: integratedProposal, ...(newState ? { newState } : {}) };
 }

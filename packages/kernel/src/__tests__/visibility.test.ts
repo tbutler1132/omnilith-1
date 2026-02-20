@@ -159,7 +159,14 @@ describe('visibility and access control', () => {
 
     await composeOrganism(
       { parentId: community.id, childId: child.id, composedBy: founder },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     await visibilityRepository.save({
@@ -199,7 +206,14 @@ describe('visibility and access control', () => {
 
     await composeOrganism(
       { parentId: community.id, childId: child.id, composedBy: founder },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     // Add a regular member to the community
@@ -287,7 +301,14 @@ describe('visibility and access control', () => {
 
     await composeOrganism(
       { parentId: community.id, childId: child.id, composedBy: founder },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     // Add founder membership on the community
@@ -319,7 +340,14 @@ describe('visibility and access control', () => {
 
     await composeOrganism(
       { parentId: community.id, childId: child.id, composedBy: founder },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     await relationshipRepository.save({
@@ -353,7 +381,14 @@ describe('visibility and access control', () => {
 
     await composeOrganism(
       { parentId: community.id, childId: child.id, composedBy: founder },
-      { organismRepository, compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const member = testUserId('member');

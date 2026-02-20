@@ -52,6 +52,7 @@ export async function evaluateProposal(proposal: Proposal, deps: EvaluateProposa
 
     // This child is a policy organism — let it evaluate
     const proposalForEvaluation: ProposalForEvaluation = {
+      mutation: proposal.mutation,
       proposedPayload: proposal.proposedPayload,
       proposedContentTypeId: proposal.proposedContentTypeId,
       description: proposal.description,

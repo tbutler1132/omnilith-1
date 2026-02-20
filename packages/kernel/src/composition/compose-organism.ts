@@ -11,6 +11,9 @@ import type { DomainEvent } from '../events/event.js';
 import type { EventPublisher } from '../events/event-publisher.js';
 import type { IdentityGenerator, OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
+import type { RelationshipRepository } from '../relationships/relationship-repository.js';
+import { checkAccessOrThrow } from '../visibility/check-access.js';
+import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { CompositionRecord } from './composition.js';
 import type { CompositionRepository } from './composition-repository.js';
 
@@ -19,11 +22,14 @@ export interface ComposeOrganismInput {
   readonly childId: OrganismId;
   readonly composedBy: UserId;
   readonly position?: number;
+  readonly enforceAccess?: boolean;
 }
 
 export interface ComposeOrganismDeps {
   readonly organismRepository: OrganismRepository;
   readonly compositionRepository: CompositionRepository;
+  readonly visibilityRepository: VisibilityRepository;
+  readonly relationshipRepository: RelationshipRepository;
   readonly eventPublisher: EventPublisher;
   readonly identityGenerator: IdentityGenerator;
 }
@@ -32,6 +38,15 @@ export async function composeOrganism(
   input: ComposeOrganismInput,
   deps: ComposeOrganismDeps,
 ): Promise<CompositionRecord> {
+  if (input.enforceAccess ?? true) {
+    await checkAccessOrThrow(input.composedBy, input.parentId, 'compose', {
+      visibilityRepository: deps.visibilityRepository,
+      relationshipRepository: deps.relationshipRepository,
+      compositionRepository: deps.compositionRepository,
+      organismRepository: deps.organismRepository,
+    });
+  }
+
   const parentExists = await deps.organismRepository.exists(input.parentId);
   if (!parentExists) {
     throw new OrganismNotFoundError(input.parentId);

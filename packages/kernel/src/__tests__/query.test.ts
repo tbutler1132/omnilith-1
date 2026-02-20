@@ -66,6 +66,8 @@ describe('query port', () => {
   const composeDeps = () => ({
     organismRepository,
     compositionRepository,
+    visibilityRepository,
+    relationshipRepository,
     eventPublisher,
     identityGenerator,
   });

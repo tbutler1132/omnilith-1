@@ -94,11 +94,38 @@ export interface FetchParentResponse {
 // ---------------------------------------------------------------------------
 
 /** POST /organisms/:id/proposals — open a proposal */
-export interface OpenProposalRequest {
+export type OpenProposalMutationRequest =
+  | {
+      readonly kind: 'append-state';
+      readonly contentTypeId: string;
+      readonly payload: unknown;
+    }
+  | {
+      readonly kind: 'compose';
+      readonly childId: string;
+      readonly position?: number;
+    }
+  | {
+      readonly kind: 'decompose';
+      readonly childId: string;
+    }
+  | {
+      readonly kind: 'change-visibility';
+      readonly level: VisibilityLevel;
+    };
+
+export interface OpenLegacyStateProposalRequest {
   readonly proposedContentTypeId: string;
   readonly proposedPayload: unknown;
   readonly description?: string;
 }
+
+export interface OpenMutationProposalRequest {
+  readonly mutation: OpenProposalMutationRequest;
+  readonly description?: string;
+}
+
+export type OpenProposalRequest = OpenLegacyStateProposalRequest | OpenMutationProposalRequest;
 
 export interface OpenProposalResponse {
   readonly proposal: Proposal;
@@ -111,7 +138,7 @@ export interface FetchProposalsResponse {
 
 /** POST /proposals/:id/integrate */
 export type IntegrateProposalResponse =
-  | { readonly proposal: Proposal; readonly newState: OrganismState }
+  | { readonly proposal: Proposal; readonly newState?: OrganismState }
   | { readonly proposal: Proposal; readonly policyDeclined: true };
 
 /** POST /proposals/:id/decline */

@@ -91,6 +91,8 @@ describe('cybernetic feedback loop', () => {
   const composeDeps = () => ({
     organismRepository,
     compositionRepository,
+    visibilityRepository,
+    relationshipRepository,
     eventPublisher,
     identityGenerator,
   });

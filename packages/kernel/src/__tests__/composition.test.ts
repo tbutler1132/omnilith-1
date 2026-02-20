@@ -11,6 +11,7 @@ import { InMemoryEventPublisher } from '../testing/in-memory-event-publisher.js'
 import { InMemoryOrganismRepository } from '../testing/in-memory-organism-repository.js';
 import { InMemoryRelationshipRepository } from '../testing/in-memory-relationship-repository.js';
 import { InMemoryStateRepository } from '../testing/in-memory-state-repository.js';
+import { InMemoryVisibilityRepository } from '../testing/in-memory-visibility-repository.js';
 import {
   createPassthroughContentType,
   createTestIdentityGenerator,
@@ -26,6 +27,7 @@ describe('composition', () => {
   let relationshipRepository: InMemoryRelationshipRepository;
   let contentTypeRegistry: InMemoryContentTypeRegistry;
   let compositionRepository: InMemoryCompositionRepository;
+  let visibilityRepository: InMemoryVisibilityRepository;
   let identityGenerator: ReturnType<typeof createTestIdentityGenerator>;
 
   beforeEach(() => {
@@ -36,6 +38,7 @@ describe('composition', () => {
     relationshipRepository = new InMemoryRelationshipRepository();
     contentTypeRegistry = new InMemoryContentTypeRegistry();
     compositionRepository = new InMemoryCompositionRepository();
+    visibilityRepository = new InMemoryVisibilityRepository();
     identityGenerator = createTestIdentityGenerator();
     contentTypeRegistry.register(createPassthroughContentType());
   });
@@ -52,6 +55,8 @@ describe('composition', () => {
   const composeDeps = () => ({
     organismRepository,
     compositionRepository,
+    visibilityRepository,
+    relationshipRepository,
     eventPublisher,
     identityGenerator,
   });
@@ -112,7 +117,14 @@ describe('composition', () => {
 
     await decomposeOrganism(
       { parentId: album.id, childId: song.id, decomposedBy: userId },
-      { compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const children = await queryChildren(album.id, { compositionRepository });
@@ -127,7 +139,14 @@ describe('composition', () => {
     await expect(
       decomposeOrganism(
         { parentId: album.id, childId: song.id, decomposedBy: userId },
-        { compositionRepository, eventPublisher, identityGenerator },
+        {
+          organismRepository,
+          compositionRepository,
+          visibilityRepository,
+          relationshipRepository,
+          eventPublisher,
+          identityGenerator,
+        },
       ),
     ).rejects.toThrow(CompositionError);
   });
@@ -202,7 +221,14 @@ describe('composition', () => {
 
     await decomposeOrganism(
       { parentId: album.id, childId: song.id, decomposedBy: userId },
-      { compositionRepository, eventPublisher, identityGenerator },
+      {
+        organismRepository,
+        compositionRepository,
+        visibilityRepository,
+        relationshipRepository,
+        eventPublisher,
+        identityGenerator,
+      },
     );
 
     const events = eventPublisher.findByType('organism.decomposed');

@@ -16,6 +16,7 @@ import type {
 } from '@omnilith/kernel';
 import {
   appendState,
+  changeVisibility,
   composeOrganism,
   createOrganism,
   decomposeOrganism,
@@ -198,6 +199,8 @@ export function organismRoutes(container: Container) {
         {
           organismRepository: container.organismRepository,
           compositionRepository: container.compositionRepository,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
         },
@@ -224,7 +227,10 @@ export function organismRoutes(container: Container) {
       await decomposeOrganism(
         { parentId, childId, decomposedBy: userId },
         {
+          organismRepository: container.organismRepository,
           compositionRepository: container.compositionRepository,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
         },
@@ -302,16 +308,29 @@ export function organismRoutes(container: Container) {
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
 
-    const accessError = await requireOrganismAccess(c, container, userId, id, 'change-visibility');
-    if (accessError) return accessError;
-
-    await container.visibilityRepository.save({
-      organismId: id,
-      level: body.level,
-      updatedAt: container.identityGenerator.timestamp(),
-    });
-
-    return c.json({ ok: true });
+    try {
+      await changeVisibility(
+        {
+          organismId: id,
+          level: body.level,
+          changedBy: userId,
+        },
+        {
+          organismRepository: container.organismRepository,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+      return c.json({ ok: true });
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      throw err;
+    }
   });
 
   return app;

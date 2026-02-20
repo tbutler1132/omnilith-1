@@ -30,6 +30,9 @@ export type {
   FetchWorldMapResponse,
   InstantiateTemplateResponse,
   IntegrateProposalResponse,
+  OpenLegacyStateProposalRequest,
+  OpenMutationProposalRequest,
+  OpenProposalMutationRequest,
   OpenProposalRequest,
   OpenProposalResponse,
   ThresholdOrganismRequest,
@@ -127,7 +130,12 @@ export {
   openProposal,
 } from './proposals/open-proposal.js';
 // Proposals
-export type { Proposal, ProposalStatus } from './proposals/proposal.js';
+export type { EncodedProposalMutation, Proposal, ProposalMutation, ProposalStatus } from './proposals/proposal.js';
+export {
+  decodeProposalMutation,
+  encodeProposalMutation,
+  toLegacyProposalFields,
+} from './proposals/proposal.js';
 export type { ProposalRepository } from './proposals/proposal-repository.js';
 // Query
 export type {
@@ -151,6 +159,11 @@ export {
   type ActionType,
   checkAccess,
 } from './visibility/access-control.js';
+export {
+  type ChangeVisibilityDeps,
+  type ChangeVisibilityInput,
+  changeVisibility,
+} from './visibility/change-visibility.js';
 export { checkAccessOrThrow } from './visibility/check-access.js';
 // Visibility + Access Control
 export type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';

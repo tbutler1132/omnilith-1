@@ -19,5 +19,10 @@ export {
   type OpenProposalInput,
   openProposal,
 } from './open-proposal.js';
-export type { Proposal, ProposalStatus } from './proposal.js';
+export type { EncodedProposalMutation, Proposal, ProposalMutation, ProposalStatus } from './proposal.js';
+export {
+  decodeProposalMutation,
+  encodeProposalMutation,
+  toLegacyProposalFields,
+} from './proposal.js';
 export type { ProposalRepository } from './proposal-repository.js';

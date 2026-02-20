@@ -20,17 +20,28 @@ import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { StateRepository } from '../organism/state-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
+import type { VisibilityLevel } from '../visibility/visibility.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
-import type { Proposal } from './proposal.js';
+import type { Proposal, ProposalMutation } from './proposal.js';
+import { toLegacyProposalFields } from './proposal.js';
 import type { ProposalRepository } from './proposal-repository.js';
 
-export interface OpenProposalInput {
+interface OpenLegacyStateProposalInput {
   readonly organismId: OrganismId;
   readonly proposedContentTypeId: ContentTypeId;
   readonly proposedPayload: unknown;
   readonly description?: string;
   readonly proposedBy: UserId;
 }
+
+interface OpenMutationProposalInput {
+  readonly organismId: OrganismId;
+  readonly mutation: ProposalMutation;
+  readonly description?: string;
+  readonly proposedBy: UserId;
+}
+
+export type OpenProposalInput = OpenLegacyStateProposalInput | OpenMutationProposalInput;
 
 export interface OpenProposalDeps {
   readonly organismRepository: OrganismRepository;
@@ -61,24 +72,18 @@ export async function openProposal(input: OpenProposalInput, deps: OpenProposalD
     throw new AccessDeniedError(input.proposedBy, 'open-proposal', input.organismId);
   }
 
-  const contract = deps.contentTypeRegistry.get(input.proposedContentTypeId);
-  if (!contract) {
-    throw new ContentTypeNotRegisteredError(input.proposedContentTypeId);
-  }
-
-  const currentState = await deps.stateRepository.findCurrentByOrganismId(input.organismId);
-  const validation = contract.validate(input.proposedPayload, { previousPayload: currentState?.payload });
-  if (!validation.valid) {
-    throw new ValidationFailedError(input.proposedContentTypeId, validation.issues);
-  }
+  const mutation = normalizeProposalMutation(input);
+  await validateMutationForOpen(input.organismId, mutation, deps);
 
   const now = deps.identityGenerator.timestamp();
+  const legacyFields = toLegacyProposalFields(mutation);
 
   const proposal: Proposal = {
     id: deps.identityGenerator.proposalId(),
     organismId: input.organismId,
-    proposedContentTypeId: input.proposedContentTypeId,
-    proposedPayload: input.proposedPayload,
+    mutation,
+    proposedContentTypeId: legacyFields.proposedContentTypeId,
+    proposedPayload: legacyFields.proposedPayload,
     description: input.description,
     proposedBy: input.proposedBy,
     status: 'open',
@@ -95,10 +100,65 @@ export async function openProposal(input: OpenProposalInput, deps: OpenProposalD
     occurredAt: now,
     payload: {
       proposalId: proposal.id,
-      proposedContentTypeId: input.proposedContentTypeId,
+      mutationKind: proposal.mutation.kind,
+      proposedContentTypeId: proposal.proposedContentTypeId,
     },
   };
   await deps.eventPublisher.publish(event);
 
   return proposal;
+}
+
+function normalizeProposalMutation(input: OpenProposalInput): ProposalMutation {
+  if ('mutation' in input) {
+    return input.mutation;
+  }
+
+  return {
+    kind: 'append-state',
+    contentTypeId: input.proposedContentTypeId,
+    payload: input.proposedPayload,
+  };
+}
+
+async function validateMutationForOpen(
+  organismId: OrganismId,
+  mutation: ProposalMutation,
+  deps: Pick<OpenProposalDeps, 'contentTypeRegistry' | 'stateRepository' | 'organismRepository'>,
+): Promise<void> {
+  switch (mutation.kind) {
+    case 'append-state': {
+      const contract = deps.contentTypeRegistry.get(mutation.contentTypeId);
+      if (!contract) {
+        throw new ContentTypeNotRegisteredError(mutation.contentTypeId);
+      }
+
+      const currentState = await deps.stateRepository.findCurrentByOrganismId(organismId);
+      const validation = contract.validate(mutation.payload, { previousPayload: currentState?.payload });
+      if (!validation.valid) {
+        throw new ValidationFailedError(mutation.contentTypeId, validation.issues);
+      }
+      return;
+    }
+
+    case 'compose':
+    case 'decompose': {
+      const childExists = await deps.organismRepository.exists(mutation.childId);
+      if (!childExists) {
+        throw new OrganismNotFoundError(mutation.childId);
+      }
+      return;
+    }
+
+    case 'change-visibility': {
+      if (!isVisibilityLevel(mutation.level)) {
+        throw new ValidationFailedError('visibility', ['level must be public, members, or private']);
+      }
+      return;
+    }
+  }
+}
+
+function isVisibilityLevel(level: string): level is VisibilityLevel {
+  return level === 'public' || level === 'members' || level === 'private';
 }

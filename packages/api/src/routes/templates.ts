@@ -88,6 +88,8 @@ export function templateRoutes(container: Container) {
     const composeDeps = {
       organismRepository: container.organismRepository,
       compositionRepository: container.compositionRepository,
+      visibilityRepository: container.visibilityRepository,
+      relationshipRepository: container.relationshipRepository,
       eventPublisher: container.eventPublisher,
       identityGenerator: container.identityGenerator,
     };

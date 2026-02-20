@@ -2,14 +2,16 @@
  * PostgreSQL implementation of ProposalRepository.
  */
 
-import type {
-  ContentTypeId,
-  OrganismId,
-  Proposal,
-  ProposalId,
-  ProposalRepository,
-  Timestamp,
-  UserId,
+import {
+  decodeProposalMutation,
+  encodeProposalMutation,
+  type OrganismId,
+  type Proposal,
+  type ProposalId,
+  type ProposalRepository,
+  type Timestamp,
+  toLegacyProposalFields,
+  type UserId,
 } from '@omnilith/kernel';
 import { and, eq } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
@@ -19,11 +21,12 @@ export class PgProposalRepository implements ProposalRepository {
   constructor(private readonly db: Database) {}
 
   async save(proposal: Proposal): Promise<void> {
+    const encoded = encodeProposalMutation(proposal.mutation);
     await this.db.insert(proposals).values({
       id: proposal.id,
       organismId: proposal.organismId,
-      proposedContentTypeId: proposal.proposedContentTypeId,
-      proposedPayload: proposal.proposedPayload,
+      proposedContentTypeId: encoded.proposedContentTypeId,
+      proposedPayload: encoded.proposedPayload,
       description: proposal.description ?? null,
       proposedBy: proposal.proposedBy,
       status: proposal.status,
@@ -82,11 +85,17 @@ export class PgProposalRepository implements ProposalRepository {
 }
 
 function toProposal(row: typeof proposals.$inferSelect): Proposal {
+  const mutation = decodeProposalMutation({
+    proposedContentTypeId: row.proposedContentTypeId,
+    proposedPayload: row.proposedPayload,
+  });
+  const legacy = toLegacyProposalFields(mutation);
   return {
     id: row.id as ProposalId,
     organismId: row.organismId as OrganismId,
-    proposedContentTypeId: row.proposedContentTypeId as ContentTypeId,
-    proposedPayload: row.proposedPayload,
+    mutation,
+    proposedContentTypeId: legacy.proposedContentTypeId,
+    proposedPayload: legacy.proposedPayload,
     description: row.description ?? undefined,
     proposedBy: row.proposedBy as UserId,
     status: row.status as Proposal['status'],

@@ -19,8 +19,10 @@ export interface OrganismWithState {
 
 export interface VitalityData {
   readonly organismId: OrganismId;
+  /** State changes in the trailing vitality window (currently 30 days). */
   readonly recentStateChanges: number;
   readonly openProposalCount: number;
+  /** Most recent state/proposal/event activity timestamp. */
   readonly lastActivityAt?: Timestamp;
 }
 
