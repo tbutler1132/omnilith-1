@@ -13,8 +13,9 @@ When documents conflict, read in this order:
 2. `docs/ORGANISM-MODEL.md`
 3. `docs/DECISION-LOG.md`
 4. Decision records in `docs/decisions/`
-5. Implementation guides and playbooks in `docs/`
-6. Draft notes in `docs/private/`
+5. `docs/DEFERRED-DECISIONS.md`
+6. Implementation guides and playbooks in `docs/`
+7. Draft notes in `docs/private/`
 
 ## Start Here
 
@@ -22,6 +23,7 @@ When documents conflict, read in this order:
 - Architecture model: `docs/ORGANISM-MODEL.md`
 - Decision history: `docs/DECISION-LOG.md`
 - Per-decision records: `docs/decisions/`
+- Deferred decision queue: `docs/DEFERRED-DECISIONS.md`
 
 ## Agent Quickload
 
