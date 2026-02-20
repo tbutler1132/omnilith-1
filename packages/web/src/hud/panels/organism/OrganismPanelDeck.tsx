@@ -202,6 +202,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
               organismId,
               refreshKey,
               canWrite,
+              currentContentTypeId: organism?.currentState?.contentTypeId,
               onMutate: () => {
                 setRefreshKey((k) => k + 1);
                 bumpMutationToken();

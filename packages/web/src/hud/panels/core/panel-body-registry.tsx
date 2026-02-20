@@ -7,6 +7,7 @@
  */
 
 import type { ReactNode } from 'react';
+import { renderProposalPanel } from '../../extensions/proposal-experience-registry.js';
 import { HudMyProposalsPanel } from '../map/HudMyProposalsPanel.js';
 import { HudProfilePanel } from '../map/HudProfilePanel.js';
 import {
@@ -14,8 +15,6 @@ import {
   CompositionSection,
   ContributionsSection,
   GovernanceSection,
-  ProposalsSection,
-  ProposeSection,
   RelationshipsSection,
   StateHistorySection,
 } from '../organism/sections/index.js';
@@ -37,6 +36,7 @@ interface UniversalVisorPanelBodyContext {
   refreshKey: number;
   canWrite: boolean;
   onMutate: () => void;
+  currentContentTypeId?: string;
 }
 
 type UniversalVisorPanelBodyRenderer = (context: UniversalVisorPanelBodyContext) => ReactNode;
@@ -50,22 +50,8 @@ export const UNIVERSAL_VISOR_PANEL_BODY_RENDERERS = {
       onMutate={context.onMutate}
     />
   ),
-  propose: (context) => (
-    <ProposeSection
-      organismId={context.organismId}
-      refreshKey={context.refreshKey}
-      canWrite={context.canWrite}
-      onMutate={context.onMutate}
-    />
-  ),
-  proposals: (context) => (
-    <ProposalsSection
-      organismId={context.organismId}
-      refreshKey={context.refreshKey}
-      canWrite={context.canWrite}
-      onMutate={context.onMutate}
-    />
-  ),
+  propose: (context) => renderProposalPanel('propose', context),
+  proposals: (context) => renderProposalPanel('proposals', context),
   append: (context) => (
     <AppendSection
       organismId={context.organismId}
