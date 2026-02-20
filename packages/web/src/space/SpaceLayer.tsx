@@ -7,7 +7,7 @@
  */
 
 import { useMemo } from 'react';
-import { useOrganismsByIds } from '../hooks/use-organism.js';
+import { useOrganismMarkersByIds } from '../hooks/use-organism.js';
 import { SpaceOrganism } from './SpaceOrganism.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
@@ -49,10 +49,10 @@ export function SpaceLayer({
   const detailIds = useMemo(() => resolveDetailIds(visibleEntries), [visibleEntries]);
 
   const {
-    data: organismDataById,
-    loading: organismDataLoading,
-    error: organismDataError,
-  } = useOrganismsByIds(detailIds);
+    data: markerDataById,
+    loading: markerDataLoading,
+    error: markerDataError,
+  } = useOrganismMarkersByIds(detailIds);
 
   return (
     <>
@@ -64,10 +64,9 @@ export function SpaceLayer({
           entry={entry}
           altitude={altitude}
           focused={focusedOrganismId === entry.organismId}
-          organismDataRequested={true}
-          organismData={organismDataById?.[entry.organismId]}
-          organismDataLoading={organismDataLoading && !organismDataById?.[entry.organismId]}
-          organismDataError={organismDataError}
+          marker={markerDataById?.[entry.organismId]}
+          markerLoading={markerDataLoading && !markerDataById?.[entry.organismId]}
+          markerError={markerDataError}
           onFocusOrganism={onFocusOrganism}
           onEnterOrganism={onEnterOrganism}
           onEnterMap={onEnterMap}

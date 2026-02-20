@@ -178,6 +178,16 @@
   --space-organism-focus-border: #5fb3d3;
 }
 
+.space-organism--restricted,
+.map-legend-marker--restricted {
+  --space-marker-fill: #7b869a;
+  --space-marker-focused-fill: #9aa5ba;
+  --space-marker-focus-ring: 0 0 0 3px rgba(154, 165, 186, 0.28);
+  --space-marker-badge-border: rgba(154, 165, 186, 0.35);
+  --space-marker-badge-text: #c8d0de;
+  --space-organism-focus-border: #9aa5ba;
+}
+
 .space-organism .organism-type-badge {
   border-color: var(--space-marker-badge-border);
   color: var(--space-marker-badge-text);

@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useState } from 'react';
+import { ApiError } from '../api/client.js';
 import {
   fetchChildren,
   fetchContributions,
@@ -30,6 +31,11 @@ export type OrganismData = {
   organism: Awaited<ReturnType<typeof fetchOrganism>>['organism'];
   currentState: Awaited<ReturnType<typeof fetchOrganism>>['currentState'] | undefined;
 };
+
+export type OrganismMarkerData =
+  | { kind: 'available'; data: OrganismData }
+  | { kind: 'restricted' }
+  | { kind: 'error'; error: Error };
 
 const organismCache = new Map<string, OrganismData>();
 const organismInflight = new Map<string, Promise<OrganismData>>();
@@ -140,6 +146,42 @@ async function fetchOrganismBatch(ids: string[], refreshKey: number): Promise<Re
   return out;
 }
 
+function toError(error: unknown): Error {
+  if (error instanceof Error) return error;
+  return new Error(String(error));
+}
+
+export function classifyOrganismMarkerFetchFailure(error: unknown): Exclude<OrganismMarkerData, { kind: 'available' }> {
+  if (error instanceof ApiError && (error.status === 403 || error.status === 404)) {
+    return { kind: 'restricted' };
+  }
+
+  return { kind: 'error', error: toError(error) };
+}
+
+async function fetchOrganismMarkerBatch(
+  ids: string[],
+  refreshKey: number,
+): Promise<Record<string, OrganismMarkerData>> {
+  const out: Record<string, OrganismMarkerData> = {};
+  const uniqueIds = Array.from(new Set(ids));
+
+  for (let i = 0; i < uniqueIds.length; i += ORGANISM_BATCH_CONCURRENCY) {
+    const chunk = uniqueIds.slice(i, i + ORGANISM_BATCH_CONCURRENCY);
+    const settled = await Promise.allSettled(chunk.map((id) => fetchOrganismCached(id, refreshKey)));
+    chunk.forEach((id, idx) => {
+      const result = settled[idx];
+      if (result.status === 'fulfilled') {
+        out[id] = { kind: 'available', data: result.value };
+      } else {
+        out[id] = classifyOrganismMarkerFetchFailure(result.reason);
+      }
+    });
+  }
+
+  return out;
+}
+
 export function useOrganisms(refreshKey = 0) {
   return useAsync(() => fetchOrganisms({ limit: 200 }).then((r) => r.organisms), [refreshKey]);
 }
@@ -151,6 +193,11 @@ export function useOrganism(id: string, refreshKey = 0) {
 export function useOrganismsByIds(ids: string[], refreshKey = 0) {
   const key = ids.join(',');
   return useAsync(() => fetchOrganismBatch(ids, refreshKey), [key, refreshKey]);
+}
+
+export function useOrganismMarkersByIds(ids: string[], refreshKey = 0) {
+  const key = ids.join(',');
+  return useAsync(() => fetchOrganismMarkerBatch(ids, refreshKey), [key, refreshKey]);
 }
 
 export function useStateHistory(id: string, refreshKey = 0) {

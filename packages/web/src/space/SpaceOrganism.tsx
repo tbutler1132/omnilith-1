@@ -8,41 +8,65 @@
  */
 
 import { memo } from 'react';
-import type { OrganismData } from '../hooks/use-organism.js';
+import type { OrganismMarkerData } from '../hooks/use-organism.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { type Altitude, zoomForAltitude } from './viewport-math.js';
 
 const BASE_SIZE = 160;
+const PRIVATE_MARKER_BADGE_LABEL = 'Private';
+const PRIVATE_MARKER_MID_LABEL = 'Private organism';
+const PRIVATE_MARKER_CLOSE_LABEL = 'Access restricted';
 
 interface SpaceOrganismProps {
   entry: SpatialMapEntry;
   altitude: Altitude;
   focused: boolean;
-  organismDataRequested: boolean;
-  organismData: OrganismData | undefined;
-  organismDataLoading: boolean;
-  organismDataError: Error | undefined;
+  marker: OrganismMarkerData | undefined;
+  markerLoading: boolean;
+  markerError: Error | undefined;
   onFocusOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterOrganism: (organismId: string, wx: number, wy: number) => void;
   onEnterMap: (mapId: string, label: string) => void;
+}
+
+interface PrimaryClickIntentInput {
+  restricted: boolean;
+  focused: boolean;
+  altitude: Altitude;
+  hasCurrentState: boolean;
+}
+
+export type PrimaryClickIntent = 'focus' | 'enter' | 'none';
+
+export function resolvePrimaryClickIntent(input: PrimaryClickIntentInput): PrimaryClickIntent {
+  if (input.restricted) {
+    return input.focused && input.altitude === 'close' ? 'none' : 'focus';
+  }
+
+  if (input.focused && input.altitude === 'close') {
+    return input.hasCurrentState ? 'enter' : 'none';
+  }
+
+  return 'focus';
 }
 
 function SpaceOrganismImpl({
   entry,
   altitude,
   focused,
-  organismDataRequested,
-  organismData,
-  organismDataLoading,
-  organismDataError,
+  marker,
+  markerLoading,
+  markerError,
   onFocusOrganism,
   onEnterOrganism,
   onEnterMap,
 }: SpaceOrganismProps) {
-  const data = organismData;
-  const loading = organismDataRequested && organismDataLoading && !data;
-  const error = organismDataRequested ? organismDataError : undefined;
+  const loading = markerLoading && !marker;
+  const restricted = marker?.kind === 'restricted';
+  const markerFailure = marker?.kind === 'error' ? marker.error : undefined;
+  const error = markerFailure ?? markerError;
+  const data = marker?.kind === 'available' ? marker.data : undefined;
 
   // Fixed world-space size — never changes with altitude.
   // Only the rendered content inside changes.
@@ -60,21 +84,34 @@ function SpaceOrganismImpl({
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (focused && altitude === 'close') {
-      if (!data?.currentState) return;
-      if (data?.currentState?.contentTypeId === 'community') {
-        const payload = data.currentState.payload as { mapOrganismId: string };
-        onEnterMap(payload.mapOrganismId, data.organism.name);
-      } else {
-        onEnterOrganism(entry.organismId, entry.x, entry.y);
-      }
-    } else {
+    const intent = resolvePrimaryClickIntent({
+      restricted,
+      focused,
+      altitude,
+      hasCurrentState: Boolean(data?.currentState),
+    });
+
+    if (intent === 'none') {
+      return;
+    }
+
+    if (intent === 'focus') {
       onFocusOrganism(entry.organismId, entry.x, entry.y);
+      return;
+    }
+
+    if (!data?.currentState) return;
+    if (data?.currentState?.contentTypeId === 'community') {
+      const payload = data.currentState.payload as { mapOrganismId: string };
+      onEnterMap(payload.mapOrganismId, data.organism.name);
+    } else {
+      onEnterOrganism(entry.organismId, entry.x, entry.y);
     }
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (restricted) return;
     if (!data?.currentState) return;
     if (data?.currentState?.contentTypeId === 'spatial-map') {
       onEnterMap(entry.organismId, data.organism.name);
@@ -89,6 +126,7 @@ function SpaceOrganismImpl({
   const className = [
     'space-organism',
     focused && 'space-organism--focused',
+    restricted && 'space-organism--restricted',
     loading && 'space-organism--loading',
     error && 'space-organism--error',
     contentTypeId && `space-organism--${contentTypeId}`,
@@ -104,7 +142,38 @@ function SpaceOrganismImpl({
     );
   }
 
-  if (organismDataRequested && (error || !data?.currentState)) {
+  if (restricted) {
+    if (altitude === 'high') {
+      return (
+        <button
+          type="button"
+          className={`${className} space-organism--high`}
+          style={style}
+          onClick={handleClick}
+          onDoubleClick={handleDoubleClick}
+        >
+          <span className="organism-dot" />
+        </button>
+      );
+    }
+
+    return (
+      <button
+        type="button"
+        className={`${className} organism-mid`}
+        style={style}
+        onClick={handleClick}
+        onDoubleClick={handleDoubleClick}
+      >
+        <span className="organism-type-badge">{PRIVATE_MARKER_BADGE_LABEL}</span>
+        <span className="organism-label">
+          {altitude === 'close' ? PRIVATE_MARKER_CLOSE_LABEL : PRIVATE_MARKER_MID_LABEL}
+        </span>
+      </button>
+    );
+  }
+
+  if (error || !data?.currentState) {
     return (
       <button
         type="button"

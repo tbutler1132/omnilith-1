@@ -85,6 +85,27 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const privateFieldNote = await createOrganism(
+    {
+      name: 'Private Field Note',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: '# Private Field Note\n\nInternal working note for the demo seed.',
+        format: 'markdown',
+        metadata: { title: 'Private Field Note' },
+      },
+      createdBy: demoUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  await container.visibilityRepository.save({
+    organismId: privateFieldNote.organism.id,
+    level: 'private',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+
   const weeklyEntries: Array<{ organismId: OrganismId; position: number }> = [];
   for (const [index, copy] of [
     'Week 1 — Establishing the narrative arc and sonic palette.',
@@ -146,6 +167,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
+          { organismId: privateFieldNote.organism.id, x: 2650, y: 2910, size: 0.95, emphasis: 0.55 },
         ],
         width: 5000,
         height: 5000,
@@ -162,5 +184,6 @@ export async function seedV1Demo(container: Container): Promise<void> {
 
   console.log(`  Hero's Journey: ${heroJourney.sceneOrganismId}`);
   console.log(`  Weekly Updates: ${weeklyUpdates.organism.id}`);
+  console.log(`  Private Field Note: ${privateFieldNote.organism.id} (private)`);
   console.log('V1 demo seed complete.');
 }
