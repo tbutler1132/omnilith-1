@@ -824,6 +824,24 @@ The detailed decision record is captured in:
 
 - `docs/decisions/029-song-release-contributor-baseline-credit-covenant.md`
 
+### Move 40: Visor/HUD Extension Host with Default-First Delivery
+
+A rendering architecture direction was clarified to support long-term installable visor/HUD apps while preserving current Phase 1 focus.
+
+The operating model is:
+
+- kernel and API remain canonical for proposal/composition/access behavior
+- customization and installability are rendering concerns only
+- default first-party tending flows remain the near-term delivery priority
+- extension seams should be introduced now behind first-party defaults
+- all extension write actions must route through existing API endpoints and capability checks
+
+This keeps present delivery momentum while avoiding future host rewrites when add-on or replaceable panel experiences are introduced.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/030-visor-hud-extension-host-default-first-delivery.md`
+
 ---
 
 ## Summary of What We're Building
