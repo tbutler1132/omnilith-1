@@ -46,6 +46,9 @@ async function main(): Promise<void> {
   const migrationsFolder = resolve(dirname(fileURLToPath(import.meta.url)), '../drizzle');
 
   console.log('Resetting development database...');
+  // Drizzle tracks migration history in the "drizzle" schema.
+  // Clear it so migrations always replay after dropping public.
+  await client.unsafe('drop schema if exists drizzle cascade');
   await client.unsafe('drop schema if exists public cascade');
   await client.unsafe('create schema public');
   await migrate(db, { migrationsFolder });

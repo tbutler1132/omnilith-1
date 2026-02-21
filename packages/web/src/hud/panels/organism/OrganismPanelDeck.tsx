@@ -93,6 +93,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const secondaryShortcutActions: OrganismShortcutAction[] = [];
 
   secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
+  secondaryShortcutActions.push({ panelId: 'regulation', label: 'Open regulation' });
   if (openTrunk) {
     if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
   } else {

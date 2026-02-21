@@ -124,6 +124,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'my-proposals',
     'organism',
     'organism-nav',
+    'regulation',
     'proposals',
     'propose',
     'profile',
@@ -200,6 +201,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         availablePanelIds: [
           'organism',
           'composition',
+          'regulation',
           'propose',
           'proposals',
           'relationships',
@@ -226,6 +228,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         availablePanelIds: [
           'organism',
           'composition',
+          'regulation',
           'propose',
           'proposals',
           'relationships',
@@ -235,7 +238,15 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         ],
         mainPanelId: 'organism',
         secondaryPanelIds: ['composition'],
-        collapsedPanelIds: ['proposals', 'propose', 'contributions', 'relationships', 'governance', 'history'],
+        collapsedPanelIds: [
+          'proposals',
+          'propose',
+          'regulation',
+          'contributions',
+          'relationships',
+          'governance',
+          'history',
+        ],
       },
     },
     {
@@ -251,10 +262,18 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: ['organism', 'organism-nav', 'composition', 'propose', 'proposals', 'contributions'],
+        availablePanelIds: [
+          'organism',
+          'organism-nav',
+          'composition',
+          'regulation',
+          'propose',
+          'proposals',
+          'contributions',
+        ],
         mainPanelId: 'organism',
         secondaryPanelIds: ['organism-nav'],
-        collapsedPanelIds: ['proposals', 'composition', 'propose', 'contributions'],
+        collapsedPanelIds: ['proposals', 'composition', 'propose', 'regulation', 'contributions'],
       },
     },
     {
@@ -271,6 +290,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         availablePanelIds: [
           'organism',
           'composition',
+          'regulation',
           'append',
           'relationships',
           'contributions',
@@ -296,6 +316,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         availablePanelIds: [
           'organism',
           'composition',
+          'regulation',
           'append',
           'relationships',
           'contributions',
@@ -304,7 +325,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
         ],
         mainPanelId: 'organism',
         secondaryPanelIds: ['composition'],
-        collapsedPanelIds: ['append', 'contributions', 'relationships', 'governance', 'history'],
+        collapsedPanelIds: ['append', 'regulation', 'contributions', 'relationships', 'governance', 'history'],
       },
     },
     {

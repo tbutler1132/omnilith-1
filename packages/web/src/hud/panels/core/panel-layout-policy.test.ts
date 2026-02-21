@@ -43,6 +43,7 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.collapsedPanelIds).toEqual([
       'proposals',
       'propose',
+      'regulation',
       'contributions',
       'relationships',
       'governance',
@@ -84,6 +85,7 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.availablePanelIds).toEqual([
       'organism',
       'composition',
+      'regulation',
       'append',
       'relationships',
       'contributions',
@@ -108,7 +110,31 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual(['append', 'contributions', 'relationships', 'governance', 'history']);
+    expect(layout.collapsedPanelIds).toEqual([
+      'append',
+      'regulation',
+      'contributions',
+      'relationships',
+      'governance',
+      'history',
+    ]);
+  });
+
+  it('a regulated boundary always exposes the regulation panel', () => {
+    const layout = resolveVisorPanelLayout({
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+      },
+      preferredMainPanelId: 'organism',
+      slots: organismSlots,
+    });
+
+    expect(layout.availablePanelIds).toContain('regulation');
+    expect(layout.collapsedPanelIds).toContain('regulation');
   });
 
   it('an organism context keeps main empty until a panel is promoted', () => {

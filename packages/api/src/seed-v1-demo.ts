@@ -173,6 +173,109 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const repositoryIssueSensor = await createOrganism(
+    {
+      name: 'Repository Issue Sensor',
+      contentTypeId: 'sensor' as ContentTypeId,
+      payload: {
+        label: 'repository-issue-pressure',
+        targetOrganismId: projectRepository.organism.id,
+        metric: 'github-issues',
+        readings: [],
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const repositoryIssueVariable = await createOrganism(
+    {
+      name: 'Repository Issue Variable',
+      contentTypeId: 'variable' as ContentTypeId,
+      payload: {
+        label: 'repository-issue-pressure',
+        value: 0,
+        unit: 'issues',
+        computedAt: container.identityGenerator.timestamp(),
+        computation: {
+          mode: 'observation-sum',
+          sensorLabel: 'repository-issue-pressure',
+          metric: 'github-issues',
+          windowSeconds: 3600,
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const repositoryResponsePolicy = await createOrganism(
+    {
+      name: 'Repository Response Policy',
+      contentTypeId: 'response-policy' as ContentTypeId,
+      payload: {
+        mode: 'variable-threshold',
+        variableLabel: 'repository-issue-pressure',
+        condition: 'above',
+        threshold: 3,
+        currentVariableValue: 0,
+        action: 'decline-all',
+        reason: 'Issue pressure is high.',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const repositoryProposalAction = await createOrganism(
+    {
+      name: 'Repository Follow-up Action',
+      contentTypeId: 'action' as ContentTypeId,
+      payload: {
+        label: 'Open repository follow-up proposal',
+        kind: 'open-proposal',
+        executionMode: 'proposal-required',
+        riskLevel: 'high',
+        trigger: {
+          responsePolicyOrganismId: repositoryResponsePolicy.organism.id,
+          whenDecision: 'pass',
+        },
+        config: {
+          targetOrganismId: projectRepository.organism.id,
+          proposedContentTypeId: 'text',
+          proposedPayload: {
+            content: 'Regulator follow-up for repository pressure.',
+            format: 'markdown',
+          },
+          description: 'Repository follow-up proposal from seed loop',
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  await composeOrganism(
+    { parentId: projectRepository.organism.id, childId: repositoryIssueSensor.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: projectRepository.organism.id, childId: repositoryIssueVariable.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: projectRepository.organism.id, childId: repositoryResponsePolicy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: projectRepository.organism.id, childId: repositoryProposalAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+
   // Community: The Undergrowth
   const undergrowthMap = await createOrganism(
     {
