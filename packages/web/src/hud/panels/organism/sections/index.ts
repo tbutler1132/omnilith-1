@@ -6,5 +6,7 @@ export { GovernanceSection } from './GovernanceSection.js';
 export { presentOrganismOverview } from './organism-overview-presenter.js';
 export { ProposalsSection } from './ProposalsSection.js';
 export { ProposeSection } from './ProposeSection.js';
+export { RegulationSection } from './RegulationSection.js';
 export { RelationshipsSection } from './RelationshipsSection.js';
+export { presentRegulatoryChildren } from './regulation-presenter.js';
 export { StateHistorySection } from './StateHistorySection.js';

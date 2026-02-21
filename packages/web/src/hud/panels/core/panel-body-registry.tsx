@@ -16,6 +16,7 @@ import {
   ContributionsSection,
   GovernanceSection,
   presentOrganismOverview,
+  RegulationSection,
   RelationshipsSection,
   StateHistorySection,
 } from '../organism/sections/index.js';
@@ -52,6 +53,7 @@ export const UNIVERSAL_VISOR_PANEL_BODY_RENDERERS = {
       onMutate={context.onMutate}
     />
   ),
+  regulation: (context) => <RegulationSection organismId={context.organismId} refreshKey={context.refreshKey} />,
   propose: (context) => renderProposalPanel('propose', context),
   proposals: (context) => renderProposalPanel('proposals', context),
   append: (context) => (
@@ -146,6 +148,7 @@ type VisorPanelBodyRenderer = (context: VisorPanelBodyContext) => ReactNode;
 export const VISOR_MAIN_PANEL_BODY_RENDERERS = {
   organism: (context) => renderOrganismMainPanelBody(context.organismMain),
   composition: (context) => renderUniversalVisorPanelBody('composition', context.universal),
+  regulation: (context) => renderUniversalVisorPanelBody('regulation', context.universal),
   propose: (context) => renderUniversalVisorPanelBody('propose', context.universal),
   proposals: (context) => renderUniversalVisorPanelBody('proposals', context.universal),
   append: (context) => renderUniversalVisorPanelBody('append', context.universal),

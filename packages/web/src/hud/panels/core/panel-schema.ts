@@ -21,6 +21,7 @@ export const VISOR_HUD_PANEL_IDS = [
   'organism',
   'organism-nav',
   'composition',
+  'regulation',
   'propose',
   'proposals',
   'append',
@@ -34,6 +35,7 @@ export type VisorHudPanelId = (typeof VISOR_HUD_PANEL_IDS)[number];
 export const VISOR_MAIN_HUD_PANEL_IDS = [
   'organism',
   'composition',
+  'regulation',
   'propose',
   'proposals',
   'append',
@@ -46,6 +48,7 @@ export type VisorMainHudPanelId = (typeof VISOR_MAIN_HUD_PANEL_IDS)[number];
 
 export const UNIVERSAL_VISOR_HUD_PANEL_IDS = [
   'composition',
+  'regulation',
   'propose',
   'proposals',
   'append',
@@ -148,6 +151,16 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 90,
     defaultSecondaryPriority: 85,
     collapsedPriority: 86,
+  },
+  {
+    id: 'regulation',
+    label: 'Regulation',
+    purpose: 'Inspect regulatory organisms composed inside the current boundary.',
+    availableIn: (context) => context.contextClass === 'visor-organism',
+    roleSupport: { main: true, secondary: true, collapsed: true },
+    defaultMainPriority: 84,
+    defaultSecondaryPriority: 80,
+    collapsedPriority: 83,
   },
   {
     id: 'propose',
