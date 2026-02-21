@@ -903,6 +903,26 @@ Initial deferred item captured:
 
 This reduces re-litigation overhead while preserving clean separation between open questions and accepted architecture.
 
+### Move 45: Transparent Stewardship Budget with Public Treasury Legibility
+
+AI-assisted proposal drafting and related write-path support introduce real operating cost. A cost model was selected to preserve accessibility while keeping finances explicit and accountable:
+
+- keep a public-service baseline free for core read-path and lightweight actions
+- offer a stewardship budget subscription with a defined included monthly usage allocation
+- allow optional, explicit top-ups for heavy usage with user-controlled caps and no surprise charges
+- treat bring-your-own-model-provider credentials as an advanced option, not default onboarding
+
+Transparency is now a product requirement at two levels:
+
+- platform-level treasury reporting (inflow, category outflow, runway)
+- user-level personal usage ledger (action-level usage, model tier, consumption, remaining budget)
+
+This frames pricing as shared infrastructure stewardship rather than hidden extraction, and preserves user agency by coupling AI usage with clear visibility and control.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/034-transparent-stewardship-budget-and-cost-governance.md`
+
 ---
 
 ## Summary of What We're Building
