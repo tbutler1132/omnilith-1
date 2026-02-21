@@ -19,7 +19,27 @@ export async function seedWorldMap(container: Container): Promise<OrganismId> {
   const existing = await container.db.select().from(platformConfig).where(eq(platformConfig.key, WORLD_MAP_KEY));
 
   if (existing.length > 0) {
-    return existing[0].value as OrganismId;
+    const existingWorldMapId = existing[0].value as OrganismId;
+    const existingOrganism = await container.organismRepository.findById(existingWorldMapId);
+    const existingState = await container.stateRepository.findCurrentByOrganismId(existingWorldMapId);
+
+    if (existingOrganism && existingState?.contentTypeId === ('spatial-map' as ContentTypeId)) {
+      // Ensure the world map is publicly visible for the guest read path.
+      await container.visibilityRepository.save({
+        organismId: existingWorldMapId,
+        level: 'public',
+        updatedAt: container.identityGenerator.timestamp(),
+      });
+      return existingWorldMapId;
+    }
+
+    // Stale or invalid world map pointer: recreate and heal platform config.
+    const repairedWorldMapId = await createAndPersistWorldMap(container, SYSTEM_USER_ID);
+    await container.db
+      .update(platformConfig)
+      .set({ value: repairedWorldMapId })
+      .where(eq(platformConfig.key, WORLD_MAP_KEY));
+    return repairedWorldMapId;
   }
 
   // Ensure system user exists (needed as FK target for world map organism)
@@ -32,13 +52,24 @@ export async function seedWorldMap(container: Container): Promise<OrganismId> {
     });
   }
 
-  // Create world map organism
+  const worldMapId = await createAndPersistWorldMap(container, SYSTEM_USER_ID);
+
+  // Store in platform config
+  await container.db.insert(platformConfig).values({
+    key: WORLD_MAP_KEY,
+    value: worldMapId,
+  });
+
+  return worldMapId;
+}
+
+async function createAndPersistWorldMap(container: Container, createdBy: UserId): Promise<OrganismId> {
   const worldMap = await createOrganism(
     {
       name: 'World Map',
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: { entries: [], width: 5000, height: 5000 },
-      createdBy: SYSTEM_USER_ID,
+      createdBy,
       openTrunk: true,
     },
     {
@@ -51,10 +82,10 @@ export async function seedWorldMap(container: Container): Promise<OrganismId> {
     },
   );
 
-  // Store in platform config
-  await container.db.insert(platformConfig).values({
-    key: WORLD_MAP_KEY,
-    value: worldMap.organism.id,
+  await container.visibilityRepository.save({
+    organismId: worldMap.organism.id,
+    level: 'public',
+    updatedAt: container.identityGenerator.timestamp(),
   });
 
   return worldMap.organism.id;
