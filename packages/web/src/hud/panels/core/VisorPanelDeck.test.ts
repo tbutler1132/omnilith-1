@@ -36,7 +36,7 @@ describe('VisorPanelDeck', () => {
   it('an organism template starts with only the tend chip collapsed', () => {
     const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: null });
 
-    expect(html).toContain('Renderer preview');
+    expect(html).toContain('Overview');
     expect(html).not.toContain('Composition');
     expect(html).not.toContain('Open proposal');
     expect(html).not.toContain('State history');
@@ -70,7 +70,7 @@ describe('VisorPanelDeck', () => {
   it('opening tend in organism context renders one secondary action card', () => {
     const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: 'organism' });
 
-    expect(html).toContain('<h4>Renderer preview</h4>');
+    expect(html).toContain('<h4>Overview</h4>');
     expect(html).toContain('visor-panel-secondary-row');
     expect(html).toContain('Composition');
   });

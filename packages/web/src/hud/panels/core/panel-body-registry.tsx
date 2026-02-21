@@ -15,10 +15,12 @@ import {
   CompositionSection,
   ContributionsSection,
   GovernanceSection,
+  presentOrganismOverview,
   RelationshipsSection,
   StateHistorySection,
 } from '../organism/sections/index.js';
 import type { MapHudPanelId, UniversalVisorHudPanelId, VisorMainHudPanelId } from './panel-schema.js';
+import { PanelInfoAuthRequired, PanelInfoEmpty, PanelInfoError, PanelInfoLoading, PanelSection } from './panel-ux.js';
 
 type MapPanelBodyRenderer = () => ReactNode;
 
@@ -76,91 +78,59 @@ export function renderUniversalVisorPanelBody(
 interface OrganismMainPanelBodyContext {
   name: string;
   contentType: string;
-  canWrite: boolean;
-  openTrunk: boolean;
-  surfaceLoading: boolean;
-  surfaced: boolean;
-  surfacing: boolean;
-  organismRenderer: ReactNode;
-  onOpenAppend: () => void;
-  onOpenPropose: () => void;
-  onOpenProposals: () => void;
-  onCloseVisor: () => void;
-  onVisit: () => void;
-  onSurface: () => void;
-  previewMode: 'thermal' | 'true-renderer';
-  onSelectThermalPreview: () => void;
-  onSelectTrueRendererPreview: () => void;
+  childCountLabel: string;
+  organismLoading: boolean;
+  childrenLoading: boolean;
+  organismError?: Error;
+  childrenError?: Error;
+  hasCurrentState: boolean;
+  payload: unknown;
 }
 
 export function renderOrganismMainPanelBody(context: OrganismMainPanelBodyContext): ReactNode {
+  const overview = presentOrganismOverview({
+    organismLoading: context.organismLoading,
+    childrenLoading: context.childrenLoading,
+    organismError: context.organismError,
+    childrenError: context.childrenError,
+    hasCurrentState: context.hasCurrentState,
+    payload: context.payload,
+  });
+
   return (
     <div className="visor-organism-panel">
       <div className="visor-organism-panel-header">
         <div className="visor-organism-panel-info">
-          <span className="content-type">{context.contentType}</span>
-          <h3 className="hud-info-name">{context.name}</h3>
-        </div>
-
-        <div className="visor-organism-panel-controls">
-          <fieldset className="visor-renderer-preview-toggle" aria-label="Renderer preview mode">
-            <button
-              type="button"
-              className={`hud-action-btn ${context.previewMode === 'thermal' ? 'hud-action-btn--active' : ''}`}
-              onClick={context.onSelectThermalPreview}
-            >
-              Thermal view
-            </button>
-            <button
-              type="button"
-              className={`hud-action-btn ${context.previewMode === 'true-renderer' ? 'hud-action-btn--active' : ''}`}
-              onClick={context.onSelectTrueRendererPreview}
-            >
-              Renderer view
-            </button>
-          </fieldset>
-
-          {context.canWrite && context.openTrunk && (
-            <button type="button" className="hud-action-btn" onClick={context.onOpenAppend}>
-              Append
-            </button>
-          )}
-
-          {context.canWrite && !context.openTrunk && (
-            <button type="button" className="hud-action-btn" onClick={context.onOpenPropose}>
-              Propose
-            </button>
-          )}
-
-          {!context.openTrunk && (
-            <button type="button" className="hud-action-btn" onClick={context.onOpenProposals}>
-              Proposals
-            </button>
-          )}
-
-          <button type="button" className="visor-view-close" onClick={context.onCloseVisor} aria-label="Close">
-            &times;
-          </button>
+          <div className="visor-organism-tab-strip">
+            <span className="visor-organism-tab visor-organism-tab--active">Overview</span>
+          </div>
+          <div className="visor-organism-overview-meta">
+            <div className="visor-organism-overview-meta-row">
+              <span className="visor-organism-overview-meta-label">Name:</span>
+              <span className="visor-organism-overview-meta-value">{context.name}</span>
+            </div>
+            <div className="visor-organism-overview-meta-row">
+              <span className="visor-organism-overview-meta-label">Content Type:</span>
+              <span className="visor-organism-overview-meta-value">{context.contentType}</span>
+            </div>
+            <div className="visor-organism-overview-meta-row">
+              <span className="visor-organism-overview-meta-label">Children:</span>
+              <span className="visor-organism-overview-meta-value">{context.childCountLabel}</span>
+            </div>
+          </div>
         </div>
       </div>
 
-      <div className={`visor-view-renderer visor-view-renderer--${context.previewMode}`}>
-        {context.organismRenderer}
-      </div>
-
-      <div className="visor-view-actions">
-        {!context.surfaceLoading && context.surfaced && (
-          <button type="button" className="hud-action-btn" onClick={context.onVisit}>
-            Visit
-          </button>
+      <div className="visor-organism-overview-body">
+        {overview.status === 'loading' && <PanelInfoLoading label="Overview" message={overview.message} />}
+        {overview.status === 'auth-required' && <PanelInfoAuthRequired label="Overview" message={overview.message} />}
+        {overview.status === 'error' && <PanelInfoError label="Overview" message={overview.message} />}
+        {overview.status === 'empty' && <PanelInfoEmpty label="Overview" message={overview.message} />}
+        {overview.status === 'ready' && (
+          <PanelSection label="Raw state payload">
+            <pre className="visor-organism-overview-raw">{overview.rawPayload}</pre>
+          </PanelSection>
         )}
-
-        {context.canWrite && !context.surfaceLoading && !context.surfaced && (
-          <button type="button" className="hud-action-btn" onClick={context.onSurface} disabled={context.surfacing}>
-            {context.surfacing ? 'Surfacing...' : 'Surface'}
-          </button>
-        )}
-        {!context.canWrite && <span className="hud-info-dim">Log in to tend this organism.</span>}
       </div>
     </div>
   );

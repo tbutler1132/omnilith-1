@@ -152,6 +152,15 @@
     justify-content: space-between;
   }
 
+  .visor-organism-overview-body {
+    padding: 10px;
+  }
+
+  .visor-organism-overview-raw {
+    font-size: 11px;
+    max-height: 38vh;
+  }
+
   .visor-view-content {
     padding: 16px;
   }
@@ -243,6 +252,11 @@
   .visor-organism-panel-controls .hud-action-btn {
     padding: 7px 10px;
     font-size: 11px;
+  }
+
+  .visor-organism-tab {
+    font-size: 10px;
+    padding: 4px 8px;
   }
 
   .visor-view-header {

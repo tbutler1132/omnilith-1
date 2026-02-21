@@ -91,7 +91,56 @@
 .visor-organism-panel-info {
   display: flex;
   flex-direction: column;
+  gap: 6px;
+}
+
+.visor-organism-tab-strip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.visor-organism-tab {
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  background: rgba(10, 10, 15, 0.45);
+  color: var(--hud-text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+}
+
+.visor-organism-tab--active {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+  box-shadow: var(--hud-glow);
+}
+
+.visor-organism-overview-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 4px;
+}
+
+.visor-organism-overview-meta-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.visor-organism-overview-meta-label {
+  color: var(--hud-text-dim);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.visor-organism-overview-meta-value {
+  color: var(--hud-text-bright);
+  font-size: 13px;
 }
 
 .visor-organism-panel-controls {
@@ -119,6 +168,28 @@
 
 .visor-organism-panel .visor-view-renderer {
   max-width: 100%;
+}
+
+.visor-organism-overview-body {
+  border: 1px solid rgba(124, 108, 240, 0.18);
+  border-radius: 10px;
+  background: rgba(10, 10, 15, 0.42);
+  padding: 12px;
+}
+
+.visor-organism-overview-raw {
+  margin: 0;
+  border: 1px solid rgba(124, 108, 240, 0.2);
+  border-radius: 8px;
+  background: rgba(5, 7, 10, 0.65);
+  color: #dce6ff;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  max-height: min(44vh, 420px);
+  overflow: auto;
+  padding: 10px;
+  white-space: pre;
 }
 
 .visor-view-content {

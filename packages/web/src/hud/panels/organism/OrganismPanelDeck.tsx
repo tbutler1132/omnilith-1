@@ -6,18 +6,15 @@
  */
 
 import { useState } from 'react';
-import { surfaceOnWorldMap } from '../../../api/surface.js';
 import { useIsSurfaced } from '../../../hooks/use-is-surfaced.js';
-import { useOrganism } from '../../../hooks/use-organism.js';
+import { useChildren, useOrganism } from '../../../hooks/use-organism.js';
 import {
   usePlatformActions,
   usePlatformAdaptiveVisorActions,
   usePlatformAdaptiveVisorState,
   usePlatformMapState,
   usePlatformStaticState,
-  usePlatformViewportMeta,
 } from '../../../platform/index.js';
-import { FallbackRenderer, getRenderer } from '../../../renderers/index.js';
 import { HistoryNavigationWidget, VisorWidgetLane, VitalityWidget } from '../../widgets/index.js';
 import { renderVisorPanelBody } from '../core/panel-body-registry.js';
 import { resolveVisorPanelLayout } from '../core/panel-layout-policy.js';
@@ -30,7 +27,6 @@ import {
 import { resolvePanelVisorTemplate } from '../core/template-schema.js';
 import { useMainPanelHistoryNavigation } from '../core/use-main-panel-history-navigation.js';
 import { VisorPanelDeck } from '../core/VisorPanelDeck.js';
-import { ComponentsSection } from './sections/index.js';
 
 interface OrganismPanelDeckProps {
   organismId: string;
@@ -41,22 +37,17 @@ interface OrganismShortcutAction {
   label: string;
 }
 
-type RendererPreviewMode = 'thermal' | 'true-renderer';
-
 export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const { worldMapId, canWrite } = usePlatformStaticState();
   const { enteredOrganismId } = usePlatformMapState();
-  const { viewportCenter } = usePlatformViewportMeta();
-  const { closeVisorOrganism, focusOrganism, bumpMapRefresh } = usePlatformActions();
+  const { closeVisorOrganism } = usePlatformActions();
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
   const adaptiveVisorState = usePlatformAdaptiveVisorState();
 
   const initialPanelId: VisorHudPanelId | null = enteredOrganismId === organismId ? 'organism' : null;
   const interiorOrigin = enteredOrganismId === organismId;
   const [refreshKey, setRefreshKey] = useState(0);
-  const [surfacing, setSurfacing] = useState(false);
   const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(initialPanelId);
-  const [previewMode, setPreviewMode] = useState<RendererPreviewMode>('thermal');
   const organismTemplate = resolvePanelVisorTemplate('visor-organism');
   const activeWidgets = new Set(adaptiveVisorState.activeWidgets);
   const vitalityWidgetEnabled =
@@ -64,10 +55,11 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const historyNavigationEnabled =
     activeWidgets.has('history-navigation') &&
     organismTemplate.widgetSlots.allowedWidgets.includes('history-navigation');
-  const thermalRendererPreview = preferredPanelId === 'organism' && previewMode === 'thermal';
-  const rendererPreviewFullBleed = preferredPanelId === 'organism' && previewMode === 'true-renderer';
-  const { data: organism } = useOrganism(organismId, refreshKey);
-  const { surfaced, loading: surfaceLoading } = useIsSurfaced(worldMapId, organismId);
+  const thermalRendererPreview = false;
+  const rendererPreviewFullBleed = false;
+  const { data: organism, loading: organismLoading, error: organismError } = useOrganism(organismId, refreshKey);
+  const { data: children, loading: childrenLoading, error: childrenError } = useChildren(organismId, refreshKey);
+  const { surfaced } = useIsSurfaced(worldMapId, organismId);
   const openTrunk = organism?.organism.openTrunk ?? false;
   const organismLayout = resolveVisorPanelLayout({
     context: {
@@ -97,10 +89,7 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
 
   const name = organism?.organism.name ?? '...';
   const contentType = organism?.currentState?.contentTypeId ?? '...';
-
-  const Renderer = organism?.currentState
-    ? (getRenderer(organism.currentState.contentTypeId) ?? FallbackRenderer)
-    : null;
+  const childCountLabel = childrenLoading ? '...' : childrenError ? 'unknown' : String(children?.length ?? 0);
   const secondaryShortcutActions: OrganismShortcutAction[] = [];
 
   secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
@@ -115,22 +104,6 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
     secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
     secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });
     secondaryShortcutActions.push({ panelId: 'relationships', label: 'Open relationships' });
-  }
-
-  function handleVisit() {
-    focusOrganism(organismId);
-    closeVisorOrganism();
-  }
-
-  async function handleSurface() {
-    setSurfacing(true);
-    try {
-      await surfaceOnWorldMap(worldMapId, organismId, viewportCenter.x, viewportCenter.y);
-      bumpMapRefresh();
-      bumpMutationToken();
-    } finally {
-      setSurfacing(false);
-    }
   }
 
   return (
@@ -179,24 +152,13 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
             organismMain: {
               name,
               contentType,
-              canWrite,
-              openTrunk,
-              surfaceLoading,
-              surfaced,
-              surfacing,
-              organismRenderer:
-                Renderer && organism?.currentState ? (
-                  <Renderer state={organism.currentState} zoom={1} focused={false} previewMode={previewMode} />
-                ) : null,
-              onOpenAppend: () => setPreferredPanelId('append'),
-              onOpenPropose: () => setPreferredPanelId('propose'),
-              onOpenProposals: () => setPreferredPanelId('proposals'),
-              onCloseVisor: () => closeVisorOrganism(),
-              onVisit: handleVisit,
-              onSurface: handleSurface,
-              previewMode,
-              onSelectThermalPreview: () => setPreviewMode('thermal'),
-              onSelectTrueRendererPreview: () => setPreviewMode('true-renderer'),
+              childCountLabel,
+              organismLoading,
+              childrenLoading,
+              organismError: organismError ?? undefined,
+              childrenError: childrenError ?? undefined,
+              hasCurrentState: Boolean(organism?.currentState),
+              payload: organism?.currentState?.payload,
             },
             universal: {
               organismId,
@@ -211,16 +173,6 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
           });
         }}
         renderSecondaryBody={(panelId) => {
-          if (panelId === 'components') {
-            return (
-              <ComponentsSection
-                organismId={organismId}
-                refreshKey={refreshKey}
-                supportsRendererHotspots={contentType === 'song'}
-              />
-            );
-          }
-
           if (panelId !== 'organism-nav') return null;
 
           return (
