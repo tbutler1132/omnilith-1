@@ -34,7 +34,7 @@ type MapPanelId = MapHudPanelId | null;
 
 export function AdaptiveVisorHost() {
   const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
-  const { visorOrganismId } = usePlatformVisorState();
+  const { visorOrganismId, visorPanelIntent } = usePlatformVisorState();
   const { canWrite } = usePlatformStaticState();
   const { openInVisor } = usePlatformActions();
   const adaptiveState = usePlatformAdaptiveVisorState();
@@ -116,7 +116,7 @@ export function AdaptiveVisorHost() {
                     label: 'Collaborate focused',
                     className: 'visor-panel-collapsed-chip--tend',
                     title: 'Collaborate on focused organism',
-                    onClick: () => openInVisor(focusedOrganismId),
+                    onClick: () => openInVisor(focusedOrganismId, 'proposals'),
                   },
                 ]
               : []
@@ -135,7 +135,7 @@ export function AdaptiveVisorHost() {
       )}
 
       {contextClass === 'visor-organism' && visorOrganismId && adaptiveState.activePanels.includes('visor-view') && (
-        <OrganismPanelDeck organismId={visorOrganismId} />
+        <OrganismPanelDeck organismId={visorOrganismId} initialPanelId={visorPanelIntent} />
       )}
 
       {contextClass === 'interior' && enteredOrganismId && adaptiveState.activePanels.includes('interior-actions') && (
@@ -145,9 +145,27 @@ export function AdaptiveVisorHost() {
           openTrunk={false}
           canWrite={canWrite}
           preferredMainPanelId={null}
+          extraCollapsedChips={
+            enteredOrganismId
+              ? [
+                  {
+                    id: `overview-${enteredOrganismId}`,
+                    label: 'Overview',
+                    title: 'Open overview panel',
+                    onClick: () => openInVisor(enteredOrganismId, 'organism'),
+                  },
+                  {
+                    id: `regulation-${enteredOrganismId}`,
+                    label: 'Regulation',
+                    title: 'Open regulation panel',
+                    onClick: () => openInVisor(enteredOrganismId, 'regulation'),
+                  },
+                ]
+              : []
+          }
           onPromotePanel={(panelId) => {
             if (!isInteriorHudPanelId(panelId)) return;
-            openInVisor(enteredOrganismId);
+            openInVisor(enteredOrganismId, 'proposals');
           }}
           onCollapseMainPanel={() => undefined}
           renderPanelBody={() => null}

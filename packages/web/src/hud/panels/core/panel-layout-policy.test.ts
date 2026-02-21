@@ -223,6 +223,25 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.collapsedPanelIds).toEqual(['interior-actions']);
   });
 
+  it('an interior-origin organism context keeps alternate panels collapsed instead of secondary', () => {
+    const layout = resolveVisorPanelLayout({
+      context: {
+        contextClass: 'visor-organism',
+        surfaced: true,
+        openTrunk: false,
+        templateValuesReady: false,
+        canWrite: true,
+        interiorOrigin: true,
+      },
+      preferredMainPanelId: 'organism',
+      slots: organismSlots,
+    });
+
+    expect(layout.availablePanelIds).toEqual(['organism', 'regulation', 'proposals']);
+    expect(layout.secondaryPanelIds).toEqual([]);
+    expect(layout.collapsedPanelIds).toEqual(['proposals', 'regulation']);
+  });
+
   it('a guest map context still exposes profile and proposals panels', () => {
     const layout = resolveVisorPanelLayout({
       context: { contextClass: 'map', surfaced: false, openTrunk: false, templateValuesReady: false, canWrite: false },

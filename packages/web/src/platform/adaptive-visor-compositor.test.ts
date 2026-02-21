@@ -106,6 +106,23 @@ describe('adaptive visor compositor', () => {
     expect(selectActiveMapPanel(restored)).toBe('profile');
   });
 
+  it('closing visor before exiting interior returns to map overlays', () => {
+    const initialState = createAdaptiveVisorCompositorState(true, createContext());
+    const entered = computeNextAdaptiveVisorLayout(initialState, { type: 'enter-organism', organismId: 'organism-1' });
+    const visorOpened = computeNextAdaptiveVisorLayout(entered, {
+      type: 'open-visor-organism',
+      organismId: 'organism-1',
+    });
+    const visorClosed = computeNextAdaptiveVisorLayout(visorOpened, { type: 'close-visor-organism' });
+    const exited = computeNextAdaptiveVisorLayout(visorClosed, { type: 'exit-organism' });
+
+    expect(exited.layoutContext.contextClass).toBe('map');
+    expect(exited.visorOrganismId).toBeNull();
+    expect(exited.enteredOrganismId).toBeNull();
+    expect(exited.activePanels).toEqual([]);
+    expect(exited.activeWidgets).toEqual(['map-actions', 'history-navigation', 'compass', 'map-legend']);
+  });
+
   it('a mutation token bump forces recompute instead of restoring a map panel', () => {
     const initialState = createAdaptiveVisorCompositorState(true, createContext());
     const profile = computeNextAdaptiveVisorLayout(initialState, { type: 'toggle-map-panel', panelId: 'profile' });

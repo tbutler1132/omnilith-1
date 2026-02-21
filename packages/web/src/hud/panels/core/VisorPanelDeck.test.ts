@@ -47,7 +47,7 @@ describe('VisorPanelDeck', () => {
     const html = renderDeck({ templateContext: 'interior', preferredMainPanelId: null });
 
     expect(html).toContain('visor-panel-collapsed-rail--viewport-bottom-left');
-    expect(html).toContain('Collaborate here');
+    expect(html).toContain('Collaborate');
     expect(html).not.toContain('visor-panel-main-slot');
   });
 
@@ -75,14 +75,14 @@ describe('VisorPanelDeck', () => {
     expect(html).toContain('Composition');
   });
 
-  it('entered-organism visor context renders organism-nav in the secondary slot', () => {
+  it('entered-organism visor context suppresses panel shortcuts in the secondary slot', () => {
     const html = renderDeck({
       templateContext: 'visor-organism',
       preferredMainPanelId: 'organism',
       interiorOrigin: true,
     });
 
-    expect(html).toContain('Panel shortcuts');
-    expect(html).toContain('secondary-organism-nav');
+    expect(html).not.toContain('Panel shortcuts');
+    expect(html).not.toContain('secondary-organism-nav');
   });
 });

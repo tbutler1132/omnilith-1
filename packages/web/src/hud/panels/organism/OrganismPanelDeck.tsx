@@ -5,7 +5,7 @@
  * every visor context uses one consistent panel system.
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useIsSurfaced } from '../../../hooks/use-is-surfaced.js';
 import { useChildren, useOrganism } from '../../../hooks/use-organism.js';
 import {
@@ -21,8 +21,8 @@ import { resolveVisorPanelLayout } from '../core/panel-layout-policy.js';
 import {
   isVisorHudPanelId,
   isVisorMainHudPanelId,
-  type UniversalVisorHudPanelId,
   type VisorHudPanelId,
+  type VisorMainHudPanelId,
 } from '../core/panel-schema.js';
 import { resolvePanelVisorTemplate } from '../core/template-schema.js';
 import { useMainPanelHistoryNavigation } from '../core/use-main-panel-history-navigation.js';
@@ -30,24 +30,26 @@ import { VisorPanelDeck } from '../core/VisorPanelDeck.js';
 
 interface OrganismPanelDeckProps {
   organismId: string;
+  initialPanelId?: VisorHudPanelId | null;
 }
 
 interface OrganismShortcutAction {
-  panelId: UniversalVisorHudPanelId;
+  panelId: VisorMainHudPanelId;
   label: string;
 }
 
-export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
+export function OrganismPanelDeck({ organismId, initialPanelId = null }: OrganismPanelDeckProps) {
   const { worldMapId, canWrite } = usePlatformStaticState();
   const { enteredOrganismId } = usePlatformMapState();
   const { closeVisorOrganism } = usePlatformActions();
   const { bumpMutationToken } = usePlatformAdaptiveVisorActions();
   const adaptiveVisorState = usePlatformAdaptiveVisorState();
 
-  const initialPanelId: VisorHudPanelId | null = enteredOrganismId === organismId ? 'organism' : null;
   const interiorOrigin = enteredOrganismId === organismId;
   const [refreshKey, setRefreshKey] = useState(0);
-  const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(initialPanelId);
+  const [preferredPanelId, setPreferredPanelId] = useState<VisorHudPanelId | null>(
+    initialPanelId ?? (interiorOrigin ? 'proposals' : null),
+  );
   const organismTemplate = resolvePanelVisorTemplate('visor-organism');
   const activeWidgets = new Set(adaptiveVisorState.activeWidgets);
   const vitalityWidgetEnabled =
@@ -61,6 +63,22 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const { data: children, loading: childrenLoading, error: childrenError } = useChildren(organismId, refreshKey);
   const { surfaced } = useIsSurfaced(worldMapId, organismId);
   const openTrunk = organism?.organism.openTrunk ?? false;
+
+  useEffect(() => {
+    if (!initialPanelId) return;
+    setPreferredPanelId(initialPanelId);
+  }, [initialPanelId]);
+
+  useEffect(() => {
+    if (!interiorOrigin || organismLoading) return;
+
+    setPreferredPanelId((current) => {
+      if (current !== null && current !== 'proposals') return current;
+      if (openTrunk) return canWrite ? 'append' : 'organism';
+      return 'proposals';
+    });
+  }, [interiorOrigin, organismLoading, openTrunk, canWrite]);
+
   const organismLayout = resolveVisorPanelLayout({
     context: {
       contextClass: 'visor-organism',
@@ -92,15 +110,23 @@ export function OrganismPanelDeck({ organismId }: OrganismPanelDeckProps) {
   const childCountLabel = childrenLoading ? '...' : childrenError ? 'unknown' : String(children?.length ?? 0);
   const secondaryShortcutActions: OrganismShortcutAction[] = [];
 
-  secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
-  secondaryShortcutActions.push({ panelId: 'regulation', label: 'Open regulation' });
-  if (openTrunk) {
-    if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
+  if (interiorOrigin) {
+    secondaryShortcutActions.push({ panelId: 'organism', label: 'Open overview' });
   } else {
+    secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
+  }
+  secondaryShortcutActions.push({ panelId: 'regulation', label: 'Open regulation' });
+  if (!interiorOrigin && openTrunk) {
+    if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
+  } else if (!interiorOrigin) {
     secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
     secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
   }
-  secondaryShortcutActions.push({ panelId: 'contributions', label: 'Open contributions' });
+  if (interiorOrigin) {
+    secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
+  } else {
+    secondaryShortcutActions.push({ panelId: 'contributions', label: 'Open contributions' });
+  }
   if (!interiorOrigin) {
     secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
     secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });

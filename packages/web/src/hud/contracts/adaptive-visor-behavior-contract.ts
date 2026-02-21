@@ -262,18 +262,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: [
-          'organism',
-          'organism-nav',
-          'composition',
-          'regulation',
-          'propose',
-          'proposals',
-          'contributions',
-        ],
+        availablePanelIds: ['organism', 'regulation', 'proposals'],
         mainPanelId: 'organism',
-        secondaryPanelIds: ['organism-nav'],
-        collapsedPanelIds: ['proposals', 'composition', 'propose', 'regulation', 'contributions'],
+        secondaryPanelIds: [],
+        collapsedPanelIds: ['proposals', 'regulation'],
       },
     },
     {
