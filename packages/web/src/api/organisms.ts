@@ -31,6 +31,8 @@ import type {
   IntegrateProposalResponse,
   OpenProposalRequest,
   OpenProposalResponse,
+  RecordObservationRequest,
+  RecordObservationResponse,
   ThresholdOrganismRequest,
   ThresholdOrganismResponse,
 } from './types.js';
@@ -153,6 +155,13 @@ export function appendState(organismId: string, contentTypeId: string, payload: 
   return apiFetch<AppendStateResponse>(`/organisms/${organismId}/states`, {
     method: 'POST',
     body: JSON.stringify(body),
+  });
+}
+
+export function recordObservation(organismId: string, input: RecordObservationRequest) {
+  return apiFetch<RecordObservationResponse>(`/organisms/${organismId}/observations`, {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }
 

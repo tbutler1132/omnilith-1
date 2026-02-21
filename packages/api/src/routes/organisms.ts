@@ -9,8 +9,10 @@ import type {
   DomainError,
   EventType,
   OrganismId,
+  RecordObservationRequest,
   RelationshipType,
   ThresholdOrganismRequest,
+  Timestamp,
   UpdateVisibilityRequest,
   UserId,
 } from '@omnilith/kernel';
@@ -22,6 +24,7 @@ import {
   decomposeOrganism,
   queryChildren,
   queryParent,
+  recordObservation,
 } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
@@ -147,6 +150,55 @@ export function organismRoutes(container: Container) {
       const e = err as DomainError;
       if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
       if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
+      throw err;
+    }
+  });
+
+  // Record observation event
+  app.post('/:id/observations', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const body = await parseJsonBody<RecordObservationRequest>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (typeof body.targetOrganismId !== 'string' || body.targetOrganismId.length === 0) {
+      return c.json({ error: 'targetOrganismId is required' }, 400);
+    }
+    if (typeof body.metric !== 'string' || body.metric.trim().length === 0) {
+      return c.json({ error: 'metric is required' }, 400);
+    }
+    if (typeof body.value !== 'number' || !Number.isFinite(body.value)) {
+      return c.json({ error: 'value must be a finite number' }, 400);
+    }
+    if (typeof body.sampledAt !== 'number' || !Number.isFinite(body.sampledAt)) {
+      return c.json({ error: 'sampledAt must be a finite number' }, 400);
+    }
+
+    try {
+      const event = await recordObservation(
+        {
+          organismId: id,
+          targetOrganismId: body.targetOrganismId as OrganismId,
+          metric: body.metric,
+          value: body.value,
+          sampledAt: body.sampledAt as Timestamp,
+          observedBy: userId,
+        },
+        {
+          organismRepository: container.organismRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+          visibilityRepository: container.visibilityRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
+        },
+      );
+
+      return c.json({ event }, 201);
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
       if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
       throw err;
     }

@@ -332,6 +332,103 @@ describe('organism routes', () => {
     expect(children).toHaveLength(1);
     expect(children[0].childId).toBe(child.id);
   });
+
+  it('POST /organisms/:id/observations records an organism.observed event', async () => {
+    const sensorRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Activity Sensor',
+        contentTypeId: 'sensor',
+        payload: {
+          label: 'activity-sensor',
+          targetOrganismId: 'org-target-placeholder',
+          metric: 'state-changes',
+          readings: [],
+        },
+      }),
+    });
+    const { organism: sensor } = await sensorRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Target',
+        contentTypeId: 'text',
+        payload: { content: 'target', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const observeRes = await app.request(`/organisms/${sensor.id}/observations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetOrganismId: target.id,
+        metric: 'state-changes',
+        value: 5,
+        sampledAt: Date.now(),
+      }),
+    });
+
+    expect(observeRes.status).toBe(201);
+    const observeBody = await observeRes.json();
+    expect(observeBody.event.type).toBe('organism.observed');
+    expect(observeBody.event.payload.targetOrganismId).toBe(target.id);
+
+    const eventsRes = await app.request(`/organisms/${sensor.id}/events?type=organism.observed`);
+    expect(eventsRes.status).toBe(200);
+    const eventsBody = await eventsRes.json();
+    expect(eventsBody.events).toHaveLength(1);
+  });
+
+  it('POST /organisms/:id/observations denies non-stewards', async () => {
+    const stewardSetup = createTestApp(container, 'steward-user' as UserId);
+    const stewardApp = stewardSetup.app;
+
+    const sensorRes = await stewardApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Activity Sensor',
+        contentTypeId: 'sensor',
+        payload: {
+          label: 'activity-sensor',
+          targetOrganismId: 'org-target-placeholder',
+          metric: 'state-changes',
+          readings: [],
+        },
+      }),
+    });
+    const { organism: sensor } = await sensorRes.json();
+
+    const targetRes = await stewardApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Target',
+        contentTypeId: 'text',
+        payload: { content: 'target', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const outsiderSetup = createTestApp(container, 'outsider-user' as UserId);
+    const outsiderApp = outsiderSetup.app;
+    const observeRes = await outsiderApp.request(`/organisms/${sensor.id}/observations`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        targetOrganismId: target.id,
+        metric: 'state-changes',
+        value: 2,
+        sampledAt: Date.now(),
+      }),
+    });
+
+    expect(observeRes.status).toBe(403);
+  });
 });
 
 describe('proposal routes', () => {

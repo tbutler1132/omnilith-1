@@ -286,6 +286,17 @@ describe('visibility and access control', () => {
     expect(decision.allowed).toBe(true);
   });
 
+  it('the steward can record observations', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Sensor', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    const decision = await checkAccess(steward, organism.id, 'record-observation', accessDeps());
+    expect(decision.allowed).toBe(true);
+  });
+
   it('the founder of a parent community has integration authority over organisms composed inside it', async () => {
     const founder = testUserId('founder');
     const { organism: community } = await createOrganism(
@@ -417,6 +428,18 @@ describe('visibility and access control', () => {
 
     const stranger = testUserId('stranger');
     const decision = await checkAccess(stranger, organism.id, 'change-visibility', accessDeps());
+    expect(decision.allowed).toBe(false);
+  });
+
+  it('a non-steward cannot record observations', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Sensor', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    const stranger = testUserId('stranger');
+    const decision = await checkAccess(stranger, organism.id, 'record-observation', accessDeps());
     expect(decision.allowed).toBe(false);
   });
 });

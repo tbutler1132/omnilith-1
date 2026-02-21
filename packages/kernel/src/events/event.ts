@@ -11,6 +11,7 @@ import type { EventId, OrganismId, Timestamp, UserId } from '../identity.js';
 export type EventType =
   | 'organism.created'
   | 'state.appended'
+  | 'organism.observed'
   | 'organism.composed'
   | 'organism.decomposed'
   | 'proposal.opened'

@@ -27,6 +27,7 @@ import type { VisibilityRepository } from './visibility-repository.js';
 export type ActionType =
   | 'view'
   | 'append-state'
+  | 'record-observation'
   | 'open-proposal'
   | 'integrate-proposal'
   | 'decline-proposal'
@@ -120,6 +121,7 @@ async function checkMemberAccess(
  *
  * view: allowed if visibility check passed (handled above)
  * append-state: organism must be open-trunk (enforced in use case)
+ * record-observation: requires stewardship or integration authority
  * open-proposal: any user who can view can propose
  * integrate-proposal: requires integration-authority on THIS organism
  * decline-proposal: requires integration-authority on THIS organism
@@ -141,6 +143,19 @@ async function checkActionPermission(
     case 'append-state':
       // Open-trunk enforcement is in the use case; here we just check visibility passed
       return { allowed: true };
+
+    case 'record-observation': {
+      const canRecordObservation = relationships.some(
+        (relationship) => relationship.type === 'stewardship' || relationship.type === 'integration-authority',
+      );
+      if (canRecordObservation) {
+        return { allowed: true };
+      }
+      return {
+        allowed: false,
+        reason: 'User does not have authority to record observations on this organism',
+      };
+    }
 
     case 'open-proposal':
       // Any user who can see the organism can propose
