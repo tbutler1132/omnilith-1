@@ -6,7 +6,7 @@
  * discrete altitude level the viewport is at.
  */
 
-import type { Altitude } from './viewport-math.js';
+import type { Altitude } from '../contracts/altitude.js';
 
 interface AltitudeControlsProps {
   altitude: Altitude;

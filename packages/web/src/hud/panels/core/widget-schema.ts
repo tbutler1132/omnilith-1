@@ -5,8 +5,10 @@
  * orchestration policies can reference one stable vocabulary.
  */
 
-export const VISOR_WIDGET_IDS = ['map-actions', 'history-navigation', 'compass', 'map-legend', 'vitality'] as const;
-export type VisorWidgetId = (typeof VISOR_WIDGET_IDS)[number];
+import { VISOR_WIDGET_IDS, type VisorWidgetId } from '../../../contracts/visor-widget.js';
+
+export { VISOR_WIDGET_IDS };
+export type { VisorWidgetId };
 
 export interface VisorWidgetDefinition {
   id: VisorWidgetId;

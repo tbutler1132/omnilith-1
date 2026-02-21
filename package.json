@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "architecture-report": "node scripts/architecture-report.mjs",
+    "web:dependency-graph": "node scripts/generate-web-dependency-graph.mjs",
+    "web:dependency-graph:docs": "node scripts/generate-web-dependency-graph.mjs --out docs/web-dependency-graph.html",
     "boundaries": "node scripts/check-boundaries.mjs",
     "intent-headers": "node scripts/check-intent-headers.mjs",
     "intent-headers:strict": "node scripts/check-intent-headers.mjs --strict",

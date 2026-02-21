@@ -8,6 +8,7 @@
  * behavior iteration stays coherent as presentation evolves.
  */
 
+import type { VisorWidgetId } from '../../contracts/visor-widget.js';
 import type {
   AdaptiveVisorMapPanelId,
   AdaptiveVisorPanelId,
@@ -15,7 +16,6 @@ import type {
 } from '../../platform/adaptive-visor-compositor.js';
 import type { HudCueId, HudCueTargetAnchorId } from '../cues/cue-schema.js';
 import type { HudContextClass, HudPanelId } from '../panels/core/panel-schema.js';
-import type { VisorWidgetId } from '../panels/core/widget-schema.js';
 
 export type ContractAltitude = 'high' | 'mid' | 'close';
 

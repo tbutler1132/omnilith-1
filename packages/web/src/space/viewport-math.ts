@@ -8,6 +8,8 @@
  * viewport snaps between, replacing continuous zoom.
  */
 
+import type { Altitude } from '../contracts/altitude.js';
+
 export interface ViewportState {
   /** World-space X coordinate at the center of the screen */
   x: number;
@@ -30,8 +32,6 @@ export interface WorldBounds {
 }
 
 // ── Altitude system ──
-
-export type Altitude = 'high' | 'mid' | 'close';
 
 interface AltitudeLevel {
   level: Altitude;

@@ -8,7 +8,8 @@
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import type { Altitude, ScreenSize, ViewportState } from './viewport-math.js';
+import type { Altitude } from '../contracts/altitude.js';
+import type { ScreenSize, ViewportState } from './viewport-math.js';
 import { altitudeFromZoom, clampToMap, interpolateViewport, nextAltitude, zoomForAltitude } from './viewport-math.js';
 
 interface UseViewportOptions {

@@ -6,8 +6,8 @@
  * This keeps behavior debuggable while supporting restore/recompute rules.
  */
 
-import type { VisorWidgetId } from '../hud/panels/core/widget-schema.js';
-import type { Altitude } from '../space/viewport-math.js';
+import type { Altitude } from '../contracts/altitude.js';
+import type { VisorWidgetId } from '../contracts/visor-widget.js';
 
 export type AdaptiveVisorContextClass = 'map' | 'interior' | 'visor-organism';
 export type AdaptiveVisorSpatialLocation = 'map' | 'interior';

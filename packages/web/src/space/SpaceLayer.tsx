@@ -7,10 +7,11 @@
  */
 
 import { useMemo } from 'react';
+import type { Altitude } from '../contracts/altitude.js';
 import { useOrganismMarkersByIds } from '../hooks/use-organism.js';
 import { SpaceOrganism } from './SpaceOrganism.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
-import { type Altitude, getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
+import { getVisibleBounds, isVisible, type ScreenSize, type ViewportState } from './viewport-math.js';
 
 const BASE_SIZE = 160;
 
