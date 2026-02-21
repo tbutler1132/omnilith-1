@@ -2,16 +2,11 @@
  * SpaceNavBar — persistent top navigation for spatial movement.
  *
  * Displays current location context and a physical back cascade across
- * visor focus, interior presence, focused organism, and map stack.
+ * interior presence, focused organism, and map stack.
  */
 
 import { useOrganism } from '../hooks/use-organism.js';
-import {
-  usePlatformActions,
-  usePlatformMapState,
-  usePlatformViewportMeta,
-  usePlatformVisorState,
-} from '../platform/index.js';
+import { usePlatformActions, usePlatformMapState, usePlatformViewportMeta } from '../platform/index.js';
 
 const ALTITUDE_LABELS: Record<string, string> = {
   high: 'Wide view',
@@ -27,17 +22,14 @@ const ALTIMETER_LEVEL: Record<string, 0 | 1 | 2> = {
 
 export function SpaceNavBar() {
   const { navigationStack, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
-  const { visorOrganismId } = usePlatformVisorState();
   const { altitude } = usePlatformViewportMeta();
-  const { focusOrganism, exitOrganism, exitMap, closeVisorOrganism } = usePlatformActions();
+  const { focusOrganism, exitOrganism, exitMap } = usePlatformActions();
   const isInside = enteredOrganismId !== null;
 
-  const showBack = visorOrganismId !== null || isInside || focusedOrganismId !== null || navigationStack.length > 1;
+  const showBack = isInside || focusedOrganismId !== null || navigationStack.length > 1;
 
   function handleBack() {
-    if (visorOrganismId) {
-      closeVisorOrganism();
-    } else if (isInside) {
+    if (isInside) {
       exitOrganism();
     } else if (focusedOrganismId) {
       focusOrganism(null);
@@ -54,9 +46,7 @@ export function SpaceNavBar() {
             &larr;
           </button>
         )}
-        {visorOrganismId ? (
-          <VisorLocation organismId={visorOrganismId} />
-        ) : isInside && enteredOrganismId ? (
+        {isInside && enteredOrganismId ? (
           <InteriorLocation organismId={enteredOrganismId} />
         ) : (
           <div className="space-nav-altitude">
@@ -82,17 +72,6 @@ export function SpaceNavBar() {
         )}
       </div>
     </div>
-  );
-}
-
-function VisorLocation({ organismId }: { organismId: string }) {
-  const { data } = useOrganism(organismId);
-  const name = data?.organism.name ?? '...';
-
-  return (
-    <span className="space-nav-label space-nav-location">
-      In visor: <span className="space-nav-location-name">{name}</span>
-    </span>
   );
 }
 
