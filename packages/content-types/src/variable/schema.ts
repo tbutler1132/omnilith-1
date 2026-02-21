@@ -16,11 +16,21 @@ export interface VariableThresholds {
   readonly critical?: number;
 }
 
+export interface VariableComputation {
+  readonly mode: 'observation-sum';
+  readonly sensorLabel: string;
+  readonly metric: string;
+  readonly windowSeconds?: number;
+  readonly clampMin?: number;
+  readonly clampMax?: number;
+}
+
 export interface VariablePayload {
   readonly label: string;
   readonly value: number;
   readonly unit?: string;
   readonly thresholds?: VariableThresholds;
+  readonly computation?: VariableComputation;
   readonly computedFrom?: string;
   readonly computedAt: Timestamp;
 }

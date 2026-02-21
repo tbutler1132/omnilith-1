@@ -9,6 +9,8 @@
     "build": "tsc",
     "lint": "biome check src/",
     "dev": "tsx watch src/index.ts",
+    "github:dispatch-issues": "tsx src/github/run-github-issue-dispatch-worker.ts",
+    "regulator:run": "tsx src/regulator/run-regulator-cycle.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
     "test:watch": "vitest",

@@ -16,6 +16,7 @@ import { declineProposal, integrateProposal, openProposal } from '@omnilith/kern
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import type { AuthEnv } from '../middleware/auth.js';
+import { recordProposalIntegrationObservations } from '../regulator/proposal-integration-observation-adapter.js';
 import { parseJsonBody } from '../utils/parse-json.js';
 import { requireOrganismAccess } from './access.js';
 
@@ -105,6 +106,22 @@ export function proposalRoutes(container: Container) {
       if (result.outcome === 'policy-declined') {
         return c.json({ proposal: result.proposal, policyDeclined: true });
       }
+
+      try {
+        await container.proposalIntegrationTrigger.handleProposalIntegrated({
+          proposal: result.proposal,
+          integratedBy: userId,
+        });
+      } catch (error) {
+        console.error('Failed to enqueue proposal integration automation:', error);
+      }
+
+      try {
+        await recordProposalIntegrationObservations(container, result.proposal, userId);
+      } catch (error) {
+        console.error('Failed to record internal proposal integration observations:', error);
+      }
+
       return c.json({ proposal: result.proposal, newState: result.newState });
     } catch (err) {
       const e = err as DomainError;

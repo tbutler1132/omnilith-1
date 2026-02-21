@@ -39,6 +39,7 @@ export function createServer(container: Container, config?: ServerConfig) {
   // Public routes
   app.route('/auth', authRoutes(container));
   app.route('/interest', interestRoutes(container));
+  container.githubPlugin.registerRoutes(app, container);
 
   // Platform info (public)
   app.get('/platform/world-map', (c) => {

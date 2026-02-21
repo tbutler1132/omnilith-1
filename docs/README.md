@@ -42,6 +42,7 @@ For a fresh coding session that needs current implementation context fast:
 - Adaptive visor extension workflow: `docs/ADAPTIVE-VISOR-EXTENSION-GUIDE.md`
 - Adaptive visor panel planning: `docs/ADAPTIVE-VISOR-PANEL-FEATURE-PLAYBOOK.md`
 - Relationships panel specification: `docs/ADAPTIVE-VISOR-RELATIONSHIPS-PANEL-SPEC.md`
+- Regulatory loop operations: `docs/REGULATORY-LOOP-PLAYBOOK.md`
 - Content type decision rubric: `docs/CONTENT-TYPE-RUBRIC.md`
 - Development system: `docs/DEVELOPMENT-SYSTEM.md`
 - Slice tracker template: `docs/SLICE-TRACKER.md`

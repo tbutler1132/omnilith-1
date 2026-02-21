@@ -6,7 +6,7 @@
  */
 
 import type { ValidationResult } from '@omnilith/kernel';
-import type { VariablePayload, VariableThresholds } from './schema.js';
+import type { VariableComputation, VariablePayload, VariableThresholds } from './schema.js';
 
 export function validateVariable(payload: unknown): ValidationResult {
   const issues: string[] = [];
@@ -38,6 +38,32 @@ export function validateVariable(payload: unknown): ValidationResult {
       }
       if (t.critical !== undefined && typeof t.critical !== 'number') {
         issues.push('thresholds.critical must be a number');
+      }
+    }
+  }
+
+  if (p.computation !== undefined) {
+    if (!p.computation || typeof p.computation !== 'object') {
+      issues.push('computation must be an object');
+    } else {
+      const computation = p.computation as Partial<VariableComputation>;
+      if (computation.mode !== 'observation-sum') {
+        issues.push("computation.mode must be 'observation-sum'");
+      }
+      if (typeof computation.sensorLabel !== 'string' || computation.sensorLabel.length === 0) {
+        issues.push('computation.sensorLabel must be a non-empty string');
+      }
+      if (typeof computation.metric !== 'string' || computation.metric.length === 0) {
+        issues.push('computation.metric must be a non-empty string');
+      }
+      if (computation.windowSeconds !== undefined && typeof computation.windowSeconds !== 'number') {
+        issues.push('computation.windowSeconds must be a number when provided');
+      }
+      if (computation.clampMin !== undefined && typeof computation.clampMin !== 'number') {
+        issues.push('computation.clampMin must be a number when provided');
+      }
+      if (computation.clampMax !== undefined && typeof computation.clampMax !== 'number') {
+        issues.push('computation.clampMax must be a number when provided');
       }
     }
   }

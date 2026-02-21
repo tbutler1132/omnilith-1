@@ -9,6 +9,8 @@ import { AudioRenderer } from './audio.js';
 import { CommunityRenderer } from './community.js';
 import { CompositionReferenceRenderer } from './composition-reference.js';
 import { DawProjectRenderer } from './daw-project.js';
+import { GitHubIssueRenderer } from './github-issue.js';
+import { GitHubRepositoryRenderer } from './github-repository.js';
 import { HeroJourneySceneRenderer } from './hero-journey-scene.js';
 import { HeroJourneyStageRenderer } from './hero-journey-stage.js';
 import { ImageRenderer } from './image.js';
@@ -23,6 +25,8 @@ export function registerAllRenderers() {
   registerRenderer('image', ImageRenderer);
   registerRenderer('composition-reference', CompositionReferenceRenderer);
   registerRenderer('community', CommunityRenderer);
+  registerRenderer('github-repository', GitHubRepositoryRenderer);
+  registerRenderer('github-issue', GitHubIssueRenderer);
   registerRenderer('song', SongRenderer);
   registerRenderer('hero-journey-scene', HeroJourneySceneRenderer);
   registerRenderer('hero-journey-stage', HeroJourneyStageRenderer);
