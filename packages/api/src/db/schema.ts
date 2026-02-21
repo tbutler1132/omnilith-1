@@ -161,6 +161,125 @@ export const platformConfig = pgTable('platform_config', {
   value: text('value').notNull(),
 });
 
+export const githubIssueDispatches = pgTable(
+  'github_issue_dispatches',
+  {
+    id: text('id').primaryKey(),
+    proposalId: text('proposal_id')
+      .notNull()
+      .references(() => proposals.id),
+    organismId: text('organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    repositoryOrganismId: text('repository_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    integratedBy: text('integrated_by')
+      .notNull()
+      .references(() => users.id),
+    issueTitle: text('issue_title').notNull(),
+    issueBody: text('issue_body').notNull(),
+    status: text('status').notNull().default('pending'),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    processingStartedAt: timestamp('processing_started_at', { withTimezone: true }),
+    deliveredAt: timestamp('delivered_at', { withTimezone: true }),
+    lastError: text('last_error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('github_issue_dispatches_proposal_unique').on(table.proposalId),
+    index('idx_github_issue_dispatches_status_next_attempt').on(table.status, table.nextAttemptAt),
+    index('idx_github_issue_dispatches_repository').on(table.repositoryOrganismId),
+  ],
+);
+
+export const githubIssueLinks = pgTable(
+  'github_issue_links',
+  {
+    proposalId: text('proposal_id')
+      .primaryKey()
+      .references(() => proposals.id),
+    issueOrganismId: text('issue_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    repositoryOrganismId: text('repository_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    actorId: text('actor_id')
+      .notNull()
+      .references(() => users.id),
+    githubOwner: text('github_owner').notNull(),
+    githubRepo: text('github_repo').notNull(),
+    githubIssueNumber: integer('github_issue_number').notNull(),
+    githubIssueUrl: text('github_issue_url').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('github_issue_links_issue_organism_unique').on(table.issueOrganismId),
+    uniqueIndex('github_issue_links_external_issue_unique').on(
+      table.githubOwner,
+      table.githubRepo,
+      table.githubIssueNumber,
+    ),
+    index('idx_github_issue_links_repository').on(table.repositoryOrganismId),
+  ],
+);
+
+export const regulatorActionExecutions = pgTable(
+  'regulator_action_executions',
+  {
+    id: text('id').primaryKey(),
+    boundaryOrganismId: text('boundary_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    actionOrganismId: text('action_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    triggerPolicyOrganismId: text('trigger_policy_organism_id')
+      .notNull()
+      .references(() => organisms.id),
+    executionMode: text('execution_mode').notNull(),
+    status: text('status').notNull().default('pending'),
+    idempotencyKey: text('idempotency_key').notNull(),
+    attemptCount: integer('attempt_count').notNull().default(0),
+    startedAt: timestamp('started_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }).notNull().defaultNow(),
+    lastError: text('last_error'),
+    result: jsonb('result'),
+    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    uniqueIndex('regulator_action_executions_idempotency_unique').on(table.idempotencyKey),
+    index('idx_regulator_action_executions_status_next_attempt').on(table.status, table.nextAttemptAt),
+    index('idx_regulator_action_executions_boundary').on(table.boundaryOrganismId),
+    index('idx_regulator_action_executions_action').on(table.actionOrganismId),
+  ],
+);
+
+export const regulatorRuntimeEvents = pgTable(
+  'regulator_runtime_events',
+  {
+    id: text('id').primaryKey(),
+    cycleId: text('cycle_id').notNull(),
+    boundaryOrganismId: text('boundary_organism_id').references(() => organisms.id),
+    actionOrganismId: text('action_organism_id').references(() => organisms.id),
+    executionId: text('execution_id'),
+    stage: text('stage').notNull(),
+    payload: jsonb('payload'),
+    occurredAt: timestamp('occurred_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (table) => [
+    index('idx_regulator_runtime_events_cycle').on(table.cycleId, table.occurredAt),
+    index('idx_regulator_runtime_events_stage').on(table.stage),
+    index('idx_regulator_runtime_events_boundary').on(table.boundaryOrganismId),
+  ],
+);
+
 export const interestSignups = pgTable(
   'interest_signups',
   {

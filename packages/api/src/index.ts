@@ -25,6 +25,10 @@ async function start() {
   // Seed profile (default: focused v1-demo, configurable via OMNILITH_SEED_PROFILE)
   await seedDev(container);
 
+  for (const line of container.githubPlugin.describeRuntime()) {
+    console.log(line);
+  }
+
   const app = createServer(container, { worldMapId });
 
   serve({ fetch: app.fetch, port }, (info) => {

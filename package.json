@@ -23,6 +23,8 @@
     "db:reset:unified": "OMNILITH_ALLOW_DB_RESET=true DATABASE_URL=postgres://localhost:5432/omnilith_dev OMNILITH_SEED_PROFILE=v1-demo pnpm --filter @omnilith/api db:reset",
     "db:reset:demo": "pnpm run db:reset:unified",
     "db:reset:auth": "pnpm run db:reset:unified",
+    "github:dispatch-issues": "pnpm --filter @omnilith/api github:dispatch-issues",
+    "regulator:run": "pnpm --filter @omnilith/api regulator:run",
     "hooks:install": "git config core.hooksPath .githooks",
     "hooks:pre-commit": "pnpm -r lint",
     "hooks:pre-push": "pnpm run check",

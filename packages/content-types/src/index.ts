@@ -5,6 +5,18 @@
  * optional evaluator. Renderers and differs live in the web package.
  */
 
+export {
+  type ActionExecutionMode,
+  type ActionKind,
+  type ActionPayload,
+  type ActionRiskLevel,
+  type ActionTrigger,
+  actionContentType,
+  type GitHubPrActionConfig,
+  type GitHubPrActionPayload,
+  type OpenProposalActionConfig,
+  type OpenProposalActionPayload,
+} from './action/index.js';
 export { type AudioFormat, type AudioPayload, audioContentType } from './audio/index.js';
 export { type CommunityPayload, communityContentType } from './community/index.js';
 export {
@@ -19,6 +31,17 @@ export {
   type DawProjectPayload,
   dawProjectContentType,
 } from './daw-project/index.js';
+export {
+  type GitHubIssuePayload,
+  type GitHubIssueState,
+  type GitHubIssueSync,
+  githubIssueContentType,
+} from './github-issue/index.js';
+export {
+  type GitHubRepositoryPayload,
+  type GitHubRepositorySync,
+  githubRepositoryContentType,
+} from './github-repository/index.js';
 export {
   type HeroJourneyChapter,
   type HeroJourneyScenePayload,
@@ -58,16 +81,20 @@ export {
 export { type TextFormat, type TextPayload, textContentType } from './text/index.js';
 export { type ThreadPayload, type ThreadPostPayload, threadContentType } from './thread/index.js';
 export {
+  type VariableComputation,
   type VariablePayload,
   type VariableThresholds,
   variableContentType,
 } from './variable/index.js';
 
 import type { ContentTypeContract } from '@omnilith/kernel';
+import { actionContentType } from './action/index.js';
 import { audioContentType } from './audio/index.js';
 import { communityContentType } from './community/index.js';
 import { compositionReferenceContentType } from './composition-reference/index.js';
 import { dawProjectContentType } from './daw-project/index.js';
+import { githubIssueContentType } from './github-issue/index.js';
+import { githubRepositoryContentType } from './github-repository/index.js';
 import { heroJourneySceneContentType } from './hero-journey-scene/index.js';
 import { heroJourneyStageContentType } from './hero-journey-stage/index.js';
 import { imageContentType } from './image/index.js';
@@ -84,11 +111,14 @@ import { variableContentType } from './variable/index.js';
 
 export const allContentTypes: ReadonlyArray<ContentTypeContract> = [
   communityContentType,
+  actionContentType,
   audioContentType,
   textContentType,
   imageContentType,
   spatialMapContentType,
   compositionReferenceContentType,
+  githubRepositoryContentType,
+  githubIssueContentType,
   threadContentType,
   integrationPolicyContentType,
   sensorContentType,

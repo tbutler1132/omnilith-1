@@ -31,6 +31,8 @@ import { PgRelationshipRepository } from './adapters/pg-relationship-repository.
 import { PgStateRepository } from './adapters/pg-state-repository.js';
 import { PgVisibilityRepository } from './adapters/pg-visibility-repository.js';
 import type { Database } from './db/connection.js';
+import { createGitHubPlugin, type GitHubPlugin } from './github/plugin.js';
+import type { ProposalIntegrationTrigger } from './github/proposal-integration-trigger.js';
 
 export interface Container {
   organismRepository: OrganismRepository;
@@ -44,23 +46,44 @@ export interface Container {
   contentTypeRegistry: ContentTypeRegistry;
   identityGenerator: IdentityGenerator;
   queryPort: QueryPort;
+  proposalIntegrationTrigger: ProposalIntegrationTrigger;
+  githubPlugin: GitHubPlugin;
   db: Database;
 }
 
 export function createContainer(db: Database): Container {
   const contentTypeRegistry = createContentTypeRegistry();
+  const organismRepository = new PgOrganismRepository(db);
+  const stateRepository = new PgStateRepository(db);
+  const compositionRepository = new PgCompositionRepository(db);
+  const proposalRepository = new PgProposalRepository(db);
+  const eventPublisher = new PgEventPublisher(db);
+  const eventRepository = new PgEventRepository(db);
+  const visibilityRepository = new PgVisibilityRepository(db);
+  const relationshipRepository = new PgRelationshipRepository(db);
+  const identityGenerator = new UuidIdentityGenerator();
+  const queryPort = new PgQueryPort(db);
+  const githubPlugin = createGitHubPlugin({
+    db,
+    compositionRepository,
+    stateRepository,
+  });
+  const proposalIntegrationTrigger = githubPlugin.proposalIntegrationTrigger;
+
   return {
-    organismRepository: new PgOrganismRepository(db),
-    stateRepository: new PgStateRepository(db),
-    compositionRepository: new PgCompositionRepository(db),
-    proposalRepository: new PgProposalRepository(db),
-    eventPublisher: new PgEventPublisher(db),
-    eventRepository: new PgEventRepository(db),
-    visibilityRepository: new PgVisibilityRepository(db),
-    relationshipRepository: new PgRelationshipRepository(db),
+    organismRepository,
+    stateRepository,
+    compositionRepository,
+    proposalRepository,
+    eventPublisher,
+    eventRepository,
+    visibilityRepository,
+    relationshipRepository,
     contentTypeRegistry,
-    identityGenerator: new UuidIdentityGenerator(),
-    queryPort: new PgQueryPort(db),
+    identityGenerator,
+    queryPort,
+    proposalIntegrationTrigger,
+    githubPlugin,
     db,
   };
 }

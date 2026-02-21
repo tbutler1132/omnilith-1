@@ -24,6 +24,8 @@ import {
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Container } from '../container.js';
+import { createNoopGitHubPlugin } from '../github/plugin.js';
+import { NoopProposalIntegrationTrigger } from '../github/proposal-integration-trigger.js';
 import type { AuthEnv } from '../middleware/auth.js';
 import { organismRoutes } from '../routes/organisms.js';
 import { proposalRoutes } from '../routes/proposals.js';
@@ -62,6 +64,8 @@ function createTestContainer(): Container {
       eventPublisher,
       relationshipRepository,
     ),
+    proposalIntegrationTrigger: new NoopProposalIntegrationTrigger(),
+    githubPlugin: createNoopGitHubPlugin(),
     db: null as unknown as Container['db'], // Not used in these tests
   };
 }
