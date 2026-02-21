@@ -21,7 +21,7 @@ import {
   type UserId,
   type VitalityData,
 } from '@omnilith/kernel';
-import { and, count, desc, eq, max, type SQL, sql } from 'drizzle-orm';
+import { and, count, desc, eq, gte, max, type SQL, sql } from 'drizzle-orm';
 import type { Database } from '../db/connection.js';
 import { composition, events, organismStates, organisms, proposals } from '../db/schema.js';
 
@@ -126,7 +126,7 @@ export class PgQueryPort implements QueryPort {
             await this.db
               .select({ count: count() })
               .from(organismStates)
-              .where(and(eq(organismStates.organismId, organismId), sql`${organismStates.createdAt} >= ${windowStart}`))
+              .where(and(eq(organismStates.organismId, organismId), gte(organismStates.createdAt, windowStart)))
           )[0].count;
 
     return {
