@@ -4,7 +4,8 @@
  * Produces a focused demo:
  * 1) Hero's Journey concept album organism with composed song organisms.
  * 2) Weekly Updates composition with composed text organisms.
- * 3) A private community organism with its own internal map.
+ * 3) Omnilith Repository organism with a cybernetic awareness loop.
+ * 4) A private community organism that contains and tends the other surfaced organisms.
  */
 
 import { randomBytes, scryptSync } from 'node:crypto';
@@ -276,6 +277,119 @@ export async function seedV1Demo(container: Container): Promise<void> {
     composeDeps,
   );
 
+  const softwareSystem = await createOrganism(
+    {
+      name: 'Omnilith Software System',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const kernelDomain = await createOrganism(
+    {
+      name: 'Kernel Domain',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const contentTypesDomain = await createOrganism(
+    {
+      name: 'Content Types Domain',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const apiDomain = await createOrganism(
+    {
+      name: 'API Domain',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const webDomain = await createOrganism(
+    {
+      name: 'Web Domain',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const operationsDomain = await createOrganism(
+    {
+      name: 'Operations Domain',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const softwareSystemChildren: Array<{ organismId: OrganismId; position: number }> = [
+    { organismId: projectRepository.organism.id, position: 1 },
+    { organismId: kernelDomain.organism.id, position: 2 },
+    { organismId: contentTypesDomain.organism.id, position: 3 },
+    { organismId: apiDomain.organism.id, position: 4 },
+    { organismId: webDomain.organism.id, position: 5 },
+    { organismId: operationsDomain.organism.id, position: 6 },
+  ];
+
+  for (const entry of softwareSystemChildren) {
+    await composeOrganism(
+      {
+        parentId: softwareSystem.organism.id,
+        childId: entry.organismId,
+        composedBy: devUserId,
+        position: entry.position - 1,
+      },
+      composeDeps,
+    );
+  }
+
+  await appendState(
+    {
+      organismId: softwareSystem.organism.id,
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: softwareSystemChildren,
+        arrangementType: 'unordered',
+      },
+      appendedBy: devUserId,
+    },
+    appendDeps,
+  );
+
   // Community: The Undergrowth
   const undergrowthMap = await createOrganism(
     {
@@ -357,6 +471,18 @@ export async function seedV1Demo(container: Container): Promise<void> {
     { parentId: undergrowth.organism.id, childId: communityAudio.organism.id, composedBy: devUserId },
     composeDeps,
   );
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: heroJourney.sceneOrganismId, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: weeklyUpdates.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: undergrowth.organism.id, childId: softwareSystem.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
 
   await appendState(
     {
@@ -366,6 +492,8 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: communityText.organism.id, x: 800, y: 900, size: 1.0, emphasis: 0.8 },
           { organismId: communityAudio.organism.id, x: 1200, y: 1100, size: 1.1, emphasis: 0.9 },
+          { organismId: softwareSystem.organism.id, x: 980, y: 1220, size: 1.2, emphasis: 0.88 },
+          { organismId: projectRepository.organism.id, x: 1340, y: 1280, size: 1.0, emphasis: 0.8 },
         ],
         width: 2000,
         height: 2000,
@@ -419,7 +547,6 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
-          { organismId: projectRepository.organism.id, x: 3400, y: 2420, size: 0.95, emphasis: 0.66 },
           { organismId: undergrowth.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
         ],
         width: 5000,
@@ -437,6 +564,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
 
   console.log(`  Hero's Journey: ${heroJourney.sceneOrganismId}`);
   console.log(`  Weekly Updates: ${weeklyUpdates.organism.id}`);
+  console.log(`  Omnilith Software System: ${softwareSystem.organism.id}`);
+  console.log(`    Kernel Domain: ${kernelDomain.organism.id}`);
+  console.log(`    Content Types Domain: ${contentTypesDomain.organism.id}`);
+  console.log(`    API Domain: ${apiDomain.organism.id}`);
+  console.log(`    Web Domain: ${webDomain.organism.id}`);
+  console.log(`    Operations Domain: ${operationsDomain.organism.id}`);
   console.log(`  Omnilith Repository: ${projectRepository.organism.id}`);
   console.log(`  Community "The Undergrowth": ${undergrowth.organism.id} (private)`);
   console.log(`  Dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD} (session: ${DEV_SESSION_ID})`);
