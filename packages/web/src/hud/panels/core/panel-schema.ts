@@ -122,8 +122,8 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   },
   {
     id: 'organism',
-    label: 'Renderer preview',
-    purpose: 'Preview the organism renderer with thermal and true-renderer views while preserving tending actions.',
+    label: 'Overview',
+    purpose: 'Inspect organism overview data and raw state payload while preserving tending actions.',
     availableIn: (context) => context.contextClass === 'visor-organism',
     roleSupport: { main: true, secondary: false, collapsed: true },
     defaultMainPriority: 99,
