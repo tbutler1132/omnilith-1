@@ -114,8 +114,8 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
   },
   {
     id: 'interior-actions',
-    label: 'Collaborate here',
-    purpose: 'Open the currently entered organism in the visor.',
+    label: 'Collaborate',
+    purpose: 'Open the currently entered organism directly to proposal review.',
     availableIn: (context) => context.contextClass === 'interior',
     roleSupport: { main: false, secondary: false, collapsed: true },
     defaultMainPriority: 0,
@@ -136,7 +136,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'organism-nav',
     label: 'Panel shortcuts',
     purpose: 'Promote organism tending panels through one secondary action surface.',
-    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin === true,
+    availableIn: () => false,
     roleSupport: { main: false, secondary: true, collapsed: false },
     defaultMainPriority: 0,
     defaultSecondaryPriority: 98,
@@ -146,7 +146,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'composition',
     label: 'Composition',
     purpose: 'Compose organisms inside the current boundary.',
-    availableIn: (context) => context.contextClass === 'visor-organism',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 90,
     defaultSecondaryPriority: 85,
@@ -166,7 +166,8 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'propose',
     label: 'Open proposal',
     purpose: 'Offer a regulated state proposal for the organism.',
-    availableIn: (context) => context.contextClass === 'visor-organism' && !context.openTrunk,
+    availableIn: (context) =>
+      context.contextClass === 'visor-organism' && !context.openTrunk && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
@@ -186,7 +187,11 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'append',
     label: 'Append state',
     purpose: 'Append state directly for open-trunk organisms.',
-    availableIn: (context) => context.contextClass === 'visor-organism' && context.openTrunk && context.canWrite,
+    availableIn: (context) =>
+      context.contextClass === 'visor-organism' &&
+      context.openTrunk &&
+      context.canWrite &&
+      context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 88,
     defaultSecondaryPriority: 82,
@@ -206,7 +211,7 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     id: 'contributions',
     label: 'Contributions',
     purpose: 'Inspect credited contributions across states, proposals, and tending actions.',
-    availableIn: (context) => context.contextClass === 'visor-organism',
+    availableIn: (context) => context.contextClass === 'visor-organism' && context.interiorOrigin !== true,
     roleSupport: { main: true, secondary: true, collapsed: true },
     defaultMainPriority: 75,
     defaultSecondaryPriority: 79,

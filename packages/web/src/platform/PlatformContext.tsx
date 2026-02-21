@@ -83,6 +83,7 @@ export interface PlatformMapState {
 
 export interface PlatformVisorState {
   visorOrganismId: string | null;
+  visorPanelIntent: 'organism' | 'proposals' | 'regulation' | null;
 }
 
 export interface PlatformViewportMetaState {
@@ -178,7 +179,7 @@ interface PlatformContextValue {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openInVisor: (id: string) => void;
+  openInVisor: (id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
   setViewportCenter: (x: number, y: number) => void;
@@ -192,7 +193,7 @@ export interface PlatformActions {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openInVisor: (id: string) => void;
+  openInVisor: (id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
   setViewportCenter: (x: number, y: number) => void;
@@ -239,6 +240,7 @@ export function PlatformProvider({
   const [state, dispatch] = useReducer(reducer, initialState);
   const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
+  const [visorPanelIntent, setVisorPanelIntent] = useState<'organism' | 'proposals' | 'regulation' | null>(null);
   const [adaptiveVisorState, adaptiveVisorDispatch] = useReducer(
     computeNextAdaptiveVisorLayout,
     createAdaptiveVisorCompositorState(
@@ -283,31 +285,39 @@ export function PlatformProvider({
   }, []);
   const exitOrganism = useCallback(() => {
     setEnteredOrganismId(null);
+    setVisorPanelIntent(null);
+    adaptiveVisorDispatch({ type: 'close-visor-organism' });
     adaptiveVisorDispatch({ type: 'exit-organism' });
   }, []);
   const enterMap = useCallback((mapId: string, label: string) => {
     setFocusedOrganismId(null);
     setEnteredOrganismId(null);
+    setVisorPanelIntent(null);
     dispatch({ type: 'ENTER_MAP', mapId, label });
     adaptiveVisorDispatch({ type: 'enter-map' });
   }, []);
   const exitMap = useCallback(() => {
     setFocusedOrganismId(null);
     setEnteredOrganismId(null);
+    setVisorPanelIntent(null);
     dispatch({ type: 'EXIT_MAP' });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
   const navigateToMap = useCallback((mapId: string) => {
     setFocusedOrganismId(null);
     setEnteredOrganismId(null);
+    setVisorPanelIntent(null);
     dispatch({ type: 'NAVIGATE_TO_MAP', mapId });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
-  const openInVisor = useCallback(
-    (id: string) => adaptiveVisorDispatch({ type: 'open-visor-organism', organismId: id }),
-    [],
-  );
-  const closeVisorOrganism = useCallback(() => adaptiveVisorDispatch({ type: 'close-visor-organism' }), []);
+  const openInVisor = useCallback((id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => {
+    setVisorPanelIntent(panelIntent ?? null);
+    adaptiveVisorDispatch({ type: 'open-visor-organism', organismId: id });
+  }, []);
+  const closeVisorOrganism = useCallback(() => {
+    setVisorPanelIntent(null);
+    adaptiveVisorDispatch({ type: 'close-visor-organism' });
+  }, []);
   const setAltitude = useCallback((altitude: Altitude) => {
     dispatch({ type: 'SET_ALTITUDE', altitude });
     adaptiveVisorDispatch({ type: 'set-altitude', altitude });
@@ -344,8 +354,9 @@ export function PlatformProvider({
   const visorState = useMemo<PlatformVisorState>(
     () => ({
       visorOrganismId: adaptiveVisorState.visorOrganismId,
+      visorPanelIntent,
     }),
-    [adaptiveVisorState.visorOrganismId],
+    [adaptiveVisorState.visorOrganismId, visorPanelIntent],
   );
 
   const viewportMetaState = useMemo<PlatformViewportMetaState>(
