@@ -1,5 +1,4 @@
 export { AppendSection } from './AppendSection.js';
-export { ComponentsSection } from './ComponentsSection.js';
 export { CompositionSection } from './CompositionSection.js';
 export { ContributionsSection } from './ContributionsSection.js';
 export { formatDate } from './format-date.js';
@@ -9,4 +8,3 @@ export { ProposalsSection } from './ProposalsSection.js';
 export { ProposeSection } from './ProposeSection.js';
 export { RelationshipsSection } from './RelationshipsSection.js';
 export { StateHistorySection } from './StateHistorySection.js';
-export { VitalitySection } from './VitalitySection.js';

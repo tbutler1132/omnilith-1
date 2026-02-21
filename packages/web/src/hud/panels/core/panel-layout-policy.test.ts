@@ -50,31 +50,6 @@ describe('resolveVisorPanelLayout', () => {
     ]);
   });
 
-  it('thermal renderer preview promotes components into the secondary slot', () => {
-    const layout = resolveVisorPanelLayout({
-      context: {
-        contextClass: 'visor-organism',
-        surfaced: true,
-        openTrunk: false,
-        templateValuesReady: false,
-        canWrite: true,
-        interiorOrigin: true,
-        thermalRendererPreview: true,
-      },
-      preferredMainPanelId: 'organism',
-      slots: organismSlots,
-    });
-
-    expect(layout.mainPanelId).toBe('organism');
-    expect(layout.secondaryPanelIds).toEqual(['components']);
-    expect(layout.availablePanelIds).not.toContain('relationships');
-    expect(layout.availablePanelIds).not.toContain('governance');
-    expect(layout.availablePanelIds).not.toContain('history');
-    expect(layout.availablePanelIds).toContain('contributions');
-    expect(layout.collapsedPanelIds).toContain('composition');
-    expect(layout.collapsedPanelIds).toContain('contributions');
-  });
-
   it('true renderer preview suppresses secondary panels for full-width focus', () => {
     const layout = resolveVisorPanelLayout({
       context: {

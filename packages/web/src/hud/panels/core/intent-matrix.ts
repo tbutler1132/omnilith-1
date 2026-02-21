@@ -58,9 +58,7 @@ const ORGANISM_RULE: IntentMatrixRule = {
     },
   },
   secondaryPriority: {
-    base: {
-      components: 20,
-    },
+    base: {},
     surfaced: {
       proposals: 3,
       composition: 3,

@@ -20,7 +20,6 @@ export type InteriorHudPanelId = (typeof INTERIOR_HUD_PANEL_IDS)[number];
 export const VISOR_HUD_PANEL_IDS = [
   'organism',
   'organism-nav',
-  'components',
   'composition',
   'propose',
   'proposals',
@@ -138,16 +137,6 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     roleSupport: { main: false, secondary: true, collapsed: false },
     defaultMainPriority: 0,
     defaultSecondaryPriority: 98,
-    collapsedPriority: 0,
-  },
-  {
-    id: 'components',
-    label: 'Components',
-    purpose: 'Inspect children rendered inside the current organism preview.',
-    availableIn: (context) => context.contextClass === 'visor-organism' && context.thermalRendererPreview === true,
-    roleSupport: { main: false, secondary: true, collapsed: false },
-    defaultMainPriority: 0,
-    defaultSecondaryPriority: 120,
     collapsedPriority: 0,
   },
   {
