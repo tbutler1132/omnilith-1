@@ -17,7 +17,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Altitude } from '../space/viewport-math.js';
+import type { Altitude } from '../contracts/altitude.js';
 import {
   type AdaptiveVisorCompositorState,
   type AdaptiveVisorMapPanelId,

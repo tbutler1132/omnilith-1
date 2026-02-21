@@ -7,7 +7,7 @@
  * crosses package boundaries in ways the architecture does not allow.
  */
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { resolve, relative, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -84,6 +84,74 @@ function isPathInside(dir, candidate) {
   return rel !== '' && !rel.startsWith('..') && !rel.startsWith('../');
 }
 
+function resolveRelativeImportPath(filePath, specifier) {
+  const importPath = resolve(dirname(filePath), specifier);
+  const extensionCandidates = ['.ts', '.tsx', '.mts', '.cts'];
+  const candidates = [importPath];
+  const jsEntryPointMatch = importPath.match(/\.(?:cjs|mjs|js)$/);
+
+  if (jsEntryPointMatch) {
+    const withoutJsExtension = importPath.slice(0, -jsEntryPointMatch[0].length);
+    for (const extension of extensionCandidates) {
+      candidates.push(`${withoutJsExtension}${extension}`);
+    }
+  } else if (!/\.[^/]+$/.test(importPath)) {
+    for (const extension of extensionCandidates) {
+      candidates.push(`${importPath}${extension}`);
+    }
+  }
+
+  for (const extension of extensionCandidates) {
+    candidates.push(resolve(importPath, `index${extension}`));
+  }
+
+  for (const candidate of candidates) {
+    if (existsSync(candidate)) return candidate;
+  }
+
+  return importPath;
+}
+
+function getWebSourceZone(packageRelativePath) {
+  const path = packageRelativePath.replaceAll('\\', '/');
+  if (!path.startsWith('src/')) return null;
+  if (path.startsWith('src/platform/')) return 'platform';
+  if (path.startsWith('src/hud/')) return 'hud';
+  if (path.startsWith('src/space/')) return 'space';
+  if (path.startsWith('src/contracts/')) return 'contracts';
+  return 'other';
+}
+
+function getWebLayerViolation({ packageRoot, importerFilePath, resolvedImportPath }) {
+  const importerRelativePath = relative(packageRoot, importerFilePath).replaceAll('\\', '/');
+  const importeeRelativePath = relative(packageRoot, resolvedImportPath).replaceAll('\\', '/');
+  const importerZone = getWebSourceZone(importerRelativePath);
+  const importeeZone = getWebSourceZone(importeeRelativePath);
+
+  if (!importerZone || !importeeZone) return null;
+
+  if (importerZone === 'platform') {
+    const isPlatformOrchestrator = importerRelativePath === 'src/platform/Platform.tsx';
+    if (!isPlatformOrchestrator && (importeeZone === 'hud' || importeeZone === 'space')) {
+      return `web platform internals cannot import ${importeeZone}; keep orchestration in src/platform/Platform.tsx`;
+    }
+  }
+
+  if (importerZone === 'hud' && importeeZone === 'space') {
+    return 'web hud cannot import space directly; coordinate through platform/contracts';
+  }
+
+  if (importerZone === 'space' && importeeZone === 'hud') {
+    return 'web space cannot import hud directly; coordinate through platform/contracts';
+  }
+
+  if (importerZone === 'contracts' && ['platform', 'hud', 'space'].includes(importeeZone)) {
+    return 'web contracts must stay neutral and cannot import platform/hud/space';
+  }
+
+  return null;
+}
+
 const violations = [];
 
 for (const [packageName, rules] of Object.entries(packageRules)) {
@@ -110,13 +178,28 @@ for (const [packageName, rules] of Object.entries(packageRules)) {
       }
 
       if (specifier.startsWith('.')) {
-        const resolvedImportPath = resolve(dirname(filePath), specifier);
+        const resolvedImportPath = resolveRelativeImportPath(filePath, specifier);
         if (!isPathInside(packageRoot, resolvedImportPath)) {
           violations.push({
             filePath,
             specifier,
             message: `${packageName} cannot import files outside its package root`,
           });
+        }
+
+        if (packageName === 'web') {
+          const webLayerViolation = getWebLayerViolation({
+            packageRoot,
+            importerFilePath: filePath,
+            resolvedImportPath,
+          });
+          if (webLayerViolation) {
+            violations.push({
+              filePath,
+              specifier,
+              message: webLayerViolation,
+            });
+          }
         }
       }
     }

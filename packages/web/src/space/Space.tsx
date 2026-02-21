@@ -7,7 +7,7 @@
  * map → entering → inside → exiting → map.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { usePlatformActions, usePlatformMapState, usePlatformViewportMeta } from '../platform/index.js';
 import { AltitudeControls } from './AltitudeControls.js';
 import { SpaceAmbientLayerHost } from './ambient/SpaceAmbientLayerHost.js';
@@ -15,11 +15,10 @@ import { GroundPlane } from './GroundPlane.js';
 import { OrganismInterior } from './OrganismInterior.js';
 import { SpaceLayer } from './SpaceLayer.js';
 import { SpaceViewport } from './SpaceViewport.js';
+import { useSpacePhaseMachine } from './use-space-phase-machine.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
-import { frameOrganism, frameOrganismEnter, zoomForAltitude } from './viewport-math.js';
-
-type Phase = 'map' | 'entering' | 'inside' | 'exiting';
+import { frameOrganism, zoomForAltitude } from './viewport-math.js';
 
 export function Space() {
   const { currentMapId, focusedOrganismId, enteredOrganismId } = usePlatformMapState();
@@ -30,108 +29,16 @@ export function Space() {
     mapWidth: width,
     mapHeight: height,
   });
-
-  // ── Transition state machine ──
-  const [phase, setPhase] = useState<Phase>('map');
-  const [interiorOpacity, setInteriorOpacity] = useState(0);
-  const [interiorOrganismId, setInteriorOrganismId] = useState<string | null>(null);
-  const fadeRef = useRef<number | null>(null);
-
-  const cancelFade = useCallback(() => {
-    if (fadeRef.current !== null) {
-      cancelAnimationFrame(fadeRef.current);
-      fadeRef.current = null;
-    }
-  }, []);
-
-  // Clean up fade on unmount
-  useEffect(() => cancelFade, [cancelFade]);
-
-  // ── Focus flow (first click: center at Close altitude) ──
-  const handleFocusOrganism = useCallback(
-    (organismId: string, wx: number, wy: number) => {
-      if (phase !== 'map') return;
-      focusOrganism(organismId);
-      animateTo(frameOrganism(wx, wy));
-    },
-    [phase, focusOrganism, animateTo],
-  );
-
-  // ── Enter flow (second click on focused organism) ──
-  const handleEnterOrganism = useCallback(
-    (organismId: string, wx: number, wy: number) => {
-      if (phase !== 'map') return;
-
-      setPhase('entering');
-      setInteriorOrganismId(organismId);
-      setInteriorOpacity(0);
-      enterOrganism(organismId);
-
-      const duration = 700;
-
-      // Animate viewport zoom to enter target
-      animateTo(frameOrganismEnter(wx, wy), {
-        duration,
-        onComplete: () => setPhase('inside'),
-      });
-
-      // Crossfade interior opacity 0 → 1 with ease-in (t²)
-      cancelFade();
-      const startTime = performance.now();
-      const tick = (now: number) => {
-        const t = Math.min((now - startTime) / duration, 1);
-        setInteriorOpacity(t * t); // ease-in
-        if (t < 1) {
-          fadeRef.current = requestAnimationFrame(tick);
-        } else {
-          fadeRef.current = null;
-        }
-      };
-      fadeRef.current = requestAnimationFrame(tick);
-    },
-    [phase, enterOrganism, animateTo, cancelFade],
-  );
-
-  // ── Exit flow ──
-  const handleExitOrganism = useCallback(() => {
-    if (phase !== 'inside') return;
-
-    setPhase('exiting');
-
-    // Find the organism's position on the map to land at Close altitude
-    const entry = entries.find((e) => e.organismId === interiorOrganismId);
-    if (entry) {
-      setViewport(frameOrganism(entry.x, entry.y));
-    }
-
-    // Crossfade interior opacity 1 → 0 with ease-out (1 - (1-t)²)
-    cancelFade();
-    const duration = 500;
-    const startTime = performance.now();
-    const tick = (now: number) => {
-      const t = Math.min((now - startTime) / duration, 1);
-      const eased = 1 - (1 - t) * (1 - t); // ease-out
-      setInteriorOpacity(1 - eased);
-      if (t < 1) {
-        fadeRef.current = requestAnimationFrame(tick);
-      } else {
-        fadeRef.current = null;
-        setPhase('map');
-        setInteriorOrganismId(null);
-        exitOrganism();
-      }
-    };
-    fadeRef.current = requestAnimationFrame(tick);
-  }, [phase, entries, interiorOrganismId, setViewport, exitOrganism, cancelFade]);
-
-  // ── React to external exit requests (e.g. SpaceNavBar back button) ──
-  // When enteredOrganismId is cleared externally while Space is still
-  // in the 'inside' phase, trigger the proper exit animation.
-  useEffect(() => {
-    if (!enteredOrganismId && phase === 'inside') {
-      handleExitOrganism();
-    }
-  }, [enteredOrganismId, phase, handleExitOrganism]);
+  const { phase, interiorOpacity, interiorOrganismId, handleFocusOrganism, handleEnterOrganism, handleExitOrganism } =
+    useSpacePhaseMachine({
+      entries,
+      enteredOrganismId,
+      focusOrganism,
+      enterOrganism,
+      exitOrganism,
+      animateTo,
+      setViewport,
+    });
 
   // ── Respond to focus changes (map phase only) ──
   // When focus clears: zoom out to High.

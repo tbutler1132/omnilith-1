@@ -7,7 +7,7 @@
  * Pointer events are disabled so it never interferes with pan/click.
  */
 
-import type { Altitude } from './viewport-math.js';
+import type { Altitude } from '../contracts/altitude.js';
 
 interface GroundPlaneProps {
   width: number;

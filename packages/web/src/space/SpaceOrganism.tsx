@@ -8,10 +8,11 @@
  */
 
 import { memo } from 'react';
+import type { Altitude } from '../contracts/altitude.js';
 import type { OrganismMarkerData } from '../hooks/use-organism.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
-import { type Altitude, zoomForAltitude } from './viewport-math.js';
+import { zoomForAltitude } from './viewport-math.js';
 
 const BASE_SIZE = 160;
 const PRIVATE_MARKER_BADGE_LABEL = 'Private';

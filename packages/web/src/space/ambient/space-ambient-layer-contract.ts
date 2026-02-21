@@ -6,8 +6,9 @@
  */
 
 import type { ReactNode } from 'react';
+import type { Altitude } from '../../contracts/altitude.js';
 import type { SpatialMapEntry } from '../use-spatial-map.js';
-import type { Altitude, ScreenSize, ViewportState } from '../viewport-math.js';
+import type { ScreenSize, ViewportState } from '../viewport-math.js';
 
 export interface SpaceAmbientLayerContext {
   mapId: string;
