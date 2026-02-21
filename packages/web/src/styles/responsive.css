@@ -259,6 +259,11 @@
     padding: 4px 8px;
   }
 
+  .hud-panel-tab {
+    font-size: 10px;
+    padding: 4px 8px;
+  }
+
   .visor-view-header {
     margin-bottom: 14px;
   }

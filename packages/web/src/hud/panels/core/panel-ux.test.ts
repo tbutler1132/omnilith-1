@@ -9,6 +9,7 @@ import {
   PanelInfoError,
   PanelInfoLoading,
   PanelSection,
+  PanelTabs,
 } from './panel-ux.js';
 
 describe('panel ux primitives', () => {
@@ -62,5 +63,25 @@ describe('panel ux primitives', () => {
     expect(html).toContain('hud-info-section');
     expect(html).toContain('Proposals');
     expect(html).toContain('No proposals.');
+  });
+
+  it('renders reusable panel tabs with active state and counts', () => {
+    const html = renderToStaticMarkup(
+      createElement(PanelTabs, {
+        ariaLabel: 'Regulatory content type tabs',
+        tabs: [
+          { id: 'sensor', label: 'Sensor', count: 2 },
+          { id: 'variable', label: 'Variable', count: 1 },
+        ],
+        activeTabId: 'sensor',
+        onSelectTab: () => {},
+      }),
+    );
+
+    expect(html).toContain('hud-panel-tab-strip');
+    expect(html).toContain('hud-panel-tab--active');
+    expect(html).toContain('hud-panel-tab-count');
+    expect(html).toContain('Sensor');
+    expect(html).toContain('Variable');
   });
 });
