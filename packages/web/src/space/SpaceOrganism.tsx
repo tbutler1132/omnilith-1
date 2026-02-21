@@ -52,6 +52,26 @@ export function resolvePrimaryClickIntent(input: PrimaryClickIntentInput): Prima
   return 'focus';
 }
 
+function eventOriginatesFromInteractiveDescendant(e: React.MouseEvent<Element>): boolean {
+  const target = e.target;
+  if (!(target instanceof Element)) return false;
+  if (target === e.currentTarget) return false;
+  const nearestInteractive = target.closest('button, a, input, select, textarea, [role="button"], [role="link"]');
+  if (!nearestInteractive) return false;
+  return nearestInteractive !== e.currentTarget;
+}
+
+function eventOriginatesFromNestedInteractiveTarget(
+  target: EventTarget | null,
+  currentTarget: EventTarget | null,
+): boolean {
+  if (!(target instanceof Element) || !(currentTarget instanceof Element)) return false;
+  if (target === currentTarget) return false;
+  const nearestInteractive = target.closest('button, a, input, select, textarea, [role="button"], [role="link"]');
+  if (!nearestInteractive) return false;
+  return nearestInteractive !== currentTarget;
+}
+
 function SpaceOrganismImpl({
   entry,
   altitude,
@@ -84,6 +104,37 @@ function SpaceOrganismImpl({
   };
 
   const handleClick = (e: React.MouseEvent) => {
+    if (eventOriginatesFromInteractiveDescendant(e)) return;
+    e.stopPropagation();
+    const intent = resolvePrimaryClickIntent({
+      restricted,
+      focused,
+      altitude,
+      hasCurrentState: Boolean(data?.currentState),
+    });
+
+    if (intent === 'none') {
+      return;
+    }
+
+    if (intent === 'focus') {
+      onFocusOrganism(entry.organismId, entry.x, entry.y);
+      return;
+    }
+
+    if (!data?.currentState) return;
+    if (data?.currentState?.contentTypeId === 'community') {
+      const payload = data.currentState.payload as { mapOrganismId: string };
+      onEnterMap(payload.mapOrganismId, data.organism.name);
+    } else {
+      onEnterOrganism(entry.organismId, entry.x, entry.y);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (eventOriginatesFromNestedInteractiveTarget(e.target, e.currentTarget)) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
     e.stopPropagation();
     const intent = resolvePrimaryClickIntent({
       restricted,
@@ -111,6 +162,7 @@ function SpaceOrganismImpl({
   };
 
   const handleDoubleClick = (e: React.MouseEvent) => {
+    if (eventOriginatesFromInteractiveDescendant(e)) return;
     e.stopPropagation();
     if (restricted) return;
     if (!data?.currentState) return;
@@ -232,9 +284,19 @@ function SpaceOrganismImpl({
   const Renderer = getRenderer(currentState.contentTypeId) ?? FallbackRenderer;
 
   return (
-    <button type="button" className={className} style={style} onClick={handleClick} onDoubleClick={handleDoubleClick}>
+    // biome-ignore lint/a11y/useSemanticElements: close renderers can contain nested interactive controls, so wrapper cannot be a <button>.
+    <div
+      className={className}
+      style={style}
+      role="button"
+      tabIndex={0}
+      aria-label={`Open organism ${data.organism.name}`}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      onDoubleClick={handleDoubleClick}
+    >
       <Renderer state={currentState} zoom={zoomForAltitude('close')} focused={focused} />
-    </button>
+    </div>
   );
 }
 
