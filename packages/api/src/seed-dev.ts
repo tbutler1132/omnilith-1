@@ -22,6 +22,9 @@ const SONG_STARTER_TEMPLATE_KEY = 'dev_song_starter_template_id';
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
 const DEFAULT_SEED_PROFILE = 'v1-demo';
+const PROJECT_GITHUB_OWNER = 'tbutler1132';
+const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
+const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -538,6 +541,27 @@ export async function seedDev(container: Container): Promise<void> {
   );
   console.log(`  Dormant note: ${dormantNote.organism.id}`);
 
+  // 13. A GitHub repository twin for this project
+  const projectRepository = await createOrganism(
+    {
+      name: 'Omnilith Repository',
+      contentTypeId: 'github-repository' as ContentTypeId,
+      payload: {
+        provider: 'github',
+        owner: PROJECT_GITHUB_OWNER,
+        name: PROJECT_GITHUB_REPOSITORY,
+        defaultBranch: 'main',
+        repositoryUrl: PROJECT_GITHUB_REPOSITORY_URL,
+        sync: {
+          status: 'synced',
+        },
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+  console.log(`  GitHub repository twin: ${projectRepository.organism.id}`);
+
   // --- Community: The Undergrowth ---
 
   // Community spatial map — the navigable surface inside the community
@@ -680,6 +704,7 @@ export async function seedDev(container: Container): Promise<void> {
     // Periphery
     { organismId: sketch.organism.id, x: 1500, y: 3000, size: 0.8 },
     { organismId: dormantNote.organism.id, x: 3500, y: 3200, size: 0.6, emphasis: 0.2 },
+    { organismId: projectRepository.organism.id, x: 3600, y: 2450, size: 0.95, emphasis: 0.66 },
 
     // Community
     { organismId: undergrowth.organism.id, x: 1900, y: 2800, size: 1.5, emphasis: 0.95 },
