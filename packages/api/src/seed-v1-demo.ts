@@ -22,6 +22,9 @@ const DEMO_USER_PASSWORD = 'demo';
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
 const DEV_SESSION_ID = 'dev-session-00000000';
+const PROJECT_GITHUB_OWNER = 'tbutler1132';
+const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
+const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -149,6 +152,25 @@ export async function seedV1Demo(container: Container): Promise<void> {
       appendedBy: demoUserId,
     },
     appendDeps,
+  );
+
+  const projectRepository = await createOrganism(
+    {
+      name: 'Omnilith Repository',
+      contentTypeId: 'github-repository' as ContentTypeId,
+      payload: {
+        provider: 'github',
+        owner: PROJECT_GITHUB_OWNER,
+        name: PROJECT_GITHUB_REPOSITORY,
+        defaultBranch: 'main',
+        repositoryUrl: PROJECT_GITHUB_REPOSITORY_URL,
+        sync: {
+          status: 'synced',
+        },
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
   );
 
   // Community: The Undergrowth
@@ -294,6 +316,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
+          { organismId: projectRepository.organism.id, x: 3400, y: 2420, size: 0.95, emphasis: 0.66 },
           { organismId: undergrowth.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
         ],
         width: 5000,
@@ -311,6 +334,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
 
   console.log(`  Hero's Journey: ${heroJourney.sceneOrganismId}`);
   console.log(`  Weekly Updates: ${weeklyUpdates.organism.id}`);
+  console.log(`  Omnilith Repository: ${projectRepository.organism.id}`);
   console.log(`  Community "The Undergrowth": ${undergrowth.organism.id} (private)`);
   console.log(`  Dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD} (session: ${DEV_SESSION_ID})`);
   console.log(`  Demo user: ${DEMO_USER_EMAIL} / ${DEMO_USER_PASSWORD}`);

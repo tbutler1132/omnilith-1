@@ -68,6 +68,7 @@
   --space-marker-halo-border: rgba(124, 108, 240, 0.45);
   --space-marker-shape-radius: 50%;
   --space-marker-shape-transform: none;
+  --space-marker-shape-clip-path: none;
   --space-marker-badge-border: var(--border);
   --space-marker-badge-text: var(--text-dim);
   --space-organism-focus-border: var(--accent);
@@ -117,6 +118,7 @@
   border-radius: var(--space-marker-shape-radius);
   background: var(--space-marker-fill);
   transform: var(--space-marker-shape-transform);
+  clip-path: var(--space-marker-shape-clip-path);
   transition: transform 0.15s;
 }
 
@@ -182,6 +184,20 @@
   --space-marker-badge-border: rgba(79, 152, 180, 0.35);
   --space-marker-badge-text: #67c4e7;
   --space-organism-focus-border: #5fb3d3;
+}
+
+/* ── GitHub repository distinction ── */
+
+.space-organism--github-repository,
+.map-legend-marker--github-repository {
+  --space-marker-fill: #d28b38;
+  --space-marker-focused-fill: #efaa59;
+  --space-marker-focus-ring: 0 0 0 3px rgba(239, 170, 89, 0.3);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(25% 5%, 75% 5%, 95% 50%, 75% 95%, 25% 95%, 5% 50%);
+  --space-marker-badge-border: rgba(239, 170, 89, 0.36);
+  --space-marker-badge-text: #efaa59;
+  --space-organism-focus-border: #efaa59;
 }
 
 .space-organism--restricted,
