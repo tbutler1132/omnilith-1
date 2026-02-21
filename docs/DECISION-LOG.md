@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 20, 2026  
+Updated: February 21, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -922,6 +922,23 @@ This frames pricing as shared infrastructure stewardship rather than hidden extr
 The detailed decision record is captured in:
 
 - `docs/decisions/034-transparent-stewardship-budget-and-cost-governance.md`
+
+### Move 46: Observation Events as First-Class Sensor Substrate
+
+Sensor organisms need to produce potentially high-frequency observations, but forcing each observation into organism state would create noisy, unbounded state history and weaken state/event separation.
+
+The architecture direction is now explicit:
+
+- observations are recorded in the event stream as first-class `organism.observed` events
+- a dedicated kernel use case records observations with capability and visibility checks
+- adapters expose this via a thin API write path
+- sensor organism state remains curated (identity/configuration/derived summaries), while observation flow remains append-only in events
+
+This preserves the kernel's event-emission concern as the sensory substrate for cybernetic composition while avoiding content-type-specific special-casing in core state mechanics.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/035-observation-events-for-sensor-organisms.md`
 
 ---
 
