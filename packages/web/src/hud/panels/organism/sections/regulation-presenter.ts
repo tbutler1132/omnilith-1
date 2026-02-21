@@ -18,6 +18,11 @@ export interface RegulatoryChild {
   readonly contentTypeId: RegulatoryContentTypeId;
 }
 
+export interface RegulatoryChildrenByContentType {
+  readonly contentTypeId: RegulatoryContentTypeId;
+  readonly children: ReadonlyArray<RegulatoryChild>;
+}
+
 export function isRegulatoryContentTypeId(contentTypeId: string | undefined): contentTypeId is RegulatoryContentTypeId {
   return contentTypeId !== undefined && REGULATORY_CONTENT_TYPE_SET.has(contentTypeId);
 }
@@ -47,4 +52,36 @@ export function presentRegulatoryChildren(
   }
 
   return regulatoryChildren;
+}
+
+export function groupRegulatoryChildrenByContentType(
+  regulatoryChildren: ReadonlyArray<RegulatoryChild>,
+): ReadonlyArray<RegulatoryChildrenByContentType> {
+  const groupedChildren = new Map<RegulatoryContentTypeId, RegulatoryChild[]>();
+
+  for (const child of regulatoryChildren) {
+    const childrenForContentType = groupedChildren.get(child.contentTypeId);
+    if (childrenForContentType) {
+      childrenForContentType.push(child);
+      continue;
+    }
+
+    groupedChildren.set(child.contentTypeId, [child]);
+  }
+
+  const groupedRegulatoryChildren: RegulatoryChildrenByContentType[] = [];
+
+  for (const contentTypeId of REGULATORY_CONTENT_TYPE_IDS) {
+    const children = groupedChildren.get(contentTypeId);
+    if (!children || children.length === 0) {
+      continue;
+    }
+
+    groupedRegulatoryChildren.push({
+      contentTypeId,
+      children,
+    });
+  }
+
+  return groupedRegulatoryChildren;
 }

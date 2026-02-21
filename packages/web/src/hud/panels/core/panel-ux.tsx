@@ -115,11 +115,49 @@ interface PanelSectionProps {
   children?: ReactNode;
 }
 
+interface PanelTab {
+  id: string;
+  label: string;
+  count?: number;
+}
+
+interface PanelTabsProps {
+  ariaLabel: string;
+  tabs: ReadonlyArray<PanelTab>;
+  activeTabId: string;
+  onSelectTab: (tabId: string) => void;
+}
+
 export function PanelSection({ label, children }: PanelSectionProps) {
   return (
     <div className="hud-info-section">
       <span className="hud-info-label">{label}</span>
       {children}
+    </div>
+  );
+}
+
+export function PanelTabs({ ariaLabel, tabs, activeTabId, onSelectTab }: PanelTabsProps) {
+  return (
+    <div className="hud-panel-tab-strip" role="tablist" aria-label={ariaLabel}>
+      {tabs.map((tab) => {
+        const isActive = tab.id === activeTabId;
+        const tabClassName = isActive ? 'hud-panel-tab hud-panel-tab--active' : 'hud-panel-tab';
+
+        return (
+          <button
+            key={tab.id}
+            type="button"
+            className={tabClassName}
+            role="tab"
+            aria-selected={isActive}
+            onClick={() => onSelectTab(tab.id)}
+          >
+            <span>{tab.label}</span>
+            {tab.count !== undefined && <span className="hud-panel-tab-count">{tab.count}</span>}
+          </button>
+        );
+      })}
     </div>
   );
 }

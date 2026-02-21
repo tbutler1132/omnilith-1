@@ -1121,6 +1121,53 @@
   color: var(--hud-text-bright);
 }
 
+.hud-panel-tab-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 8px;
+}
+
+.hud-panel-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--hud-border);
+  border-radius: 999px;
+  background: rgba(10, 10, 15, 0.45);
+  color: var(--hud-text);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  cursor: pointer;
+}
+
+.hud-panel-tab:hover {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+}
+
+.hud-panel-tab--active {
+  border-color: var(--hud-border-active);
+  color: var(--hud-text-bright);
+  box-shadow: var(--hud-glow);
+}
+
+.hud-panel-tab-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 16px;
+  border-radius: 999px;
+  background: rgba(124, 108, 240, 0.2);
+  color: var(--hud-text-bright);
+  font-size: 10px;
+  line-height: 1;
+  padding: 2px 5px;
+}
+
 /* Composition link button (replaces react-router Link) */
 
 .composition-link {

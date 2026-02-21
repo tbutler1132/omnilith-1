@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { OrganismMarkerData } from '../../../../hooks/use-organism.js';
-import { presentRegulatoryChildren } from './regulation-presenter.js';
+import { groupRegulatoryChildrenByContentType, presentRegulatoryChildren } from './regulation-presenter.js';
 
 describe('presentRegulatoryChildren', () => {
   it('returns only visible children with regulatory content types in composition order', () => {
@@ -85,6 +85,69 @@ describe('presentRegulatoryChildren', () => {
         childId: 'org-sensor',
         contentTypeId: 'sensor',
         name: 'Repository Issue Sensor',
+      },
+    ]);
+  });
+
+  it('groups regulatory children by content type in canonical content type order', () => {
+    const grouped = groupRegulatoryChildrenByContentType([
+      {
+        childId: 'org-response-a',
+        contentTypeId: 'response-policy',
+        name: 'Response A',
+      },
+      {
+        childId: 'org-variable',
+        contentTypeId: 'variable',
+        name: 'Threshold Variable',
+      },
+      {
+        childId: 'org-response-b',
+        contentTypeId: 'response-policy',
+        name: 'Response B',
+      },
+      {
+        childId: 'org-sensor',
+        contentTypeId: 'sensor',
+        name: 'Signal Sensor',
+      },
+    ]);
+
+    expect(grouped).toEqual([
+      {
+        contentTypeId: 'sensor',
+        children: [
+          {
+            childId: 'org-sensor',
+            contentTypeId: 'sensor',
+            name: 'Signal Sensor',
+          },
+        ],
+      },
+      {
+        contentTypeId: 'variable',
+        children: [
+          {
+            childId: 'org-variable',
+            contentTypeId: 'variable',
+            name: 'Threshold Variable',
+          },
+        ],
+      },
+      {
+        contentTypeId: 'response-policy',
+        children: [
+          {
+            childId: 'org-response-a',
+            contentTypeId: 'response-policy',
+            name: 'Response A',
+          },
+          {
+            childId: 'org-response-b',
+            contentTypeId: 'response-policy',
+            name: 'Response B',
+          },
+        ],
       },
     ]);
   });
