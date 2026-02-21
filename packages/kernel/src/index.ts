@@ -35,6 +35,8 @@ export type {
   OpenProposalMutationRequest,
   OpenProposalRequest,
   OpenProposalResponse,
+  RecordObservationRequest,
+  RecordObservationResponse,
   ThresholdOrganismRequest,
   ThresholdOrganismResponse,
   UpdateVisibilityRequest,
@@ -80,6 +82,11 @@ export {
 export type { DomainEvent, EventType } from './events/event.js';
 export type { EventPublisher } from './events/event-publisher.js';
 export type { EventRepository } from './events/event-repository.js';
+export {
+  type RecordObservationDeps,
+  type RecordObservationInput,
+  recordObservation,
+} from './events/record-observation.js';
 // Identity
 export type {
   ContentTypeId,

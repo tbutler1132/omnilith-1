@@ -55,6 +55,18 @@ export interface AppendStateResponse {
   readonly state: OrganismState;
 }
 
+/** POST /organisms/:id/observations — record an observation event */
+export interface RecordObservationRequest {
+  readonly targetOrganismId: OrganismId;
+  readonly metric: string;
+  readonly value: number;
+  readonly sampledAt: number;
+}
+
+export interface RecordObservationResponse {
+  readonly event: DomainEvent;
+}
+
 /** GET /organisms/:id/states */
 export interface FetchStateHistoryResponse {
   readonly states: ReadonlyArray<OrganismState>;

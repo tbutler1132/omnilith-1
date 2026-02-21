@@ -11,6 +11,7 @@ export type ProposalStatus = 'open' | 'integrated' | 'declined';
 export type EventType =
   | 'organism.created'
   | 'state.appended'
+  | 'organism.observed'
   | 'organism.composed'
   | 'organism.decomposed'
   | 'proposal.opened'
@@ -160,6 +161,17 @@ export interface AppendStateRequest {
 
 export interface AppendStateResponse {
   readonly state: OrganismState;
+}
+
+export interface RecordObservationRequest {
+  readonly targetOrganismId: string;
+  readonly metric: string;
+  readonly value: number;
+  readonly sampledAt: number;
+}
+
+export interface RecordObservationResponse {
+  readonly event: DomainEvent;
 }
 
 export interface FetchStateHistoryResponse {
