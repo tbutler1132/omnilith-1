@@ -378,6 +378,19 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const softwareSystem = await createOrganism(
+    {
+      name: 'Software System',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
   const communityForum = await createOrganism(
     {
       name: 'Community Forum',
@@ -385,6 +398,374 @@ export async function seedV1Demo(container: Container): Promise<void> {
       payload: {
         title: 'Community Forum',
         appendOnly: true,
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const technologyProposalSensor = await createOrganism(
+    {
+      name: 'capital-technology-proposals-sensor',
+      contentTypeId: 'sensor' as ContentTypeId,
+      payload: {
+        label: 'capital-technology-proposals',
+        targetOrganismId: capitalTechnology.organism.id,
+        metric: 'proposals',
+        readings: [],
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const technologyLoadVariable = await createOrganism(
+    {
+      name: 'capital-technology-load-variable',
+      contentTypeId: 'variable' as ContentTypeId,
+      payload: {
+        label: 'capital-technology-load',
+        value: 0,
+        unit: 'open-proposals',
+        computedAt: container.identityGenerator.timestamp(),
+        computation: {
+          mode: 'observation-sum',
+          sensorLabel: 'capital-technology-proposals',
+          metric: 'proposals',
+          windowSeconds: 7 * 24 * 60 * 60,
+        },
+        thresholds: {
+          low: 4,
+          critical: 7,
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const technologyResponsePolicy = await createOrganism(
+    {
+      name: 'capital-technology-response-policy',
+      contentTypeId: 'response-policy' as ContentTypeId,
+      payload: {
+        mode: 'variable-threshold',
+        variableLabel: 'capital-technology-load',
+        condition: 'above',
+        threshold: 7,
+        action: 'decline-all',
+        reason: 'Technology load is above capacity. Prioritize reliability and integration.',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const technologyTriageAction = await createOrganism(
+    {
+      name: 'capital-technology-triage-action',
+      contentTypeId: 'action' as ContentTypeId,
+      payload: {
+        label: 'Open capital technology triage proposal',
+        kind: 'open-proposal',
+        executionMode: 'proposal-required',
+        riskLevel: 'high',
+        cooldownSeconds: 7 * 24 * 60 * 60,
+        trigger: {
+          responsePolicyOrganismId: technologyResponsePolicy.organism.id,
+          whenDecision: 'decline',
+        },
+        config: {
+          targetOrganismId: communityForum.organism.id,
+          proposedContentTypeId: 'thread',
+          proposedPayload: {
+            author: devUserId,
+            content:
+              'Capital Technology triage recommendation: proposal pressure is elevated. Shift this week toward stabilization and integration.',
+            timestamp: container.identityGenerator.timestamp(),
+          },
+          description: 'Technology triage proposal from capital technology loop',
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const softwareSystemProposalSensor = await createOrganism(
+    {
+      name: 'software-system-proposals-sensor',
+      contentTypeId: 'sensor' as ContentTypeId,
+      payload: {
+        label: 'software-system-proposals',
+        targetOrganismId: softwareSystem.organism.id,
+        metric: 'proposals',
+        readings: [],
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const softwareSystemLoadVariable = await createOrganism(
+    {
+      name: 'software-system-load-variable',
+      contentTypeId: 'variable' as ContentTypeId,
+      payload: {
+        label: 'software-system-load',
+        value: 0,
+        unit: 'open-proposals',
+        computedAt: container.identityGenerator.timestamp(),
+        computation: {
+          mode: 'observation-sum',
+          sensorLabel: 'software-system-proposals',
+          metric: 'proposals',
+          windowSeconds: 7 * 24 * 60 * 60,
+        },
+        thresholds: {
+          low: 3,
+          critical: 5,
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const softwareSystemResponsePolicy = await createOrganism(
+    {
+      name: 'software-system-response-policy',
+      contentTypeId: 'response-policy' as ContentTypeId,
+      payload: {
+        mode: 'variable-threshold',
+        variableLabel: 'software-system-load',
+        condition: 'above',
+        threshold: 5,
+        action: 'decline-all',
+        reason: 'Software system load is above threshold. Stabilize before accepting additional mutations.',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const softwareSystemStabilityAction = await createOrganism(
+    {
+      name: 'software-system-stability-action',
+      contentTypeId: 'action' as ContentTypeId,
+      payload: {
+        label: 'Open software system stability proposal',
+        kind: 'open-proposal',
+        executionMode: 'proposal-required',
+        riskLevel: 'high',
+        cooldownSeconds: 7 * 24 * 60 * 60,
+        trigger: {
+          responsePolicyOrganismId: softwareSystemResponsePolicy.organism.id,
+          whenDecision: 'decline',
+        },
+        config: {
+          targetOrganismId: communityForum.organism.id,
+          proposedContentTypeId: 'thread',
+          proposedPayload: {
+            author: devUserId,
+            content:
+              'Software System stability recommendation: pause non-essential changes and close out the current proposal queue.',
+            timestamp: container.identityGenerator.timestamp(),
+          },
+          description: 'Stability proposal from software system loop',
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityProposalSensor = await createOrganism(
+    {
+      name: 'capital-open-proposals-sensor',
+      contentTypeId: 'sensor' as ContentTypeId,
+      payload: {
+        label: 'capital-open-proposals',
+        targetOrganismId: capitalCommunity.organism.id,
+        metric: 'proposals',
+        readings: [],
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityParticipationSensor = await createOrganism(
+    {
+      name: 'capital-participation-sensor',
+      contentTypeId: 'sensor' as ContentTypeId,
+      payload: {
+        label: 'capital-participation',
+        targetOrganismId: capitalCommunity.organism.id,
+        metric: 'state-changes',
+        readings: [],
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityGovernanceLoadVariable = await createOrganism(
+    {
+      name: 'capital-governance-load-variable',
+      contentTypeId: 'variable' as ContentTypeId,
+      payload: {
+        label: 'capital-governance-load',
+        value: 0,
+        unit: 'open-proposals',
+        computedAt: container.identityGenerator.timestamp(),
+        computation: {
+          mode: 'observation-sum',
+          sensorLabel: 'capital-open-proposals',
+          metric: 'proposals',
+          windowSeconds: 7 * 24 * 60 * 60,
+        },
+        thresholds: {
+          low: 8,
+          critical: 12,
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityVitalityVariable = await createOrganism(
+    {
+      name: 'capital-community-vitality-variable',
+      contentTypeId: 'variable' as ContentTypeId,
+      payload: {
+        label: 'capital-community-vitality',
+        value: 0,
+        unit: 'weekly-state-changes',
+        computedAt: container.identityGenerator.timestamp(),
+        computation: {
+          mode: 'observation-sum',
+          sensorLabel: 'capital-participation',
+          metric: 'state-changes',
+          windowSeconds: 7 * 24 * 60 * 60,
+        },
+        thresholds: {
+          low: 6,
+          critical: 3,
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityCadenceResponsePolicy = await createOrganism(
+    {
+      name: 'capital-cadence-response-policy',
+      contentTypeId: 'response-policy' as ContentTypeId,
+      payload: {
+        mode: 'variable-threshold',
+        variableLabel: 'capital-governance-load',
+        condition: 'above',
+        threshold: 12,
+        action: 'decline-all',
+        reason: 'Governance load is above weekly capacity. Prioritize triage and integrations.',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityVitalityResponsePolicy = await createOrganism(
+    {
+      name: 'capital-vitality-response-policy',
+      contentTypeId: 'response-policy' as ContentTypeId,
+      payload: {
+        mode: 'variable-threshold',
+        variableLabel: 'capital-community-vitality',
+        condition: 'below',
+        threshold: 6,
+        action: 'decline-all',
+        reason: 'Community vitality is below baseline. Prioritize participation actions.',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityTriageAction = await createOrganism(
+    {
+      name: 'capital-weekly-triage-action',
+      contentTypeId: 'action' as ContentTypeId,
+      payload: {
+        label: 'Open weekly governance triage proposal',
+        kind: 'open-proposal',
+        executionMode: 'proposal-required',
+        riskLevel: 'high',
+        cooldownSeconds: 7 * 24 * 60 * 60,
+        trigger: {
+          responsePolicyOrganismId: communityCadenceResponsePolicy.organism.id,
+          whenDecision: 'decline',
+        },
+        config: {
+          targetOrganismId: communityForum.organism.id,
+          proposedContentTypeId: 'thread',
+          proposedPayload: {
+            author: devUserId,
+            content:
+              'Weekly triage recommendation: governance load is high. Prioritize integrating or declining open proposals before new work.',
+            timestamp: container.identityGenerator.timestamp(),
+          },
+          description: 'Weekly triage proposal from capital cadence loop',
+        },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const communityParticipationAction = await createOrganism(
+    {
+      name: 'capital-participation-invitation-action',
+      contentTypeId: 'action' as ContentTypeId,
+      payload: {
+        label: 'Open community participation invitation proposal',
+        kind: 'open-proposal',
+        executionMode: 'proposal-required',
+        riskLevel: 'high',
+        cooldownSeconds: 7 * 24 * 60 * 60,
+        trigger: {
+          responsePolicyOrganismId: communityVitalityResponsePolicy.organism.id,
+          whenDecision: 'decline',
+        },
+        config: {
+          targetOrganismId: communityForum.organism.id,
+          proposedContentTypeId: 'thread',
+          proposedPayload: {
+            author: devUserId,
+            content:
+              'Steward invitation: share one current work and one blocker this week so we can coordinate support.',
+            timestamp: container.identityGenerator.timestamp(),
+          },
+          description: 'Participation invitation proposal from community vitality loop',
+        },
       },
       createdBy: devUserId,
       openTrunk: true,
@@ -471,7 +852,95 @@ export async function seedV1Demo(container: Container): Promise<void> {
     composeDeps,
   );
   await composeOrganism(
-    { parentId: capitalTechnology.organism.id, childId: projectRepository.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: communityProposalSensor.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: communityParticipationSensor.organism.id,
+      composedBy: devUserId,
+    },
+    composeDeps,
+  );
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: communityGovernanceLoadVariable.organism.id,
+      composedBy: devUserId,
+    },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: communityVitalityVariable.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: communityCadenceResponsePolicy.organism.id,
+      composedBy: devUserId,
+    },
+    composeDeps,
+  );
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: communityVitalityResponsePolicy.organism.id,
+      composedBy: devUserId,
+    },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: communityTriageAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: communityParticipationAction.organism.id,
+      composedBy: devUserId,
+    },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: softwareSystem.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: technologyProposalSensor.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: technologyLoadVariable.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: technologyResponsePolicy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: technologyTriageAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: softwareSystemProposalSensor.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: softwareSystemLoadVariable.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: softwareSystemResponsePolicy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: softwareSystemStabilityAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: projectRepository.organism.id, composedBy: devUserId },
     composeDeps,
   );
 
@@ -481,18 +950,24 @@ export async function seedV1Demo(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [
-          { organismId: communityText.organism.id, x: 800, y: 900, size: 1.0, emphasis: 0.8 },
-          { organismId: communityAudio.organism.id, x: 1200, y: 1100, size: 1.1, emphasis: 0.9 },
-          { organismId: capitalGovernment.organism.id, x: 920, y: 1220, size: 1.2, emphasis: 0.88 },
-          { organismId: capitalTreasury.organism.id, x: 1120, y: 1240, size: 1.12, emphasis: 0.86 },
-          { organismId: capitalMembership.organism.id, x: 980, y: 1060, size: 1.02, emphasis: 0.84 },
-          { organismId: capitalCommons.organism.id, x: 860, y: 1120, size: 1.02, emphasis: 0.84 },
-          { organismId: capitalTechnology.organism.id, x: 1340, y: 1280, size: 1.1, emphasis: 0.86 },
-          { organismId: projectRepository.organism.id, x: 1480, y: 1350, size: 0.94, emphasis: 0.76 },
-          { organismId: communityForum.organism.id, x: 1060, y: 980, size: 1.05, emphasis: 0.84 },
+          // Civic district
+          { organismId: capitalGovernment.organism.id, x: 900, y: 1400, size: 1.22, emphasis: 0.92 },
+          { organismId: capitalTreasury.organism.id, x: 900, y: 2300, size: 1.15, emphasis: 0.9 },
+          { organismId: capitalMembership.organism.id, x: 1300, y: 1850, size: 1.08, emphasis: 0.88 },
+          { organismId: capitalCommons.organism.id, x: 500, y: 1850, size: 1.08, emphasis: 0.88 },
+          { organismId: communityForum.organism.id, x: 1300, y: 1200, size: 1.06, emphasis: 0.86 },
+          // Cultural district
+          { organismId: communityText.organism.id, x: 1700, y: 3400, size: 1.04, emphasis: 0.84 },
+          { organismId: communityAudio.organism.id, x: 2300, y: 3800, size: 1.12, emphasis: 0.9 },
+          { organismId: heroJourney.sceneOrganismId, x: 3000, y: 2250, size: 1.18, emphasis: 0.95 },
+          { organismId: weeklyUpdates.organism.id, x: 3400, y: 3900, size: 1.04, emphasis: 0.82 },
+          // Technology district
+          { organismId: capitalTechnology.organism.id, x: 4300, y: 1600, size: 1.16, emphasis: 0.9 },
+          { organismId: softwareSystem.organism.id, x: 5050, y: 1900, size: 1.04, emphasis: 0.84 },
+          { organismId: projectRepository.organism.id, x: 5650, y: 2150, size: 0.98, emphasis: 0.8 },
         ],
-        width: 2000,
-        height: 2000,
+        width: 6000,
+        height: 4500,
       },
       appendedBy: devUserId,
     },
@@ -566,7 +1041,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
   console.log(`  Capital Membership: ${capitalMembership.organism.id}`);
   console.log(`  Capital Commons: ${capitalCommons.organism.id}`);
   console.log(`  Capital Technology: ${capitalTechnology.organism.id}`);
+  console.log(`  Software System: ${softwareSystem.organism.id}`);
   console.log(`  Community Forum: ${communityForum.organism.id}`);
+  console.log(`  capital-cadence-response-policy: ${communityCadenceResponsePolicy.organism.id}`);
+  console.log(`  capital-vitality-response-policy: ${communityVitalityResponsePolicy.organism.id}`);
+  console.log(`  capital-technology-response-policy: ${technologyResponsePolicy.organism.id}`);
+  console.log(`  software-system-response-policy: ${softwareSystemResponsePolicy.organism.id}`);
   console.log(`  Community "Capital Community": ${capitalCommunity.organism.id} (private)`);
   console.log(`  Dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD} (session: ${DEV_SESSION_ID})`);
   console.log(`  Demo user: ${DEMO_USER_EMAIL} / ${DEMO_USER_PASSWORD}`);

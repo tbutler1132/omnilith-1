@@ -177,13 +177,38 @@
 
 .space-organism--hero-journey-scene,
 .map-legend-marker--hero-journey-scene {
-  --space-marker-fill: #4f98b4;
-  --space-marker-focused-fill: #6ab6d5;
-  --space-marker-focus-ring: 0 0 0 3px rgba(79, 152, 180, 0.28);
-  --space-marker-shape-radius: 10px;
-  --space-marker-badge-border: rgba(79, 152, 180, 0.35);
-  --space-marker-badge-text: #67c4e7;
-  --space-organism-focus-border: #5fb3d3;
+  --space-marker-fill: radial-gradient(circle at 32% 28%, #fff8cf 0%, #f6d772 36%, #c58426 100%);
+  --space-marker-focused-fill: radial-gradient(circle at 35% 30%, #fffde8 0%, #ffe28a 40%, #de9432 100%);
+  --space-marker-focus-ring: 0 0 0 3px rgba(236, 176, 74, 0.35), 0 0 18px rgba(236, 176, 74, 0.45);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(
+    50% 2%,
+    61% 23%,
+    84% 14%,
+    75% 36%,
+    98% 50%,
+    75% 64%,
+    84% 86%,
+    61% 77%,
+    50% 98%,
+    39% 77%,
+    16% 86%,
+    25% 64%,
+    2% 50%,
+    25% 36%,
+    16% 14%,
+    39% 23%
+  );
+  --space-marker-badge-border: rgba(236, 176, 74, 0.4);
+  --space-marker-badge-text: #f4d486;
+  --space-organism-focus-border: #f0c76c;
+}
+
+.space-organism--hero-journey-scene .organism-dot::after,
+.map-legend-marker--hero-journey-scene .organism-dot::after {
+  border-color: rgba(243, 192, 88, 0.62);
+  opacity: 1;
+  transform: scale(1.08);
 }
 
 /* ── GitHub repository distinction ── */
@@ -198,6 +223,41 @@
   --space-marker-badge-border: rgba(239, 170, 89, 0.36);
   --space-marker-badge-text: #efaa59;
   --space-organism-focus-border: #efaa59;
+}
+
+.space-organism--institution,
+.map-legend-marker--institution {
+  --space-marker-fill: #c0a041;
+  --space-marker-focused-fill: #e1bf57;
+  --space-marker-focus-ring: 0 0 0 3px rgba(225, 191, 87, 0.3);
+  --space-marker-shape-radius: 4px;
+  --space-marker-shape-clip-path: polygon(8% 20%, 50% 4%, 92% 20%, 92% 80%, 8% 80%);
+  --space-marker-badge-border: rgba(225, 191, 87, 0.36);
+  --space-marker-badge-text: #e6c96c;
+  --space-organism-focus-border: #e6c96c;
+}
+
+.space-organism--system,
+.map-legend-marker--system {
+  --space-marker-fill: #4a9fb1;
+  --space-marker-focused-fill: #61bacf;
+  --space-marker-focus-ring: 0 0 0 3px rgba(97, 186, 207, 0.28);
+  --space-marker-shape-radius: 2px;
+  --space-marker-badge-border: rgba(97, 186, 207, 0.34);
+  --space-marker-badge-text: #73cde2;
+  --space-organism-focus-border: #73cde2;
+}
+
+.space-organism--regulation,
+.map-legend-marker--regulation {
+  --space-marker-fill: #4ea06f;
+  --space-marker-focused-fill: #65be89;
+  --space-marker-focus-ring: 0 0 0 3px rgba(101, 190, 137, 0.3);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(50% 4%, 96% 32%, 78% 92%, 22% 92%, 4% 32%);
+  --space-marker-badge-border: rgba(101, 190, 137, 0.35);
+  --space-marker-badge-text: #73c99a;
+  --space-organism-focus-border: #73c99a;
 }
 
 .space-organism--restricted,

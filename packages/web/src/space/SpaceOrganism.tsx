@@ -11,6 +11,7 @@ import { memo } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import type { OrganismMarkerData } from '../hooks/use-organism.js';
 import { FallbackRenderer, getRenderer } from '../renderers/index.js';
+import { resolveMarkerProfile } from './marker-profile.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import { zoomForAltitude } from './viewport-math.js';
 
@@ -175,6 +176,13 @@ function SpaceOrganismImpl({
   };
 
   const contentTypeId = data?.currentState?.contentTypeId;
+  const markerProfile =
+    data?.currentState && data?.organism
+      ? resolveMarkerProfile({
+          name: data.organism.name,
+          contentTypeId: data.currentState.contentTypeId,
+        })
+      : undefined;
 
   const className = [
     'space-organism',
@@ -183,6 +191,7 @@ function SpaceOrganismImpl({
     loading && 'space-organism--loading',
     error && 'space-organism--error',
     contentTypeId && `space-organism--${contentTypeId}`,
+    markerProfile && `space-organism--${markerProfile}`,
   ]
     .filter(Boolean)
     .join(' ');
