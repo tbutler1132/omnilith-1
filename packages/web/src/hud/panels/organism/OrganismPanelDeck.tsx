@@ -65,9 +65,8 @@ export function OrganismPanelDeck({ organismId, initialPanelId = null }: Organis
   const openTrunk = organism?.organism.openTrunk ?? false;
 
   useEffect(() => {
-    if (!initialPanelId) return;
-    setPreferredPanelId(initialPanelId);
-  }, [initialPanelId]);
+    setPreferredPanelId(initialPanelId ?? (interiorOrigin ? 'proposals' : null));
+  }, [initialPanelId, interiorOrigin]);
 
   useEffect(() => {
     if (!interiorOrigin || organismLoading) return;
@@ -110,28 +109,9 @@ export function OrganismPanelDeck({ organismId, initialPanelId = null }: Organis
   const childCountLabel = childrenLoading ? '...' : childrenError ? 'unknown' : String(children?.length ?? 0);
   const secondaryShortcutActions: OrganismShortcutAction[] = [];
 
-  if (interiorOrigin) {
-    secondaryShortcutActions.push({ panelId: 'organism', label: 'Open overview' });
-  } else {
-    secondaryShortcutActions.push({ panelId: 'composition', label: 'Open composition' });
-  }
+  secondaryShortcutActions.push({ panelId: 'organism', label: 'Open overview' });
   secondaryShortcutActions.push({ panelId: 'regulation', label: 'Open regulation' });
-  if (!interiorOrigin && openTrunk) {
-    if (canWrite) secondaryShortcutActions.push({ panelId: 'append', label: 'Open append state' });
-  } else if (!interiorOrigin) {
-    secondaryShortcutActions.push({ panelId: 'propose', label: 'Open proposal' });
-    secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
-  }
-  if (interiorOrigin) {
-    secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open proposals' });
-  } else {
-    secondaryShortcutActions.push({ panelId: 'contributions', label: 'Open contributions' });
-  }
-  if (!interiorOrigin) {
-    secondaryShortcutActions.push({ panelId: 'history', label: 'Open state history' });
-    secondaryShortcutActions.push({ panelId: 'governance', label: 'Open governance' });
-    secondaryShortcutActions.push({ panelId: 'relationships', label: 'Open relationships' });
-  }
+  secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open collaborate' });
 
   return (
     <>
@@ -167,9 +147,9 @@ export function OrganismPanelDeck({ organismId, initialPanelId = null }: Organis
         }}
         onCollapseMainPanel={() => {
           setPreferredPanelId(null);
-          // When tending from an interior context, collapsing should return
-          // to interior actions instead of leaving an invisible visor target.
-          if (enteredOrganismId === organismId) {
+          // When opened from any organism interior, collapsing should return
+          // to interior actions instead of preserving the last visor target.
+          if (enteredOrganismId !== null) {
             closeVisorOrganism();
           }
         }}

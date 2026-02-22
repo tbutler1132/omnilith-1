@@ -310,8 +310,8 @@ export function PlatformProvider({
     dispatch({ type: 'NAVIGATE_TO_MAP', mapId });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
-  const openInVisor = useCallback((id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => {
-    setVisorPanelIntent(panelIntent ?? null);
+  const openInVisor = useCallback((id: string, panelIntent: 'organism' | 'proposals' | 'regulation' = 'organism') => {
+    setVisorPanelIntent(panelIntent);
     adaptiveVisorDispatch({ type: 'open-visor-organism', organismId: id });
   }, []);
   const closeVisorOrganism = useCallback(() => {

@@ -67,12 +67,13 @@ describe('VisorPanelDeck', () => {
     expect(html).toContain('Collapse');
   });
 
-  it('opening tend in organism context renders one secondary action card', () => {
+  it('opening tend in organism context keeps alternate actions collapsed', () => {
     const html = renderDeck({ templateContext: 'visor-organism', preferredMainPanelId: 'organism' });
 
     expect(html).toContain('<h4>Overview</h4>');
-    expect(html).toContain('visor-panel-secondary-row');
-    expect(html).toContain('Composition');
+    expect(html).not.toContain('visor-panel-secondary-row');
+    expect(html).toContain('Collaborate');
+    expect(html).toContain('Regulation');
   });
 
   it('entered-organism visor context suppresses panel shortcuts in the secondary slot', () => {
