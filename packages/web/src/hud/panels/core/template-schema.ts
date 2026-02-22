@@ -99,8 +99,8 @@ export const VISOR_TEMPLATE_REGISTRY: VisorTemplateDefinition[] = [
         presentation: 'centered-overlay',
       },
       secondary: {
-        enabled: true,
-        maxPanels: 1,
+        enabled: false,
+        maxPanels: 0,
       },
       collapsed: {
         enabled: true,

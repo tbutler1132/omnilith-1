@@ -25,7 +25,7 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
 
-  it('opening tend reveals universal regulated panels as collapsed alternatives', () => {
+  it('opening tend keeps alternate panels collapsed for stable quick switching', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -39,16 +39,8 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.mainPanelId).toBe('organism');
-    expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual([
-      'proposals',
-      'propose',
-      'regulation',
-      'contributions',
-      'relationships',
-      'governance',
-      'history',
-    ]);
+    expect(layout.secondaryPanelIds).toEqual([]);
+    expect(layout.collapsedPanelIds).toEqual(['proposals', 'regulation']);
   });
 
   it('true renderer preview suppresses secondary panels for full-width focus', () => {
@@ -69,7 +61,7 @@ describe('resolveVisorPanelLayout', () => {
     expect(layout.secondaryPanelIds).toEqual([]);
   });
 
-  it('an open-trunk organism exposes append and omits regulated proposal panels', () => {
+  it('an open-trunk organism keeps only overview and regulation available', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -82,21 +74,12 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual([
-      'organism',
-      'composition',
-      'regulation',
-      'append',
-      'relationships',
-      'contributions',
-      'history',
-      'governance',
-    ]);
+    expect(layout.availablePanelIds).toEqual(['organism', 'regulation']);
     expect(layout.secondaryPanelIds).toEqual([]);
     expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
 
-  it('opening tend on open-trunk reveals append alongside other universal panels', () => {
+  it('opening tend on open-trunk keeps regulation collapsed', () => {
     const layout = resolveVisorPanelLayout({
       context: {
         contextClass: 'visor-organism',
@@ -109,15 +92,8 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.secondaryPanelIds).toEqual(['composition']);
-    expect(layout.collapsedPanelIds).toEqual([
-      'append',
-      'regulation',
-      'contributions',
-      'relationships',
-      'governance',
-      'history',
-    ]);
+    expect(layout.secondaryPanelIds).toEqual([]);
+    expect(layout.collapsedPanelIds).toEqual(['regulation']);
   });
 
   it('a regulated boundary always exposes the regulation panel', () => {
@@ -162,11 +138,11 @@ describe('resolveVisorPanelLayout', () => {
         templateValuesReady: false,
         canWrite: true,
       },
-      preferredMainPanelId: 'history',
+      preferredMainPanelId: 'proposals',
       slots: organismSlots,
     });
 
-    expect(layout.mainPanelId).toBe('history');
+    expect(layout.mainPanelId).toBe('proposals');
   });
 
   it('fallback main panel chooses the highest ranked panel deterministically', () => {
@@ -202,7 +178,7 @@ describe('resolveVisorPanelLayout', () => {
       },
     });
 
-    expect(layout.secondaryPanelIds).toEqual(['composition']);
+    expect(layout.secondaryPanelIds).toEqual(['proposals']);
   });
 
   it('an interior context uses the same policy path with collapsed-only tend actions', () => {

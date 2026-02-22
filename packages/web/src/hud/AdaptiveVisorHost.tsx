@@ -135,7 +135,7 @@ export function AdaptiveVisorHost() {
       )}
 
       {contextClass === 'visor-organism' && visorOrganismId && adaptiveState.activePanels.includes('visor-view') && (
-        <OrganismPanelDeck organismId={visorOrganismId} initialPanelId={visorPanelIntent} />
+        <OrganismPanelDeck key={visorOrganismId} organismId={visorOrganismId} initialPanelId={visorPanelIntent} />
       )}
 
       {contextClass === 'interior' && enteredOrganismId && adaptiveState.activePanels.includes('interior-actions') && (
