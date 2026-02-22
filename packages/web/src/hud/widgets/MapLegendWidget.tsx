@@ -6,15 +6,17 @@
  */
 
 interface MapLegendEntry {
-  contentTypeId: 'community' | 'song' | 'hero-journey-scene' | 'github-repository';
+  markerClass: 'community' | 'song' | 'hero-journey-scene' | 'github-repository' | 'institution' | 'system';
   label: string;
 }
 
 const MAP_LEGEND_ENTRIES: readonly MapLegendEntry[] = [
-  { contentTypeId: 'community', label: 'Community' },
-  { contentTypeId: 'song', label: 'Song' },
-  { contentTypeId: 'hero-journey-scene', label: 'Hero Journey Scene' },
-  { contentTypeId: 'github-repository', label: 'GitHub Repository' },
+  { markerClass: 'community', label: 'Community' },
+  { markerClass: 'institution', label: 'Institution' },
+  { markerClass: 'system', label: 'System' },
+  { markerClass: 'song', label: 'Song' },
+  { markerClass: 'hero-journey-scene', label: 'Hero Journey Scene' },
+  { markerClass: 'github-repository', label: 'GitHub Repository' },
 ];
 
 export function MapLegendWidget() {
@@ -23,8 +25,8 @@ export function MapLegendWidget() {
       <span className="visor-widget-label">Map legend</span>
       <ul className="map-legend-list">
         {MAP_LEGEND_ENTRIES.map((entry) => (
-          <li key={entry.contentTypeId} className="map-legend-item">
-            <span className={`map-legend-marker map-legend-marker--${entry.contentTypeId}`} aria-hidden="true">
+          <li key={entry.markerClass} className="map-legend-item">
+            <span className={`map-legend-marker map-legend-marker--${entry.markerClass}`} aria-hidden="true">
               <span className="organism-dot" />
             </span>
             <span>{entry.label}</span>
