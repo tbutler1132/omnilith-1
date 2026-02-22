@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react';
 import { ApiError } from '../api/client.js';
 import {
+  fetchActionExecutions,
   fetchChildren,
   fetchContributions,
   fetchEvents,
@@ -248,6 +249,10 @@ export function useRelationships(id: string) {
 
 export function useEvents(id: string) {
   return useAsync(() => fetchEvents(id).then((r) => r.events), [id]);
+}
+
+export function useActionExecutions(id: string, refreshKey = 0, limit = 50) {
+  return useAsync(() => fetchActionExecutions(id, limit).then((r) => r.executions), [id, refreshKey, limit]);
 }
 
 export function useContributions(id: string, refreshKey = 0) {

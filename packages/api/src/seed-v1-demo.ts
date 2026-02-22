@@ -221,10 +221,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
         mode: 'variable-threshold',
         variableLabel: 'repository-issue-pressure',
         condition: 'above',
-        threshold: 3,
+        threshold: 0,
         currentVariableValue: 0,
         action: 'decline-all',
-        reason: 'Issue pressure is high.',
+        reason: 'Issue pressure is high. Prioritize issue resolution until pressure returns to baseline.',
       },
       createdBy: devUserId,
       openTrunk: true,
@@ -237,23 +237,48 @@ export async function seedV1Demo(container: Container): Promise<void> {
       name: 'Repository Follow-up Action',
       contentTypeId: 'action' as ContentTypeId,
       payload: {
-        label: 'Open repository follow-up proposal',
+        label: 'Open repository issue-resolution proposal',
         kind: 'open-proposal',
         executionMode: 'proposal-required',
         riskLevel: 'high',
         trigger: {
           responsePolicyOrganismId: repositoryResponsePolicy.organism.id,
-          whenDecision: 'pass',
+          whenDecision: 'decline',
         },
         config: {
           targetOrganismId: projectRepository.organism.id,
           proposedContentTypeId: 'text',
           proposedPayload: {
-            content: 'Regulator follow-up for repository pressure.',
+            content:
+              'Repository issue pressure is above threshold. Manually resolve one issue (including PR work as needed), then close the issue so pressure observations return toward baseline.',
             format: 'markdown',
           },
-          description: 'Repository follow-up proposal from seed loop',
+          description: 'Repository issue-resolution follow-up proposal from seed loop',
+          fanOutByVariableCount: true,
         },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const repositoryWhy = await createOrganism(
+    {
+      name: 'omnilith-repository-why',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Omnilith Repository — Why',
+          '',
+          'This boundary exists to keep delivery coherent and reliable for the software system.',
+          '',
+          '## Next steps',
+          '- Keep issue pressure below the policy threshold through weekly triage.',
+          '- Integrate or decline open proposals with clear rationale.',
+          '- When response pressure rises, resolve one issue and verify pressure drops in the next regulator cycle.',
+        ].join('\n'),
+        format: 'markdown',
       },
       createdBy: devUserId,
       openTrunk: true,
@@ -275,6 +300,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
   await composeOrganism(
     { parentId: projectRepository.organism.id, childId: repositoryProposalAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: projectRepository.organism.id, childId: repositoryWhy.organism.id, composedBy: devUserId },
     composeDeps,
   );
 
@@ -773,6 +802,75 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const capitalCommunityWhy = await createOrganism(
+    {
+      name: 'capital-community-why',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Capital Community — Why',
+          '',
+          'This boundary keeps culture, institutions, and regulation coherent while the community grows.',
+          '',
+          '## Next steps',
+          '- Run a weekly cadence to review governance load and community vitality.',
+          '- Keep institution boundaries legible on the map and in composition.',
+          '- Integrate proposals with rationale in the community forum thread.',
+        ].join('\n'),
+        format: 'markdown',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const capitalTechnologyWhy = await createOrganism(
+    {
+      name: 'capital-technology-why',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Capital Technology — Why',
+          '',
+          'This institution tends product delivery, reliability, and platform continuity.',
+          '',
+          '## Next steps',
+          '- Shift between stabilization and growth based on technology load.',
+          '- Keep software-system work visible and scoped through proposals.',
+          '- Publish weekly technology triage notes in the community forum.',
+        ].join('\n'),
+        format: 'markdown',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const softwareSystemWhy = await createOrganism(
+    {
+      name: 'software-system-why',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Software System — Why',
+          '',
+          'This system boundary coordinates the technical organisms required to ship Omnilith safely.',
+          '',
+          '## Next steps',
+          '- Keep proposal queue pressure below threshold.',
+          '- Stabilize before accepting additional high-risk mutations.',
+          '- Keep repository loop signals current and review weekly.',
+        ].join('\n'),
+        format: 'markdown',
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
   const communityText = await createOrganism(
     {
       name: 'Listening Practice',
@@ -904,6 +1002,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
     composeDeps,
   );
   await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: capitalCommunityWhy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
     { parentId: capitalTechnology.organism.id, childId: softwareSystem.organism.id, composedBy: devUserId },
     composeDeps,
   );
@@ -924,6 +1026,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
     composeDeps,
   );
   await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: capitalTechnologyWhy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
     { parentId: softwareSystem.organism.id, childId: softwareSystemProposalSensor.organism.id, composedBy: devUserId },
     composeDeps,
   );
@@ -937,6 +1043,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
   await composeOrganism(
     { parentId: softwareSystem.organism.id, childId: softwareSystemStabilityAction.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: softwareSystem.organism.id, childId: softwareSystemWhy.organism.id, composedBy: devUserId },
     composeDeps,
   );
   await composeOrganism(
@@ -956,6 +1066,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
           { organismId: capitalMembership.organism.id, x: 1300, y: 1850, size: 1.08, emphasis: 0.88 },
           { organismId: capitalCommons.organism.id, x: 500, y: 1850, size: 1.08, emphasis: 0.88 },
           { organismId: communityForum.organism.id, x: 1300, y: 1200, size: 1.06, emphasis: 0.86 },
+          { organismId: capitalCommunityWhy.organism.id, x: 1650, y: 1600, size: 0.96, emphasis: 0.78 },
           // Cultural district
           { organismId: communityText.organism.id, x: 1700, y: 3400, size: 1.04, emphasis: 0.84 },
           { organismId: communityAudio.organism.id, x: 2300, y: 3800, size: 1.12, emphasis: 0.9 },
@@ -963,8 +1074,11 @@ export async function seedV1Demo(container: Container): Promise<void> {
           { organismId: weeklyUpdates.organism.id, x: 3400, y: 3900, size: 1.04, emphasis: 0.82 },
           // Technology district
           { organismId: capitalTechnology.organism.id, x: 4300, y: 1600, size: 1.16, emphasis: 0.9 },
+          { organismId: capitalTechnologyWhy.organism.id, x: 4620, y: 1120, size: 0.96, emphasis: 0.78 },
           { organismId: softwareSystem.organism.id, x: 5050, y: 1900, size: 1.04, emphasis: 0.84 },
+          { organismId: softwareSystemWhy.organism.id, x: 5380, y: 1600, size: 0.94, emphasis: 0.76 },
           { organismId: projectRepository.organism.id, x: 5650, y: 2150, size: 0.98, emphasis: 0.8 },
+          { organismId: repositoryWhy.organism.id, x: 5880, y: 2550, size: 0.9, emphasis: 0.74 },
         ],
         width: 6000,
         height: 4500,
@@ -1047,6 +1161,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
   console.log(`  capital-vitality-response-policy: ${communityVitalityResponsePolicy.organism.id}`);
   console.log(`  capital-technology-response-policy: ${technologyResponsePolicy.organism.id}`);
   console.log(`  software-system-response-policy: ${softwareSystemResponsePolicy.organism.id}`);
+  console.log(`  capital-community-why: ${capitalCommunityWhy.organism.id}`);
+  console.log(`  capital-technology-why: ${capitalTechnologyWhy.organism.id}`);
+  console.log(`  software-system-why: ${softwareSystemWhy.organism.id}`);
+  console.log(`  omnilith-repository-why: ${repositoryWhy.organism.id}`);
   console.log(`  Community "Capital Community": ${capitalCommunity.organism.id} (private)`);
   console.log(`  Dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD} (session: ${DEV_SESSION_ID})`);
   console.log(`  Demo user: ${DEMO_USER_EMAIL} / ${DEMO_USER_PASSWORD}`);

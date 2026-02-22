@@ -400,6 +400,144 @@ describe('regulator runtime', () => {
     expect(proposals[0].description).toContain('Regulator action proposal');
   });
 
+  it('fans out high-risk open-proposal actions by variable count when configured', async () => {
+    const createDeps = {
+      organismRepository: container.organismRepository,
+      stateRepository: container.stateRepository,
+      contentTypeRegistry: container.contentTypeRegistry,
+      eventPublisher: container.eventPublisher,
+      relationshipRepository: container.relationshipRepository,
+      identityGenerator: container.identityGenerator,
+    };
+
+    const boundary = await createOrganism(
+      {
+        name: 'Fan-out Boundary',
+        contentTypeId: 'text' as ContentTypeId,
+        payload: { content: 'boundary', format: 'plaintext' },
+        createdBy: steward,
+        openTrunk: true,
+      },
+      createDeps,
+    );
+
+    const sensor = await createOrganism(
+      {
+        name: 'Fan-out Sensor',
+        contentTypeId: 'sensor' as ContentTypeId,
+        payload: {
+          label: 'fan-out-sensor',
+          targetOrganismId: boundary.organism.id,
+          metric: 'github-issues',
+          readings: [],
+        },
+        createdBy: steward,
+        openTrunk: true,
+      },
+      createDeps,
+    );
+
+    const variable = await createOrganism(
+      {
+        name: 'Fan-out Variable',
+        contentTypeId: 'variable' as ContentTypeId,
+        payload: {
+          label: 'fan-out-variable',
+          value: 0,
+          computedAt: container.identityGenerator.timestamp(),
+          computation: {
+            mode: 'observation-sum',
+            sensorLabel: 'fan-out-sensor',
+            metric: 'github-issues',
+          },
+        },
+        createdBy: steward,
+        openTrunk: true,
+      },
+      createDeps,
+    );
+
+    const responsePolicy = await createOrganism(
+      {
+        name: 'Fan-out Policy',
+        contentTypeId: 'response-policy' as ContentTypeId,
+        payload: {
+          mode: 'variable-threshold',
+          variableLabel: 'fan-out-variable',
+          condition: 'above',
+          threshold: 0,
+          action: 'decline-all',
+          reason: 'fan-out trigger',
+        },
+        createdBy: steward,
+        openTrunk: true,
+      },
+      createDeps,
+    );
+
+    const action = await createOrganism(
+      {
+        name: 'Fan-out Action',
+        contentTypeId: 'action' as ContentTypeId,
+        payload: {
+          label: 'Fan-out open proposal',
+          kind: 'open-proposal',
+          executionMode: 'proposal-required',
+          riskLevel: 'high',
+          trigger: {
+            responsePolicyOrganismId: responsePolicy.organism.id,
+            whenDecision: 'decline',
+          },
+          config: {
+            targetOrganismId: boundary.organism.id,
+            proposedContentTypeId: 'text',
+            proposedPayload: { content: 'fan-out payload', format: 'markdown' },
+            description: 'Fan-out proposal',
+            fanOutByVariableCount: true,
+          },
+        },
+        createdBy: steward,
+        openTrunk: true,
+      },
+      createDeps,
+    );
+
+    await composeChild(container, boundary.organism.id, sensor.organism.id, steward);
+    await composeChild(container, boundary.organism.id, variable.organism.id, steward);
+    await composeChild(container, boundary.organism.id, responsePolicy.organism.id, steward);
+    await composeChild(container, boundary.organism.id, action.organism.id, steward);
+
+    await recordObservation(
+      {
+        organismId: sensor.organism.id,
+        targetOrganismId: boundary.organism.id,
+        metric: 'github-issues',
+        value: 2,
+        sampledAt: container.identityGenerator.timestamp(),
+        observedBy: steward,
+      },
+      {
+        organismRepository: container.organismRepository,
+        eventPublisher: container.eventPublisher,
+        identityGenerator: container.identityGenerator,
+        visibilityRepository: container.visibilityRepository,
+        relationshipRepository: container.relationshipRepository,
+        compositionRepository: container.compositionRepository,
+      },
+    );
+
+    const result = await runRegulatorCycle(container, {
+      boundaryOrganismIds: [boundary.organism.id],
+      runnerUserId: steward,
+    });
+
+    expect(result.proposalActionsOpened).toBe(2);
+    expect(result.failedActions).toBe(0);
+
+    const proposals = await container.proposalRepository.findByOrganismId(boundary.organism.id);
+    expect(proposals).toHaveLength(2);
+  });
+
   it('executes low-risk github-pr action organisms directly with gateway adapter', async () => {
     const createDeps = {
       organismRepository: container.organismRepository,

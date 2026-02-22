@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { useChildren, useOrganismMarkersByIds } from '../../../../hooks/use-organism.js';
+import { useActionExecutions, useChildren, useOrganismMarkersByIds } from '../../../../hooks/use-organism.js';
 import { usePlatformActions } from '../../../../platform/index.js';
 import { PanelInfoEmpty, PanelInfoError, PanelInfoLoading, PanelSection, PanelTabs } from '../../core/panel-ux.js';
 import {
@@ -61,6 +61,11 @@ interface RegulationConnection {
 
 export function RegulationSection({ organismId, refreshKey }: RegulationSectionProps) {
   const { data: children, loading: childrenLoading, error: childrenError } = useChildren(organismId, refreshKey);
+  const {
+    data: actionExecutions,
+    loading: actionExecutionsLoading,
+    error: actionExecutionsError,
+  } = useActionExecutions(organismId, refreshKey, 25);
   const childIds = (children ?? []).map((child) => child.childId);
   const {
     data: markerDataById,
@@ -74,6 +79,17 @@ export function RegulationSection({ organismId, refreshKey }: RegulationSectionP
     [regulatoryChildren],
   );
   const overviewConnections = useMemo(() => buildOverviewConnections(regulatoryChildren), [regulatoryChildren]);
+  const regulatoryNamesById = useMemo(
+    () => new Map(regulatoryChildren.map((child) => [child.childId, child.name] as const)),
+    [regulatoryChildren],
+  );
+  const visibleActionExecutions = useMemo(() => {
+    if (!actionExecutions) {
+      return [];
+    }
+
+    return actionExecutions.filter((execution) => execution.status !== 'succeeded').slice(0, 8);
+  }, [actionExecutions]);
   const [activeTabId, setActiveTabId] = useState<string>(REGULATION_OVERVIEW_TAB_ID);
 
   useEffect(() => {
@@ -207,6 +223,36 @@ export function RegulationSection({ organismId, refreshKey }: RegulationSectionP
               ))}
             </div>
           )}
+          <div className="hud-regulation-overview-connections">
+            <span className="hud-regulation-overview-links-label">Action execution queue</span>
+            {actionExecutionsLoading && <span className="hud-info-dim">Loading action executions...</span>}
+            {actionExecutionsError && !actionExecutionsLoading && (
+              <span className="hud-info-error">Failed to load action executions.</span>
+            )}
+            {!actionExecutionsLoading && !actionExecutionsError && visibleActionExecutions.length === 0 && (
+              <span className="hud-info-dim">No pending action executions.</span>
+            )}
+            {!actionExecutionsLoading &&
+              !actionExecutionsError &&
+              visibleActionExecutions.map((execution) => (
+                <div key={execution.id} className="hud-regulation-overview-connection-row">
+                  <button
+                    type="button"
+                    className="hud-regulation-overview-link"
+                    onClick={() => openInVisor(execution.actionOrganismId)}
+                  >
+                    {regulatoryNamesById.get(execution.actionOrganismId) ?? execution.actionOrganismId.slice(0, 8)}
+                  </button>
+                  <span className="hud-regulation-overview-connection-arrow">
+                    {execution.status}
+                    {typeof getFanOutSlot(execution.result) === 'number'
+                      ? ` [slot ${getFanOutSlot(execution.result)}]`
+                      : ''}
+                  </span>
+                  <span className="hud-info-dim">{formatExecutionTime(execution.createdAt)}</span>
+                </div>
+              ))}
+          </div>
         </div>
       ) : (
         activeChildren.map((child) => (
@@ -220,6 +266,23 @@ export function RegulationSection({ organismId, refreshKey }: RegulationSectionP
       )}
     </PanelSection>
   );
+}
+
+function formatExecutionTime(timestamp: number): string {
+  const value = new Date(timestamp);
+  if (Number.isNaN(value.getTime())) {
+    return '';
+  }
+  return value.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+}
+
+function getFanOutSlot(value: unknown): number | undefined {
+  if (!value || typeof value !== 'object') {
+    return undefined;
+  }
+
+  const candidate = (value as { fanOutSlot?: unknown }).fanOutSlot;
+  return typeof candidate === 'number' && Number.isFinite(candidate) ? candidate : undefined;
 }
 
 function formatContentTypeLabel(contentTypeId: string): string {
