@@ -163,7 +163,7 @@ function toResponsePolicyPayload(payload: unknown): ResponsePolicyPayload | unde
     return undefined;
   }
 
-  if (!asNonEmptyString(object.variableLabel)) {
+  if (!asNonEmptyString(object.variableLabel) && !asNonEmptyString(object.variableOrganismId)) {
     return undefined;
   }
 
@@ -442,6 +442,7 @@ function evaluateResponsePolicyDecision(payload: ResponsePolicyPayload): Respons
 async function updateManagedVariable(
   container: Container,
   managedVariable: ManagedVariableSnapshot,
+  sensorByOrganismId: ReadonlyMap<OrganismId, SensorSnapshot>,
   sensorByLabel: ReadonlyMap<string, SensorSnapshot>,
   runnerUserId: UserId,
 ): Promise<{ updated: boolean; value: number; skipped: boolean }> {
@@ -450,7 +451,9 @@ async function updateManagedVariable(
     return { updated: false, value: managedVariable.payload.value, skipped: true };
   }
 
-  const sensor = sensorByLabel.get(computation.sensorLabel);
+  const sensor =
+    (computation.sensorOrganismId ? sensorByOrganismId.get(computation.sensorOrganismId) : undefined) ??
+    (computation.sensorLabel ? sensorByLabel.get(computation.sensorLabel) : undefined);
   if (!sensor) {
     return { updated: false, value: managedVariable.payload.value, skipped: true };
   }
@@ -472,7 +475,7 @@ async function updateManagedVariable(
     ...managedVariable.payload,
     value: computedValue,
     computedAt: now as Timestamp,
-    computedFrom: `observation-sum:${computation.sensorLabel}:${computation.metric}`,
+    computedFrom: `observation-sum:${computation.sensorLabel ?? sensor.label}:${computation.metric}`,
   };
 
   await appendState(
@@ -500,10 +503,15 @@ async function updateManagedVariable(
 async function updateResponsePolicy(
   container: Container,
   responsePolicy: ResponsePolicySnapshot,
+  variableValueByOrganismId: ReadonlyMap<OrganismId, number>,
   variableValueByLabel: ReadonlyMap<string, number>,
   runnerUserId: UserId,
 ): Promise<{ updated: boolean; nextPayload: ResponsePolicyPayload }> {
-  const nextValue = variableValueByLabel.get(responsePolicy.payload.variableLabel);
+  const nextValue =
+    (responsePolicy.payload.variableOrganismId
+      ? variableValueByOrganismId.get(responsePolicy.payload.variableOrganismId)
+      : undefined) ??
+    (responsePolicy.payload.variableLabel ? variableValueByLabel.get(responsePolicy.payload.variableLabel) : undefined);
   if (nextValue === undefined) {
     return { updated: false, nextPayload: responsePolicy.payload };
   }
@@ -1125,7 +1133,9 @@ async function runBoundaryCycle(
   const childStates = await resolveBoundaryChildren(container, boundaryOrganismId);
 
   const sensorByLabel = new Map<string, SensorSnapshot>();
+  const sensorByOrganismId = new Map<OrganismId, SensorSnapshot>();
   const variablesByLabel = new Map<string, ManagedVariableSnapshot>();
+  const variableByOrganismId = new Map<OrganismId, ManagedVariableSnapshot>();
   const responsePolicies: ResponsePolicySnapshot[] = [];
   const actions: ActionSnapshot[] = [];
 
@@ -1140,13 +1150,23 @@ async function runBoundaryCycle(
       if (sensor && !sensorByLabel.has(sensor.label)) {
         sensorByLabel.set(sensor.label, sensor);
       }
+      if (sensor && !sensorByOrganismId.has(sensor.organismId)) {
+        sensorByOrganismId.set(sensor.organismId, sensor);
+      }
       continue;
     }
 
     if (state.contentTypeId === 'variable') {
       const payload = toVariablePayload(state.payload);
       if (payload && !variablesByLabel.has(payload.label)) {
-        variablesByLabel.set(payload.label, {
+        const variableSnapshot = {
+          organismId: child.childId,
+          payload,
+        };
+        variablesByLabel.set(payload.label, variableSnapshot);
+        variableByOrganismId.set(child.childId, variableSnapshot);
+      } else if (payload && !variableByOrganismId.has(child.childId)) {
+        variableByOrganismId.set(child.childId, {
           organismId: child.childId,
           payload,
         });
@@ -1173,9 +1193,17 @@ async function runBoundaryCycle(
   let variableUpdates = 0;
   let skippedManagedVariables = 0;
   const variableValueByLabel = new Map<string, number>();
+  const variableValueByOrganismId = new Map<OrganismId, number>();
 
-  for (const [label, managedVariable] of variablesByLabel.entries()) {
-    const updateResult = await updateManagedVariable(container, managedVariable, sensorByLabel, runnerUserId);
+  for (const managedVariable of variableByOrganismId.values()) {
+    const label = managedVariable.payload.label;
+    const updateResult = await updateManagedVariable(
+      container,
+      managedVariable,
+      sensorByOrganismId,
+      sensorByLabel,
+      runnerUserId,
+    );
     if (updateResult.updated) {
       variableUpdates += 1;
       await persistRuntimeEvent(container, {
@@ -1193,13 +1221,20 @@ async function runBoundaryCycle(
       skippedManagedVariables += 1;
     }
     variableValueByLabel.set(label, updateResult.value);
+    variableValueByOrganismId.set(managedVariable.organismId, updateResult.value);
   }
 
   let responsePolicyUpdates = 0;
   const policyDecisionByOrganismId = new Map<OrganismId, ResponsePolicyDecision>();
 
   for (const policy of responsePolicies) {
-    const update = await updateResponsePolicy(container, policy, variableValueByLabel, runnerUserId);
+    const update = await updateResponsePolicy(
+      container,
+      policy,
+      variableValueByOrganismId,
+      variableValueByLabel,
+      runnerUserId,
+    );
     if (update.updated) {
       responsePolicyUpdates += 1;
       await persistRuntimeEvent(container, {

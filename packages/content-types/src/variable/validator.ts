@@ -8,6 +8,10 @@
 import type { ValidationResult } from '@omnilith/kernel';
 import type { VariableComputation, VariablePayload, VariableThresholds } from './schema.js';
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 export function validateVariable(payload: unknown): ValidationResult {
   const issues: string[] = [];
   const p = payload as Partial<VariablePayload>;
@@ -50,8 +54,14 @@ export function validateVariable(payload: unknown): ValidationResult {
       if (computation.mode !== 'observation-sum') {
         issues.push("computation.mode must be 'observation-sum'");
       }
-      if (typeof computation.sensorLabel !== 'string' || computation.sensorLabel.length === 0) {
-        issues.push('computation.sensorLabel must be a non-empty string');
+      if (computation.sensorLabel !== undefined && !isNonEmptyString(computation.sensorLabel)) {
+        issues.push('computation.sensorLabel must be a non-empty string when provided');
+      }
+      if (computation.sensorOrganismId !== undefined && !isNonEmptyString(computation.sensorOrganismId)) {
+        issues.push('computation.sensorOrganismId must be a non-empty string when provided');
+      }
+      if (!isNonEmptyString(computation.sensorLabel) && !isNonEmptyString(computation.sensorOrganismId)) {
+        issues.push('computation must include sensorLabel or sensorOrganismId');
       }
       if (typeof computation.metric !== 'string' || computation.metric.length === 0) {
         issues.push('computation.metric must be a non-empty string');

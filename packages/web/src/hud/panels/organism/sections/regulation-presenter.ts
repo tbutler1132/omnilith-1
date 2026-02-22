@@ -16,6 +16,7 @@ export interface RegulatoryChild {
   readonly childId: string;
   readonly name: string;
   readonly contentTypeId: RegulatoryContentTypeId;
+  readonly payload: unknown;
 }
 
 export interface RegulatoryChildrenByContentType {
@@ -48,6 +49,7 @@ export function presentRegulatoryChildren(
       childId,
       name: marker.data.organism.name,
       contentTypeId,
+      payload: marker.data.currentState?.payload,
     });
   }
 

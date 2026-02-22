@@ -14,12 +14,15 @@
  * Governance bugs are dangerous.
  */
 
+import type { OrganismId } from '@omnilith/kernel';
+
 export type ResponseCondition = 'below' | 'above';
 export type ResponseAction = 'decline-all' | 'pass';
 
 export interface ResponsePolicyPayload {
   readonly mode: 'variable-threshold';
-  readonly variableLabel: string;
+  readonly variableLabel?: string;
+  readonly variableOrganismId?: OrganismId;
   readonly condition: ResponseCondition;
   readonly threshold: number;
   readonly currentVariableValue?: number;
