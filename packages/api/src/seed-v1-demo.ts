@@ -5,7 +5,8 @@
  * 1) Hero's Journey concept album organism with composed song organisms.
  * 2) Weekly Updates composition with composed text organisms.
  * 3) Omnilith Repository organism with a cybernetic awareness loop.
- * 4) A private community organism that contains and tends the other surfaced organisms.
+ * 4) A private community organism that contains the major community institutions.
+ * 5) Main demo organisms composed directly into the community boundary.
  */
 
 import { randomBytes, scryptSync } from 'node:crypto';
@@ -277,123 +278,10 @@ export async function seedV1Demo(container: Container): Promise<void> {
     composeDeps,
   );
 
-  const softwareSystem = await createOrganism(
+  // Community: Capital Community
+  const capitalMap = await createOrganism(
     {
-      name: 'Omnilith Software System',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-      openTrunk: true,
-    },
-    createDeps,
-  );
-
-  const kernelDomain = await createOrganism(
-    {
-      name: 'Kernel Domain',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-    },
-    createDeps,
-  );
-
-  const contentTypesDomain = await createOrganism(
-    {
-      name: 'Content Types Domain',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-    },
-    createDeps,
-  );
-
-  const apiDomain = await createOrganism(
-    {
-      name: 'API Domain',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-    },
-    createDeps,
-  );
-
-  const webDomain = await createOrganism(
-    {
-      name: 'Web Domain',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-    },
-    createDeps,
-  );
-
-  const operationsDomain = await createOrganism(
-    {
-      name: 'Operations Domain',
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: [],
-        arrangementType: 'unordered',
-      },
-      createdBy: devUserId,
-    },
-    createDeps,
-  );
-
-  const softwareSystemChildren: Array<{ organismId: OrganismId; position: number }> = [
-    { organismId: projectRepository.organism.id, position: 1 },
-    { organismId: kernelDomain.organism.id, position: 2 },
-    { organismId: contentTypesDomain.organism.id, position: 3 },
-    { organismId: apiDomain.organism.id, position: 4 },
-    { organismId: webDomain.organism.id, position: 5 },
-    { organismId: operationsDomain.organism.id, position: 6 },
-  ];
-
-  for (const entry of softwareSystemChildren) {
-    await composeOrganism(
-      {
-        parentId: softwareSystem.organism.id,
-        childId: entry.organismId,
-        composedBy: devUserId,
-        position: entry.position - 1,
-      },
-      composeDeps,
-    );
-  }
-
-  await appendState(
-    {
-      organismId: softwareSystem.organism.id,
-      contentTypeId: 'composition-reference' as ContentTypeId,
-      payload: {
-        entries: softwareSystemChildren,
-        arrangementType: 'unordered',
-      },
-      appendedBy: devUserId,
-    },
-    appendDeps,
-  );
-
-  // Community: The Undergrowth
-  const undergrowthMap = await createOrganism(
-    {
-      name: 'The Undergrowth Map',
+      name: 'Capital Map',
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [],
@@ -406,14 +294,14 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
-  const undergrowth = await createOrganism(
+  const capitalCommunity = await createOrganism(
     {
-      name: 'The Undergrowth',
+      name: 'Capital Community',
       contentTypeId: 'community' as ContentTypeId,
       payload: {
         description:
-          'A collective of field recordists exploring the sonic edges of landscape, weather, and forgetting.',
-        mapOrganismId: undergrowthMap.organism.id,
+          'The initial capital boundary: a creative community with foundational institutions for governance, treasury, membership, and commons.',
+        mapOrganismId: capitalMap.organism.id,
       },
       createdBy: devUserId,
     },
@@ -421,8 +309,87 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
 
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: undergrowthMap.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: capitalMap.organism.id, composedBy: devUserId },
     composeDeps,
+  );
+
+  const capitalGovernment = await createOrganism(
+    {
+      name: 'Capital Government',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const capitalTreasury = await createOrganism(
+    {
+      name: 'Capital Treasury',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const capitalMembership = await createOrganism(
+    {
+      name: 'Capital Membership',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const capitalCommons = await createOrganism(
+    {
+      name: 'Capital Commons',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const capitalTechnology = await createOrganism(
+    {
+      name: 'Capital Technology',
+      contentTypeId: 'composition-reference' as ContentTypeId,
+      payload: {
+        entries: [],
+        arrangementType: 'unordered',
+      },
+      createdBy: devUserId,
+    },
+    createDeps,
+  );
+
+  const communityForum = await createOrganism(
+    {
+      name: 'Community Forum',
+      contentTypeId: 'thread' as ContentTypeId,
+      payload: {
+        title: 'Community Forum',
+        appendOnly: true,
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
   );
 
   const communityText = await createOrganism(
@@ -464,36 +431,65 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
 
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: communityText.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: communityText.organism.id, composedBy: devUserId },
     composeDeps,
   );
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: communityAudio.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: communityAudio.organism.id, composedBy: devUserId },
     composeDeps,
   );
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: heroJourney.sceneOrganismId, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: heroJourney.sceneOrganismId, composedBy: devUserId },
     composeDeps,
   );
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: weeklyUpdates.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: weeklyUpdates.organism.id, composedBy: devUserId },
     composeDeps,
   );
   await composeOrganism(
-    { parentId: undergrowth.organism.id, childId: softwareSystem.organism.id, composedBy: devUserId },
+    { parentId: capitalCommunity.organism.id, childId: capitalTechnology.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: capitalGovernment.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: capitalTreasury.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: capitalMembership.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: capitalCommons.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalCommunity.organism.id, childId: communityForum.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeOrganism(
+    { parentId: capitalTechnology.organism.id, childId: projectRepository.organism.id, composedBy: devUserId },
     composeDeps,
   );
 
   await appendState(
     {
-      organismId: undergrowthMap.organism.id,
+      organismId: capitalMap.organism.id,
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [
           { organismId: communityText.organism.id, x: 800, y: 900, size: 1.0, emphasis: 0.8 },
           { organismId: communityAudio.organism.id, x: 1200, y: 1100, size: 1.1, emphasis: 0.9 },
-          { organismId: softwareSystem.organism.id, x: 980, y: 1220, size: 1.2, emphasis: 0.88 },
-          { organismId: projectRepository.organism.id, x: 1340, y: 1280, size: 1.0, emphasis: 0.8 },
+          { organismId: capitalGovernment.organism.id, x: 920, y: 1220, size: 1.2, emphasis: 0.88 },
+          { organismId: capitalTreasury.organism.id, x: 1120, y: 1240, size: 1.12, emphasis: 0.86 },
+          { organismId: capitalMembership.organism.id, x: 980, y: 1060, size: 1.02, emphasis: 0.84 },
+          { organismId: capitalCommons.organism.id, x: 860, y: 1120, size: 1.02, emphasis: 0.84 },
+          { organismId: capitalTechnology.organism.id, x: 1340, y: 1280, size: 1.1, emphasis: 0.86 },
+          { organismId: projectRepository.organism.id, x: 1480, y: 1350, size: 0.94, emphasis: 0.76 },
+          { organismId: communityForum.organism.id, x: 1060, y: 980, size: 1.05, emphasis: 0.84 },
         ],
         width: 2000,
         height: 2000,
@@ -507,18 +503,18 @@ export async function seedV1Demo(container: Container): Promise<void> {
     id: container.identityGenerator.relationshipId(),
     type: 'membership',
     userId: demoUserId,
-    organismId: undergrowth.organism.id,
+    organismId: capitalCommunity.organism.id,
     role: 'member',
     createdAt: container.identityGenerator.timestamp(),
   });
 
   await container.visibilityRepository.save({
-    organismId: undergrowth.organism.id,
+    organismId: capitalCommunity.organism.id,
     level: 'private',
     updatedAt: container.identityGenerator.timestamp(),
   });
   await container.visibilityRepository.save({
-    organismId: undergrowthMap.organism.id,
+    organismId: capitalMap.organism.id,
     level: 'members',
     updatedAt: container.identityGenerator.timestamp(),
   });
@@ -547,7 +543,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
-          { organismId: undergrowth.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
+          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
         ],
         width: 5000,
         height: 5000,
@@ -564,14 +560,14 @@ export async function seedV1Demo(container: Container): Promise<void> {
 
   console.log(`  Hero's Journey: ${heroJourney.sceneOrganismId}`);
   console.log(`  Weekly Updates: ${weeklyUpdates.organism.id}`);
-  console.log(`  Omnilith Software System: ${softwareSystem.organism.id}`);
-  console.log(`    Kernel Domain: ${kernelDomain.organism.id}`);
-  console.log(`    Content Types Domain: ${contentTypesDomain.organism.id}`);
-  console.log(`    API Domain: ${apiDomain.organism.id}`);
-  console.log(`    Web Domain: ${webDomain.organism.id}`);
-  console.log(`    Operations Domain: ${operationsDomain.organism.id}`);
   console.log(`  Omnilith Repository: ${projectRepository.organism.id}`);
-  console.log(`  Community "The Undergrowth": ${undergrowth.organism.id} (private)`);
+  console.log(`  Capital Government: ${capitalGovernment.organism.id}`);
+  console.log(`  Capital Treasury: ${capitalTreasury.organism.id}`);
+  console.log(`  Capital Membership: ${capitalMembership.organism.id}`);
+  console.log(`  Capital Commons: ${capitalCommons.organism.id}`);
+  console.log(`  Capital Technology: ${capitalTechnology.organism.id}`);
+  console.log(`  Community Forum: ${communityForum.organism.id}`);
+  console.log(`  Community "Capital Community": ${capitalCommunity.organism.id} (private)`);
   console.log(`  Dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD} (session: ${DEV_SESSION_ID})`);
   console.log(`  Demo user: ${DEMO_USER_EMAIL} / ${DEMO_USER_PASSWORD}`);
   console.log('V1 demo seed complete.');
