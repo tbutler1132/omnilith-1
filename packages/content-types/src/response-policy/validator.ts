@@ -12,6 +12,10 @@ import type { ResponsePolicyPayload } from './schema.js';
 const VALID_CONDITIONS = new Set(['below', 'above']);
 const VALID_ACTIONS = new Set(['decline-all', 'pass']);
 
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 export function validateResponsePolicy(payload: unknown): ValidationResult {
   const issues: string[] = [];
   const p = payload as Partial<ResponsePolicyPayload>;
@@ -24,8 +28,16 @@ export function validateResponsePolicy(payload: unknown): ValidationResult {
     issues.push("mode must be 'variable-threshold'");
   }
 
-  if (typeof p.variableLabel !== 'string' || p.variableLabel.length === 0) {
-    issues.push('variableLabel must be a non-empty string');
+  if (p.variableLabel !== undefined && !isNonEmptyString(p.variableLabel)) {
+    issues.push('variableLabel must be a non-empty string when provided');
+  }
+
+  if (p.variableOrganismId !== undefined && !isNonEmptyString(p.variableOrganismId)) {
+    issues.push('variableOrganismId must be a non-empty string when provided');
+  }
+
+  if (!isNonEmptyString(p.variableLabel) && !isNonEmptyString(p.variableOrganismId)) {
+    issues.push('variableLabel or variableOrganismId is required');
   }
 
   if (typeof p.condition !== 'string' || !VALID_CONDITIONS.has(p.condition)) {

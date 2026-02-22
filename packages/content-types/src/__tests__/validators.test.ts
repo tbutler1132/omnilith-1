@@ -10,6 +10,7 @@ import { validateHeroJourneyScene } from '../hero-journey-scene/validator.js';
 import { validateHeroJourneyStage } from '../hero-journey-stage/validator.js';
 import { validateImage } from '../image/validator.js';
 import { validateIntegrationPolicy } from '../integration-policy/validator.js';
+import { validateResponsePolicy } from '../response-policy/validator.js';
 import { validateSensor } from '../sensor/validator.js';
 import { validateSong } from '../song/validator.js';
 import { validateSpatialMap } from '../spatial-map/validator.js';
@@ -501,8 +502,52 @@ describe('variable validator', () => {
 
     expect(result.valid).toBe(false);
     expect(result.issues).toContain("computation.mode must be 'observation-sum'");
-    expect(result.issues).toContain('computation.sensorLabel must be a non-empty string');
+    expect(result.issues).toContain('computation.sensorLabel must be a non-empty string when provided');
+    expect(result.issues).toContain('computation must include sensorLabel or sensorOrganismId');
     expect(result.issues).toContain('computation.metric must be a non-empty string');
+  });
+
+  it('accepts sensor organism ID linkage without sensor label', () => {
+    const result = validateVariable({
+      label: 'issue-pressure',
+      value: 2,
+      computation: {
+        mode: 'observation-sum',
+        sensorOrganismId: 'org-sensor-1',
+        metric: 'github-issues',
+      },
+      computedAt: Date.now(),
+    });
+
+    expect(result.valid).toBe(true);
+  });
+});
+
+describe('response-policy validator', () => {
+  it('accepts variable organism ID linkage without variable label', () => {
+    const result = validateResponsePolicy({
+      mode: 'variable-threshold',
+      variableOrganismId: 'org-variable-1',
+      condition: 'below',
+      threshold: 3,
+      action: 'decline-all',
+      reason: 'Issue pressure is high',
+    });
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('requires either variable label or variable organism ID', () => {
+    const result = validateResponsePolicy({
+      mode: 'variable-threshold',
+      condition: 'below',
+      threshold: 3,
+      action: 'decline-all',
+      reason: 'Issue pressure is high',
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('variableLabel or variableOrganismId is required');
   });
 });
 

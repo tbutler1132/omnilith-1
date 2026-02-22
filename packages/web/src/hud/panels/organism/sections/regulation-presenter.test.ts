@@ -80,11 +80,13 @@ describe('presentRegulatoryChildren', () => {
         childId: 'org-policy',
         contentTypeId: 'response-policy',
         name: 'Repository Response Policy',
+        payload: {},
       },
       {
         childId: 'org-sensor',
         contentTypeId: 'sensor',
         name: 'Repository Issue Sensor',
+        payload: {},
       },
     ]);
   });
@@ -95,21 +97,25 @@ describe('presentRegulatoryChildren', () => {
         childId: 'org-response-a',
         contentTypeId: 'response-policy',
         name: 'Response A',
+        payload: undefined,
       },
       {
         childId: 'org-variable',
         contentTypeId: 'variable',
         name: 'Threshold Variable',
+        payload: undefined,
       },
       {
         childId: 'org-response-b',
         contentTypeId: 'response-policy',
         name: 'Response B',
+        payload: undefined,
       },
       {
         childId: 'org-sensor',
         contentTypeId: 'sensor',
         name: 'Signal Sensor',
+        payload: undefined,
       },
     ]);
 
@@ -121,6 +127,7 @@ describe('presentRegulatoryChildren', () => {
             childId: 'org-sensor',
             contentTypeId: 'sensor',
             name: 'Signal Sensor',
+            payload: undefined,
           },
         ],
       },
@@ -131,6 +138,7 @@ describe('presentRegulatoryChildren', () => {
             childId: 'org-variable',
             contentTypeId: 'variable',
             name: 'Threshold Variable',
+            payload: undefined,
           },
         ],
       },
@@ -141,11 +149,13 @@ describe('presentRegulatoryChildren', () => {
             childId: 'org-response-a',
             contentTypeId: 'response-policy',
             name: 'Response A',
+            payload: undefined,
           },
           {
             childId: 'org-response-b',
             contentTypeId: 'response-policy',
             name: 'Response B',
+            payload: undefined,
           },
         ],
       },

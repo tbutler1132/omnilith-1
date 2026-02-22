@@ -9,7 +9,7 @@
  * Governance-adjacent. Schemas are strict.
  */
 
-import type { Timestamp } from '@omnilith/kernel';
+import type { OrganismId, Timestamp } from '@omnilith/kernel';
 
 export interface VariableThresholds {
   readonly low?: number;
@@ -18,7 +18,8 @@ export interface VariableThresholds {
 
 export interface VariableComputation {
   readonly mode: 'observation-sum';
-  readonly sensorLabel: string;
+  readonly sensorLabel?: string;
+  readonly sensorOrganismId?: OrganismId;
   readonly metric: string;
   readonly windowSeconds?: number;
   readonly clampMin?: number;
