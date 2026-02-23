@@ -1,14 +1,15 @@
 /**
  * Space stage map surface for web-next Slice 1.
  *
- * Renders a plain world map grid with drag navigation and no organism
- * overlays, matching the requested minimal baseline.
+ * Renders the world map grid with drag navigation plus lightweight organism
+ * markers from spatial-map entries.
  */
 
 import { useEffect } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { GroundPlane } from './ground-plane.js';
 import { MapViewport } from './map-viewport.js';
+import { SpaceOrganismLayer } from './space-organism-layer.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
 
@@ -19,7 +20,7 @@ interface SpaceStageProps {
 }
 
 export function SpaceStage({ worldMapId, onAltitudeChange, onAltitudeControlReady }: SpaceStageProps) {
-  const { width, height, entryCount, loading, error } = useSpatialMap(worldMapId);
+  const { width, height, entries, entryCount, loading, error } = useSpatialMap(worldMapId);
   const { viewport, screenSize, altitude, containerRef, setViewport, changeAltitude } = useViewport({
     mapWidth: width,
     mapHeight: height,
@@ -54,6 +55,7 @@ export function SpaceStage({ worldMapId, onAltitudeChange, onAltitudeControlRead
     <main className="space-map" ref={containerRef} aria-label="Space map">
       <MapViewport viewport={viewport} screenSize={screenSize} onViewportChange={setViewport}>
         <GroundPlane width={width} height={height} />
+        <SpaceOrganismLayer entries={entries} altitude={altitude} />
       </MapViewport>
 
       <div className="space-map-status">
