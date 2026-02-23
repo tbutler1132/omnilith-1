@@ -49,7 +49,45 @@ interface ManualCadenceChildren {
   readonly inboxOrganismId: OrganismId;
 }
 
-function buildManualCadenceMarkdownTemplates(boundaryName: string): ManualCadenceMarkdownTemplates {
+function buildVariableRowsForBoundary(boundarySlug: string): ReadonlyArray<string> {
+  switch (boundarySlug) {
+    case 'capital-community':
+      return [
+        '| governance-load | Keep weekly tending capacity stable | 0 | 0-12 open proposals | Weekly | Run triage and integrate or decline backlog before accepting more work |',
+        '| participation-rhythm | Keep contribution cadence alive | 0 | 6-20 weekly state changes | Weekly | Open participation invitation in community forum and lower non-essential work |',
+        '| integration-latency | Avoid stale proposals and decision drag | 0 days | 0-7 days median age | Weekly | Prioritize oldest pending proposals and publish decision rationale |',
+      ];
+    case 'capital-technology':
+      return [
+        '| proposal-pressure | Balance delivery pace with reliability | 0 | 0-7 open proposals | Weekly | Shift to stabilization, clear backlog, and narrow new scope |',
+        '| reliability-work-ratio | Protect time for bugfix and hardening work | 0% | 30-50% of weekly tasks | Weekly | Move maintenance tasks into Now before new feature work |',
+        '| integration-throughput | Keep decisions flowing | 0 per week | 3-10 integrated proposals per week | Weekly | Schedule explicit integration windows and reduce WIP |',
+      ];
+    case 'software-system':
+      return [
+        '| system-load | Keep software-system mutation load manageable | 0 | 0-5 open proposals | Weekly | Pause non-essential mutations and finish in-flight work |',
+        '| issue-resolution-cadence | Ensure reliability loops stay active | 0 per week | 2-8 resolved issues per week | Weekly | Open issue-resolution tasks and verify closure in next cycle |',
+        '| release-readiness | Keep current state shippable | no | yes/no | Weekly | Create stabilization tasks for testing, docs, and regressions |',
+      ];
+    case 'omnilith-repository':
+      return [
+        '| issue-pressure | Keep issue queue from growing unchecked | 0 | 0-15 open issues | Weekly | Triage and resolve priority issues before new scope |',
+        '| pull-request-flow | Keep integration flow healthy | 0 | 0-10 open PRs with <7 day age | Weekly | Review oldest PRs first and reduce parallel work |',
+        '| ci-health | Maintain delivery confidence | 0% failures | 95-100% passing default branch checks | Weekly | Prioritize flaky and failing checks before feature work |',
+      ];
+    default:
+      return [
+        '| workload | Protect tending capacity | 0 | 0-3 | Weekly | Open triage tasks and rebalance commitments |',
+      ];
+  }
+}
+
+function buildManualCadenceMarkdownTemplates(
+  boundaryName: string,
+  boundarySlug: string,
+): ManualCadenceMarkdownTemplates {
+  const variableRows = buildVariableRowsForBoundary(boundarySlug);
+
   return {
     trajectory: [
       `# ${boundaryName} Trajectory`,
@@ -79,7 +117,7 @@ function buildManualCadenceMarkdownTemplates(boundaryName: string): ManualCadenc
       '## Variable register',
       '| Variable | Why it matters | Current signal | Target range | Check cadence | If drift then |',
       '| --- | --- | --- | --- | --- | --- |',
-      '| example-load | Protect tending capacity | 0 | 0-3 | Weekly | Open triage tasks and rebalance commitments |',
+      ...variableRows,
       '',
       '## Weekly tending check',
       '- Review sensor readings and open proposals.',
@@ -168,7 +206,7 @@ async function createManualCadenceChildren(
   createdBy: UserId,
   createDeps: CreateOrganismDeps,
 ): Promise<ManualCadenceChildren> {
-  const templates = buildManualCadenceMarkdownTemplates(boundaryName);
+  const templates = buildManualCadenceMarkdownTemplates(boundaryName, boundarySlug);
 
   const trajectory = await createOrganism(
     {
