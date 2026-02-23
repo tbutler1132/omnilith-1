@@ -2,6 +2,7 @@
  * Seed profile router + legacy full-dev seed implementation.
  *
  * Default profile is v1-demo (focused unified local environment).
+ * A world-map-only profile is available for plain rendering experiments.
  * The full-dev seed remains available as an explicit legacy profile
  * for deep local experimentation.
  *
@@ -16,6 +17,7 @@ import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
 import { organisms, platformConfig, sessions, users } from './db/schema.js';
 import { seedV1Demo } from './seed-v1-demo.js';
+import { seedWorldMapOnly } from './seed-world-map-only.js';
 
 const DEV_SEED_KEY = 'dev_seed_complete';
 const SONG_STARTER_TEMPLATE_KEY = 'dev_song_starter_template_id';
@@ -149,10 +151,19 @@ async function ensureSongStarterTemplate(container: Container, devUserId: UserId
 
 export async function seedDev(container: Container): Promise<void> {
   const seedProfile = (process.env.OMNILITH_SEED_PROFILE ?? DEFAULT_SEED_PROFILE).trim();
+
+  if (seedProfile === 'world-map-only') {
+    await seedWorldMapOnly(container);
+    return;
+  }
+
+  if (seedProfile === 'v1-demo') {
+    await seedV1Demo(container);
+    return;
+  }
+
   if (seedProfile !== 'full-dev') {
-    if (seedProfile !== 'v1-demo') {
-      console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to v1-demo seed.`);
-    }
+    console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to v1-demo seed.`);
     await seedV1Demo(container);
     return;
   }
