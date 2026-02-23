@@ -111,6 +111,7 @@ export function OrganismPanelDeck({ organismId, initialPanelId = null }: Organis
 
   secondaryShortcutActions.push({ panelId: 'organism', label: 'Open overview' });
   secondaryShortcutActions.push({ panelId: 'regulation', label: 'Open regulation' });
+  secondaryShortcutActions.push({ panelId: 'boundary-cadence', label: 'Open cadence' });
   secondaryShortcutActions.push({ panelId: 'proposals', label: 'Open collaborate' });
 
   return (

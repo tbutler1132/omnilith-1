@@ -117,6 +117,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
   ] as ContractCompositorEvent['type'][],
   panelIds: [
     'append',
+    'boundary-cadence',
     'composition',
     'governance',
     'history',
@@ -198,7 +199,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: ['organism', 'regulation', 'proposals'],
+        availablePanelIds: ['organism', 'regulation', 'boundary-cadence', 'proposals'],
         mainPanelId: null,
         secondaryPanelIds: [],
         collapsedPanelIds: ['organism'],
@@ -215,10 +216,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: ['organism', 'regulation', 'proposals'],
+        availablePanelIds: ['organism', 'regulation', 'boundary-cadence', 'proposals'],
         mainPanelId: 'organism',
         secondaryPanelIds: [],
-        collapsedPanelIds: ['proposals', 'regulation'],
+        collapsedPanelIds: ['proposals', 'boundary-cadence', 'regulation'],
       },
     },
     {
@@ -234,10 +235,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: ['organism', 'regulation', 'proposals'],
+        availablePanelIds: ['organism', 'regulation', 'boundary-cadence', 'proposals'],
         mainPanelId: 'organism',
         secondaryPanelIds: [],
-        collapsedPanelIds: ['proposals', 'regulation'],
+        collapsedPanelIds: ['proposals', 'boundary-cadence', 'regulation'],
       },
     },
     {
@@ -251,7 +252,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: ['organism', 'regulation'],
+        availablePanelIds: ['organism', 'regulation', 'boundary-cadence'],
         mainPanelId: null,
         secondaryPanelIds: [],
         collapsedPanelIds: ['organism'],
@@ -268,10 +269,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'organism',
       expected: {
-        availablePanelIds: ['organism', 'regulation'],
+        availablePanelIds: ['organism', 'regulation', 'boundary-cadence'],
         mainPanelId: 'organism',
         secondaryPanelIds: [],
-        collapsedPanelIds: ['regulation'],
+        collapsedPanelIds: ['boundary-cadence', 'regulation'],
       },
     },
     {

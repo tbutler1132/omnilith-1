@@ -40,7 +40,7 @@ describe('resolveVisorPanelLayout', () => {
 
     expect(layout.mainPanelId).toBe('organism');
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['proposals', 'regulation']);
+    expect(layout.collapsedPanelIds).toEqual(['proposals', 'boundary-cadence', 'regulation']);
   });
 
   it('true renderer preview suppresses secondary panels for full-width focus', () => {
@@ -74,7 +74,7 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['organism', 'regulation']);
+    expect(layout.availablePanelIds).toEqual(['organism', 'regulation', 'boundary-cadence']);
     expect(layout.secondaryPanelIds).toEqual([]);
     expect(layout.collapsedPanelIds).toEqual(['organism']);
   });
@@ -93,7 +93,7 @@ describe('resolveVisorPanelLayout', () => {
     });
 
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['regulation']);
+    expect(layout.collapsedPanelIds).toEqual(['boundary-cadence', 'regulation']);
   });
 
   it('a regulated boundary always exposes the regulation panel', () => {
@@ -213,9 +213,9 @@ describe('resolveVisorPanelLayout', () => {
       slots: organismSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['organism', 'regulation', 'proposals']);
+    expect(layout.availablePanelIds).toEqual(['organism', 'regulation', 'boundary-cadence', 'proposals']);
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['proposals', 'regulation']);
+    expect(layout.collapsedPanelIds).toEqual(['proposals', 'boundary-cadence', 'regulation']);
   });
 
   it('a guest map context still exposes profile and proposals panels', () => {

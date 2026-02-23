@@ -33,6 +33,7 @@ interface NavigationEntry {
 }
 
 export type AuthMode = 'guest' | 'authenticated';
+export type VisorPanelIntent = 'organism' | 'proposals' | 'regulation' | 'boundary-cadence';
 
 export interface PlatformState {
   /** Immutable per session */
@@ -83,7 +84,7 @@ export interface PlatformMapState {
 
 export interface PlatformVisorState {
   visorOrganismId: string | null;
-  visorPanelIntent: 'organism' | 'proposals' | 'regulation' | null;
+  visorPanelIntent: VisorPanelIntent | null;
 }
 
 export interface PlatformViewportMetaState {
@@ -179,7 +180,7 @@ interface PlatformContextValue {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openInVisor: (id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => void;
+  openInVisor: (id: string, panelIntent?: VisorPanelIntent) => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
   setViewportCenter: (x: number, y: number) => void;
@@ -193,7 +194,7 @@ export interface PlatformActions {
   navigateToMap: (mapId: string) => void;
   enterOrganism: (id: string) => void;
   exitOrganism: () => void;
-  openInVisor: (id: string, panelIntent?: 'organism' | 'proposals' | 'regulation') => void;
+  openInVisor: (id: string, panelIntent?: VisorPanelIntent) => void;
   closeVisorOrganism: () => void;
   setAltitude: (altitude: Altitude) => void;
   setViewportCenter: (x: number, y: number) => void;
@@ -240,7 +241,7 @@ export function PlatformProvider({
   const [state, dispatch] = useReducer(reducer, initialState);
   const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
-  const [visorPanelIntent, setVisorPanelIntent] = useState<'organism' | 'proposals' | 'regulation' | null>(null);
+  const [visorPanelIntent, setVisorPanelIntent] = useState<VisorPanelIntent | null>(null);
   const [adaptiveVisorState, adaptiveVisorDispatch] = useReducer(
     computeNextAdaptiveVisorLayout,
     createAdaptiveVisorCompositorState(
@@ -310,7 +311,7 @@ export function PlatformProvider({
     dispatch({ type: 'NAVIGATE_TO_MAP', mapId });
     adaptiveVisorDispatch({ type: 'focus-organism', organismId: null });
   }, []);
-  const openInVisor = useCallback((id: string, panelIntent: 'organism' | 'proposals' | 'regulation' = 'organism') => {
+  const openInVisor = useCallback((id: string, panelIntent: VisorPanelIntent = 'organism') => {
     setVisorPanelIntent(panelIntent);
     adaptiveVisorDispatch({ type: 'open-visor-organism', organismId: id });
   }, []);

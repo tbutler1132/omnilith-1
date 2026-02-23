@@ -1,4 +1,6 @@
 export { AppendSection } from './AppendSection.js';
+export { BoundaryCadenceSection } from './BoundaryCadenceSection.js';
+export { presentBoundaryCadenceChildren } from './boundary-cadence-presenter.js';
 export { CompositionSection } from './CompositionSection.js';
 export { ContributionsSection } from './ContributionsSection.js';
 export { formatDate } from './format-date.js';
