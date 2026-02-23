@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { applyPan, clampToMap, createInitialViewport } from './viewport-math.js';
+import {
+  altitudeFromZoom,
+  applyPan,
+  clampToMap,
+  createInitialViewport,
+  nextAltitude,
+  zoomForAltitude,
+} from './viewport-math.js';
 
 describe('viewport math', () => {
   it('centers initial viewport on map', () => {
@@ -21,5 +28,27 @@ describe('viewport math', () => {
 
     expect(result.x).toBeGreaterThanOrEqual(0);
     expect(result.y).toBeLessThanOrEqual(5000);
+  });
+
+  it('maps altitudes to zoom values', () => {
+    expect(zoomForAltitude('high')).toBe(0.25);
+    expect(zoomForAltitude('mid')).toBe(0.6);
+    expect(zoomForAltitude('close')).toBe(1.3);
+  });
+
+  it('derives altitude from zoom', () => {
+    expect(altitudeFromZoom(0.23)).toBe('high');
+    expect(altitudeFromZoom(0.62)).toBe('mid');
+    expect(altitudeFromZoom(1.28)).toBe('close');
+  });
+
+  it('moves through altitude levels in both directions', () => {
+    expect(nextAltitude('high', 'in')).toBe('mid');
+    expect(nextAltitude('mid', 'in')).toBe('close');
+    expect(nextAltitude('close', 'in')).toBeNull();
+
+    expect(nextAltitude('close', 'out')).toBe('mid');
+    expect(nextAltitude('mid', 'out')).toBe('high');
+    expect(nextAltitude('high', 'out')).toBeNull();
   });
 });

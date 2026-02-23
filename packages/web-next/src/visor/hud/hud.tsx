@@ -5,14 +5,20 @@
  * without introducing open-Visor app mode concerns yet.
  */
 
+import type { Altitude } from '../../contracts/altitude.js';
 import { SpatialControlsSlot } from './slots/index.js';
 import { VisorWidgetLane } from './widget-lane.js';
 import { CompassWidget } from './widgets/index.js';
 
-export function VisorHud() {
+interface VisorHudProps {
+  readonly altitude: Altitude;
+  readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+}
+
+export function VisorHud({ altitude, onChangeAltitude }: VisorHudProps) {
   return (
     <div className="visor-hud-layer">
-      <SpatialControlsSlot />
+      <SpatialControlsSlot altitude={altitude} onChangeAltitude={onChangeAltitude} />
       <VisorWidgetLane>
         <CompassWidget />
       </VisorWidgetLane>

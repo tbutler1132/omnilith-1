@@ -5,14 +5,20 @@
  * This slice mirrors the old map widget shapes with placeholder-only state.
  */
 
+import type { Altitude } from '../../../contracts/altitude.js';
 import { AltitudeControlsWidget } from './altitude-controls-widget.js';
 import { SpatialNavWidget } from './spatial-nav-widget.js';
 
-export function SpatialControlsSlot() {
+interface SpatialControlsSlotProps {
+  readonly altitude: Altitude;
+  readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+}
+
+export function SpatialControlsSlot({ altitude, onChangeAltitude }: SpatialControlsSlotProps) {
   return (
     <div className="spatial-controls-slot">
-      <SpatialNavWidget />
-      <AltitudeControlsWidget />
+      <SpatialNavWidget altitude={altitude} />
+      <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} />
     </div>
   );
 }

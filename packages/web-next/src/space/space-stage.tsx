@@ -5,6 +5,8 @@
  * overlays, matching the requested minimal baseline.
  */
 
+import { useEffect } from 'react';
+import type { Altitude } from '../contracts/altitude.js';
 import { GroundPlane } from './ground-plane.js';
 import { MapViewport } from './map-viewport.js';
 import { useSpatialMap } from './use-spatial-map.js';
@@ -12,14 +14,25 @@ import { useViewport } from './use-viewport.js';
 
 interface SpaceStageProps {
   readonly worldMapId: string;
+  readonly onAltitudeChange: (altitude: Altitude) => void;
+  readonly onAltitudeControlReady: (handler: ((direction: 'in' | 'out') => void) | null) => void;
 }
 
-export function SpaceStage({ worldMapId }: SpaceStageProps) {
+export function SpaceStage({ worldMapId, onAltitudeChange, onAltitudeControlReady }: SpaceStageProps) {
   const { width, height, entryCount, loading, error } = useSpatialMap(worldMapId);
-  const { viewport, screenSize, containerRef, setViewport } = useViewport({
+  const { viewport, screenSize, altitude, containerRef, setViewport, changeAltitude } = useViewport({
     mapWidth: width,
     mapHeight: height,
   });
+
+  useEffect(() => {
+    onAltitudeChange(altitude);
+  }, [altitude, onAltitudeChange]);
+
+  useEffect(() => {
+    onAltitudeControlReady(changeAltitude);
+    return () => onAltitudeControlReady(null);
+  }, [changeAltitude, onAltitudeControlReady]);
 
   if (loading) {
     return (
@@ -46,6 +59,7 @@ export function SpaceStage({ worldMapId }: SpaceStageProps) {
       <div className="space-map-status">
         <p>World map: {worldMapId}</p>
         <p>Entries: {entryCount}</p>
+        <p>Altitude: {altitude}</p>
         <p>Drag to navigate.</p>
       </div>
     </main>

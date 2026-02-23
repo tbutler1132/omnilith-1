@@ -5,6 +5,8 @@
  * deterministic and testable while the map experience is rebuilt.
  */
 
+import type { Altitude } from '../contracts/altitude.js';
+
 export interface ViewportState {
   readonly x: number;
   readonly y: number;
@@ -17,12 +19,56 @@ export interface ScreenSize {
 }
 
 const MAP_PADDING = 100;
+interface AltitudeLevel {
+  readonly level: Altitude;
+  readonly zoom: number;
+}
+
+const ALTITUDES: readonly AltitudeLevel[] = [
+  { level: 'high', zoom: 0.25 },
+  { level: 'mid', zoom: 0.6 },
+  { level: 'close', zoom: 1.3 },
+] as const;
 
 export function createInitialViewport(mapWidth: number, mapHeight: number): ViewportState {
   return {
     x: mapWidth / 2,
     y: mapHeight / 2,
-    zoom: 0.25,
+    zoom: zoomForAltitude('high'),
+  };
+}
+
+export function zoomForAltitude(altitude: Altitude): number {
+  const found = ALTITUDES.find((item) => item.level === altitude);
+  return found ? found.zoom : ALTITUDES[0].zoom;
+}
+
+export function altitudeFromZoom(zoom: number): Altitude {
+  let closest = ALTITUDES[0];
+  let minDistance = Math.abs(zoom - closest.zoom);
+
+  for (let index = 1; index < ALTITUDES.length; index += 1) {
+    const distance = Math.abs(zoom - ALTITUDES[index].zoom);
+    if (distance < minDistance) {
+      closest = ALTITUDES[index];
+      minDistance = distance;
+    }
+  }
+
+  return closest.level;
+}
+
+export function nextAltitude(current: Altitude, direction: 'in' | 'out'): Altitude | null {
+  const index = ALTITUDES.findIndex((item) => item.level === current);
+  const nextIndex = direction === 'in' ? index + 1 : index - 1;
+  return ALTITUDES[nextIndex]?.level ?? null;
+}
+
+export function interpolateViewport(from: ViewportState, to: ViewportState, t: number): ViewportState {
+  return {
+    x: from.x + (to.x - from.x) * t,
+    y: from.y + (to.y - from.y) * t,
+    zoom: from.zoom + (to.zoom - from.zoom) * t,
   };
 }
 

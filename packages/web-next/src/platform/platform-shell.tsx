@@ -5,8 +5,9 @@
  * then renders the plain map slice with the minimal closed HUD scaffold.
  */
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
+import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage } from '../space/space-stage.js';
 import { VisorHud } from '../visor/hud/index.js';
 
@@ -17,11 +18,24 @@ interface LoadState {
 }
 
 export function PlatformShell() {
+  const [altitude, setAltitude] = useState<Altitude>('high');
+  const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
   const [state, setState] = useState<LoadState>({
     worldMapId: null,
     loading: true,
     error: null,
   });
+
+  const handleAltitudeControlReady = useCallback((handler: ((direction: 'in' | 'out') => void) | null) => {
+    setChangeAltitudeHandler(() => handler);
+  }, []);
+
+  const handleAltitudeChangeRequested = useCallback(
+    (direction: 'in' | 'out') => {
+      changeAltitudeHandler?.(direction);
+    },
+    [changeAltitudeHandler],
+  );
 
   useEffect(() => {
     fetchWorldMap()
@@ -72,8 +86,12 @@ export function PlatformShell() {
 
   return (
     <div className="platform-shell" data-status="ready">
-      <SpaceStage worldMapId={state.worldMapId} />
-      <VisorHud />
+      <SpaceStage
+        worldMapId={state.worldMapId}
+        onAltitudeChange={setAltitude}
+        onAltitudeControlReady={handleAltitudeControlReady}
+      />
+      <VisorHud altitude={altitude} onChangeAltitude={handleAltitudeChangeRequested} />
     </div>
   );
 }
