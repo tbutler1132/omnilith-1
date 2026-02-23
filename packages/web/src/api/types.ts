@@ -310,6 +310,10 @@ export interface FetchUserOrganismsResponse {
   readonly organisms: ReadonlyArray<OrganismWithState>;
 }
 
+export interface FetchUserRelationshipsResponse {
+  readonly relationships: ReadonlyArray<Relationship>;
+}
+
 export interface FetchUserProposalsResponse {
   readonly proposals: ReadonlyArray<Proposal>;
 }

@@ -8,6 +8,7 @@
 
 import type { ReactNode } from 'react';
 import { renderProposalPanel } from '../../extensions/proposal-experience-registry.js';
+import { HudMyOrganismsPanel } from '../map/HudMyOrganismsPanel.js';
 import { HudMyProposalsPanel } from '../map/HudMyProposalsPanel.js';
 import { HudProfilePanel } from '../map/HudProfilePanel.js';
 import {
@@ -27,6 +28,7 @@ import { PanelInfoAuthRequired, PanelInfoEmpty, PanelInfoError, PanelInfoLoading
 type MapPanelBodyRenderer = () => ReactNode;
 
 export const MAP_PANEL_BODY_RENDERERS = {
+  'my-organisms': () => <HudMyOrganismsPanel />,
   profile: () => <HudProfilePanel />,
   'my-proposals': () => <HudMyProposalsPanel />,
 } satisfies Record<MapHudPanelId, MapPanelBodyRenderer>;

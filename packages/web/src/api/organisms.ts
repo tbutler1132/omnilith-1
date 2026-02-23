@@ -26,6 +26,7 @@ import type {
   FetchStateHistoryResponse,
   FetchUserOrganismsResponse,
   FetchUserProposalsResponse,
+  FetchUserRelationshipsResponse,
   FetchVitalityResponse,
   FetchWorldMapResponse,
   InstantiateTemplateResponse,
@@ -142,6 +143,10 @@ export function fetchWorldMap() {
 
 export function fetchUserOrganisms() {
   return apiFetch<FetchUserOrganismsResponse>('/users/me/organisms');
+}
+
+export function fetchUserRelationships() {
+  return apiFetch<FetchUserRelationshipsResponse>('/users/me/relationships');
 }
 
 export function fetchUserProposals() {

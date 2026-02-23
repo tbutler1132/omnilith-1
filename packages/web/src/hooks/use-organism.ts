@@ -19,6 +19,7 @@ import {
   fetchStateHistory,
   fetchUserOrganisms,
   fetchUserProposals,
+  fetchUserRelationships,
   fetchVitality,
 } from '../api/organisms.js';
 
@@ -261,6 +262,13 @@ export function useContributions(id: string, refreshKey = 0) {
 
 export function useUserOrganisms(refreshKey = 0) {
   return useAsync(() => fetchUserOrganisms().then((r) => r.organisms), [refreshKey]);
+}
+
+export function useUserRelationships(refreshKey = 0, enabled = true) {
+  return useAsync(
+    () => (enabled ? fetchUserRelationships().then((r) => r.relationships) : Promise.resolve([])),
+    [refreshKey, enabled],
+  );
 }
 
 export function useUserProposals(refreshKey = 0, enabled = true) {

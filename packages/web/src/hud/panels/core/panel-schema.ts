@@ -8,10 +8,10 @@
 
 export type HudContextClass = 'map' | 'interior' | 'visor-organism';
 
-export const MAP_HUD_PANEL_IDS = ['profile', 'my-proposals'] as const;
+export const MAP_HUD_PANEL_IDS = ['profile', 'my-organisms', 'my-proposals'] as const;
 export type MapHudPanelId = (typeof MAP_HUD_PANEL_IDS)[number];
 
-export const TOGGLE_MAP_HUD_PANEL_IDS = ['profile', 'my-proposals'] as const;
+export const TOGGLE_MAP_HUD_PANEL_IDS = ['profile', 'my-organisms', 'my-proposals'] as const;
 export type ToggleMapHudPanelId = (typeof TOGGLE_MAP_HUD_PANEL_IDS)[number];
 
 export const INTERIOR_HUD_PANEL_IDS = ['interior-actions'] as const;
@@ -114,6 +114,17 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 88,
     defaultSecondaryPriority: 87,
     collapsedPriority: 84,
+  },
+  {
+    id: 'my-organisms',
+    label: 'My organisms',
+    purpose:
+      "Inspect organisms the current user tends as founder or steward and jump directly into each organism's boundary cadence panel.",
+    availableIn: (context) => context.contextClass === 'map',
+    roleSupport: { main: true, secondary: true, collapsed: true },
+    defaultMainPriority: 90,
+    defaultSecondaryPriority: 88,
+    collapsedPriority: 86,
   },
   {
     id: 'interior-actions',

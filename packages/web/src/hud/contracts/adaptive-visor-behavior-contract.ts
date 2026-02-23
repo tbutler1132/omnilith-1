@@ -122,6 +122,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'governance',
     'history',
     'interior-actions',
+    'my-organisms',
     'my-proposals',
     'organism',
     'organism-nav',
@@ -132,7 +133,7 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
     'relationships',
     'contributions',
   ] as HudPanelId[],
-  compositorPanelIds: ['interior-actions', 'my-proposals', 'profile', 'visor-view'] as const,
+  compositorPanelIds: ['interior-actions', 'my-organisms', 'my-proposals', 'profile', 'visor-view'] as const,
   widgetIds: ['compass', 'history-navigation', 'map-actions', 'map-legend', 'vitality'] as VisorWidgetId[],
   cueIds: ['adaptive-help'] as HudCueId[],
   cueAnchorIds: ['adaptive-policy-badge', 'visor-pill'] as HudCueTargetAnchorId[],
@@ -148,10 +149,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: ['profile', 'my-proposals'],
+        availablePanelIds: ['profile', 'my-proposals', 'my-organisms'],
         mainPanelId: null,
         secondaryPanelIds: [],
-        collapsedPanelIds: ['my-proposals', 'profile'],
+        collapsedPanelIds: ['my-organisms', 'my-proposals', 'profile'],
       },
     },
     {
@@ -165,10 +166,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: 'my-proposals',
       expected: {
-        availablePanelIds: ['profile', 'my-proposals'],
+        availablePanelIds: ['profile', 'my-proposals', 'my-organisms'],
         mainPanelId: 'my-proposals',
         secondaryPanelIds: [],
-        collapsedPanelIds: ['profile'],
+        collapsedPanelIds: ['my-organisms', 'profile'],
       },
     },
     {
@@ -182,10 +183,10 @@ export const ADAPTIVE_VISOR_BEHAVIOR_CONTRACT_V1 = {
       },
       preferredMainPanelId: null,
       expected: {
-        availablePanelIds: ['profile', 'my-proposals'],
+        availablePanelIds: ['profile', 'my-proposals', 'my-organisms'],
         mainPanelId: null,
         secondaryPanelIds: [],
-        collapsedPanelIds: ['my-proposals', 'profile'],
+        collapsedPanelIds: ['my-organisms', 'my-proposals', 'profile'],
       },
     },
     {
