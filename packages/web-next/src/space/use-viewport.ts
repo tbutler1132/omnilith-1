@@ -30,6 +30,7 @@ interface UseViewportResult {
   readonly altitude: Altitude;
   readonly containerRef: RefObject<HTMLDivElement | null>;
   readonly setViewport: (next: ViewportState | ((previous: ViewportState) => ViewportState)) => void;
+  readonly animateTo: (target: ViewportState, options?: { durationMs?: number; onComplete?: () => void }) => void;
   readonly changeAltitude: (direction: 'in' | 'out') => void;
 }
 
@@ -75,9 +76,10 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
   );
 
   const animateTo = useCallback(
-    (target: ViewportState, durationMs = ALTITUDE_ANIMATION_DURATION_MS) => {
+    (target: ViewportState, options?: { durationMs?: number; onComplete?: () => void }) => {
       cancelAnimation();
       const from = viewportRef.current;
+      const durationMs = options?.durationMs ?? ALTITUDE_ANIMATION_DURATION_MS;
       const startedAt = performance.now();
 
       const step = (now: number) => {
@@ -92,6 +94,7 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
         }
 
         animationRef.current = null;
+        options?.onComplete?.();
       };
 
       animationRef.current = requestAnimationFrame(step);
@@ -144,5 +147,5 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
 
   useEffect(() => cancelAnimation, [cancelAnimation]);
 
-  return { viewport, screenSize, altitude, containerRef, setViewport, changeAltitude };
+  return { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude };
 }

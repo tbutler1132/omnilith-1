@@ -2,16 +2,25 @@
  * Space organism layer for web-next.
  *
  * Renders map entries as lightweight organism markers directly in world
- * coordinates. Markers are currently read-only visual anchors.
+ * coordinates and enables entering map-like organisms in-space.
  */
 
 import type { CSSProperties } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
+import type { EntryOrganismMetadata } from './use-entry-organisms.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 
 interface SpaceOrganismLayerProps {
   readonly entries: ReadonlyArray<SpatialMapEntry>;
   readonly altitude: Altitude;
+  readonly entryOrganismsById: Readonly<Record<string, EntryOrganismMetadata>>;
+  readonly focusedOrganismId: string | null;
+  readonly onActivateMarker: (input: {
+    organismId: string;
+    enterTargetMapId: string | null;
+    x: number;
+    y: number;
+  }) => void;
 }
 
 const BASE_MARKER_SIZE = 16;
@@ -28,12 +37,22 @@ function formatLabel(organismId: string): string {
   return `${organismId.slice(0, 8)}...${organismId.slice(-4)}`;
 }
 
-export function SpaceOrganismLayer({ entries, altitude }: SpaceOrganismLayerProps) {
+export function SpaceOrganismLayer({
+  entries,
+  altitude,
+  entryOrganismsById,
+  focusedOrganismId,
+  onActivateMarker,
+}: SpaceOrganismLayerProps) {
   const showLabels = altitude !== 'high';
 
   return (
-    <div className="space-organism-layer" aria-hidden="true">
+    <section className="space-organism-layer" aria-label="Map organisms">
       {entries.map((entry) => {
+        const markerData = entryOrganismsById[entry.organismId];
+        const enterTargetMapId = markerData?.enterTargetMapId ?? null;
+        const isEnterable = Boolean(enterTargetMapId);
+        const isFocused = focusedOrganismId === entry.organismId;
         const sizeMultiplier = clamp(entry.size ?? 1, 0.6, 2.4);
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
         const dotSize = BASE_MARKER_SIZE * sizeMultiplier;
@@ -44,12 +63,36 @@ export function SpaceOrganismLayer({ entries, altitude }: SpaceOrganismLayerProp
         };
 
         return (
-          <div key={entry.organismId} className="space-organism-marker" style={markerStyle}>
+          <button
+            key={entry.organismId}
+            type="button"
+            className={`space-organism-marker ${isEnterable ? 'space-organism-marker--enterable' : ''} ${
+              isFocused ? 'space-organism-marker--focused' : ''
+            }`}
+            style={markerStyle}
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={(event) => {
+              event.stopPropagation();
+              onActivateMarker({ organismId: entry.organismId, enterTargetMapId, x: entry.x, y: entry.y });
+            }}
+            aria-label={
+              isEnterable
+                ? `Enter ${markerData?.name ?? formatLabel(entry.organismId)}`
+                : (markerData?.name ?? formatLabel(entry.organismId))
+            }
+            title={
+              isEnterable
+                ? `${markerData?.name ?? formatLabel(entry.organismId)} (enter)`
+                : (markerData?.name ?? formatLabel(entry.organismId))
+            }
+          >
             <span className="space-organism-dot" style={{ width: dotSize, height: dotSize }} />
-            {showLabels ? <span className="space-organism-label">{formatLabel(entry.organismId)}</span> : null}
-          </div>
+            {showLabels ? (
+              <span className="space-organism-label">{markerData?.name ?? formatLabel(entry.organismId)}</span>
+            ) : null}
+          </button>
         );
       })}
-    </div>
+    </section>
   );
 }

@@ -464,11 +464,12 @@
   font-size: 0.8rem;
   line-height: 1;
   padding: 0;
-  cursor: default;
+  cursor: pointer;
 }
 
 .space-nav-back-btn:disabled {
   opacity: 0.6;
+  cursor: default;
 }
 
 .space-nav-altitude {

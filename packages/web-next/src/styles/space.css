@@ -44,6 +44,23 @@
   align-items: center;
   justify-content: center;
   gap: 0.36rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  pointer-events: auto;
+  cursor: default;
+}
+
+.space-organism-marker--enterable {
+  cursor: pointer;
+}
+
+.space-organism-marker--focused .space-organism-dot {
+  box-shadow:
+    0 0 0 1px rgba(238, 249, 255, 0.42),
+    0 0 18px rgba(146, 204, 255, 0.75),
+    0 0 34px rgba(100, 176, 255, 0.56);
 }
 
 .space-organism-dot {
@@ -53,6 +70,13 @@
     0 0 0 1px rgba(220, 238, 255, 0.32),
     0 0 12px rgba(120, 175, 255, 0.55),
     0 0 24px rgba(80, 145, 235, 0.38);
+}
+
+.space-organism-marker--enterable .space-organism-dot {
+  box-shadow:
+    0 0 0 1px rgba(226, 241, 255, 0.36),
+    0 0 14px rgba(130, 188, 255, 0.6),
+    0 0 30px rgba(92, 158, 246, 0.46);
 }
 
 .space-organism-label {
@@ -66,6 +90,34 @@
   background: rgba(6, 10, 18, 0.74);
   backdrop-filter: blur(1px);
   white-space: nowrap;
+}
+
+.space-organism-marker--focused .space-organism-label {
+  border-color: rgba(220, 240, 255, 0.38);
+  color: rgba(242, 249, 255, 0.96);
+}
+
+.space-transition-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background:
+    radial-gradient(120% 78% at 50% 50%, rgba(120, 165, 235, 0.3), rgba(6, 9, 16, 0.82)),
+    radial-gradient(circle at 22% 34%, rgba(205, 230, 255, 0.24) 0 1.6px, transparent 3px),
+    radial-gradient(circle at 68% 62%, rgba(165, 210, 255, 0.2) 0 1.4px, transparent 2.7px),
+    radial-gradient(circle at 80% 24%, rgba(150, 205, 255, 0.15) 0 1.2px, transparent 2.4px);
+  background-size: 100% 100%, 22px 22px, 28px 28px, 31px 31px;
+  mix-blend-mode: screen;
+  z-index: 3;
+}
+
+.space-transition-overlay--entering {
+  filter: blur(0.5px);
+}
+
+.space-transition-overlay--exiting {
+  filter: blur(0.2px);
 }
 
 .space-map-status {

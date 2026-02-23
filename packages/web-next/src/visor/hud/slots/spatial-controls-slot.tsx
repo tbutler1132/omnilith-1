@@ -12,12 +12,14 @@ import { SpatialNavWidget } from './spatial-nav-widget.js';
 interface SpatialControlsSlotProps {
   readonly altitude: Altitude;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+  readonly onGoBack: () => void;
+  readonly canGoBack: boolean;
 }
 
-export function SpatialControlsSlot({ altitude, onChangeAltitude }: SpatialControlsSlotProps) {
+export function SpatialControlsSlot({ altitude, onChangeAltitude, onGoBack, canGoBack }: SpatialControlsSlotProps) {
   return (
     <div className="spatial-controls-slot">
-      <SpatialNavWidget altitude={altitude} />
+      <SpatialNavWidget altitude={altitude} onGoBack={onGoBack} canGoBack={canGoBack} />
       <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} />
     </div>
   );

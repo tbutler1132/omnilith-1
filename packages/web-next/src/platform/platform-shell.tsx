@@ -30,6 +30,7 @@ export function PlatformShell() {
   const [visorRoute, setVisorRoute] = useState<VisorRoute>(() => readVisorRouteFromWindow());
   const [altitude, setAltitude] = useState<Altitude>('high');
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
+  const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
     worldMapId: null,
     loading: true,
@@ -40,12 +41,20 @@ export function PlatformShell() {
     setChangeAltitudeHandler(() => handler);
   }, []);
 
+  const handleBackControlReady = useCallback((handler: (() => void) | null) => {
+    setBackHandler(() => handler);
+  }, []);
+
   const handleAltitudeChangeRequested = useCallback(
     (direction: 'in' | 'out') => {
       changeAltitudeHandler?.(direction);
     },
     [changeAltitudeHandler],
   );
+
+  const handleBackRequested = useCallback(() => {
+    backHandler?.();
+  }, [backHandler]);
 
   const updateVisorRoute = useCallback((nextRoute: VisorRoute) => {
     if (typeof window === 'undefined') {
@@ -143,12 +152,15 @@ export function PlatformShell() {
         worldMapId={state.worldMapId}
         onAltitudeChange={setAltitude}
         onAltitudeControlReady={handleAltitudeControlReady}
+        onBackControlReady={handleBackControlReady}
       />
       <VisorHud
         mode={visorRoute.mode}
         appId={visorRoute.appId}
         altitude={altitude}
         onChangeAltitude={handleAltitudeChangeRequested}
+        onGoBack={handleBackRequested}
+        canGoBack={Boolean(backHandler)}
         onOpenApp={handleOpenApp}
         onCloseVisor={handleCloseVisor}
       />

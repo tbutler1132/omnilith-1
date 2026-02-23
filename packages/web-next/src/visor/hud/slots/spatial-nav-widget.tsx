@@ -21,14 +21,16 @@ const NAV_ALTIMETER_LEVEL: Readonly<Record<Altitude, 0 | 1 | 2>> = {
 
 interface SpatialNavWidgetProps {
   readonly altitude: Altitude;
+  readonly onGoBack: () => void;
+  readonly canGoBack: boolean;
 }
 
-export function SpatialNavWidget({ altitude }: SpatialNavWidgetProps) {
+export function SpatialNavWidget({ altitude, onGoBack, canGoBack }: SpatialNavWidgetProps) {
   const level = NAV_ALTIMETER_LEVEL[altitude];
 
   return (
     <nav className="space-nav-content" aria-label="Spatial navigation">
-      <button type="button" className="space-nav-back-btn" disabled aria-label="Back (placeholder)">
+      <button type="button" className="space-nav-back-btn" disabled={!canGoBack} onClick={onGoBack} aria-label="Back">
         &larr;
       </button>
       <div className="space-nav-altitude">

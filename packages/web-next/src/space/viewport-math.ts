@@ -30,6 +30,9 @@ const ALTITUDES: readonly AltitudeLevel[] = [
   { level: 'close', zoom: 1.3 },
 ] as const;
 
+/** Zoom level used while transitioning into a map interior boundary. */
+export const ENTER_ZOOM = 4.0;
+
 export function createInitialViewport(mapWidth: number, mapHeight: number): ViewportState {
   return {
     x: mapWidth / 2,
@@ -69,6 +72,22 @@ export function interpolateViewport(from: ViewportState, to: ViewportState, t: n
     x: from.x + (to.x - from.x) * t,
     y: from.y + (to.y - from.y) * t,
     zoom: from.zoom + (to.zoom - from.zoom) * t,
+  };
+}
+
+export function frameOrganism(wx: number, wy: number): ViewportState {
+  return {
+    x: wx,
+    y: wy,
+    zoom: zoomForAltitude('close'),
+  };
+}
+
+export function frameOrganismEnter(wx: number, wy: number): ViewportState {
+  return {
+    x: wx,
+    y: wy,
+    zoom: ENTER_ZOOM,
   };
 }
 

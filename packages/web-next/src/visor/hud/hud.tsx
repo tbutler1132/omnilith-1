@@ -23,11 +23,22 @@ interface VisorHudProps {
   readonly appId: string | null;
   readonly altitude: Altitude;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+  readonly onGoBack: () => void;
+  readonly canGoBack: boolean;
   readonly onOpenApp: (appId: string) => void;
   readonly onCloseVisor: () => void;
 }
 
-export function VisorHud({ mode, appId, altitude, onChangeAltitude, onOpenApp, onCloseVisor }: VisorHudProps) {
+export function VisorHud({
+  mode,
+  appId,
+  altitude,
+  onChangeAltitude,
+  onGoBack,
+  canGoBack,
+  onOpenApp,
+  onCloseVisor,
+}: VisorHudProps) {
   const [openVisorPhase, setOpenVisorPhase] = useState<OpenVisorPhase>(mode === 'open' ? 'opening' : 'hidden');
   const [presentedAppId, setPresentedAppId] = useState<string | null>(appId);
   const phaseTimerRef = useRef<number | null>(null);
@@ -81,7 +92,12 @@ export function VisorHud({ mode, appId, altitude, onChangeAltitude, onOpenApp, o
     <div className="visor-hud-layer">
       {showClosedHud ? (
         <>
-          <SpatialControlsSlot altitude={altitude} onChangeAltitude={onChangeAltitude} />
+          <SpatialControlsSlot
+            altitude={altitude}
+            onChangeAltitude={onChangeAltitude}
+            onGoBack={onGoBack}
+            canGoBack={canGoBack}
+          />
           <AppDockSlot onOpenApp={onOpenApp} />
           <VisorWidgetLane>
             <CompassWidget />
