@@ -12,6 +12,7 @@ import { HudMyProposalsPanel } from '../map/HudMyProposalsPanel.js';
 import { HudProfilePanel } from '../map/HudProfilePanel.js';
 import {
   AppendSection,
+  BoundaryCadenceSection,
   CompositionSection,
   ContributionsSection,
   GovernanceSection,
@@ -54,6 +55,9 @@ export const UNIVERSAL_VISOR_PANEL_BODY_RENDERERS = {
     />
   ),
   regulation: (context) => <RegulationSection organismId={context.organismId} refreshKey={context.refreshKey} />,
+  'boundary-cadence': (context) => (
+    <BoundaryCadenceSection organismId={context.organismId} refreshKey={context.refreshKey} />
+  ),
   propose: (context) => renderProposalPanel('propose', context),
   proposals: (context) => renderProposalPanel('proposals', context),
   append: (context) => (
@@ -149,6 +153,7 @@ export const VISOR_MAIN_PANEL_BODY_RENDERERS = {
   organism: (context) => renderOrganismMainPanelBody(context.organismMain),
   composition: (context) => renderUniversalVisorPanelBody('composition', context.universal),
   regulation: (context) => renderUniversalVisorPanelBody('regulation', context.universal),
+  'boundary-cadence': (context) => renderUniversalVisorPanelBody('boundary-cadence', context.universal),
   propose: (context) => renderUniversalVisorPanelBody('propose', context.universal),
   proposals: (context) => renderUniversalVisorPanelBody('proposals', context.universal),
   append: (context) => renderUniversalVisorPanelBody('append', context.universal),

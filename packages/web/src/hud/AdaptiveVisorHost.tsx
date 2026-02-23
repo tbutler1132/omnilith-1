@@ -160,6 +160,12 @@ export function AdaptiveVisorHost() {
                     title: 'Open regulation panel',
                     onClick: () => openInVisor(enteredOrganismId, 'regulation'),
                   },
+                  {
+                    id: `cadence-${enteredOrganismId}`,
+                    label: 'Cadence',
+                    title: 'Open boundary cadence panel',
+                    onClick: () => openInVisor(enteredOrganismId, 'boundary-cadence'),
+                  },
                 ]
               : []
           }

@@ -22,6 +22,7 @@ export const VISOR_HUD_PANEL_IDS = [
   'organism-nav',
   'composition',
   'regulation',
+  'boundary-cadence',
   'propose',
   'proposals',
   'append',
@@ -36,6 +37,7 @@ export const VISOR_MAIN_HUD_PANEL_IDS = [
   'organism',
   'composition',
   'regulation',
+  'boundary-cadence',
   'propose',
   'proposals',
   'append',
@@ -49,6 +51,7 @@ export type VisorMainHudPanelId = (typeof VISOR_MAIN_HUD_PANEL_IDS)[number];
 export const UNIVERSAL_VISOR_HUD_PANEL_IDS = [
   'composition',
   'regulation',
+  'boundary-cadence',
   'propose',
   'proposals',
   'append',
@@ -161,6 +164,17 @@ export const HUD_PANEL_REGISTRY: HudPanelRegistryEntry[] = [
     defaultMainPriority: 84,
     defaultSecondaryPriority: 80,
     collapsedPriority: 83,
+  },
+  {
+    id: 'boundary-cadence',
+    label: 'Boundary cadence',
+    purpose:
+      'Inspect Move 48 cadence organisms composed inside this boundary (trajectory, variables, models, retros, tasks, inbox).',
+    availableIn: (context) => context.contextClass === 'visor-organism',
+    roleSupport: { main: true, secondary: true, collapsed: true },
+    defaultMainPriority: 83,
+    defaultSecondaryPriority: 81,
+    collapsedPriority: 90,
   },
   {
     id: 'propose',
