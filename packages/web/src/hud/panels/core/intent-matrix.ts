@@ -27,12 +27,14 @@ interface IntentMatrixRule {
 const MAP_RULE: IntentMatrixRule = {
   mainPriority: {
     base: {
+      'my-organisms': 6,
       'my-proposals': 5,
       profile: 3,
     },
   },
   secondaryPriority: {
     base: {
+      'my-organisms': 5,
       'my-proposals': 4,
       profile: 3,
     },

@@ -170,6 +170,7 @@ describe('adaptive visor behavior contract', () => {
       'visor-view': true,
       'interior-actions': true,
       profile: true,
+      'my-organisms': true,
       'my-proposals': true,
     };
 

@@ -156,10 +156,10 @@ describe('resolveVisorPanelLayout', () => {
       slots: mapSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals']);
+    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals', 'my-organisms']);
     expect(layout.mainPanelId).toBeNull();
     expect(layout.secondaryPanelIds).toEqual([]);
-    expect(layout.collapsedPanelIds).toEqual(['my-proposals', 'profile']);
+    expect(layout.collapsedPanelIds).toEqual(['my-organisms', 'my-proposals', 'profile']);
   });
 
   it('secondary slot count is template-driven and can enable secondary cards', () => {
@@ -225,7 +225,7 @@ describe('resolveVisorPanelLayout', () => {
       slots: mapSlots,
     });
 
-    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals']);
-    expect(layout.collapsedPanelIds).toEqual(['my-proposals', 'profile']);
+    expect(layout.availablePanelIds).toEqual(['profile', 'my-proposals', 'my-organisms']);
+    expect(layout.collapsedPanelIds).toEqual(['my-organisms', 'my-proposals', 'profile']);
   });
 });

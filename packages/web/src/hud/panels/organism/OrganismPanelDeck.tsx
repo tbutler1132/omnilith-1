@@ -148,11 +148,9 @@ export function OrganismPanelDeck({ organismId, initialPanelId = null }: Organis
         }}
         onCollapseMainPanel={() => {
           setPreferredPanelId(null);
-          // When opened from any organism interior, collapsing should return
-          // to interior actions instead of preserving the last visor target.
-          if (enteredOrganismId !== null) {
-            closeVisorOrganism();
-          }
+          // Collapsing organism panels should always return to the underlying
+          // spatial context (map or interior) instead of leaving visor mode open.
+          closeVisorOrganism();
         }}
         renderPanelBody={(panelId) => {
           if (!isVisorMainHudPanelId(panelId)) return null;

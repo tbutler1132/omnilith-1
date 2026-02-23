@@ -12,7 +12,7 @@ import type { VisorWidgetId } from '../contracts/visor-widget.js';
 export type AdaptiveVisorContextClass = 'map' | 'interior' | 'visor-organism';
 export type AdaptiveVisorSpatialLocation = 'map' | 'interior';
 export type AdaptiveVisorMajorPanelId = 'visor-view' | 'interior-actions';
-export type AdaptiveVisorMapPanelId = 'profile' | 'my-proposals';
+export type AdaptiveVisorMapPanelId = 'profile' | 'my-organisms' | 'my-proposals';
 export type AdaptiveVisorPanelId = AdaptiveVisorMajorPanelId | AdaptiveVisorMapPanelId;
 export type AdaptiveVisorWidgetId = VisorWidgetId;
 export type AdaptiveVisorAnchorId = 'navigation-back' | 'dismiss';
@@ -157,11 +157,11 @@ function constrainPanels(activePanels: AdaptiveVisorPanelId[]): AdaptiveVisorPan
 }
 
 function isMapPanel(panelId: AdaptiveVisorPanelId): panelId is AdaptiveVisorMapPanelId {
-  return panelId === 'profile' || panelId === 'my-proposals';
+  return panelId === 'profile' || panelId === 'my-organisms' || panelId === 'my-proposals';
 }
 
 function isRestorableMapPanel(panelId: AdaptiveVisorPanelId): panelId is AdaptiveVisorMapPanelId {
-  return panelId === 'profile' || panelId === 'my-proposals';
+  return panelId === 'profile' || panelId === 'my-organisms' || panelId === 'my-proposals';
 }
 
 function popLatestRestorableSnapshot(

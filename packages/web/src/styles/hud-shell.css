@@ -1051,6 +1051,17 @@
   gap: 8px;
 }
 
+.hud-cadence-count-chip {
+  border: 1px solid rgba(124, 108, 240, 0.4);
+  border-radius: 999px;
+  padding: 2px 7px;
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--hud-text-bright);
+}
+
 .hud-organism-type {
   border: 1px solid var(--hud-border);
   border-radius: 6px;
@@ -1065,6 +1076,23 @@
   font-family: var(--hud-mono);
   font-size: 10px;
   color: rgba(224, 224, 232, 0.45);
+}
+
+.hud-my-organisms-role-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.hud-my-organisms-role-chip {
+  border: 1px solid rgba(124, 108, 240, 0.2);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-family: var(--hud-mono);
+  font-size: 9px;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--hud-text);
 }
 
 
