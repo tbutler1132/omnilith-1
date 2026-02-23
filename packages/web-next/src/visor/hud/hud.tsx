@@ -6,7 +6,7 @@
  */
 
 import type { Altitude } from '../../contracts/altitude.js';
-import { SpatialControlsSlot } from './slots/index.js';
+import { AppDockSlot, SpatialControlsSlot } from './slots/index.js';
 import { VisorWidgetLane } from './widget-lane.js';
 import { CompassWidget } from './widgets/index.js';
 
@@ -19,6 +19,7 @@ export function VisorHud({ altitude, onChangeAltitude }: VisorHudProps) {
   return (
     <div className="visor-hud-layer">
       <SpatialControlsSlot altitude={altitude} onChangeAltitude={onChangeAltitude} />
+      <AppDockSlot />
       <VisorWidgetLane>
         <CompassWidget />
       </VisorWidgetLane>

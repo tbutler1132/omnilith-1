@@ -143,6 +143,47 @@ body {
   z-index: 21;
 }
 
+.app-dock-slot {
+  position: fixed;
+  left: 0.9rem;
+  bottom: 0.9rem;
+  pointer-events: auto;
+  z-index: 21;
+}
+
+.app-dock-shell {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  padding: 0.36rem;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 0.68rem;
+  background: rgba(0, 0, 0, 0.62);
+  color: rgba(235, 241, 248, 0.9);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 22px rgba(120, 170, 255, 0.13);
+}
+
+.app-dock-button {
+  min-width: 4.6rem;
+  height: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 0.52rem;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(242, 247, 255, 0.9);
+  padding: 0 0.7rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.app-dock-button:disabled {
+  opacity: 0.8;
+  cursor: default;
+}
+
 .space-nav-content {
   display: inline-flex;
   align-items: center;
@@ -326,6 +367,11 @@ body {
     right: 0.7rem;
     top: 0.7rem;
     width: 8.2rem;
+  }
+
+  .app-dock-slot {
+    left: 0.7rem;
+    bottom: 0.7rem;
   }
 
   .space-map-status {
