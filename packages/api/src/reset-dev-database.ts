@@ -17,11 +17,18 @@ import { seedWorldMap } from './seed.js';
 import { seedDev } from './seed-dev.js';
 
 const ALLOW_RESET_ENV = 'OMNILITH_ALLOW_DB_RESET';
+const RUNTIME_ENV = 'OMNILITH_RUNTIME_ENV';
 const LOCAL_HOSTNAMES = new Set(['localhost', '127.0.0.1', '::1', 'postgres', 'db']);
 
 function assertSafeToReset(databaseUrl: string): void {
   if (process.env[ALLOW_RESET_ENV] !== 'true') {
     throw new Error(`Refusing reset. Re-run with ${ALLOW_RESET_ENV}=true to confirm this destructive local operation.`);
+  }
+
+  if (process.env[RUNTIME_ENV] !== 'local') {
+    throw new Error(
+      `Refusing reset unless ${RUNTIME_ENV}=local. Current value: ${process.env[RUNTIME_ENV] ?? '(unset)'}.`,
+    );
   }
 
   if (process.env.NODE_ENV === 'production') {
