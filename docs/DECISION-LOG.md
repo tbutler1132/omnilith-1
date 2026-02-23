@@ -987,6 +987,71 @@ Implementation update:
 
 - `packages/api/src/seed-v1-demo.ts` now composes `Trajectory`, `Variables`, `Models`, `Retros`, `Tasks`, and `Inbox` under the currently regulated demo boundaries.
 
+### Move 49: Agent Actors, Bounded Autonomous Integrate, and Map Space Economy Direction
+
+A strategic direction was clarified across governance, space scarcity, and economic design.
+
+AI participation model:
+
+- `user` remains human by default; human stewardship remains the top-level authority.
+- AI should be modeled as delegated operational actors with stable identity and explicit human sponsor/provenance.
+- bounded autonomous integrate is valid in low-risk boundaries when policy-defined checks pass and rollback is clear.
+- high-impact mutation classes (for example governance, economic policy, safety-critical access) retain human integrate as the default path.
+- non-human political rights are an intentional future constitutional experiment, not an implicit default.
+
+Map scarcity model:
+
+- scarcity applies to surfacing on map organisms, not to organism threshold.
+- map space can be allocated in bounded units (for example grid capacity) under policy.
+- allocation should be lease-like stewardship capacity rather than permanent land ownership.
+- anti-hoarding constraints are required (caps, expiry/reclaim, inactivity pressure, commons lane).
+
+Economic mechanism direction:
+
+- currency should enter as organisms through content types and composition, not as new kernel infrastructure.
+- prefer a `currency-policy` organism + append-only `currency-ledger` organism as canonical economic state.
+- user balance is derived from ledger history; fast balance views can come from query projections.
+- paywalled access to private/member boundaries is valid via policy organisms and entitlement relationships.
+- premium pathways should govern access and boundary rights, not rendering prominence.
+
+Architecture impact assessment:
+
+- this direction can be implemented additively with content types, policy organisms, and adapters.
+- kernel refactor is not required for staged flows.
+- if atomic multi-organism economic + surfacing mutation is required in one integrate step, a future kernel extension may be needed.
+
+### Move 50: World Map Governance, Platform Custody, and Closed-Loop Credit Baseline
+
+A cross-cutting direction was clarified for map truth, authority transfer, custody, and credits.
+
+World-map truth and governance:
+
+- canonical map division truth remains in Omnilith state history on the `World Map` organism, not in an on-chain execution layer
+- optional chain anchoring remains valid as a witness/proof layer only (for example signed checkpoints), not as the primary mutation path
+- category clarity is preserved: the map is an organism; infrastructure hosts persistence/query/visibility mechanics; governance policy organisms regulate mutation
+
+Composition placement:
+
+- economic ledger organisms are composed inside treasury boundaries (for example `Capital Treasury`)
+- map-governance organisms are composed inside governance boundaries (for example `Capital Government` or dedicated map-governance boundaries)
+
+Economic baseline direction:
+
+- Phase 1 credits follow a closed-loop default: non-redeemable, platform-use only, non-transferable by default
+- `1 credit = 1 USD` remains acceptable as a simplicity/legibility ratio in a closed-loop model
+- redeemability is explicitly deferred to a higher-compliance track with formal legal review before rollout
+
+Anti-capture custody direction:
+
+- control of hosting/domain/repository/backup should sit with legal-entity accounts rather than founder-personal custody
+- critical operations should use multi-party controls and explicit integrator succession/rotation policy
+
+This direction preserves Phase 1 momentum and architecture coherence while creating a clear path to stronger legitimacy and reduced founder lock-in.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/036-world-map-governance-platform-custody-and-closed-loop-credit-policy.md`
+
 ---
 
 ## Summary of What We're Building
