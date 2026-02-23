@@ -28,6 +28,256 @@ const PROJECT_GITHUB_OWNER = 'tbutler1132';
 const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
 const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
 
+type CreateOrganismDeps = Parameters<typeof createOrganism>[1];
+type ComposeOrganismDeps = Parameters<typeof composeOrganism>[1];
+
+interface ManualCadenceMarkdownTemplates {
+  readonly trajectory: string;
+  readonly variables: string;
+  readonly models: string;
+  readonly retros: string;
+  readonly tasks: string;
+  readonly inbox: string;
+}
+
+interface ManualCadenceChildren {
+  readonly trajectoryOrganismId: OrganismId;
+  readonly variablesOrganismId: OrganismId;
+  readonly modelsOrganismId: OrganismId;
+  readonly retrosOrganismId: OrganismId;
+  readonly tasksOrganismId: OrganismId;
+  readonly inboxOrganismId: OrganismId;
+}
+
+function buildManualCadenceMarkdownTemplates(boundaryName: string): ManualCadenceMarkdownTemplates {
+  return {
+    trajectory: [
+      `# ${boundaryName} Trajectory`,
+      '',
+      'Where this boundary is heading. Update when direction shifts, not on a fixed cadence.',
+      '',
+      '## Direction',
+      '- What is this boundary trying to become over the next horizon?',
+      '',
+      '## Key dates',
+      '- YYYY-MM-DD —',
+      '',
+      '## Commitments',
+      '- What commitments are active right now?',
+      '',
+      '## What we are not doing right now',
+      '- Explicitly list scope not being pursued.',
+      '',
+      '## Revision signal',
+      '- What evidence means this trajectory needs to change?',
+    ].join('\n'),
+    variables: [
+      `# ${boundaryName} Variables`,
+      '',
+      'Use this register to track what this boundary is trying to regulate.',
+      '',
+      '## Variable register',
+      '| Variable | Why it matters | Current signal | Target range | Check cadence | If drift then |',
+      '| --- | --- | --- | --- | --- | --- |',
+      '| example-load | Protect tending capacity | 0 | 0-3 | Weekly | Open triage tasks and rebalance commitments |',
+      '',
+      '## Weekly tending check',
+      '- Review sensor readings and open proposals.',
+      '- Update current signals and target ranges when needed.',
+      '- Link follow-up tasks before ending the weekly check.',
+    ].join('\n'),
+    models: [
+      `# ${boundaryName} Models`,
+      '',
+      'Working assumptions that guide tending. Revise when reality disproves.',
+      '',
+      '## Status levels',
+      '| Status | Meaning |',
+      '| --- | --- |',
+      '| assumption | Untested belief to act on now. |',
+      '| emerging | Showing evidence through repeated tending cycles. |',
+      '| learned | Repeatedly confirmed, still revisable. |',
+      '',
+      '## Model:',
+      '### Status: assumption',
+      '- Evidence from:',
+      '- What this model predicts:',
+      '- What actions it suggests:',
+      '',
+      '**Revision signal:**',
+      '- What observation would update or replace this model?',
+    ].join('\n'),
+    retros: [
+      `# ${boundaryName} Retros`,
+      '',
+      'Use episode cadence: one section per tending cycle.',
+      '',
+      '## Episode YYYY-WW (Week of YYYY-MM-DD)',
+      '### Intentions',
+      '- What did we intend to do this cycle?',
+      '',
+      '### Log',
+      '- What happened?',
+      '',
+      '### Retro',
+      '- What worked?',
+      '- Where did tending feel heavy?',
+      '- What changed in variables?',
+      '',
+      '### Adjustments',
+      '- What will change next cycle?',
+    ].join('\n'),
+    tasks: [
+      `# ${boundaryName} Tasks`,
+      '',
+      'Capture next actions needed to tend this boundary.',
+      '',
+      '## Now',
+      '- [ ]',
+      '',
+      '## Next',
+      '- [ ]',
+      '',
+      '## Later',
+      '- [ ]',
+      '',
+      '## Done this week',
+      '- [ ]',
+    ].join('\n'),
+    inbox: [
+      `# ${boundaryName} Inbox`,
+      '',
+      'Capture fast. Triage later.',
+      '',
+      '## Untriaged notes',
+      '- YYYY-MM-DD —',
+      '',
+      '## Triage moves',
+      '- Move actions to Tasks.',
+      '- Move regulation signals to Variables.',
+      '- Move weekly reflections to Retros.',
+      '- Move direction shifts to Trajectory.',
+      '- Move assumptions to Models.',
+    ].join('\n'),
+  };
+}
+
+async function createManualCadenceChildren(
+  boundaryName: string,
+  boundarySlug: string,
+  createdBy: UserId,
+  createDeps: CreateOrganismDeps,
+): Promise<ManualCadenceChildren> {
+  const templates = buildManualCadenceMarkdownTemplates(boundaryName);
+
+  const trajectory = await createOrganism(
+    {
+      name: `${boundarySlug}-trajectory`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.trajectory,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const variables = await createOrganism(
+    {
+      name: `${boundarySlug}-variables`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.variables,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const models = await createOrganism(
+    {
+      name: `${boundarySlug}-models`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.models,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const retros = await createOrganism(
+    {
+      name: `${boundarySlug}-retros`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.retros,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const tasks = await createOrganism(
+    {
+      name: `${boundarySlug}-tasks`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.tasks,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const inbox = await createOrganism(
+    {
+      name: `${boundarySlug}-inbox`,
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: templates.inbox,
+        format: 'markdown',
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  return {
+    trajectoryOrganismId: trajectory.organism.id,
+    variablesOrganismId: variables.organism.id,
+    modelsOrganismId: models.organism.id,
+    retrosOrganismId: retros.organism.id,
+    tasksOrganismId: tasks.organism.id,
+    inboxOrganismId: inbox.organism.id,
+  };
+}
+
+async function composeManualCadenceChildren(
+  parentId: OrganismId,
+  children: ManualCadenceChildren,
+  composedBy: UserId,
+  composeDeps: ComposeOrganismDeps,
+): Promise<void> {
+  await composeOrganism({ parentId, childId: children.trajectoryOrganismId, composedBy }, composeDeps);
+  await composeOrganism({ parentId, childId: children.variablesOrganismId, composedBy }, composeDeps);
+  await composeOrganism({ parentId, childId: children.modelsOrganismId, composedBy }, composeDeps);
+  await composeOrganism({ parentId, childId: children.retrosOrganismId, composedBy }, composeDeps);
+  await composeOrganism({ parentId, childId: children.tasksOrganismId, composedBy }, composeDeps);
+  await composeOrganism({ parentId, childId: children.inboxOrganismId, composedBy }, composeDeps);
+}
+
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
   const hash = scryptSync(password, salt, 64).toString('hex');
@@ -286,6 +536,13 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const repositoryManualCadenceChildren = await createManualCadenceChildren(
+    'Omnilith Repository',
+    'omnilith-repository',
+    devUserId,
+    createDeps,
+  );
+
   await composeOrganism(
     { parentId: projectRepository.organism.id, childId: repositoryIssueSensor.organism.id, composedBy: devUserId },
     composeDeps,
@@ -304,6 +561,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
   await composeOrganism(
     { parentId: projectRepository.organism.id, childId: repositoryWhy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeManualCadenceChildren(
+    projectRepository.organism.id,
+    repositoryManualCadenceChildren,
+    devUserId,
     composeDeps,
   );
 
@@ -334,6 +597,13 @@ export async function seedV1Demo(container: Container): Promise<void> {
       },
       createdBy: devUserId,
     },
+    createDeps,
+  );
+
+  const capitalCommunityManualCadenceChildren = await createManualCadenceChildren(
+    'Capital Community',
+    'capital-community',
+    devUserId,
     createDeps,
   );
 
@@ -407,6 +677,13 @@ export async function seedV1Demo(container: Container): Promise<void> {
     createDeps,
   );
 
+  const capitalTechnologyManualCadenceChildren = await createManualCadenceChildren(
+    'Capital Technology',
+    'capital-technology',
+    devUserId,
+    createDeps,
+  );
+
   const softwareSystem = await createOrganism(
     {
       name: 'Software System',
@@ -417,6 +694,13 @@ export async function seedV1Demo(container: Container): Promise<void> {
       },
       createdBy: devUserId,
     },
+    createDeps,
+  );
+
+  const softwareSystemManualCadenceChildren = await createManualCadenceChildren(
+    'Software System',
+    'software-system',
+    devUserId,
     createDeps,
   );
 
@@ -1005,6 +1289,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
     { parentId: capitalCommunity.organism.id, childId: capitalCommunityWhy.organism.id, composedBy: devUserId },
     composeDeps,
   );
+  await composeManualCadenceChildren(
+    capitalCommunity.organism.id,
+    capitalCommunityManualCadenceChildren,
+    devUserId,
+    composeDeps,
+  );
   await composeOrganism(
     { parentId: capitalTechnology.organism.id, childId: softwareSystem.organism.id, composedBy: devUserId },
     composeDeps,
@@ -1029,6 +1319,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
     { parentId: capitalTechnology.organism.id, childId: capitalTechnologyWhy.organism.id, composedBy: devUserId },
     composeDeps,
   );
+  await composeManualCadenceChildren(
+    capitalTechnology.organism.id,
+    capitalTechnologyManualCadenceChildren,
+    devUserId,
+    composeDeps,
+  );
   await composeOrganism(
     { parentId: softwareSystem.organism.id, childId: softwareSystemProposalSensor.organism.id, composedBy: devUserId },
     composeDeps,
@@ -1047,6 +1343,12 @@ export async function seedV1Demo(container: Container): Promise<void> {
   );
   await composeOrganism(
     { parentId: softwareSystem.organism.id, childId: softwareSystemWhy.organism.id, composedBy: devUserId },
+    composeDeps,
+  );
+  await composeManualCadenceChildren(
+    softwareSystem.organism.id,
+    softwareSystemManualCadenceChildren,
+    devUserId,
     composeDeps,
   );
   await composeOrganism(
