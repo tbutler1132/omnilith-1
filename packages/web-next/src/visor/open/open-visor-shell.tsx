@@ -11,17 +11,18 @@ import { OpenVisorHeader } from './open-visor-header.js';
 
 interface OpenVisorShellProps {
   readonly appId: string | null;
+  readonly phase: 'opening' | 'open' | 'closing';
   readonly onOpenApp: (appId: string) => void;
   readonly onRequestClose: () => void;
 }
 
-export function OpenVisorShell({ appId, onOpenApp, onRequestClose }: OpenVisorShellProps) {
+export function OpenVisorShell({ appId, phase, onOpenApp, onRequestClose }: OpenVisorShellProps) {
   const apps = listVisorApps();
   const activeApp = resolveVisorApp(appId);
   const ActiveAppComponent = activeApp.component;
 
   return (
-    <section className="open-visor-shell" aria-label="Open visor">
+    <section className="open-visor-shell" data-phase={phase} aria-label="Open visor">
       <OpenVisorHeader
         appLabel={activeApp.label}
         appDescription={activeApp.description}

@@ -1,8 +1,26 @@
 .visor-hud-layer {
+  --visor-surface: rgba(7, 12, 22, 0.66);
+  --visor-surface-strong: rgba(4, 9, 18, 0.82);
+  --visor-line: rgba(198, 226, 255, 0.28);
+  --visor-line-soft: rgba(198, 226, 255, 0.16);
+  --visor-text: rgba(236, 246, 255, 0.9);
+  --visor-glow-soft: 0 0 26px rgba(104, 163, 238, 0.2);
+  --visor-glow-inset: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 20;
+}
+
+.visor-hud-layer::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(46rem 28rem at 78% -5%, rgba(125, 184, 255, 0.12), transparent 60%),
+    radial-gradient(38rem 24rem at 16% 118%, rgba(95, 152, 229, 0.08), transparent 62%);
+  opacity: 0.78;
 }
 
 .visor-widget-lane {
@@ -41,22 +59,23 @@
   align-items: center;
   gap: 0.42rem;
   padding: 0.36rem;
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  border: 1px solid var(--visor-line);
   border-radius: 0.68rem;
-  background: rgba(0, 0, 0, 0.62);
-  color: rgba(235, 241, 248, 0.9);
+  background: var(--visor-surface);
+  backdrop-filter: blur(10px);
+  color: var(--visor-text);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 0 22px rgba(120, 170, 255, 0.13);
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
 }
 
 .app-dock-button {
   min-width: 4.6rem;
   height: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  border: 1px solid rgba(212, 234, 255, 0.3);
   border-radius: 0.52rem;
-  background: rgba(255, 255, 255, 0.06);
-  color: rgba(242, 247, 255, 0.9);
+  background: linear-gradient(140deg, rgba(170, 210, 255, 0.12), rgba(170, 210, 255, 0.03));
+  color: rgba(244, 250, 255, 0.92);
   padding: 0 0.7rem;
   font-size: 0.72rem;
   letter-spacing: 0.03em;
@@ -78,14 +97,18 @@
   gap: 0.58rem;
   pointer-events: auto;
   z-index: 22;
+  isolation: isolate;
 }
 
 .open-visor-shell-header {
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--visor-line);
   border-radius: 0.82rem;
-  background: rgba(3, 7, 14, 0.86);
+  background: var(--visor-surface-strong);
+  backdrop-filter: blur(11px);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    var(--visor-glow-inset),
     0 0 30px rgba(72, 128, 214, 0.18);
   display: flex;
   align-items: flex-start;
@@ -124,15 +147,18 @@
 }
 
 .open-visor-rail {
+  position: relative;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   gap: 0.42rem;
   padding: 0.46rem;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid var(--visor-line);
   border-radius: 0.82rem;
-  background: rgba(2, 6, 12, 0.84);
+  background: var(--visor-surface-strong);
+  backdrop-filter: blur(11px);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    var(--visor-glow-inset),
     0 0 26px rgba(90, 145, 225, 0.2);
 }
 
@@ -160,29 +186,224 @@
 }
 
 .open-visor-app-pane {
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  position: relative;
+  border: 1px solid var(--visor-line);
   border-radius: 0.82rem;
-  background: rgba(3, 7, 14, 0.84);
+  background: var(--visor-surface-strong);
+  backdrop-filter: blur(12px);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.05),
+    var(--visor-glow-inset),
     0 0 30px rgba(72, 128, 214, 0.2);
   min-height: 0;
   overflow: hidden;
 }
 
+.open-visor-shell-header::after,
+.open-visor-rail::after,
+.open-visor-app-pane::after {
+  content: '';
+  position: absolute;
+  inset: -25%;
+  pointer-events: none;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background:
+    radial-gradient(circle at 20% 40%, rgba(156, 208, 255, 0.42) 0 1.4px, transparent 2.8px),
+    radial-gradient(circle at 64% 25%, rgba(185, 226, 255, 0.34) 0 1.2px, transparent 2.4px),
+    radial-gradient(circle at 78% 68%, rgba(139, 198, 255, 0.28) 0 1.4px, transparent 2.6px),
+    linear-gradient(120deg, rgba(86, 138, 216, 0.2), rgba(160, 210, 255, 0.06));
+  background-size: 19px 19px, 23px 23px, 27px 27px, 100% 100%;
+}
+
+.open-visor-shell[data-phase='opening'] {
+  animation: open-visor-shell-in 420ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
+}
+
+.open-visor-shell[data-phase='opening'] .open-visor-body {
+  animation: open-visor-body-in 460ms cubic-bezier(0.22, 0.7, 0.24, 1) both;
+  animation-delay: 55ms;
+}
+
+.open-visor-shell[data-phase='opening'] .open-visor-shell-header {
+  animation: open-visor-fragment-in 540ms cubic-bezier(0.16, 0.76, 0.2, 1) both;
+  animation-delay: 25ms;
+}
+
+.open-visor-shell[data-phase='opening'] .open-visor-rail {
+  animation: open-visor-fragment-in 560ms cubic-bezier(0.15, 0.76, 0.2, 1) both;
+  animation-delay: 85ms;
+}
+
+.open-visor-shell[data-phase='opening'] .open-visor-app-pane {
+  animation: open-visor-fragment-in 600ms cubic-bezier(0.15, 0.78, 0.2, 1) both;
+  animation-delay: 115ms;
+}
+
+.open-visor-shell[data-phase='opening'] .open-visor-shell-header::after,
+.open-visor-shell[data-phase='opening'] .open-visor-rail::after,
+.open-visor-shell[data-phase='opening'] .open-visor-app-pane::after {
+  animation: open-visor-disintegrate 760ms ease-out both;
+}
+
+.open-visor-shell[data-phase='closing'] {
+  pointer-events: none;
+  animation: open-visor-shell-out 390ms cubic-bezier(0.48, 0.05, 0.68, 0.2) both;
+}
+
+.open-visor-shell[data-phase='closing'] .open-visor-body {
+  animation: open-visor-body-out 340ms cubic-bezier(0.5, 0.1, 0.72, 0.2) both;
+}
+
+.open-visor-shell[data-phase='closing'] .open-visor-shell-header,
+.open-visor-shell[data-phase='closing'] .open-visor-rail,
+.open-visor-shell[data-phase='closing'] .open-visor-app-pane {
+  animation: open-visor-fragment-out 360ms cubic-bezier(0.5, 0.1, 0.72, 0.2) both;
+}
+
+.open-visor-shell[data-phase='closing'] .open-visor-shell-header::after,
+.open-visor-shell[data-phase='closing'] .open-visor-rail::after,
+.open-visor-shell[data-phase='closing'] .open-visor-app-pane::after {
+  animation: open-visor-disintegrate-out 380ms ease-in both;
+}
+
+.open-visor-shell-header::after {
+  animation-delay: 45ms;
+}
+
+.open-visor-rail::after {
+  animation-delay: 95ms;
+}
+
+.open-visor-app-pane::after {
+  animation-delay: 130ms;
+}
+
+@keyframes open-visor-shell-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.994);
+    filter: blur(3px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes open-visor-body-in {
+  from {
+    opacity: 0;
+    transform: translateY(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes open-visor-fragment-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.992);
+    filter: blur(5px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes open-visor-shell-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-9px) scale(1.004);
+    filter: blur(6px);
+  }
+}
+
+@keyframes open-visor-body-out {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes open-visor-fragment-out {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateY(-4px) scale(1.008);
+    filter: blur(7px);
+  }
+}
+
+@keyframes open-visor-disintegrate {
+  from {
+    opacity: 0.72;
+    transform: translate3d(-2.5%, 0, 0) scale(1.025);
+  }
+
+  55% {
+    opacity: 0.42;
+  }
+
+  to {
+    opacity: 0;
+    transform: translate3d(4%, 0, 0) scale(1);
+  }
+}
+
+@keyframes open-visor-disintegrate-out {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  45% {
+    opacity: 0.36;
+  }
+
+  to {
+    opacity: 0.72;
+    transform: translate3d(-3.5%, 0, 0) scale(1.035);
+  }
+}
+
 .open-visor-close-button {
   min-width: 4.4rem;
   height: 1.95rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(212, 234, 255, 0.28);
   border-radius: 0.56rem;
-  background: rgba(255, 255, 255, 0.04);
-  color: rgba(231, 243, 255, 0.9);
+  background: linear-gradient(145deg, rgba(160, 208, 255, 0.14), rgba(160, 208, 255, 0.04));
+  color: rgba(236, 247, 255, 0.93);
   font-size: 0.66rem;
   letter-spacing: 0.05em;
   text-transform: uppercase;
   font-weight: 600;
   padding: 0 0.62rem;
   cursor: pointer;
+  box-shadow: 0 0 18px rgba(92, 150, 224, 0.22);
 }
 
 .open-visor-app-canvas {
@@ -219,13 +440,14 @@
   align-items: center;
   gap: 0.58rem;
   padding: 0.5rem 0.7rem;
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  border: 1px solid var(--visor-line);
   border-radius: 0.68rem;
-  background: rgba(0, 0, 0, 0.6);
-  color: rgba(235, 241, 248, 0.9);
+  background: var(--visor-surface);
+  backdrop-filter: blur(10px);
+  color: var(--visor-text);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 0 22px rgba(120, 170, 255, 0.13);
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
   pointer-events: auto;
 }
 
@@ -233,9 +455,9 @@
   width: 1.8rem;
   height: 1.45rem;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.28);
-  background: rgba(255, 255, 255, 0.07);
-  color: rgba(241, 247, 255, 0.88);
+  border: 1px solid rgba(212, 234, 255, 0.3);
+  background: linear-gradient(145deg, rgba(164, 207, 255, 0.16), rgba(164, 207, 255, 0.04));
+  color: rgba(241, 247, 255, 0.92);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -271,7 +493,7 @@
 .space-nav-altimeter-step {
   width: 0.12rem;
   border-radius: 2px;
-  background: rgba(181, 201, 230, 0.56);
+  background: rgba(181, 208, 238, 0.52);
 }
 
 .space-nav-altimeter-step:nth-child(1) {
@@ -295,13 +517,14 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  border: 1px solid var(--visor-line);
   border-radius: 0.55rem;
-  background: rgba(0, 0, 0, 0.6);
-  color: rgba(235, 241, 248, 0.9);
+  background: var(--visor-surface);
+  backdrop-filter: blur(10px);
+  color: var(--visor-text);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 0 22px rgba(120, 170, 255, 0.13);
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
 }
 
 .altitude-btn {
@@ -331,8 +554,8 @@
   align-items: center;
   gap: 0.22rem;
   padding: 0.3rem 0.38rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.16);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.16);
+  border-top: 1px solid var(--visor-line-soft);
+  border-bottom: 1px solid var(--visor-line-soft);
 }
 
 .altitude-label {
@@ -352,11 +575,11 @@
   width: 0.88rem;
   height: 0.11rem;
   border-radius: 2px;
-  background: rgba(181, 201, 230, 0.45);
+  background: rgba(181, 208, 238, 0.42);
 }
 
 .altitude-pip--active {
-  background: rgba(235, 246, 255, 0.95);
+  background: rgba(239, 249, 255, 0.96);
 }
 
 .visor-widget {
@@ -367,13 +590,14 @@
   align-items: center;
   justify-content: center;
   gap: 0.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.26);
+  border: 1px solid var(--visor-line);
   border-radius: 0.5rem;
-  background: rgba(0, 0, 0, 0.55);
-  color: rgba(240, 246, 255, 0.88);
+  background: var(--visor-surface);
+  backdrop-filter: blur(9px);
+  color: var(--visor-text);
   box-shadow:
-    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-    0 0 22px rgba(120, 170, 255, 0.13);
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
 }
 
 .compass-widget-label {
@@ -381,6 +605,23 @@
   letter-spacing: 0.08em;
   font-weight: 600;
   opacity: 0.9;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .open-visor-shell,
+  .open-visor-body,
+  .open-visor-shell-header,
+  .open-visor-rail,
+  .open-visor-app-pane {
+    animation: none;
+  }
+
+  .open-visor-shell-header::after,
+  .open-visor-rail::after,
+  .open-visor-app-pane::after {
+    animation: none;
+    display: none;
+  }
 }
 
 @media (max-width: 720px) {
