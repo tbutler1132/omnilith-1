@@ -26,8 +26,10 @@ import {
   queryParent,
   recordObservation,
 } from '@omnilith/kernel';
+import { desc, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';
+import { regulatorActionExecutions } from '../db/schema.js';
 import type { AuthEnv } from '../middleware/auth.js';
 import { parseJsonBody } from '../utils/parse-json.js';
 import { requireOrganismAccess } from './access.js';
@@ -317,6 +319,55 @@ export function organismRoutes(container: Container) {
     const type = c.req.query('type') as EventType | undefined;
     const events = await container.eventRepository.findByOrganismId(id, type);
     return c.json({ events });
+  });
+
+  // Action executions
+  app.get('/:id/action-executions', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const accessError = await requireOrganismAccess(c, container, userId, id, 'view');
+    if (accessError) return accessError;
+
+    if (!container.db) {
+      return c.json({ executions: [] });
+    }
+
+    const limitRaw = Number(c.req.query('limit'));
+    const limit = Number.isFinite(limitRaw) && limitRaw > 0 ? Math.min(limitRaw, 200) : 50;
+
+    const rows = await container.db
+      .select({
+        id: regulatorActionExecutions.id,
+        boundaryOrganismId: regulatorActionExecutions.boundaryOrganismId,
+        actionOrganismId: regulatorActionExecutions.actionOrganismId,
+        triggerPolicyOrganismId: regulatorActionExecutions.triggerPolicyOrganismId,
+        executionMode: regulatorActionExecutions.executionMode,
+        status: regulatorActionExecutions.status,
+        idempotencyKey: regulatorActionExecutions.idempotencyKey,
+        attemptCount: regulatorActionExecutions.attemptCount,
+        startedAt: regulatorActionExecutions.startedAt,
+        completedAt: regulatorActionExecutions.completedAt,
+        nextAttemptAt: regulatorActionExecutions.nextAttemptAt,
+        lastError: regulatorActionExecutions.lastError,
+        result: regulatorActionExecutions.result,
+        createdAt: regulatorActionExecutions.createdAt,
+        updatedAt: regulatorActionExecutions.updatedAt,
+      })
+      .from(regulatorActionExecutions)
+      .where(eq(regulatorActionExecutions.boundaryOrganismId, id))
+      .orderBy(desc(regulatorActionExecutions.createdAt))
+      .limit(limit);
+
+    return c.json({
+      executions: rows.map((row) => ({
+        ...row,
+        startedAt: row.startedAt ? row.startedAt.getTime() : null,
+        completedAt: row.completedAt ? row.completedAt.getTime() : null,
+        nextAttemptAt: row.nextAttemptAt.getTime(),
+        createdAt: row.createdAt.getTime(),
+        updatedAt: row.updatedAt.getTime(),
+      })),
+    });
   });
 
   // Contributions

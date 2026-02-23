@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 21, 2026  
+Updated: February 23, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -939,6 +939,53 @@ This preserves the kernel's event-emission concern as the sensory substrate for 
 The detailed decision record is captured in:
 
 - `docs/decisions/035-observation-events-for-sensor-organisms.md`
+
+### Move 47: Manual Boundary Cadence Before Stricter Regulator Enforcement
+
+A sequencing decision was made for regulated boundaries: start with lightweight, manual tending patterns and only harden into stricter regulator enforcement after stable patterns are visible in real use.
+
+The selected baseline pattern is per-boundary composition using four child organisms:
+
+- `Variables` (text/markdown): what this boundary is trying to regulate, with current signal, target range, cadence, and drift response.
+- `Retros` (text/markdown): weekly tending review trail (signals, wins, friction, adjustments).
+- `Tasks` (text/markdown): next-action board (`Now`, `Next`, `Later`, `Done this week`).
+- `Inbox` (text/markdown or thread-style capture): low-friction intake for notes and ideas, triaged later into Variables/Tasks/Retros.
+
+Key architectural clarifications:
+
+- Composition is local to each boundary: these children are composed directly inside the organism being tended (for example, repository, technology, software system, community), not routed through a separate cross-boundary task layer.
+- This keeps regulation legible at the same boundary where stewardship decisions happen.
+- Template enforcement follows a ramp: manual discipline first, soft structured headers second, strict schema and policy evaluation last.
+
+Implementation status in Phase 1 seed:
+
+- `packages/api/src/seed-v1-demo.ts` now creates and composes this manual cadence set for currently regulated boundaries in the demo world.
+- All four are currently `text` organisms with `markdown` payload and `open-trunk` enabled to preserve low-friction tending while patterns form.
+
+This preserves momentum and lowers governance overhead early, while keeping a clear migration path to stricter policy organisms once recurring practice is proven.
+
+### Move 48: Life-System Pattern Lift into Boundary Cadence
+
+The initial four-child manual cadence (`Variables`, `Retros`, `Tasks`, `Inbox`) was refined using proven patterns from an existing personal life system.
+
+The per-boundary tending stack now includes two additional text organisms:
+
+- `Trajectory`: direction, key dates, commitments, explicit non-scope, and revision signal. Updated on directional change, not weekly.
+- `Models`: explicit assumptions with status (`assumption`, `emerging`, `learned`) and revision signals.
+
+`Retros` is also tightened into an episode cadence template:
+
+- `Intentions` -> `Log` -> `Retro` -> `Adjustments`
+
+This raises coherence without adding regulator complexity:
+
+- boundaries retain low-friction `open-trunk` tending
+- stronger structure is created through markdown templates first
+- stricter schema and policy enforcement can still be layered later once stable patterns are observed
+
+Implementation update:
+
+- `packages/api/src/seed-v1-demo.ts` now composes `Trajectory`, `Variables`, `Models`, `Retros`, `Tasks`, and `Inbox` under the currently regulated demo boundaries.
 
 ---
 

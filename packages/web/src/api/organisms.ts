@@ -14,6 +14,7 @@ import type {
   DeclineProposalRequest,
   DeclineProposalResponse,
   DecomposeChildResponse,
+  FetchActionExecutionsResponse,
   FetchChildrenResponse,
   FetchContributionsResponse,
   FetchEventsResponse,
@@ -104,6 +105,10 @@ export function fetchRelationships(id: string) {
 
 export function fetchEvents(id: string) {
   return apiFetch<FetchEventsResponse>(readPath(`/organisms/${id}/events`));
+}
+
+export function fetchActionExecutions(id: string, limit = 50) {
+  return apiFetch<FetchActionExecutionsResponse>(readPath(`/organisms/${id}/action-executions?limit=${limit}`));
 }
 
 export function fetchContributions(id: string) {

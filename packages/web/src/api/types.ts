@@ -272,6 +272,28 @@ export interface FetchEventsResponse {
   readonly events: ReadonlyArray<DomainEvent>;
 }
 
+export interface RegulatorActionExecution {
+  readonly id: string;
+  readonly boundaryOrganismId: string;
+  readonly actionOrganismId: string;
+  readonly triggerPolicyOrganismId: string;
+  readonly executionMode: string;
+  readonly status: string;
+  readonly idempotencyKey: string;
+  readonly attemptCount: number;
+  readonly startedAt: number | null;
+  readonly completedAt: number | null;
+  readonly nextAttemptAt: number;
+  readonly lastError: string | null;
+  readonly result: unknown;
+  readonly createdAt: number;
+  readonly updatedAt: number;
+}
+
+export interface FetchActionExecutionsResponse {
+  readonly executions: ReadonlyArray<RegulatorActionExecution>;
+}
+
 export interface FetchContributionsResponse {
   readonly contributions: OrganismContributions;
 }

@@ -18,7 +18,7 @@ import type {
 } from '@omnilith/content-types';
 import type { ContentTypeId, OrganismId, Timestamp, UserId } from '@omnilith/kernel';
 import { appendState, openProposal } from '@omnilith/kernel';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import type { Container } from '../container.js';
 import { composition, regulatorActionExecutions, regulatorRuntimeEvents } from '../db/schema.js';
 import { isRepositoryAllowed, parseGitHubAllowlist } from '../github/allowlist.js';
@@ -72,6 +72,17 @@ interface ReservedExecution {
   readonly executionId: string;
   readonly reserved: boolean;
   readonly attemptCount: number;
+}
+
+interface ActionExecutionTarget {
+  readonly fanOutSlot?: number;
+}
+
+interface ActionExecutionTally {
+  direct: number;
+  proposal: number;
+  declined: number;
+  failed: number;
 }
 
 export interface BoundaryCycleResult {
@@ -581,7 +592,9 @@ function computeActionIdempotencyKey(
   actionOrganismId: OrganismId,
   actionPayload: ActionPayload,
   triggerDecision: ResponsePolicyDecision,
+  target: ActionExecutionTarget = {},
 ): string {
+  const includeCurrentVariableValue = target.fanOutSlot === undefined;
   const stablePayload = JSON.stringify({
     boundaryOrganismId,
     actionOrganismId,
@@ -591,10 +604,85 @@ function computeActionIdempotencyKey(
     trigger: actionPayload.trigger,
     config: actionPayload.config,
     decision: triggerDecision.decision,
-    currentVariableValue: triggerDecision.currentVariableValue,
+    ...(includeCurrentVariableValue ? { currentVariableValue: triggerDecision.currentVariableValue } : {}),
+    ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
   });
 
   return createHash('sha256').update(stablePayload).digest('hex');
+}
+
+function resolveCountFanOutSlots(
+  actionPayload: ActionPayload,
+  triggerDecision: ResponsePolicyDecision,
+): ReadonlyArray<number> {
+  if (actionPayload.kind !== 'open-proposal') {
+    return [];
+  }
+
+  const config = asObject(actionPayload.config);
+  if (!config || config.fanOutByVariableCount !== true) {
+    return [];
+  }
+
+  const currentValue = triggerDecision.currentVariableValue ?? 0;
+  const count = Math.max(0, Math.floor(currentValue));
+  return Array.from({ length: count }, (_value, index) => index + 1);
+}
+
+async function reconcileCountFanOutExecutions(
+  container: Container,
+  cycleId: string,
+  boundaryOrganismId: OrganismId,
+  actionOrganismId: OrganismId,
+  activeSlots: ReadonlyArray<number>,
+): Promise<void> {
+  if (!hasDatabase(container)) {
+    return;
+  }
+
+  const active = new Set(activeSlots);
+  const rows = await container.db
+    .select({
+      id: regulatorActionExecutions.id,
+      status: regulatorActionExecutions.status,
+      result: regulatorActionExecutions.result,
+    })
+    .from(regulatorActionExecutions)
+    .where(
+      and(
+        eq(regulatorActionExecutions.boundaryOrganismId, boundaryOrganismId),
+        eq(regulatorActionExecutions.actionOrganismId, actionOrganismId),
+      ),
+    );
+
+  for (const row of rows) {
+    if (row.status !== 'proposal-created') {
+      continue;
+    }
+
+    const result = asObject(row.result);
+    const fanOutSlot = asFiniteNumber(result?.fanOutSlot);
+    if (fanOutSlot === undefined || active.has(fanOutSlot)) {
+      continue;
+    }
+
+    await completeActionExecution(container, row.id, 'succeeded', null, {
+      ...(result ?? {}),
+      completionReason: 'fan-out-slot-recovered',
+    });
+
+    await persistRuntimeEvent(container, {
+      cycleId,
+      stage: 'regulator.action.completed',
+      boundaryOrganismId,
+      actionOrganismId,
+      executionId: row.id,
+      payload: {
+        reason: 'fan-out slot no longer active',
+        fanOutSlot,
+      },
+    });
+  }
 }
 
 async function reserveActionExecution(
@@ -750,6 +838,7 @@ function formatActionProposalBody(
   boundaryOrganismId: OrganismId,
   actionSnapshot: ActionSnapshot,
   triggerDecision: ResponsePolicyDecision,
+  target: ActionExecutionTarget,
 ): string {
   const header = [
     '# Regulator Action Proposal',
@@ -759,6 +848,7 @@ function formatActionProposalBody(
     `Action label: ${actionSnapshot.payload.label}`,
     `Trigger decision: ${triggerDecision.decision}`,
     `Current variable value: ${triggerDecision.currentVariableValue ?? 'unknown'}`,
+    ...(target.fanOutSlot !== undefined ? [`Fan-out slot: ${target.fanOutSlot}`] : []),
     '',
   ];
 
@@ -798,16 +888,19 @@ async function openActionExecutionProposal(
   actionSnapshot: ActionSnapshot,
   triggerDecision: ResponsePolicyDecision,
   runnerUserId: UserId,
+  target: ActionExecutionTarget,
 ): Promise<string> {
   const proposal = await openProposal(
     {
       organismId: boundaryOrganismId,
       proposedContentTypeId: 'text' as ContentTypeId,
       proposedPayload: {
-        content: formatActionProposalBody(boundaryOrganismId, actionSnapshot, triggerDecision),
+        content: formatActionProposalBody(boundaryOrganismId, actionSnapshot, triggerDecision, target),
         format: 'markdown',
       },
-      description: `Regulator action proposal: ${actionSnapshot.payload.label}`,
+      description: `Regulator action proposal: ${actionSnapshot.payload.label}${
+        target.fanOutSlot !== undefined ? ` [slot ${target.fanOutSlot}]` : ''
+      }`,
       proposedBy: runnerUserId,
     },
     {
@@ -870,6 +963,7 @@ async function executeOpenProposalAction(
   actionPayload: ActionPayload,
   runnerUserId: UserId,
   runtimeEnvironment: RuntimeEnvironment,
+  target: ActionExecutionTarget,
 ): Promise<{ readonly proposalId: string }> {
   const config = actionPayload.config as OpenProposalActionConfig;
 
@@ -882,7 +976,10 @@ async function executeOpenProposalAction(
       organismId: config.targetOrganismId as OrganismId,
       proposedContentTypeId: config.proposedContentTypeId as ContentTypeId,
       proposedPayload: config.proposedPayload,
-      description: config.description ?? `Regulator action: ${actionPayload.label}`,
+      description:
+        target.fanOutSlot !== undefined
+          ? `${config.description ?? `Regulator action: ${actionPayload.label}`} [slot ${target.fanOutSlot}]`
+          : (config.description ?? `Regulator action: ${actionPayload.label}`),
       proposedBy: runnerUserId,
     },
     {
@@ -910,7 +1007,13 @@ async function executeAction(
   runnerUserId: UserId,
   runtimeEnvironment: RuntimeEnvironment,
   options: RegulatorRuntimeOptions,
-): Promise<'direct' | 'proposal' | 'declined' | 'failed'> {
+): Promise<ActionExecutionTally> {
+  const tally: ActionExecutionTally = {
+    direct: 0,
+    proposal: 0,
+    declined: 0,
+    failed: 0,
+  };
   const triggerPolicyOrganismId = actionSnapshot.payload.trigger.responsePolicyOrganismId as OrganismId;
   const decision = policyDecisionByOrganismId.get(triggerPolicyOrganismId);
 
@@ -925,7 +1028,25 @@ async function executeAction(
         triggerPolicyOrganismId,
       },
     });
-    return 'declined';
+    return {
+      ...tally,
+      declined: tally.declined + 1,
+    };
+  }
+
+  const actionConfig = asObject(actionSnapshot.payload.config);
+  const fanOutByVariableCountEnabled =
+    actionSnapshot.payload.kind === 'open-proposal' && actionConfig?.fanOutByVariableCount === true;
+  const fanOutSlots = fanOutByVariableCountEnabled ? resolveCountFanOutSlots(actionSnapshot.payload, decision) : [];
+
+  if (fanOutByVariableCountEnabled) {
+    await reconcileCountFanOutExecutions(
+      container,
+      cycleId,
+      boundaryOrganismId,
+      actionSnapshot.organismId,
+      fanOutSlots,
+    );
   }
 
   if (decision.decision !== actionSnapshot.payload.trigger.whenDecision) {
@@ -940,7 +1061,10 @@ async function executeAction(
         actual: decision.decision,
       },
     });
-    return 'declined';
+    return {
+      ...tally,
+      declined: tally.declined + 1,
+    };
   }
 
   if (isCooldownActive(actionSnapshot.payload)) {
@@ -954,165 +1078,209 @@ async function executeAction(
         cooldownSeconds: actionSnapshot.payload.cooldownSeconds ?? 300,
       },
     });
-    return 'declined';
+    return {
+      ...tally,
+      declined: tally.declined + 1,
+    };
   }
 
-  const idempotencyKey = computeActionIdempotencyKey(
-    boundaryOrganismId,
-    actionSnapshot.organismId,
-    actionSnapshot.payload,
-    decision,
-  );
+  const targets: ReadonlyArray<ActionExecutionTarget> = fanOutByVariableCountEnabled
+    ? fanOutSlots.map((fanOutSlot) => ({ fanOutSlot }))
+    : [{}];
 
-  const reservation = await reserveActionExecution(
-    container,
-    boundaryOrganismId,
-    actionSnapshot.organismId,
-    triggerPolicyOrganismId,
-    actionSnapshot.payload.executionMode,
-    idempotencyKey,
-  );
-
-  if (!reservation.reserved) {
+  if (fanOutByVariableCountEnabled && targets.length === 0) {
     await persistRuntimeEvent(container, {
       cycleId,
       stage: 'regulator.action.declined',
       boundaryOrganismId,
       actionOrganismId: actionSnapshot.organismId,
-      executionId: reservation.executionId,
       payload: {
-        reason: 'idempotency key already handled',
-        idempotencyKey,
+        reason: 'fan-out enabled but no active slots',
       },
     });
-    return 'declined';
+    return {
+      ...tally,
+      declined: tally.declined + 1,
+    };
   }
 
-  await persistRuntimeEvent(container, {
-    cycleId,
-    stage: 'regulator.action.started',
-    boundaryOrganismId,
-    actionOrganismId: actionSnapshot.organismId,
-    executionId: reservation.executionId,
-    payload: {
+  for (const target of targets) {
+    const idempotencyKey = computeActionIdempotencyKey(
+      boundaryOrganismId,
+      actionSnapshot.organismId,
+      actionSnapshot.payload,
+      decision,
+      target,
+    );
+
+    const reservation = await reserveActionExecution(
+      container,
+      boundaryOrganismId,
+      actionSnapshot.organismId,
+      triggerPolicyOrganismId,
+      actionSnapshot.payload.executionMode,
       idempotencyKey,
-      attemptCount: reservation.attemptCount,
-      triggerDecision: decision.decision,
-    },
-  });
+    );
 
-  try {
-    if (actionRequiresProposal(actionSnapshot.payload)) {
-      const proposalId = await openActionExecutionProposal(
-        container,
-        boundaryOrganismId,
-        actionSnapshot,
-        decision,
-        runnerUserId,
-      );
-
-      await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
-      await completeActionExecution(container, reservation.executionId, 'proposal-created', null, {
-        proposalId,
-        boundaryOrganismId,
-        actionOrganismId: actionSnapshot.organismId,
-      });
+    if (!reservation.reserved) {
       await persistRuntimeEvent(container, {
         cycleId,
-        stage: 'regulator.action.proposal-created',
+        stage: 'regulator.action.declined',
         boundaryOrganismId,
         actionOrganismId: actionSnapshot.organismId,
         executionId: reservation.executionId,
         payload: {
-          proposalId,
+          reason: 'idempotency key already handled',
           idempotencyKey,
+          ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
         },
       });
-      return 'proposal';
+      tally.declined += 1;
+      continue;
     }
 
-    switch (actionSnapshot.payload.kind) {
-      case 'github-pr': {
-        const gateway = resolvePullRequestGateway(options);
-        const execution = await executeGitHubPrAction(actionSnapshot.payload, runtimeEnvironment, gateway);
-
-        await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
-        await completeActionExecution(container, reservation.executionId, 'succeeded', null, {
-          provider: 'github',
-          pullRequestNumber: execution.record.number,
-          pullRequestUrl: execution.record.url,
-          existed: execution.existed,
-        });
-        await persistRuntimeEvent(container, {
-          cycleId,
-          stage: 'regulator.action.succeeded',
-          boundaryOrganismId,
-          actionOrganismId: actionSnapshot.organismId,
-          executionId: reservation.executionId,
-          payload: {
-            idempotencyKey,
-            provider: 'github',
-            pullRequestNumber: execution.record.number,
-            pullRequestUrl: execution.record.url,
-            existed: execution.existed,
-          },
-        });
-
-        return 'direct';
-      }
-      case 'open-proposal': {
-        const execution = await executeOpenProposalAction(
-          container,
-          actionSnapshot.payload,
-          runnerUserId,
-          runtimeEnvironment,
-        );
-
-        await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
-        await completeActionExecution(container, reservation.executionId, 'succeeded', null, {
-          provider: 'internal',
-          proposalId: execution.proposalId,
-        });
-        await persistRuntimeEvent(container, {
-          cycleId,
-          stage: 'regulator.action.succeeded',
-          boundaryOrganismId,
-          actionOrganismId: actionSnapshot.organismId,
-          executionId: reservation.executionId,
-          payload: {
-            idempotencyKey,
-            provider: 'internal',
-            proposalId: execution.proposalId,
-          },
-        });
-
-        return 'direct';
-      }
-    }
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-
-    await completeActionExecution(container, reservation.executionId, 'failed', message.slice(0, 1000), null);
     await persistRuntimeEvent(container, {
       cycleId,
-      stage: 'regulator.action.failed',
+      stage: 'regulator.action.started',
       boundaryOrganismId,
       actionOrganismId: actionSnapshot.organismId,
       executionId: reservation.executionId,
       payload: {
         idempotencyKey,
-        error: message,
+        attemptCount: reservation.attemptCount,
+        triggerDecision: decision.decision,
+        ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
       },
     });
 
-    return 'failed';
+    try {
+      if (actionRequiresProposal(actionSnapshot.payload)) {
+        const proposalId = await openActionExecutionProposal(
+          container,
+          boundaryOrganismId,
+          actionSnapshot,
+          decision,
+          runnerUserId,
+          target,
+        );
+
+        await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
+        await completeActionExecution(container, reservation.executionId, 'proposal-created', null, {
+          proposalId,
+          boundaryOrganismId,
+          actionOrganismId: actionSnapshot.organismId,
+          ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+        });
+        await persistRuntimeEvent(container, {
+          cycleId,
+          stage: 'regulator.action.proposal-created',
+          boundaryOrganismId,
+          actionOrganismId: actionSnapshot.organismId,
+          executionId: reservation.executionId,
+          payload: {
+            proposalId,
+            idempotencyKey,
+            ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+          },
+        });
+        tally.proposal += 1;
+        continue;
+      }
+
+      switch (actionSnapshot.payload.kind) {
+        case 'github-pr': {
+          const gateway = resolvePullRequestGateway(options);
+          const execution = await executeGitHubPrAction(actionSnapshot.payload, runtimeEnvironment, gateway);
+
+          await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
+          await completeActionExecution(container, reservation.executionId, 'succeeded', null, {
+            provider: 'github',
+            pullRequestNumber: execution.record.number,
+            pullRequestUrl: execution.record.url,
+            existed: execution.existed,
+            ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+          });
+          await persistRuntimeEvent(container, {
+            cycleId,
+            stage: 'regulator.action.succeeded',
+            boundaryOrganismId,
+            actionOrganismId: actionSnapshot.organismId,
+            executionId: reservation.executionId,
+            payload: {
+              idempotencyKey,
+              provider: 'github',
+              pullRequestNumber: execution.record.number,
+              pullRequestUrl: execution.record.url,
+              existed: execution.existed,
+              ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+            },
+          });
+
+          tally.direct += 1;
+          continue;
+        }
+        case 'open-proposal': {
+          const execution = await executeOpenProposalAction(
+            container,
+            actionSnapshot.payload,
+            runnerUserId,
+            runtimeEnvironment,
+            target,
+          );
+
+          await appendActionExecutionMetadata(container, actionSnapshot, runnerUserId, idempotencyKey);
+          await completeActionExecution(container, reservation.executionId, 'succeeded', null, {
+            provider: 'internal',
+            proposalId: execution.proposalId,
+            ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+          });
+          await persistRuntimeEvent(container, {
+            cycleId,
+            stage: 'regulator.action.succeeded',
+            boundaryOrganismId,
+            actionOrganismId: actionSnapshot.organismId,
+            executionId: reservation.executionId,
+            payload: {
+              idempotencyKey,
+              provider: 'internal',
+              proposalId: execution.proposalId,
+              ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+            },
+          });
+
+          tally.direct += 1;
+          continue;
+        }
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+
+      await completeActionExecution(container, reservation.executionId, 'failed', message.slice(0, 1000), null);
+      await persistRuntimeEvent(container, {
+        cycleId,
+        stage: 'regulator.action.failed',
+        boundaryOrganismId,
+        actionOrganismId: actionSnapshot.organismId,
+        executionId: reservation.executionId,
+        payload: {
+          idempotencyKey,
+          error: message,
+          ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+        },
+      });
+
+      tally.failed += 1;
+      continue;
+    }
+
+    await completeActionExecution(container, reservation.executionId, 'declined', 'Unsupported action kind', {
+      actionKind: 'unknown',
+      ...(target.fanOutSlot !== undefined ? { fanOutSlot: target.fanOutSlot } : {}),
+    });
+    tally.declined += 1;
   }
 
-  await completeActionExecution(container, reservation.executionId, 'declined', 'Unsupported action kind', {
-    actionKind: 'unknown',
-  });
-
-  return 'declined';
+  return tally;
 }
 
 async function runBoundaryCycle(
@@ -1258,7 +1426,7 @@ async function runBoundaryCycle(
   let failedActions = 0;
 
   for (const action of actions) {
-    const outcome = await executeAction(
+    const tally = await executeAction(
       container,
       cycleId,
       boundaryOrganismId,
@@ -1268,21 +1436,10 @@ async function runBoundaryCycle(
       runtimeEnvironment,
       options,
     );
-
-    switch (outcome) {
-      case 'direct':
-        directActionExecutions += 1;
-        break;
-      case 'proposal':
-        proposalActionsOpened += 1;
-        break;
-      case 'declined':
-        declinedActions += 1;
-        break;
-      case 'failed':
-        failedActions += 1;
-        break;
-    }
+    directActionExecutions += tally.direct;
+    proposalActionsOpened += tally.proposal;
+    declinedActions += tally.declined;
+    failedActions += tally.failed;
   }
 
   await persistRuntimeEvent(container, {
