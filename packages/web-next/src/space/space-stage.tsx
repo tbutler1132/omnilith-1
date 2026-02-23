@@ -1,8 +1,8 @@
 /**
  * Space stage map surface for web-next Slice 1.
  *
- * Renders a plain world map grid with drag navigation and no HUD or
- * organism overlays, matching the requested minimal baseline.
+ * Renders a plain world map grid with drag navigation and no organism
+ * overlays, matching the requested minimal baseline.
  */
 
 import { GroundPlane } from './ground-plane.js';

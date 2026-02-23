@@ -2,7 +2,7 @@
  * Platform shell for web-next.
  *
  * Verifies web-next is wired to the live API and world map pointer,
- * then renders the plain map slice with no HUD overlays.
+ * then renders the plain map slice with the minimal closed HUD scaffold.
  */
 
 import { useEffect, useState } from 'react';
