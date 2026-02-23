@@ -75,11 +75,60 @@ body {
   color: #e5e5e5;
 }
 
+.visor-hud-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 20;
+}
+
+.visor-widget-lane {
+  position: fixed;
+  top: 0.9rem;
+  right: 0.9rem;
+  width: 9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  pointer-events: none;
+}
+
+.visor-widget {
+  width: 100%;
+  min-height: 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.55);
+  color: rgba(240, 246, 255, 0.88);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+    0 0 22px rgba(120, 170, 255, 0.13);
+}
+
+.compass-widget-label {
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+  opacity: 0.9;
+}
+
 @media (max-width: 720px) {
+  .visor-widget-lane {
+    right: 0.7rem;
+    top: 0.7rem;
+    width: 8.2rem;
+  }
+
   .space-map-status {
     top: 0.75rem;
     left: 0.75rem;
     right: 0.75rem;
+    margin-right: 8.9rem;
     min-width: unset;
   }
 }

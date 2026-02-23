@@ -8,6 +8,7 @@
 import { useEffect, useState } from 'react';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
 import { SpaceStage } from '../space/space-stage.js';
+import { VisorHud } from '../visor/hud/index.js';
 
 interface LoadState {
   readonly worldMapId: string | null;
@@ -72,6 +73,7 @@ export function PlatformShell() {
   return (
     <div className="platform-shell" data-status="ready">
       <SpaceStage worldMapId={state.worldMapId} />
+      <VisorHud />
     </div>
   );
 }
