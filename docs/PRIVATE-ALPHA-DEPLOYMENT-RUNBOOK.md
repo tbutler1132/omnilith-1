@@ -1,7 +1,9 @@
 # Private Alpha Deployment Runbook
 
+Status: Active deployment runbook
 Updated: February 23, 2026
 Audience: Maintainers
+Canonicality: Operational reference
 Scope: Private alpha deployment with staging-first rollout
 
 ## Goal
@@ -116,4 +118,3 @@ Suggested interval:
 - Startup seed in production is blocked by runtime policy.
 - `db:reset` is blocked unless `OMNILITH_RUNTIME_ENV=local`.
 - Staging startup seeding is idempotent and should not drop schema/data.
-
