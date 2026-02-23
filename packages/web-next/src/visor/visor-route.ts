@@ -25,6 +25,30 @@ export function parseVisorRoute(searchParams: URLSearchParams): VisorRoute {
   };
 }
 
+export function writeVisorRoute(searchParams: URLSearchParams, route: VisorRoute): URLSearchParams {
+  const next = new URLSearchParams(searchParams);
+
+  if (route.mode === 'open') {
+    next.set('visor', 'open');
+  } else {
+    next.delete('visor');
+  }
+
+  if (route.appId) {
+    next.set('app', route.appId);
+  } else {
+    next.delete('app');
+  }
+
+  if (route.organismId) {
+    next.set('organism', route.organismId);
+  } else {
+    next.delete('organism');
+  }
+
+  return next;
+}
+
 function sanitizeValue(value: string | null): string | null {
   if (!value) return null;
   const trimmed = value.trim();

@@ -10,6 +10,7 @@ import { fetchWorldMap } from '../api/fetch-world-map.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage } from '../space/space-stage.js';
 import { VisorHud } from '../visor/hud/index.js';
+import { parseVisorRoute, type VisorRoute, writeVisorRoute } from '../visor/visor-route.js';
 
 interface LoadState {
   readonly worldMapId: string | null;
@@ -17,7 +18,16 @@ interface LoadState {
   readonly error: string | null;
 }
 
+function readVisorRouteFromWindow(): VisorRoute {
+  if (typeof window === 'undefined') {
+    return { mode: 'closed', appId: null, organismId: null };
+  }
+
+  return parseVisorRoute(new URLSearchParams(window.location.search));
+}
+
 export function PlatformShell() {
+  const [visorRoute, setVisorRoute] = useState<VisorRoute>(() => readVisorRouteFromWindow());
   const [altitude, setAltitude] = useState<Altitude>('high');
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
   const [state, setState] = useState<LoadState>({
@@ -36,6 +46,38 @@ export function PlatformShell() {
     },
     [changeAltitudeHandler],
   );
+
+  const updateVisorRoute = useCallback((nextRoute: VisorRoute) => {
+    if (typeof window === 'undefined') {
+      setVisorRoute(nextRoute);
+      return;
+    }
+
+    const nextParams = writeVisorRoute(new URLSearchParams(window.location.search), nextRoute);
+    const nextQuery = nextParams.toString();
+    const nextUrl = `${window.location.pathname}${nextQuery.length > 0 ? `?${nextQuery}` : ''}${window.location.hash}`;
+    window.history.pushState({}, '', nextUrl);
+    setVisorRoute(nextRoute);
+  }, []);
+
+  const handleOpenApp = useCallback(
+    (appId: string) => {
+      updateVisorRoute({
+        mode: 'open',
+        appId,
+        organismId: null,
+      });
+    },
+    [updateVisorRoute],
+  );
+
+  const handleCloseVisor = useCallback(() => {
+    updateVisorRoute({
+      mode: 'closed',
+      appId: null,
+      organismId: null,
+    });
+  }, [updateVisorRoute]);
 
   useEffect(() => {
     fetchWorldMap()
@@ -58,6 +100,17 @@ export function PlatformShell() {
           error: message,
         });
       });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const onPopState = () => {
+      setVisorRoute(readVisorRouteFromWindow());
+    };
+
+    window.addEventListener('popstate', onPopState);
+    return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   if (state.loading) {
@@ -91,7 +144,14 @@ export function PlatformShell() {
         onAltitudeChange={setAltitude}
         onAltitudeControlReady={handleAltitudeControlReady}
       />
-      <VisorHud altitude={altitude} onChangeAltitude={handleAltitudeChangeRequested} />
+      <VisorHud
+        mode={visorRoute.mode}
+        appId={visorRoute.appId}
+        altitude={altitude}
+        onChangeAltitude={handleAltitudeChangeRequested}
+        onOpenApp={handleOpenApp}
+        onCloseVisor={handleCloseVisor}
+      />
     </div>
   );
 }
