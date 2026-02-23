@@ -1020,6 +1020,38 @@ Architecture impact assessment:
 - kernel refactor is not required for staged flows.
 - if atomic multi-organism economic + surfacing mutation is required in one integrate step, a future kernel extension may be needed.
 
+### Move 50: World Map Governance, Platform Custody, and Closed-Loop Credit Baseline
+
+A cross-cutting direction was clarified for map truth, authority transfer, custody, and credits.
+
+World-map truth and governance:
+
+- canonical map division truth remains in Omnilith state history on the `World Map` organism, not in an on-chain execution layer
+- optional chain anchoring remains valid as a witness/proof layer only (for example signed checkpoints), not as the primary mutation path
+- category clarity is preserved: the map is an organism; infrastructure hosts persistence/query/visibility mechanics; governance policy organisms regulate mutation
+
+Composition placement:
+
+- economic ledger organisms are composed inside treasury boundaries (for example `Capital Treasury`)
+- map-governance organisms are composed inside governance boundaries (for example `Capital Government` or dedicated map-governance boundaries)
+
+Economic baseline direction:
+
+- Phase 1 credits follow a closed-loop default: non-redeemable, platform-use only, non-transferable by default
+- `1 credit = 1 USD` remains acceptable as a simplicity/legibility ratio in a closed-loop model
+- redeemability is explicitly deferred to a higher-compliance track with formal legal review before rollout
+
+Anti-capture custody direction:
+
+- control of hosting/domain/repository/backup should sit with legal-entity accounts rather than founder-personal custody
+- critical operations should use multi-party controls and explicit integrator succession/rotation policy
+
+This direction preserves Phase 1 momentum and architecture coherence while creating a clear path to stronger legitimacy and reduced founder lock-in.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/036-world-map-governance-platform-custody-and-closed-loop-credit-policy.md`
+
 ---
 
 ## Summary of What We're Building
