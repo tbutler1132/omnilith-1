@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { GroundPlane } from './ground-plane.js';
+import { OrganismInterior } from './interior/organism-interior.js';
 import { MapViewport } from './map-viewport.js';
 import { SpaceOrganismLayer } from './space-organism-layer.js';
 import { useEntryOrganisms } from './use-entry-organisms.js';
@@ -20,6 +21,7 @@ interface SpaceStageProps {
   readonly onAltitudeChange: (altitude: Altitude) => void;
   readonly onAltitudeControlReady: (handler: ((direction: 'in' | 'out') => void) | null) => void;
   readonly onBackControlReady: (handler: (() => void) | null) => void;
+  readonly onInteriorChange: (isInInterior: boolean) => void;
 }
 
 interface FocusPoint {
@@ -36,6 +38,7 @@ interface MapHistoryEntry {
 interface MarkerActivationInput {
   readonly organismId: string;
   readonly enterTargetMapId: string | null;
+  readonly contentTypeId: string | null;
   readonly x: number;
   readonly y: number;
 }
@@ -45,20 +48,25 @@ type TransitionPhase = 'idle' | 'entering' | 'exiting';
 const ENTER_TRANSITION_MS = 700;
 const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
+const INTERIOR_ENTER_TRANSITION_MS = 300;
+const INTERIOR_EXIT_TRANSITION_MS = 260;
 
 export function SpaceStage({
   worldMapId,
   onAltitudeChange,
   onAltitudeControlReady,
   onBackControlReady,
+  onInteriorChange,
 }: SpaceStageProps) {
   const [currentMapId, setCurrentMapId] = useState(worldMapId);
   const [mapHistory, setMapHistory] = useState<ReadonlyArray<MapHistoryEntry>>([]);
+  const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
   const [pendingFocusAfterSwitch, setPendingFocusAfterSwitch] = useState<FocusPoint | null>(null);
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('idle');
   const [transitionOpacity, setTransitionOpacity] = useState(0);
   const fadeFrameRef = useRef<number | null>(null);
+  const interiorTransitioningRef = useRef(false);
 
   const { width, height, entries, entryCount, loading, error } = useSpatialMap(currentMapId);
   const entryIds = useMemo(() => entries.map((entry) => entry.organismId), [entries]);
@@ -104,6 +112,7 @@ export function SpaceStage({
   useEffect(() => {
     setCurrentMapId(worldMapId);
     setMapHistory([]);
+    setEnteredOrganismId(null);
     setFocusedOrganismId(null);
     setPendingFocusAfterSwitch(null);
     setTransitionPhase('idle');
@@ -163,6 +172,7 @@ export function SpaceStage({
           },
         ]);
         setCurrentMapId(targetMapId);
+        setEnteredOrganismId(null);
         setFocusedOrganismId(null);
         setPendingFocusAfterSwitch(null);
       });
@@ -170,8 +180,51 @@ export function SpaceStage({
     [animateTo, currentMapId, runExitTransition, transitionPhase],
   );
 
+  const handleEnterOrganism = useCallback(
+    (organismId: string, from: FocusPoint) => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
+        return;
+      }
+
+      interiorTransitioningRef.current = true;
+      animateTo(frameOrganismEnter(from.x, from.y), {
+        durationMs: INTERIOR_ENTER_TRANSITION_MS,
+        onComplete: () => {
+          setEnteredOrganismId(organismId);
+          setFocusedOrganismId(null);
+          interiorTransitioningRef.current = false;
+        },
+      });
+    },
+    [animateTo, transitionPhase],
+  );
+
+  const handleExitOrganism = useCallback(() => {
+    if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
+      return;
+    }
+
+    const exitX = viewport.x;
+    const exitY = viewport.y;
+
+    interiorTransitioningRef.current = true;
+    setEnteredOrganismId(null);
+    setFocusedOrganismId(null);
+    animateTo(frameOrganism(exitX, exitY), {
+      durationMs: INTERIOR_EXIT_TRANSITION_MS,
+      onComplete: () => {
+        interiorTransitioningRef.current = false;
+      },
+    });
+  }, [animateTo, transitionPhase, viewport.x, viewport.y]);
+
   const handleGoBack = useCallback(() => {
-    if (transitionPhase !== 'idle') {
+    if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
+      return;
+    }
+
+    if (enteredOrganismId) {
+      handleExitOrganism();
       return;
     }
 
@@ -187,12 +240,44 @@ export function SpaceStage({
       setFocusedOrganismId(null);
       setPendingFocusAfterSwitch(previous.returnFocus);
     });
-  }, [animateTo, mapHistory, runExitTransition, transitionPhase, viewport.x, viewport.y]);
+  }, [
+    animateTo,
+    enteredOrganismId,
+    handleExitOrganism,
+    mapHistory,
+    runExitTransition,
+    transitionPhase,
+    viewport.x,
+    viewport.y,
+  ]);
 
   const handleActivateMarker = useCallback(
     (input: MarkerActivationInput) => {
-      if (transitionPhase !== 'idle') {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
         return;
+      }
+
+      const canEnterMap = Boolean(input.enterTargetMapId);
+      const canEnterInterior = Boolean(input.contentTypeId);
+      const canEnter = canEnterMap || canEnterInterior;
+      if (altitude === 'close' && canEnter) {
+        if (canEnterMap && input.enterTargetMapId) {
+          handleEnterMap(input.enterTargetMapId, {
+            organismId: input.organismId,
+            x: input.x,
+            y: input.y,
+          });
+          return;
+        }
+
+        if (canEnterInterior) {
+          handleEnterOrganism(input.organismId, {
+            organismId: input.organismId,
+            x: input.x,
+            y: input.y,
+          });
+          return;
+        }
       }
 
       const isSameMarker = focusedOrganismId === input.organismId;
@@ -205,13 +290,22 @@ export function SpaceStage({
         return;
       }
 
+      if (isSameMarker && input.contentTypeId) {
+        handleEnterOrganism(input.organismId, {
+          organismId: input.organismId,
+          x: input.x,
+          y: input.y,
+        });
+        return;
+      }
+
       setFocusedOrganismId(input.organismId);
       animateTo(frameOrganism(input.x, input.y), { durationMs: FOCUS_TRANSITION_MS });
     },
-    [animateTo, focusedOrganismId, handleEnterMap, transitionPhase],
+    [altitude, animateTo, focusedOrganismId, handleEnterMap, handleEnterOrganism, transitionPhase],
   );
 
-  const canGoBack = mapHistory.length > 0 && transitionPhase === 'idle';
+  const canGoBack = (enteredOrganismId !== null || mapHistory.length > 0) && transitionPhase === 'idle';
 
   useEffect(() => {
     onAltitudeChange(altitude);
@@ -226,6 +320,28 @@ export function SpaceStage({
     onBackControlReady(canGoBack ? handleGoBack : null);
     return () => onBackControlReady(null);
   }, [canGoBack, handleGoBack, onBackControlReady]);
+
+  useEffect(() => {
+    onInteriorChange(enteredOrganismId !== null);
+  }, [enteredOrganismId, onInteriorChange]);
+
+  useEffect(() => {
+    if (enteredOrganismId === null) {
+      return;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+      handleGoBack();
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [enteredOrganismId, handleGoBack]);
 
   if (loading) {
     return (
@@ -256,19 +372,24 @@ export function SpaceStage({
         />
       </MapViewport>
 
+      {enteredOrganismId ? <OrganismInterior organismId={enteredOrganismId} /> : null}
+
       <div
         className={`space-transition-overlay space-transition-overlay--${transitionPhase}`}
         style={{ opacity: transitionOpacity }}
         aria-hidden
       />
 
-      <div className="space-map-status">
-        <p>Map: {currentMapId}</p>
-        <p>Entries: {entryCount}</p>
-        <p>Depth: {mapHistory.length}</p>
-        <p>Altitude: {altitude}</p>
-        <p>Drag to navigate. Click once to focus, again to enter.</p>
-      </div>
+      {enteredOrganismId ? null : (
+        <div className="space-map-status">
+          <p>Map: {currentMapId}</p>
+          <p>Entries: {entryCount}</p>
+          <p>Depth: {mapHistory.length}</p>
+          <p>Altitude: {altitude}</p>
+          <p>Entered: none</p>
+          <p>High/Mid: focus then enter. Close: enter directly.</p>
+        </div>
+      )}
     </main>
   );
 }

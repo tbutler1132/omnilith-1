@@ -2,7 +2,7 @@
  * Entry organism metadata hook.
  *
  * Loads lightweight organism state for spatial-map entries so Space can
- * decide whether an entry is enterable as a map boundary.
+ * decide whether an entry is enterable and where it should route.
  */
 
 import { useEffect, useMemo, useState } from 'react';

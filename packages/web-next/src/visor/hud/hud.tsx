@@ -22,6 +22,9 @@ interface VisorHudProps {
   readonly mode: VisorMode;
   readonly appId: string | null;
   readonly altitude: Altitude;
+  readonly showAltitudeControls: boolean;
+  readonly showCompass: boolean;
+  readonly navigationLabel?: string | null;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
   readonly onGoBack: () => void;
   readonly canGoBack: boolean;
@@ -33,6 +36,9 @@ export function VisorHud({
   mode,
   appId,
   altitude,
+  showAltitudeControls,
+  showCompass,
+  navigationLabel,
   onChangeAltitude,
   onGoBack,
   canGoBack,
@@ -94,14 +100,18 @@ export function VisorHud({
         <>
           <SpatialControlsSlot
             altitude={altitude}
+            showAltitudeControls={showAltitudeControls}
+            navigationLabel={navigationLabel}
             onChangeAltitude={onChangeAltitude}
             onGoBack={onGoBack}
             canGoBack={canGoBack}
           />
           <AppDockSlot onOpenApp={onOpenApp} />
-          <VisorWidgetLane>
-            <CompassWidget />
-          </VisorWidgetLane>
+          {showCompass ? (
+            <VisorWidgetLane>
+              <CompassWidget />
+            </VisorWidgetLane>
+          ) : null}
         </>
       ) : null}
 

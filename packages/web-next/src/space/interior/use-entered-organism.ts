@@ -1,0 +1,99 @@
+/**
+ * Entered organism hook.
+ *
+ * Loads one organism with current state so Space can render non-map
+ * content types after in-space enter transitions.
+ */
+
+import { useEffect, useState } from 'react';
+import { apiFetch } from '../../api/api-client.js';
+
+interface OrganismRecord {
+  readonly id: string;
+  readonly name: string;
+}
+
+interface OrganismStateRecord {
+  readonly contentTypeId: string;
+  readonly payload: unknown;
+}
+
+interface FetchOrganismResponse {
+  readonly organism: OrganismRecord;
+  readonly currentState: OrganismStateRecord | null;
+}
+
+export interface EnteredOrganismData {
+  readonly organism: OrganismRecord;
+  readonly currentState: OrganismStateRecord | null;
+}
+
+interface UseEnteredOrganismResult {
+  readonly data: EnteredOrganismData | null;
+  readonly loading: boolean;
+  readonly error: string | null;
+}
+
+function hasSession(): boolean {
+  if (typeof localStorage === 'undefined') return false;
+  return Boolean(localStorage.getItem('sessionId'));
+}
+
+function readPath(path: string): string {
+  return hasSession() ? path : `/public${path}`;
+}
+
+export function useEnteredOrganism(organismId: string | null): UseEnteredOrganismResult {
+  const [state, setState] = useState<UseEnteredOrganismResult>({
+    data: null,
+    loading: false,
+    error: null,
+  });
+
+  useEffect(() => {
+    if (!organismId) {
+      setState({
+        data: null,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
+    let cancelled = false;
+    setState((previous) => ({
+      ...previous,
+      loading: true,
+      error: null,
+    }));
+
+    apiFetch<FetchOrganismResponse>(readPath(`/organisms/${organismId}`))
+      .then((response) => {
+        if (cancelled) return;
+
+        setState({
+          data: {
+            organism: response.organism,
+            currentState: response.currentState,
+          },
+          loading: false,
+          error: null,
+        });
+      })
+      .catch((error) => {
+        if (cancelled) return;
+
+        setState({
+          data: null,
+          loading: false,
+          error: error instanceof Error ? error.message : 'Failed to load organism',
+        });
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [organismId]);
+
+  return state;
+}

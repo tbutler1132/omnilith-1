@@ -90,10 +90,40 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     createDeps,
   );
 
+  const capitalFieldNote = await createOrganism(
+    {
+      name: 'Capital Field Note',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Capital Field Note',
+          '',
+          'This is a simple text organism surfaced on the world map for web-next slice testing.',
+          '',
+          '- Enter from Space',
+          '- Confirm non-map content type rendering',
+        ].join('\n'),
+        format: 'markdown',
+      },
+      createdBy: SYSTEM_USER_ID,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
   await composeOrganism(
     {
       parentId: capitalCommunity.organism.id,
       childId: capitalMap.organism.id,
+      composedBy: SYSTEM_USER_ID,
+    },
+    composeDeps,
+  );
+
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: capitalFieldNote.organism.id,
       composedBy: SYSTEM_USER_ID,
     },
     composeDeps,
@@ -104,7 +134,10 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
       organismId: worldMapId,
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
-        entries: [{ organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 }],
+        entries: [
+          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
+          { organismId: capitalFieldNote.organism.id, x: 2850, y: 2850, size: 1.1, emphasis: 0.72 },
+        ],
         width: 5000,
         height: 5000,
       },
@@ -118,5 +151,7 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     value: new Date().toISOString(),
   });
 
-  console.log(`Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community: ${capitalCommunity.organism.id}`);
+  console.log(
+    `Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community (${capitalCommunity.organism.id}) and Capital Field Note (${capitalFieldNote.organism.id})`,
+  );
 }

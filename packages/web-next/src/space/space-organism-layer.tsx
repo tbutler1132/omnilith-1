@@ -2,7 +2,7 @@
  * Space organism layer for web-next.
  *
  * Renders map entries as lightweight organism markers directly in world
- * coordinates and enables entering map-like organisms in-space.
+ * coordinates and enables entering routed organisms in-space.
  */
 
 import type { CSSProperties } from 'react';
@@ -18,6 +18,7 @@ interface SpaceOrganismLayerProps {
   readonly onActivateMarker: (input: {
     organismId: string;
     enterTargetMapId: string | null;
+    contentTypeId: string | null;
     x: number;
     y: number;
   }) => void;
@@ -51,7 +52,8 @@ export function SpaceOrganismLayer({
       {entries.map((entry) => {
         const markerData = entryOrganismsById[entry.organismId];
         const enterTargetMapId = markerData?.enterTargetMapId ?? null;
-        const isEnterable = Boolean(enterTargetMapId);
+        const contentTypeId = markerData?.contentTypeId ?? null;
+        const isEnterable = Boolean(enterTargetMapId || contentTypeId);
         const isFocused = focusedOrganismId === entry.organismId;
         const sizeMultiplier = clamp(entry.size ?? 1, 0.6, 2.4);
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
@@ -73,7 +75,13 @@ export function SpaceOrganismLayer({
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => {
               event.stopPropagation();
-              onActivateMarker({ organismId: entry.organismId, enterTargetMapId, x: entry.x, y: entry.y });
+              onActivateMarker({
+                organismId: entry.organismId,
+                enterTargetMapId,
+                contentTypeId,
+                x: entry.x,
+                y: entry.y,
+              });
             }}
             aria-label={
               isEnterable

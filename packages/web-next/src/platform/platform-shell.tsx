@@ -29,6 +29,7 @@ function readVisorRouteFromWindow(): VisorRoute {
 export function PlatformShell() {
   const [visorRoute, setVisorRoute] = useState<VisorRoute>(() => readVisorRouteFromWindow());
   const [altitude, setAltitude] = useState<Altitude>('high');
+  const [isInInterior, setIsInInterior] = useState(false);
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
   const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
@@ -153,11 +154,15 @@ export function PlatformShell() {
         onAltitudeChange={setAltitude}
         onAltitudeControlReady={handleAltitudeControlReady}
         onBackControlReady={handleBackControlReady}
+        onInteriorChange={setIsInInterior}
       />
       <VisorHud
         mode={visorRoute.mode}
         appId={visorRoute.appId}
         altitude={altitude}
+        showAltitudeControls={!isInInterior}
+        showCompass={!isInInterior}
+        navigationLabel={isInInterior ? 'Organism interior' : null}
         onChangeAltitude={handleAltitudeChangeRequested}
         onGoBack={handleBackRequested}
         canGoBack={Boolean(backHandler)}
