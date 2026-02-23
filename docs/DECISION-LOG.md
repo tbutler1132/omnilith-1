@@ -987,6 +987,39 @@ Implementation update:
 
 - `packages/api/src/seed-v1-demo.ts` now composes `Trajectory`, `Variables`, `Models`, `Retros`, `Tasks`, and `Inbox` under the currently regulated demo boundaries.
 
+### Move 49: Agent Actors, Bounded Autonomous Integrate, and Map Space Economy Direction
+
+A strategic direction was clarified across governance, space scarcity, and economic design.
+
+AI participation model:
+
+- `user` remains human by default; human stewardship remains the top-level authority.
+- AI should be modeled as delegated operational actors with stable identity and explicit human sponsor/provenance.
+- bounded autonomous integrate is valid in low-risk boundaries when policy-defined checks pass and rollback is clear.
+- high-impact mutation classes (for example governance, economic policy, safety-critical access) retain human integrate as the default path.
+- non-human political rights are an intentional future constitutional experiment, not an implicit default.
+
+Map scarcity model:
+
+- scarcity applies to surfacing on map organisms, not to organism threshold.
+- map space can be allocated in bounded units (for example grid capacity) under policy.
+- allocation should be lease-like stewardship capacity rather than permanent land ownership.
+- anti-hoarding constraints are required (caps, expiry/reclaim, inactivity pressure, commons lane).
+
+Economic mechanism direction:
+
+- currency should enter as organisms through content types and composition, not as new kernel infrastructure.
+- prefer a `currency-policy` organism + append-only `currency-ledger` organism as canonical economic state.
+- user balance is derived from ledger history; fast balance views can come from query projections.
+- paywalled access to private/member boundaries is valid via policy organisms and entitlement relationships.
+- premium pathways should govern access and boundary rights, not rendering prominence.
+
+Architecture impact assessment:
+
+- this direction can be implemented additively with content types, policy organisms, and adapters.
+- kernel refactor is not required for staged flows.
+- if atomic multi-organism economic + surfacing mutation is required in one integrate step, a future kernel extension may be needed.
+
 ---
 
 ## Summary of What We're Building
