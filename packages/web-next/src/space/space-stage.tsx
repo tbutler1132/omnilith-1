@@ -11,6 +11,7 @@ import { GroundPlane } from './ground-plane.js';
 import { OrganismInterior } from './interior/organism-interior.js';
 import { MapViewport } from './map-viewport.js';
 import { SpaceOrganismLayer } from './space-organism-layer.js';
+import { resolveMarkerActivationIntent, shouldClearFocusedOrganism } from './space-stage-policy.js';
 import { useEntryOrganisms } from './use-entry-organisms.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
@@ -50,11 +51,6 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
-const ALTITUDE_RANK: Readonly<Record<Altitude, number>> = {
-  high: 0,
-  mid: 1,
-  close: 2,
-};
 
 export function SpaceStage({
   worldMapId,
@@ -265,43 +261,35 @@ export function SpaceStage({
 
       const canEnterMap = Boolean(input.enterTargetMapId);
       const canEnterInterior = Boolean(input.contentTypeId);
-      const canEnter = canEnterMap || canEnterInterior;
-      if (altitude === 'close' && canEnter) {
-        if (canEnterMap && input.enterTargetMapId) {
+      const isSameMarker = focusedOrganismId === input.organismId;
+      const intent = resolveMarkerActivationIntent({
+        altitude,
+        isSameMarker,
+        canEnterMap,
+        canEnterInterior,
+      });
+
+      if (intent === 'enter-map') {
+        if (input.enterTargetMapId) {
           handleEnterMap(input.enterTargetMapId, {
             organismId: input.organismId,
             x: input.x,
             y: input.y,
           });
-          return;
         }
 
-        if (canEnterInterior) {
+        return;
+      }
+
+      if (intent === 'enter-interior') {
+        if (input.contentTypeId) {
           handleEnterOrganism(input.organismId, {
             organismId: input.organismId,
             x: input.x,
             y: input.y,
           });
-          return;
         }
-      }
 
-      const isSameMarker = focusedOrganismId === input.organismId;
-      if (isSameMarker && input.enterTargetMapId) {
-        handleEnterMap(input.enterTargetMapId, {
-          organismId: input.organismId,
-          x: input.x,
-          y: input.y,
-        });
-        return;
-      }
-
-      if (isSameMarker && input.contentTypeId) {
-        handleEnterOrganism(input.organismId, {
-          organismId: input.organismId,
-          x: input.x,
-          y: input.y,
-        });
         return;
       }
 
@@ -319,9 +307,7 @@ export function SpaceStage({
 
   useEffect(() => {
     const previousAltitude = previousAltitudeRef.current;
-    const isZoomingOut = previousAltitude !== null && ALTITUDE_RANK[altitude] < ALTITUDE_RANK[previousAltitude];
-
-    if (isZoomingOut) {
+    if (shouldClearFocusedOrganism({ previousAltitude, nextAltitude: altitude })) {
       setFocusedOrganismId(null);
     }
 

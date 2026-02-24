@@ -8,17 +8,17 @@
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
 
-interface OrganismRecord {
+export interface OrganismRecord {
   readonly id: string;
   readonly name: string;
 }
 
-interface OrganismStateRecord {
+export interface OrganismStateRecord {
   readonly contentTypeId: string;
   readonly payload: unknown;
 }
 
-interface FetchOrganismResponse {
+export interface FetchOrganismResponse {
   readonly organism: OrganismRecord;
   readonly currentState: OrganismStateRecord | null;
 }
@@ -45,7 +45,7 @@ function readPath(path: string): string {
   return hasSession() ? path : `/public${path}`;
 }
 
-function resolveEnterTargetMapId(response: FetchOrganismResponse): string | null {
+export function resolveEnterTargetMapId(response: FetchOrganismResponse): string | null {
   const state = response.currentState;
   if (!state) {
     return null;
