@@ -1,11 +1,12 @@
 /**
  * Organism wireframe preview.
  *
- * Renders a small Three.js wireframe panel keyed by current content type
- * so the Organism app has an at-a-glance spatial signature.
+ * Renders a lightweight SVG wireframe panel keyed by current content type
+ * so the Organism app has an at-a-glance spatial signature without loading
+ * a heavy 3D runtime.
  */
 
-import { useEffect, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import { resolveWireframeModelSpec } from './wireframe-model-spec.js';
 
 interface OrganismWireframePreviewProps {
@@ -13,135 +14,58 @@ interface OrganismWireframePreviewProps {
 }
 
 export function OrganismWireframePreview({ contentTypeId }: OrganismWireframePreviewProps) {
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [loadError, setLoadError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let disposed = false;
-    let frameId = 0;
-    let cleanupResize: (() => void) | null = null;
-    let renderer: import('three').WebGLRenderer | null = null;
-    let geometry: import('three').BufferGeometry | null = null;
-    let edgeGeometry: import('three').BufferGeometry | null = null;
-    let meshMaterial: import('three').Material | null = null;
-    let edgeMaterial: import('three').Material | null = null;
-    setLoadError(null);
-
-    const canvas = canvasRef.current;
-    if (!canvas) {
-      return;
-    }
-
-    const boot = async () => {
-      try {
-        const THREE = await import('three');
-        if (disposed) {
-          return;
-        }
-
-        const spec = resolveWireframeModelSpec(contentTypeId);
-        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-        camera.position.set(0, 0, 3);
-
-        geometry =
-          spec.geometryKind === 'icosahedron'
-            ? new THREE.IcosahedronGeometry(0.95, 0)
-            : new THREE.BoxGeometry(1.5, 1.5, 1.5, 1, 1, 1);
-
-        meshMaterial = new THREE.MeshBasicMaterial({
-          color: spec.colorHex,
-          wireframe: true,
-        });
-        const mesh = new THREE.Mesh(geometry, meshMaterial);
-        scene.add(mesh);
-
-        edgeGeometry = new THREE.EdgesGeometry(geometry);
-        edgeMaterial = new THREE.LineBasicMaterial({
-          color: spec.colorHex,
-          transparent: true,
-          opacity: 0.48,
-        });
-        const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-        scene.add(edgeLines);
-
-        const resize = () => {
-          const host = canvas.parentElement;
-          const width = Math.max(host?.clientWidth ?? 0, 1);
-          const height = Math.max(host?.clientHeight ?? 0, 1);
-          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-          renderer?.setPixelRatio(pixelRatio);
-          renderer?.setSize(width, height, false);
-          camera.aspect = width / height;
-          camera.updateProjectionMatrix();
-        };
-
-        const renderScene = () => {
-          renderer?.render(scene, camera);
-        };
-
-        resize();
-        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-        if (mediaQuery.matches) {
-          renderScene();
-        } else {
-          const animate = () => {
-            if (disposed) {
-              return;
-            }
-
-            mesh.rotation.x = 0;
-            mesh.rotation.y += spec.rotationSpeedY;
-            edgeLines.rotation.x = mesh.rotation.x;
-            edgeLines.rotation.y = mesh.rotation.y;
-
-            renderScene();
-            frameId = window.requestAnimationFrame(animate);
-          };
-
-          frameId = window.requestAnimationFrame(animate);
-        }
-
-        const handleResize = () => {
-          if (disposed) return;
-          resize();
-          renderScene();
-        };
-        window.addEventListener('resize', handleResize);
-        cleanupResize = () => {
-          window.removeEventListener('resize', handleResize);
-        };
-      } catch {
-        if (!disposed) {
-          setLoadError('Wireframe preview unavailable on this device.');
-        }
-      }
-    };
-
-    void boot();
-
-    return () => {
-      disposed = true;
-      cleanupResize?.();
-      window.cancelAnimationFrame(frameId);
-      edgeGeometry?.dispose();
-      edgeMaterial?.dispose();
-      geometry?.dispose();
-      meshMaterial?.dispose();
-      renderer?.dispose();
-    };
-  }, [contentTypeId]);
+  const spec = resolveWireframeModelSpec(contentTypeId);
+  const accentColor = toHexColor(spec.colorHex);
+  const rotationDurationSeconds = resolveRotationDurationSeconds(spec.rotationSpeedY);
+  const panelStyle = {
+    '--organism-wireframe-accent': accentColor,
+    '--organism-wireframe-duration': `${rotationDurationSeconds.toFixed(2)}s`,
+  } as CSSProperties;
 
   return (
-    <div className="organism-wireframe-panel">
-      {loadError ? <p className="organism-wireframe-fallback">{loadError}</p> : null}
-      <canvas
-        ref={canvasRef}
-        className="organism-wireframe-canvas"
-        style={loadError ? { display: 'none' } : undefined}
-      />
+    <div className="organism-wireframe-panel" style={panelStyle} aria-hidden="true">
+      <svg viewBox="0 0 128 128" className="organism-wireframe-svg" focusable="false" role="presentation">
+        <g className="organism-wireframe-rotor">
+          {spec.geometryKind === 'icosahedron' ? (
+            <>
+              <polygon
+                className="organism-wireframe-line organism-wireframe-line--strong"
+                points="64,10 24,34 24,94 64,118 104,94 104,34"
+              />
+              <polyline className="organism-wireframe-line" points="64,10 64,118" />
+              <polyline className="organism-wireframe-line" points="24,34 64,56 104,34" />
+              <polyline className="organism-wireframe-line" points="24,94 64,72 104,94" />
+              <line className="organism-wireframe-line" x1="24" y1="34" x2="104" y2="94" />
+              <line className="organism-wireframe-line" x1="104" y1="34" x2="24" y2="94" />
+            </>
+          ) : (
+            <>
+              <rect
+                className="organism-wireframe-line organism-wireframe-line--strong"
+                x="24"
+                y="28"
+                width="58"
+                height="58"
+              />
+              <rect className="organism-wireframe-line" x="44" y="42" width="58" height="58" />
+              <line className="organism-wireframe-line" x1="24" y1="28" x2="44" y2="42" />
+              <line className="organism-wireframe-line" x1="82" y1="28" x2="102" y2="42" />
+              <line className="organism-wireframe-line" x1="24" y1="86" x2="44" y2="100" />
+              <line className="organism-wireframe-line" x1="82" y1="86" x2="102" y2="100" />
+            </>
+          )}
+        </g>
+      </svg>
     </div>
   );
+}
+
+function toHexColor(colorHex: number): string {
+  return `#${colorHex.toString(16).padStart(6, '0')}`;
+}
+
+function resolveRotationDurationSeconds(rotationSpeedY: number): number {
+  const speed = Math.max(rotationSpeedY, 0.0001);
+  const duration = (0.002 / speed) * 18;
+  return Math.max(12, Math.min(duration, 28));
 }
