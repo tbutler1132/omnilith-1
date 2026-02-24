@@ -910,6 +910,63 @@
   background: rgba(239, 249, 255, 0.96);
 }
 
+.space-readout-widget {
+  min-width: 15.5rem;
+  max-width: min(27rem, calc(100vw - 2.8rem));
+  padding: 0.46rem 0.56rem 0.52rem;
+  border: 1px solid var(--visor-line);
+  border-radius: 0.62rem;
+  background: var(--visor-surface);
+  backdrop-filter: blur(10px);
+  color: var(--visor-text);
+  box-shadow:
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
+  pointer-events: none;
+}
+
+.space-readout-title {
+  margin: 0 0 0.34rem;
+  font-size: 0.54rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(226, 239, 254, 0.86);
+}
+
+.space-readout-table {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+}
+
+.space-readout-row {
+  margin: 0;
+  display: grid;
+  grid-template-columns: 2.8rem minmax(0, 1fr);
+  column-gap: 0.32rem;
+  align-items: baseline;
+}
+
+.space-readout-key {
+  margin: 0;
+  font-size: 0.52rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(203, 223, 247, 0.76);
+}
+
+.space-readout-value {
+  margin: 0;
+  font-size: 0.56rem;
+  line-height: 1.25;
+  color: rgba(237, 247, 255, 0.92);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  overflow-wrap: anywhere;
+}
+
 .visor-widget {
   width: 100%;
   min-height: 3rem;
@@ -1027,6 +1084,11 @@
     align-items: flex-start;
     flex-wrap: nowrap;
     gap: 0.4rem;
+  }
+
+  .space-readout-widget {
+    min-width: 12.8rem;
+    max-width: min(20rem, calc(100vw - 8rem));
   }
 
   .visor-widget-lane {

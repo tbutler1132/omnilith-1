@@ -112,6 +112,7 @@ export function VisorHud({
         <>
           <SpatialControlsSlot
             altitude={altitude}
+            spatialContext={spatialContext}
             showAltitudeControls={showAltitudeControls}
             navigationLabel={navigationLabel}
             onChangeAltitude={onChangeAltitude}

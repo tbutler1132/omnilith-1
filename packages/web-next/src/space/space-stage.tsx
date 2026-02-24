@@ -31,6 +31,26 @@ interface SpaceStageProps {
 export interface SpaceStageSpatialSnapshot {
   readonly mapOrganismId: string;
   readonly focusedOrganismId: string | null;
+  readonly cursorWorld: {
+    readonly x: number;
+    readonly y: number;
+  } | null;
+  readonly hoveredEntry: {
+    readonly organismId: string;
+    readonly name: string;
+    readonly contentTypeId: string | null;
+    readonly x: number;
+    readonly y: number;
+    readonly size: number;
+  } | null;
+  readonly focusedEntry: {
+    readonly organismId: string;
+    readonly name: string;
+    readonly contentTypeId: string | null;
+    readonly x: number;
+    readonly y: number;
+    readonly size: number;
+  } | null;
   readonly viewport: {
     readonly x: number;
     readonly y: number;
@@ -61,6 +81,15 @@ interface MarkerActivationInput {
   readonly y: number;
 }
 
+interface SurfaceEntrySnapshot {
+  readonly organismId: string;
+  readonly name: string;
+  readonly contentTypeId: string | null;
+  readonly x: number;
+  readonly y: number;
+  readonly size: number;
+}
+
 type TransitionPhase = 'idle' | 'entering' | 'exiting';
 
 const ENTER_TRANSITION_MS = 700;
@@ -68,6 +97,39 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
+
+function resolveSurfaceEntrySnapshot(
+  organismId: string | null,
+  entriesById: ReadonlyMap<string, { x: number; y: number; size: number }>,
+  entryMetadataById: Readonly<Record<string, { name: string; contentTypeId: string | null }>>,
+): SurfaceEntrySnapshot | null {
+  if (!organismId) {
+    return null;
+  }
+
+  const entry = entriesById.get(organismId);
+  if (!entry) {
+    return null;
+  }
+
+  const metadata = entryMetadataById[organismId];
+  return {
+    organismId,
+    name: metadata?.name ?? organismId,
+    contentTypeId: metadata?.contentTypeId ?? null,
+    x: entry.x,
+    y: entry.y,
+    size: entry.size,
+  };
+}
+
+function normalizeEntrySize(size: number | undefined): number {
+  if (typeof size !== 'number' || !Number.isFinite(size)) {
+    return 1;
+  }
+
+  return Math.max(0.0001, size);
+}
 
 export function SpaceStage({
   worldMapId,
@@ -84,6 +146,8 @@ export function SpaceStage({
   const [currentBoundaryOrganismId, setCurrentBoundaryOrganismId] = useState<string | null>(null);
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
+  const [hoveredOrganismId, setHoveredOrganismId] = useState<string | null>(null);
+  const [cursorWorld, setCursorWorld] = useState<{ x: number; y: number } | null>(null);
   const [pendingFocusAfterSwitch, setPendingFocusAfterSwitch] = useState<FocusPoint | null>(null);
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('idle');
   const [transitionOpacity, setTransitionOpacity] = useState(0);
@@ -93,7 +157,29 @@ export function SpaceStage({
 
   const { width, height, entries, entryCount, loading, error } = useSpatialMap(currentMapId);
   const entryIds = useMemo(() => entries.map((entry) => entry.organismId), [entries]);
+  const entriesById = useMemo(
+    () =>
+      new Map(
+        entries.map((entry) => [
+          entry.organismId,
+          {
+            x: entry.x,
+            y: entry.y,
+            size: normalizeEntrySize(entry.size),
+          },
+        ]),
+      ),
+    [entries],
+  );
   const { byId: entryOrganismsById } = useEntryOrganisms(entryIds);
+  const hoveredEntry = useMemo(
+    () => resolveSurfaceEntrySnapshot(hoveredOrganismId, entriesById, entryOrganismsById),
+    [entriesById, entryOrganismsById, hoveredOrganismId],
+  );
+  const focusedEntry = useMemo(
+    () => resolveSurfaceEntrySnapshot(focusedOrganismId, entriesById, entryOrganismsById),
+    [entriesById, entryOrganismsById, focusedOrganismId],
+  );
   const { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude } = useViewport({
     mapWidth: width,
     mapHeight: height,
@@ -138,6 +224,8 @@ export function SpaceStage({
     setCurrentBoundaryOrganismId(null);
     setEnteredOrganismId(null);
     setFocusedOrganismId(null);
+    setHoveredOrganismId(null);
+    setCursorWorld(null);
     setPendingFocusAfterSwitch(null);
     setTransitionPhase('idle');
     setTransitionOpacity(0);
@@ -200,6 +288,8 @@ export function SpaceStage({
         setCurrentBoundaryOrganismId(from.organismId);
         setEnteredOrganismId(null);
         setFocusedOrganismId(null);
+        setHoveredOrganismId(null);
+        setCursorWorld(null);
         setPendingFocusAfterSwitch(null);
       });
     },
@@ -218,6 +308,7 @@ export function SpaceStage({
         onComplete: () => {
           setEnteredOrganismId(organismId);
           setFocusedOrganismId(null);
+          setHoveredOrganismId(null);
           interiorTransitioningRef.current = false;
         },
       });
@@ -236,6 +327,7 @@ export function SpaceStage({
     interiorTransitioningRef.current = true;
     setEnteredOrganismId(null);
     setFocusedOrganismId(null);
+    setHoveredOrganismId(null);
     animateTo(frameOrganism(exitX, exitY), {
       durationMs: INTERIOR_EXIT_TRANSITION_MS,
       onComplete: () => {
@@ -265,6 +357,8 @@ export function SpaceStage({
       setCurrentMapId(previous.mapId);
       setCurrentBoundaryOrganismId(previous.boundaryOrganismId);
       setFocusedOrganismId(null);
+      setHoveredOrganismId(null);
+      setCursorWorld(null);
       setPendingFocusAfterSwitch(previous.returnFocus);
     });
   }, [
@@ -383,6 +477,9 @@ export function SpaceStage({
     onSpatialContextChange({
       mapOrganismId: currentMapId,
       focusedOrganismId,
+      cursorWorld,
+      hoveredEntry,
+      focusedEntry,
       viewport: {
         x: viewport.x,
         y: viewport.y,
@@ -395,8 +492,11 @@ export function SpaceStage({
   }, [
     altitude,
     boundaryPath,
+    cursorWorld,
     currentMapId,
     focusedOrganismId,
+    focusedEntry,
+    hoveredEntry,
     onSpatialContextChange,
     surfaceSelection,
     viewport.x,
@@ -440,13 +540,20 @@ export function SpaceStage({
 
   return (
     <main className="space-map" ref={containerRef} aria-label="Space map">
-      <MapViewport viewport={viewport} screenSize={screenSize} onViewportChange={setViewport}>
+      <MapViewport
+        viewport={viewport}
+        screenSize={screenSize}
+        onViewportChange={setViewport}
+        onPointerWorldMove={setCursorWorld}
+      >
         <GroundPlane width={width} height={height} />
         <SpaceOrganismLayer
           entries={entries}
           altitude={altitude}
+          zoom={viewport.zoom}
           entryOrganismsById={entryOrganismsById}
           focusedOrganismId={focusedOrganismId}
+          onHoverOrganismChange={setHoveredOrganismId}
           onActivateMarker={handleActivateMarker}
         />
       </MapViewport>

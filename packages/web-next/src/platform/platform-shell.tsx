@@ -100,6 +100,9 @@ export function PlatformShell() {
     setSpatialContext({
       mapOrganismId: snapshot.mapOrganismId,
       focusedOrganismId: snapshot.focusedOrganismId,
+      cursorWorld: snapshot.cursorWorld,
+      hoveredEntry: snapshot.hoveredEntry,
+      focusedEntry: snapshot.focusedEntry,
       viewport: {
         x: snapshot.viewport.x,
         y: snapshot.viewport.y,

@@ -8,6 +8,7 @@
 import type { CSSProperties } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { MarkerPreview } from './marker-preview.js';
+import { resolveMarkerSizePolicy } from './marker-size-policy.js';
 import { resolveMarkerVariant } from './marker-variant.js';
 import type { EntryOrganismMetadata } from './use-entry-organisms.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
@@ -15,8 +16,10 @@ import type { SpatialMapEntry } from './use-spatial-map.js';
 interface SpaceOrganismLayerProps {
   readonly entries: ReadonlyArray<SpatialMapEntry>;
   readonly altitude: Altitude;
+  readonly zoom: number;
   readonly entryOrganismsById: Readonly<Record<string, EntryOrganismMetadata>>;
   readonly focusedOrganismId: string | null;
+  readonly onHoverOrganismChange: (organismId: string | null) => void;
   readonly onActivateMarker: (input: {
     organismId: string;
     enterTargetMapId: string | null;
@@ -28,23 +31,10 @@ interface SpaceOrganismLayerProps {
 
 const BASE_MARKER_SIZE = 16;
 const BASE_MARKER_FRAME_SIZE = 160;
-const MIN_RENDERABLE_SIZE_MULTIPLIER = 0.000001;
-const DETAIL_CARD_MIN_SIZE_MULTIPLIER = 0.35;
+const HALO_OPACITY_CSS_VARIABLE = '--space-marker-tiny-halo-opacity';
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
-}
-
-export function resolveMarkerSizeMultiplier(entrySize: number | undefined): number {
-  if (typeof entrySize !== 'number' || !Number.isFinite(entrySize) || entrySize <= 0) {
-    return 1;
-  }
-
-  return Math.max(entrySize, MIN_RENDERABLE_SIZE_MULTIPLIER);
-}
-
-export function shouldRenderDetailCard(sizeMultiplier: number): boolean {
-  return sizeMultiplier >= DETAIL_CARD_MIN_SIZE_MULTIPLIER;
 }
 
 function formatLabel(organismId: string): string {
@@ -58,8 +48,10 @@ function formatLabel(organismId: string): string {
 export function SpaceOrganismLayer({
   entries,
   altitude,
+  zoom,
   entryOrganismsById,
   focusedOrganismId,
+  onHoverOrganismChange,
   onActivateMarker,
 }: SpaceOrganismLayerProps) {
   return (
@@ -76,11 +68,16 @@ export function SpaceOrganismLayer({
           name: markerName,
           contentTypeId,
         });
-        const sizeMultiplier = resolveMarkerSizeMultiplier(entry.size);
+        const sizePolicy = resolveMarkerSizePolicy({
+          entrySize: entry.size,
+          zoom,
+          altitude,
+        });
+        const sizeMultiplier = sizePolicy.coreSizeMultiplier;
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
-        const showDetailCard = shouldRenderDetailCard(sizeMultiplier);
+        const showDetailCard = sizePolicy.showDetailCard;
         const dotSize = BASE_MARKER_SIZE * sizeMultiplier;
-        const frameSize = BASE_MARKER_FRAME_SIZE * sizeMultiplier;
+        const frameSize = BASE_MARKER_FRAME_SIZE * sizePolicy.interactionSizeMultiplier;
         const markerStyle: CSSProperties = {
           left: entry.x,
           top: entry.y,
@@ -88,6 +85,11 @@ export function SpaceOrganismLayer({
           height: frameSize,
           opacity: 0.45 + emphasis * 0.55,
         };
+        if (sizePolicy.haloVisible) {
+          (markerStyle as Record<string, string | number | undefined>)[HALO_OPACITY_CSS_VARIABLE] = String(
+            sizePolicy.haloStrength,
+          );
+        }
 
         return (
           <button
@@ -96,6 +98,7 @@ export function SpaceOrganismLayer({
             className={[
               'space-organism-marker',
               markerVariant !== 'default' ? `space-organism-marker--${markerVariant}` : null,
+              sizePolicy.haloVisible ? 'space-organism-marker--tiny' : null,
               isEnterable ? 'space-organism-marker--enterable' : null,
               isFocused ? 'space-organism-marker--focused' : null,
             ]
@@ -103,6 +106,10 @@ export function SpaceOrganismLayer({
               .join(' ')}
             style={markerStyle}
             onPointerDown={(event) => event.stopPropagation()}
+            onPointerEnter={() => onHoverOrganismChange(entry.organismId)}
+            onPointerLeave={() => onHoverOrganismChange(null)}
+            onFocus={() => onHoverOrganismChange(entry.organismId)}
+            onBlur={() => onHoverOrganismChange(null)}
             onClick={(event) => {
               event.stopPropagation();
               onActivateMarker({

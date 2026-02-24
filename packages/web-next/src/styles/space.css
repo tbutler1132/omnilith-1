@@ -131,6 +131,12 @@
   animation: marker-halo-pulse 1.1s ease-out infinite;
 }
 
+.space-organism-marker--tiny .space-organism-dot::after {
+  opacity: var(--space-marker-tiny-halo-opacity, 0.35);
+  transform: scale(1);
+  animation: none;
+}
+
 .space-organism-marker--focused .space-organism-dot {
   background: var(--space-marker-focused-fill);
   box-shadow: var(--space-marker-focus-ring);

@@ -5,7 +5,9 @@ export { OrganismApp, organismAppDefinition } from './organism/index.js';
 export type {
   SpatialContextChangedListener,
   VisorAppSpatialContext,
+  VisorAppSpatialPoint,
   VisorAppSpatialViewport,
+  VisorAppSurfaceEntrySnapshot,
 } from './spatial-context-contract.js';
 export {
   createEmptySpatialContext,

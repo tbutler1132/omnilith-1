@@ -6,11 +6,14 @@
  */
 
 import type { Altitude } from '../../../contracts/altitude.js';
+import type { VisorAppSpatialContext } from '../../apps/spatial-context-contract.js';
 import { AltitudeControlsWidget } from './altitude-controls-widget.js';
 import { SpatialNavWidget } from './spatial-nav-widget.js';
+import { SpatialReadoutWidget } from './spatial-readout-widget.js';
 
 interface SpatialControlsSlotProps {
   readonly altitude: Altitude;
+  readonly spatialContext: VisorAppSpatialContext;
   readonly showAltitudeControls: boolean;
   readonly navigationLabel?: string | null;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
@@ -20,6 +23,7 @@ interface SpatialControlsSlotProps {
 
 export function SpatialControlsSlot({
   altitude,
+  spatialContext,
   showAltitudeControls,
   navigationLabel,
   onChangeAltitude,
@@ -30,6 +34,7 @@ export function SpatialControlsSlot({
     <div className="spatial-controls-slot">
       <SpatialNavWidget altitude={altitude} contextLabel={navigationLabel} onGoBack={onGoBack} canGoBack={canGoBack} />
       {showAltitudeControls ? <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} /> : null}
+      {showAltitudeControls ? <SpatialReadoutWidget spatialContext={spatialContext} /> : null}
     </div>
   );
 }
