@@ -24,7 +24,7 @@ const packageRules = {
   api: {
     allowedWorkspaceImports: ['@omnilith/kernel', '@omnilith/content-types'],
   },
-  web: {
+  'web-next': {
     allowedWorkspaceImports: ['@omnilith/content-types'],
   },
 };
@@ -131,22 +131,24 @@ function getWebLayerViolation({ packageRoot, importerFilePath, resolvedImportPat
   if (!importerZone || !importeeZone) return null;
 
   if (importerZone === 'platform') {
-    const isPlatformOrchestrator = importerRelativePath === 'src/platform/Platform.tsx';
+    const isPlatformOrchestrator =
+      importerRelativePath === 'src/platform/Platform.tsx' ||
+      importerRelativePath === 'src/platform/platform-shell.tsx';
     if (!isPlatformOrchestrator && (importeeZone === 'hud' || importeeZone === 'space')) {
-      return `web platform internals cannot import ${importeeZone}; keep orchestration in src/platform/Platform.tsx`;
+      return `web-next platform internals cannot import ${importeeZone}; keep orchestration in src/platform/platform-shell.tsx`;
     }
   }
 
   if (importerZone === 'hud' && importeeZone === 'space') {
-    return 'web hud cannot import space directly; coordinate through platform/contracts';
+    return 'web-next hud cannot import space directly; coordinate through platform/contracts';
   }
 
   if (importerZone === 'space' && importeeZone === 'hud') {
-    return 'web space cannot import hud directly; coordinate through platform/contracts';
+    return 'web-next space cannot import hud directly; coordinate through platform/contracts';
   }
 
   if (importerZone === 'contracts' && ['platform', 'hud', 'space'].includes(importeeZone)) {
-    return 'web contracts must stay neutral and cannot import platform/hud/space';
+    return 'web-next contracts must stay neutral and cannot import platform/hud/space';
   }
 
   return null;
@@ -187,7 +189,7 @@ for (const [packageName, rules] of Object.entries(packageRules)) {
           });
         }
 
-        if (packageName === 'web') {
+        if (packageName === 'web-next') {
           const webLayerViolation = getWebLayerViolation({
             packageRoot,
             importerFilePath: filePath,

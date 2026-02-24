@@ -2,7 +2,7 @@
 /**
  * Web dependency graph generator — interactive architecture map for web source.
  *
- * Scans packages/web/src, extracts file-level import edges, and emits a
+ * Scans packages/web-next/src, extracts file-level import edges, and emits a
  * self-contained HTML report with graph, filtering, and intent-header details.
  */
 
@@ -11,7 +11,7 @@ import { dirname, extname, relative, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = resolve(dirname(fileURLToPath(import.meta.url)), '..');
-const webSrcDir = resolve(rootDir, 'packages/web/src');
+const webSrcDir = resolve(rootDir, 'packages/web-next/src');
 const defaultOutputPath = resolve(rootDir, 'tmp/reports/web-dependency-graph.html');
 
 const importSpecifierRegexes = [
@@ -244,7 +244,7 @@ function buildGraphData() {
 
   return {
     generatedAt: new Date().toISOString(),
-    sourceRoot: 'packages/web/src',
+    sourceRoot: 'packages/web-next/src',
     summary: {
       fileCount: nodes.length,
       edgeCount: edges.length,
@@ -438,7 +438,7 @@ function buildHtmlReport(graphData) {
   </head>
   <body>
     <h1>Web Dependency Graph</h1>
-    <div class="meta">Source: <code>packages/web/src</code> | Generated: <span id="generatedAt"></span></div>
+    <div class="meta">Source: <code>packages/web-next/src</code> | Generated: <span id="generatedAt"></span></div>
     <div id="summary" class="summary"></div>
 
     <div class="controls">
