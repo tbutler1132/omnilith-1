@@ -616,6 +616,20 @@
   opacity: 0.9;
 }
 
+.visor-logout-widget {
+  min-height: 2.2rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(212, 234, 255, 0.28);
+  background: linear-gradient(145deg, rgba(160, 208, 255, 0.14), rgba(160, 208, 255, 0.04));
+  color: rgba(236, 247, 255, 0.93);
+  font-size: 0.63rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
 .map-legend-widget {
   align-items: flex-start;
   justify-content: flex-start;

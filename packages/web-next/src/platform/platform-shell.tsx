@@ -6,11 +6,18 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
+import { loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
+import { readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage } from '../space/space-stage.js';
 import { VisorHud } from '../visor/hud/index.js';
 import { parseVisorRoute, type VisorRoute, writeVisorRoute } from '../visor/visor-route.js';
+import {
+  DEV_SHORTCUT_LOGIN_EMAIL,
+  DEV_SHORTCUT_LOGIN_PASSWORD,
+  isSecretLoginShortcut,
+} from './secret-login-shortcut.js';
 
 interface LoadState {
   readonly worldMapId: string | null;
@@ -37,6 +44,7 @@ export function PlatformShell() {
     loading: true,
     error: null,
   });
+  const isAuthenticated = readSessionId() !== null;
 
   const handleAltitudeControlReady = useCallback((handler: ((direction: 'in' | 'out') => void) | null) => {
     setChangeAltitudeHandler(() => handler);
@@ -89,6 +97,17 @@ export function PlatformShell() {
     });
   }, [updateVisorRoute]);
 
+  const handleLogout = useCallback(() => {
+    logoutSession()
+      .catch(() => {
+        // Best effort: clear local auth state even if API logout fails.
+      })
+      .finally(() => {
+        localStorage.removeItem('sessionId');
+        window.location.reload();
+      });
+  }, []);
+
   useEffect(() => {
     fetchWorldMap()
       .then((response) => {
@@ -110,6 +129,33 @@ export function PlatformShell() {
           error: message,
         });
       });
+  }, []);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (!isSecretLoginShortcut(event)) {
+        return;
+      }
+
+      if (readSessionId()) {
+        return;
+      }
+
+      event.preventDefault();
+
+      loginWithPassword(DEV_SHORTCUT_LOGIN_EMAIL, DEV_SHORTCUT_LOGIN_PASSWORD)
+        .then((response) => {
+          localStorage.setItem('sessionId', response.sessionId);
+          window.location.reload();
+        })
+        .catch((error) => {
+          const message = error instanceof Error ? error.message : 'Secret login failed';
+          console.error(`Secret login failed: ${message}`);
+        });
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
   useEffect(() => {
@@ -162,12 +208,14 @@ export function PlatformShell() {
         altitude={altitude}
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}
+        showLogoutButton={isAuthenticated}
         navigationLabel={isInInterior ? 'Organism interior' : null}
         onChangeAltitude={handleAltitudeChangeRequested}
         onGoBack={handleBackRequested}
         canGoBack={Boolean(backHandler)}
         onOpenApp={handleOpenApp}
         onCloseVisor={handleCloseVisor}
+        onLogout={handleLogout}
       />
     </div>
   );

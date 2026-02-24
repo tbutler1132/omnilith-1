@@ -24,12 +24,14 @@ interface VisorHudProps {
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
   readonly showCompass: boolean;
+  readonly showLogoutButton: boolean;
   readonly navigationLabel?: string | null;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
   readonly onGoBack: () => void;
   readonly canGoBack: boolean;
   readonly onOpenApp: (appId: string) => void;
   readonly onCloseVisor: () => void;
+  readonly onLogout: () => void;
 }
 
 export function VisorHud({
@@ -38,12 +40,14 @@ export function VisorHud({
   altitude,
   showAltitudeControls,
   showCompass,
+  showLogoutButton,
   navigationLabel,
   onChangeAltitude,
   onGoBack,
   canGoBack,
   onOpenApp,
   onCloseVisor,
+  onLogout,
 }: VisorHudProps) {
   const [openVisorPhase, setOpenVisorPhase] = useState<OpenVisorPhase>(mode === 'open' ? 'opening' : 'hidden');
   const [presentedAppId, setPresentedAppId] = useState<string | null>(appId);
@@ -92,6 +96,7 @@ export function VisorHud({
 
   const showOpenVisor = openVisorPhase !== 'hidden';
   const showClosedHud = mode === 'closed';
+  const showWidgetLane = showLogoutButton || showCompass;
   const openPhaseForShell: Exclude<OpenVisorPhase, 'hidden'> = openVisorPhase === 'hidden' ? 'open' : openVisorPhase;
 
   return (
@@ -107,10 +112,19 @@ export function VisorHud({
             canGoBack={canGoBack}
           />
           <AppDockSlot onOpenApp={onOpenApp} />
-          {showCompass ? (
+          {showWidgetLane ? (
             <VisorWidgetLane>
-              <CompassWidget />
-              <MapLegendWidget />
+              {showLogoutButton ? (
+                <button type="button" className="visor-widget visor-logout-widget" onClick={onLogout}>
+                  Log out
+                </button>
+              ) : null}
+              {showCompass ? (
+                <>
+                  <CompassWidget />
+                  <MapLegendWidget />
+                </>
+              ) : null}
             </VisorWidgetLane>
           ) : null}
         </>

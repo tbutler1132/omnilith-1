@@ -5,17 +5,43 @@
  * plus a single initial community organism from the v1 demo seed.
  */
 
+import { randomBytes, scryptSync } from 'node:crypto';
 import type { ContentTypeId, OrganismId, UserId } from '@omnilith/kernel';
 import { appendState, composeOrganism, createOrganism } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
-import { platformConfig } from './db/schema.js';
+import { platformConfig, users } from './db/schema.js';
 
 const WORLD_MAP_ONLY_SEED_KEY = 'world_map_only_seed_complete';
 const WORLD_MAP_KEY = 'world_map_id';
 const SYSTEM_USER_ID = 'system' as UserId;
+const DEV_USER_EMAIL = 'dev@omnilith.local';
+const DEV_USER_PASSWORD = 'dev';
+
+function hashPassword(password: string): string {
+  const salt = randomBytes(16).toString('hex');
+  const hash = scryptSync(password, salt, 64).toString('hex');
+  return `${salt}:${hash}`;
+}
+
+async function ensureDevUser(container: Container): Promise<void> {
+  const existingDevUser = await container.db.select().from(users).where(eq(users.email, DEV_USER_EMAIL));
+  if (existingDevUser.length > 0) {
+    return;
+  }
+
+  await container.db.insert(users).values({
+    id: container.identityGenerator.userId(),
+    email: DEV_USER_EMAIL,
+    passwordHash: hashPassword(DEV_USER_PASSWORD),
+  });
+
+  console.log(`World-map-only seed ensured dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD}`);
+}
 
 export async function seedWorldMapOnly(container: Container): Promise<void> {
+  await ensureDevUser(container);
+
   const existing = await container.db
     .select()
     .from(platformConfig)

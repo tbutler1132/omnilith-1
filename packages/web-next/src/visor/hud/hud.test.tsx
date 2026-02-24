@@ -20,12 +20,14 @@ function renderHud(
       altitude: input.altitude ?? 'high',
       showAltitudeControls: input.showAltitudeControls ?? true,
       showCompass: input.showCompass ?? true,
+      showLogoutButton: true,
       navigationLabel: input.navigationLabel ?? null,
       canGoBack: true,
       onChangeAltitude: () => {},
       onGoBack: () => {},
       onOpenApp: () => {},
       onCloseVisor: () => {},
+      onLogout: () => {},
     }),
   );
 }
@@ -34,12 +36,14 @@ describe('VisorHud', () => {
   it('renders closed HUD controls and map widgets', () => {
     const html = renderHud({ mode: 'closed', showCompass: true, showAltitudeControls: true });
     expect(html).toContain('Spatial navigation');
+    expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
     expect(html).toContain('Open Profile app');
   });
 
   it('hides right-side widgets when compass lane is disabled', () => {
     const html = renderHud({ mode: 'closed', showCompass: false });
+    expect(html).toContain('Log out');
     expect(html).not.toContain('Map legend');
     expect(html).not.toContain('Compass pointing north');
   });
