@@ -23,6 +23,7 @@ interface SpaceStageProps {
   readonly onAltitudeControlReady: (handler: ((direction: 'in' | 'out') => void) | null) => void;
   readonly onBackControlReady: (handler: (() => void) | null) => void;
   readonly onInteriorChange: (isInInterior: boolean) => void;
+  readonly onEnteredOrganismChange: (organismId: string | null) => void;
 }
 
 interface FocusPoint {
@@ -58,6 +59,7 @@ export function SpaceStage({
   onAltitudeControlReady,
   onBackControlReady,
   onInteriorChange,
+  onEnteredOrganismChange,
 }: SpaceStageProps) {
   const [currentMapId, setCurrentMapId] = useState(worldMapId);
   const [mapHistory, setMapHistory] = useState<ReadonlyArray<MapHistoryEntry>>([]);
@@ -327,6 +329,10 @@ export function SpaceStage({
   useEffect(() => {
     onInteriorChange(enteredOrganismId !== null);
   }, [enteredOrganismId, onInteriorChange]);
+
+  useEffect(() => {
+    onEnteredOrganismChange(enteredOrganismId);
+  }, [enteredOrganismId, onEnteredOrganismChange]);
 
   useEffect(() => {
     if (enteredOrganismId === null) {

@@ -155,8 +155,8 @@
 
 .space-organism-marker--hero-journey-scene,
 .map-legend-marker--hero-journey-scene {
-  --space-marker-fill: radial-gradient(circle at 32% 28%, #fff8cf 0%, #f6d772 36%, #c58426 100%);
-  --space-marker-focused-fill: radial-gradient(circle at 35% 30%, #fffde8 0%, #ffe28a 40%, #de9432 100%);
+  --space-marker-fill: #d29a3a;
+  --space-marker-focused-fill: #e2b256;
   --space-marker-focus-ring: 0 0 0 3px rgba(236, 176, 74, 0.35), 0 0 18px rgba(236, 176, 74, 0.45);
   --space-marker-shape-radius: 0;
   --space-marker-shape-clip-path: polygon(
@@ -332,12 +332,7 @@
   inset: 0;
   pointer-events: none;
   opacity: 0;
-  background:
-    radial-gradient(120% 78% at 50% 50%, rgba(120, 165, 235, 0.3), rgba(6, 9, 16, 0.82)),
-    radial-gradient(circle at 22% 34%, rgba(205, 230, 255, 0.24) 0 1.6px, transparent 3px),
-    radial-gradient(circle at 68% 62%, rgba(165, 210, 255, 0.2) 0 1.4px, transparent 2.7px),
-    radial-gradient(circle at 80% 24%, rgba(150, 205, 255, 0.15) 0 1.2px, transparent 2.4px);
-  background-size: 100% 100%, 22px 22px, 28px 28px, 31px 31px;
+  background: rgba(22, 38, 62, 0.58);
   mix-blend-mode: screen;
   z-index: 3;
 }

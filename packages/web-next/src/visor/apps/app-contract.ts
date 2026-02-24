@@ -9,6 +9,7 @@ import type { ComponentType } from 'react';
 
 export interface VisorAppRenderProps {
   readonly onRequestClose: () => void;
+  readonly organismId: string | null;
 }
 
 export interface VisorAppDefinition {

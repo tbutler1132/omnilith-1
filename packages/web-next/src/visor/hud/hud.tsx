@@ -21,6 +21,7 @@ const OPEN_VISOR_CLOSE_MS = 420;
 interface VisorHudProps {
   readonly mode: VisorMode;
   readonly appId: string | null;
+  readonly organismId: string | null;
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
   readonly showCompass: boolean;
@@ -37,6 +38,7 @@ interface VisorHudProps {
 export function VisorHud({
   mode,
   appId,
+  organismId,
   altitude,
   showAltitudeControls,
   showCompass,
@@ -133,6 +135,7 @@ export function VisorHud({
       {showOpenVisor ? (
         <OpenVisorShell
           appId={presentedAppId}
+          organismId={organismId}
           phase={openPhaseForShell}
           onOpenApp={onOpenApp}
           onRequestClose={onCloseVisor}

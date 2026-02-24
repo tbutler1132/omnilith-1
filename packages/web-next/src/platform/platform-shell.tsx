@@ -25,6 +25,9 @@ interface LoadState {
   readonly error: string | null;
 }
 
+const ARRIVAL_OVERLAY_MS = 1400;
+const INITIAL_LOADING_MIN_MS = 900;
+
 function readVisorRouteFromWindow(): VisorRoute {
   if (typeof window === 'undefined') {
     return { mode: 'closed', appId: null, organismId: null };
@@ -37,6 +40,7 @@ export function PlatformShell() {
   const [visorRoute, setVisorRoute] = useState<VisorRoute>(() => readVisorRouteFromWindow());
   const [altitude, setAltitude] = useState<Altitude>('high');
   const [isInInterior, setIsInInterior] = useState(false);
+  const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
   const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
@@ -44,7 +48,25 @@ export function PlatformShell() {
     loading: true,
     error: null,
   });
+  const [arrivalPlayed, setArrivalPlayed] = useState(false);
+  const [arrivalVisible, setArrivalVisible] = useState(false);
   const isAuthenticated = readSessionId() !== null;
+
+  const renderArrivalOverlay = (mode: 'loading' | 'arrival') => (
+    <div
+      className={`platform-arrival-overlay ${
+        mode === 'loading' ? 'platform-arrival-overlay--loading' : 'platform-arrival-overlay--active'
+      }`}
+      aria-hidden="true"
+    >
+      <div className="platform-arrival-core">
+        <span className="platform-arrival-ring" />
+        <span className="platform-arrival-ring platform-arrival-ring--delayed" />
+        <span className="platform-arrival-dot" />
+      </div>
+      <p className="platform-arrival-label">Arriving</p>
+    </div>
+  );
 
   const handleAltitudeControlReady = useCallback((handler: ((direction: 'in' | 'out') => void) | null) => {
     setChangeAltitudeHandler(() => handler);
@@ -80,13 +102,15 @@ export function PlatformShell() {
 
   const handleOpenApp = useCallback(
     (appId: string) => {
+      const targetedOrganismId =
+        appId === 'organism' ? (enteredOrganismId ?? visorRoute.organismId) : visorRoute.organismId;
       updateVisorRoute({
         mode: 'open',
         appId,
-        organismId: null,
+        organismId: targetedOrganismId,
       });
     },
-    [updateVisorRoute],
+    [enteredOrganismId, updateVisorRoute, visorRoute.organismId],
   );
 
   const handleCloseVisor = useCallback(() => {
@@ -109,13 +133,30 @@ export function PlatformShell() {
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
+    let settleTimerId: number | null = null;
+    const startedAt = performance.now();
+
+    const settleWithMinimumDuration = (nextState: LoadState) => {
+      const elapsedMs = performance.now() - startedAt;
+      const remainingMs = Math.max(0, INITIAL_LOADING_MIN_MS - elapsedMs);
+
+      settleTimerId = window.setTimeout(() => {
+        if (cancelled) {
+          return;
+        }
+
+        setState(nextState);
+      }, remainingMs);
+    };
+
     fetchWorldMap()
       .then((response) => {
         if (!response.worldMapId) {
           throw new Error('World map pointer is not available from API');
         }
 
-        setState({
+        settleWithMinimumDuration({
           worldMapId: response.worldMapId,
           loading: false,
           error: null,
@@ -123,12 +164,19 @@ export function PlatformShell() {
       })
       .catch((error) => {
         const message = error instanceof Error ? error.message : 'Failed to load world map pointer';
-        setState({
+        settleWithMinimumDuration({
           worldMapId: null,
           loading: false,
           error: message,
         });
       });
+
+    return () => {
+      cancelled = true;
+      if (settleTimerId !== null) {
+        window.clearTimeout(settleTimerId);
+      }
+    };
   }, []);
 
   useEffect(() => {
@@ -169,10 +217,31 @@ export function PlatformShell() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
+  useEffect(() => {
+    if (arrivalPlayed) {
+      return;
+    }
+
+    if (state.loading || state.error || !state.worldMapId) {
+      return;
+    }
+
+    setArrivalPlayed(true);
+    setArrivalVisible(true);
+
+    const timeoutId = window.setTimeout(() => {
+      setArrivalVisible(false);
+    }, ARRIVAL_OVERLAY_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [arrivalPlayed, state.error, state.loading, state.worldMapId]);
+
   if (state.loading) {
     return (
       <div className="platform-shell platform-shell-status" data-status="loading">
-        <p>Loading Space...</p>
+        {renderArrivalOverlay('loading')}
       </div>
     );
   }
@@ -201,10 +270,12 @@ export function PlatformShell() {
         onAltitudeControlReady={handleAltitudeControlReady}
         onBackControlReady={handleBackControlReady}
         onInteriorChange={setIsInInterior}
+        onEnteredOrganismChange={setEnteredOrganismId}
       />
       <VisorHud
         mode={visorRoute.mode}
         appId={visorRoute.appId}
+        organismId={visorRoute.organismId}
         altitude={altitude}
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}
@@ -217,6 +288,7 @@ export function PlatformShell() {
         onCloseVisor={handleCloseVisor}
         onLogout={handleLogout}
       />
+      {arrivalVisible ? renderArrivalOverlay('arrival') : null}
     </div>
   );
 }
