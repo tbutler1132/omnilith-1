@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
+import { resolvePublicApiPath } from '../api/public-api-path.js';
 
 export interface SpatialMapEntry {
   readonly organismId: string;
@@ -31,15 +32,6 @@ interface SpatialMapState {
   readonly entryCount: number;
   readonly loading: boolean;
   readonly error: string | null;
-}
-
-function hasSession(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  return Boolean(localStorage.getItem('sessionId'));
-}
-
-function readPath(path: string): string {
-  return hasSession() ? path : `/public${path}`;
 }
 
 function parseEntries(payload: unknown): ReadonlyArray<SpatialMapEntry> {
@@ -102,7 +94,7 @@ export function useSpatialMap(mapId: string): SpatialMapState {
   useEffect(() => {
     let cancelled = false;
 
-    apiFetch<FetchOrganismResponse>(readPath(`/organisms/${mapId}`))
+    apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${mapId}`))
       .then((response) => {
         if (cancelled) return;
 

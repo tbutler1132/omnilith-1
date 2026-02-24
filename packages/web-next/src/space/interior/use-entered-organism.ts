@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../api/api-client.js';
+import { resolvePublicApiPath } from '../../api/public-api-path.js';
 
 interface OrganismRecord {
   readonly id: string;
@@ -34,15 +35,6 @@ interface UseEnteredOrganismResult {
   readonly error: string | null;
 }
 
-function hasSession(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  return Boolean(localStorage.getItem('sessionId'));
-}
-
-function readPath(path: string): string {
-  return hasSession() ? path : `/public${path}`;
-}
-
 export function useEnteredOrganism(organismId: string | null): UseEnteredOrganismResult {
   const [state, setState] = useState<UseEnteredOrganismResult>({
     data: null,
@@ -67,7 +59,7 @@ export function useEnteredOrganism(organismId: string | null): UseEnteredOrganis
       error: null,
     }));
 
-    apiFetch<FetchOrganismResponse>(readPath(`/organisms/${organismId}`))
+    apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${organismId}`))
       .then((response) => {
         if (cancelled) return;
 

@@ -5,6 +5,8 @@
  * keeping rendering modules decoupled from HTTP implementation details.
  */
 
+import { readSessionId } from './session.js';
+
 export class ApiError extends Error {
   constructor(
     public readonly status: number,
@@ -16,7 +18,7 @@ export class ApiError extends Error {
 }
 
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const sessionId = localStorage.getItem('sessionId');
+  const sessionId = readSessionId();
   const headers = new Headers(options.headers);
 
   if (sessionId) {

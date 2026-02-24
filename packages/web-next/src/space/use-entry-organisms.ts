@@ -7,6 +7,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
+import { resolvePublicApiPath } from '../api/public-api-path.js';
 
 export interface OrganismRecord {
   readonly id: string;
@@ -34,15 +35,6 @@ export interface EntryOrganismMetadata {
 interface UseEntryOrganismsResult {
   readonly byId: Readonly<Record<string, EntryOrganismMetadata>>;
   readonly loading: boolean;
-}
-
-function hasSession(): boolean {
-  if (typeof localStorage === 'undefined') return false;
-  return Boolean(localStorage.getItem('sessionId'));
-}
-
-function readPath(path: string): string {
-  return hasSession() ? path : `/public${path}`;
 }
 
 export function resolveEnterTargetMapId(response: FetchOrganismResponse): string | null {
@@ -83,7 +75,7 @@ export function useEntryOrganisms(ids: ReadonlyArray<string>): UseEntryOrganisms
     Promise.all(
       uniqueIds.map(async (id) => {
         try {
-          const response = await apiFetch<FetchOrganismResponse>(readPath(`/organisms/${id}`));
+          const response = await apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${id}`));
           const metadata: EntryOrganismMetadata = {
             organismId: response.organism.id,
             name: response.organism.name,
