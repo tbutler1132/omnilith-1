@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEmptySpatialContext } from '../spatial-context-contract.js';
 import { CadenceApp } from './cadence-app.js';
 
 interface MockCadenceState {
@@ -49,6 +50,8 @@ describe('CadenceApp', () => {
       createElement(CadenceApp, {
         onRequestClose: () => {},
         organismId: null,
+        spatialContext: createEmptySpatialContext(),
+        onSpatialContextChanged: () => () => {},
       }),
     );
 
@@ -90,6 +93,8 @@ describe('CadenceApp', () => {
         onRequestClose: () => {},
         organismId: 'boundary-1',
         personalOrganismId: 'boundary-1',
+        spatialContext: createEmptySpatialContext(),
+        onSpatialContextChanged: () => () => {},
       }),
     );
 

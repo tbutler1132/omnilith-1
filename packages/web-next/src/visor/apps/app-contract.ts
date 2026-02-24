@@ -6,11 +6,14 @@
  */
 
 import type { ComponentType } from 'react';
+import type { SpatialContextChangedListener, VisorAppSpatialContext } from './spatial-context-contract.js';
 
 export interface VisorAppRenderProps {
   readonly onRequestClose: () => void;
   readonly organismId: string | null;
   readonly personalOrganismId?: string | null;
+  readonly spatialContext: VisorAppSpatialContext;
+  readonly onSpatialContextChanged: (listener: SpatialContextChangedListener) => () => void;
 }
 
 export interface VisorAppDefinition {

@@ -25,6 +25,20 @@ interface SpaceStageProps {
   readonly onInteriorChange: (isInInterior: boolean) => void;
   readonly onEnteredOrganismChange: (organismId: string | null) => void;
   readonly onBoundaryOrganismChange: (organismId: string | null) => void;
+  readonly onSpatialContextChange: (snapshot: SpaceStageSpatialSnapshot) => void;
+}
+
+export interface SpaceStageSpatialSnapshot {
+  readonly mapOrganismId: string;
+  readonly focusedOrganismId: string | null;
+  readonly viewport: {
+    readonly x: number;
+    readonly y: number;
+    readonly zoom: number;
+    readonly altitude: Altitude;
+  };
+  readonly surfaceSelection: ReadonlyArray<string>;
+  readonly boundaryPath: ReadonlyArray<string>;
 }
 
 interface FocusPoint {
@@ -63,6 +77,7 @@ export function SpaceStage({
   onInteriorChange,
   onEnteredOrganismChange,
   onBoundaryOrganismChange,
+  onSpatialContextChange,
 }: SpaceStageProps) {
   const [currentMapId, setCurrentMapId] = useState(worldMapId);
   const [mapHistory, setMapHistory] = useState<ReadonlyArray<MapHistoryEntry>>([]);
@@ -310,6 +325,24 @@ export function SpaceStage({
   );
 
   const canGoBack = (enteredOrganismId !== null || mapHistory.length > 0) && transitionPhase === 'idle';
+  const boundaryPath = useMemo(() => {
+    const ancestorPath = mapHistory
+      .map((entry) => entry.boundaryOrganismId)
+      .filter((organismId): organismId is string => typeof organismId === 'string' && organismId.length > 0);
+
+    if (!currentBoundaryOrganismId) {
+      return ancestorPath;
+    }
+
+    return [...ancestorPath, currentBoundaryOrganismId];
+  }, [currentBoundaryOrganismId, mapHistory]);
+  const surfaceSelection = useMemo(() => {
+    const selectedIds = [focusedOrganismId, enteredOrganismId].filter(
+      (organismId): organismId is string => typeof organismId === 'string' && organismId.length > 0,
+    );
+
+    return Array.from(new Set(selectedIds));
+  }, [enteredOrganismId, focusedOrganismId]);
 
   useEffect(() => {
     onAltitudeChange(altitude);
@@ -345,6 +378,31 @@ export function SpaceStage({
   useEffect(() => {
     onBoundaryOrganismChange(currentBoundaryOrganismId);
   }, [currentBoundaryOrganismId, onBoundaryOrganismChange]);
+
+  useEffect(() => {
+    onSpatialContextChange({
+      mapOrganismId: currentMapId,
+      focusedOrganismId,
+      viewport: {
+        x: viewport.x,
+        y: viewport.y,
+        zoom: viewport.zoom,
+        altitude,
+      },
+      surfaceSelection,
+      boundaryPath,
+    });
+  }, [
+    altitude,
+    boundaryPath,
+    currentMapId,
+    focusedOrganismId,
+    onSpatialContextChange,
+    surfaceSelection,
+    viewport.x,
+    viewport.y,
+    viewport.zoom,
+  ]);
 
   useEffect(() => {
     if (enteredOrganismId === null) {

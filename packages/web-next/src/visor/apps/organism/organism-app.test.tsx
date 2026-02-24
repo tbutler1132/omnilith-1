@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { createEmptySpatialContext } from '../spatial-context-contract.js';
 import { OrganismApp } from './organism-app.js';
 
 interface MockOverviewState {
@@ -65,6 +66,8 @@ describe('OrganismApp', () => {
       createElement(OrganismApp, {
         onRequestClose: () => {},
         organismId: 'org-1',
+        spatialContext: createEmptySpatialContext(),
+        onSpatialContextChanged: () => () => {},
       }),
     );
 
@@ -83,6 +86,8 @@ describe('OrganismApp', () => {
       createElement(OrganismApp, {
         onRequestClose: () => {},
         organismId: null,
+        spatialContext: createEmptySpatialContext(),
+        onSpatialContextChanged: () => () => {},
       }),
     );
 

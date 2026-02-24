@@ -10,7 +10,12 @@ import { fetchSession, loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
 import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
-import { SpaceStage } from '../space/space-stage.js';
+import { SpaceStage, type SpaceStageSpatialSnapshot } from '../space/space-stage.js';
+import {
+  createEmptySpatialContext,
+  SPATIAL_CONTEXT_COORDINATE_SYSTEM_VERSION,
+  type VisorAppSpatialContext,
+} from '../visor/apps/index.js';
 import { VisorHud } from '../visor/hud/index.js';
 import { parseVisorRoute, type VisorRoute, writeVisorRoute } from '../visor/visor-route.js';
 import { resolveOpenAppTargetOrganismId } from './resolve-open-app-target-organism-id.js';
@@ -53,6 +58,7 @@ export function PlatformShell() {
   const [personalOrganismId, setPersonalOrganismId] = useState<string | null | undefined>(undefined);
   const [arrivalPlayed, setArrivalPlayed] = useState(false);
   const [arrivalVisible, setArrivalVisible] = useState(false);
+  const [spatialContext, setSpatialContext] = useState<VisorAppSpatialContext>(() => createEmptySpatialContext());
   const isAuthenticated = readSessionId() !== null;
 
   const renderArrivalOverlay = (mode: 'loading' | 'arrival') => (
@@ -89,6 +95,24 @@ export function PlatformShell() {
   const handleBackRequested = useCallback(() => {
     backHandler?.();
   }, [backHandler]);
+
+  const handleSpatialContextChange = useCallback((snapshot: SpaceStageSpatialSnapshot) => {
+    setSpatialContext({
+      mapOrganismId: snapshot.mapOrganismId,
+      focusedOrganismId: snapshot.focusedOrganismId,
+      viewport: {
+        x: snapshot.viewport.x,
+        y: snapshot.viewport.y,
+        z: null,
+        zoom: snapshot.viewport.zoom,
+        altitude: snapshot.viewport.altitude,
+      },
+      surfaceSelection: snapshot.surfaceSelection,
+      boundaryPath: snapshot.boundaryPath,
+      timestamp: new Date().toISOString(),
+      coordinateSystemVersion: SPATIAL_CONTEXT_COORDINATE_SYSTEM_VERSION,
+    });
+  }, []);
 
   const updateVisorRoute = useCallback((nextRoute: VisorRoute) => {
     if (typeof window === 'undefined') {
@@ -334,12 +358,14 @@ export function PlatformShell() {
         onInteriorChange={setIsInInterior}
         onEnteredOrganismChange={setEnteredOrganismId}
         onBoundaryOrganismChange={setBoundaryOrganismId}
+        onSpatialContextChange={handleSpatialContextChange}
       />
       <VisorHud
         mode={visorRoute.mode}
         appId={visorRoute.appId}
         organismId={visorRoute.organismId}
         personalOrganismId={personalOrganismId ?? null}
+        spatialContext={spatialContext}
         altitude={altitude}
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}

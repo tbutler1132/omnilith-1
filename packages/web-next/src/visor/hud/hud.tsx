@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Altitude } from '../../contracts/altitude.js';
+import type { VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorShell } from '../open/index.js';
 import type { VisorMode } from '../visor-route.js';
 import { AppDockSlot, SpatialControlsSlot } from './slots/index.js';
@@ -23,6 +24,7 @@ interface VisorHudProps {
   readonly appId: string | null;
   readonly organismId: string | null;
   readonly personalOrganismId?: string | null;
+  readonly spatialContext: VisorAppSpatialContext;
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
   readonly showCompass: boolean;
@@ -41,6 +43,7 @@ export function VisorHud({
   appId,
   organismId,
   personalOrganismId,
+  spatialContext,
   altitude,
   showAltitudeControls,
   showCompass,
@@ -139,6 +142,7 @@ export function VisorHud({
           appId={presentedAppId}
           organismId={organismId}
           personalOrganismId={personalOrganismId}
+          spatialContext={spatialContext}
           phase={openPhaseForShell}
           onOpenApp={onOpenApp}
           onRequestClose={onCloseVisor}

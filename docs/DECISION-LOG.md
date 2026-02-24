@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 23, 2026  
+Updated: February 24, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -1083,6 +1083,27 @@ Architecture posture:
 The detailed decision record is captured in:
 
 - `docs/decisions/037-derived-surface-size-lease-units-and-crowding-first-map-allocation.md`
+
+### Move 52: Web-Next Visor App Spatial Context Contract
+
+Open visor apps in `web-next` now share one standardized rendering-layer contract for spatial context instead of app-specific inference logic.
+
+Direction:
+
+- keep spatial app context out of kernel and define it only in `web-next` rendering/app contracts
+- provide both an initial snapshot and subscription updates so apps can react to map navigation deterministically
+- include map/boundary/selection/viewport fields plus contract metadata (`timestamp`, `coordinateSystemVersion`)
+- preserve null-safe shape for partial context availability so apps can degrade gracefully
+
+Architecture impact:
+
+- no new kernel concern or port was introduced
+- context is sourced from `SpaceStage` and routed through `PlatformShell` -> `VisorHud` -> `OpenVisorShell` -> app props
+- this creates a stable seam for first-party and future third-party app behavior in open visor mode
+
+The detailed decision record is captured in:
+
+- `docs/decisions/038-web-next-visor-app-spatial-context-contract.md`
 
 ---
 

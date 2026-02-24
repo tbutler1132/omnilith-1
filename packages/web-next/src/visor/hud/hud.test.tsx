@@ -1,6 +1,7 @@
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
+import { createEmptySpatialContext } from '../apps/spatial-context-contract.js';
 import { VisorHud } from './hud.js';
 
 function renderHud(
@@ -18,6 +19,7 @@ function renderHud(
       mode: input.mode ?? 'closed',
       appId: input.appId ?? null,
       organismId: null,
+      spatialContext: createEmptySpatialContext(),
       altitude: input.altitude ?? 'high',
       showAltitudeControls: input.showAltitudeControls ?? true,
       showCompass: input.showCompass ?? true,

@@ -6,14 +6,17 @@
  * the right. The app rail can collapse into a compact quick-switch mode.
  */
 
-import { useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listVisorApps, resolveVisorApp } from '../apps/index.js';
+import { createSpatialContextChannel } from '../apps/spatial-context-channel.js';
+import type { SpatialContextChangedListener, VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorHeader } from './open-visor-header.js';
 
 interface OpenVisorShellProps {
   readonly appId: string | null;
   readonly organismId: string | null;
   readonly personalOrganismId?: string | null;
+  readonly spatialContext: VisorAppSpatialContext;
   readonly phase: 'opening' | 'open' | 'closing';
   readonly onOpenApp: (appId: string) => void;
   readonly onRequestClose: () => void;
@@ -23,15 +26,25 @@ export function OpenVisorShell({
   appId,
   organismId,
   personalOrganismId,
+  spatialContext,
   phase,
   onOpenApp,
   onRequestClose,
 }: OpenVisorShellProps) {
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const spatialContextChannelRef = useRef(createSpatialContextChannel(spatialContext));
   const apps = listVisorApps();
   const activeApp = resolveVisorApp(appId);
   const ActiveAppComponent = activeApp.component;
   const railToggleLabel = railCollapsed ? 'Expand app rail' : 'Collapse app rail';
+  const onSpatialContextChanged = useCallback(
+    (listener: SpatialContextChangedListener) => spatialContextChannelRef.current.subscribe(listener),
+    [],
+  );
+
+  useEffect(() => {
+    spatialContextChannelRef.current.publish(spatialContext);
+  }, [spatialContext]);
 
   return (
     <section className="open-visor-shell" data-phase={phase} aria-label="Open visor">
@@ -78,6 +91,8 @@ export function OpenVisorShell({
             onRequestClose={onRequestClose}
             organismId={organismId}
             personalOrganismId={personalOrganismId}
+            spatialContext={spatialContext}
+            onSpatialContextChanged={onSpatialContextChanged}
           />
         </div>
       </div>
