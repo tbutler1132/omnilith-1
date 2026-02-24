@@ -31,8 +31,52 @@ import { Hono } from 'hono';
 import type { Container } from '../container.js';
 import { regulatorActionExecutions } from '../db/schema.js';
 import type { AuthEnv } from '../middleware/auth.js';
+import { deriveSurfaceEntrySize } from '../surface/derive-surface-entry-size.js';
+import { parseSpatialMapPayload } from '../surface/spatial-map-payload.js';
 import { parseJsonBody } from '../utils/parse-json.js';
 import { requireOrganismAccess } from './access.js';
+
+interface SurfaceOrganismOnMapRequest {
+  readonly organismId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly emphasis?: number;
+}
+
+const SURFACE_APPEND_MAX_ATTEMPTS = 3;
+const SURFACE_APPEND_CONFLICT_ERROR = 'Map changed concurrently while surfacing. Please retry.';
+
+function isFiniteNumber(value: unknown): value is number {
+  return typeof value === 'number' && Number.isFinite(value);
+}
+
+function isSpatialMapTransitionConflict(issues: readonly string[]): boolean {
+  return issues.some(
+    (issue) => issue.startsWith('existing entry removed:') || issue.startsWith('existing entry moved:'),
+  );
+}
+
+function isStateSequenceConflictError(error: unknown): boolean {
+  if (!error || typeof error !== 'object') return false;
+
+  const candidate = error as {
+    readonly code?: string;
+    readonly constraint?: string;
+    readonly message?: string;
+  };
+
+  if (candidate.code !== '23505') {
+    return false;
+  }
+
+  if (candidate.constraint === 'organism_states_organism_sequence_unique') {
+    return true;
+  }
+
+  return (
+    typeof candidate.message === 'string' && candidate.message.includes('organism_states_organism_sequence_unique')
+  );
+}
 
 export function organismRoutes(container: Container) {
   const app = new Hono<AuthEnv>();
@@ -126,6 +170,9 @@ export function organismRoutes(container: Container) {
     const body = await parseJsonBody<AppendStateRequest>(c);
 
     if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (body.contentTypeId === 'spatial-map') {
+      return c.json({ error: 'spatial-map mutations must use POST /organisms/:id/surface' }, 400);
+    }
 
     try {
       const state = await appendState(
@@ -155,6 +202,122 @@ export function organismRoutes(container: Container) {
       if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
       throw err;
     }
+  });
+
+  // Surface organism on map (open-trunk map flow)
+  app.post('/:id/surface', async (c) => {
+    const userId = c.get('userId');
+    const mapId = c.req.param('id') as OrganismId;
+    const body = await parseJsonBody<SurfaceOrganismOnMapRequest>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (typeof body.organismId !== 'string' || body.organismId.length === 0) {
+      return c.json({ error: 'organismId is required' }, 400);
+    }
+    if (!isFiniteNumber(body.x) || !isFiniteNumber(body.y)) {
+      return c.json({ error: 'x and y must be finite numbers' }, 400);
+    }
+    if (body.emphasis !== undefined && (!isFiniteNumber(body.emphasis) || body.emphasis < 0 || body.emphasis > 1)) {
+      return c.json({ error: 'emphasis must be between 0 and 1 when provided' }, 400);
+    }
+
+    const accessError = await requireOrganismAccess(c, container, userId, mapId, 'append-state');
+    if (accessError) return accessError;
+
+    const targetOrganismId = body.organismId as OrganismId;
+    const targetExists = await container.organismRepository.exists(targetOrganismId);
+    if (!targetExists) return c.json({ error: `Organism not found: ${targetOrganismId}` }, 404);
+
+    const derived = await deriveSurfaceEntrySize(
+      { organismId: targetOrganismId },
+      {
+        organismRepository: container.organismRepository,
+        stateRepository: container.stateRepository,
+        compositionRepository: container.compositionRepository,
+      },
+    );
+
+    const entry = {
+      organismId: targetOrganismId,
+      x: body.x,
+      y: body.y,
+      size: derived.size,
+      emphasis: body.emphasis,
+    };
+
+    for (let attempt = 1; attempt <= SURFACE_APPEND_MAX_ATTEMPTS; attempt++) {
+      const currentMapState = await container.stateRepository.findCurrentByOrganismId(mapId);
+      if (!currentMapState) {
+        return c.json({ error: `Organism not found: ${mapId}` }, 404);
+      }
+      if (currentMapState.contentTypeId !== 'spatial-map') {
+        return c.json({ error: 'Target organism is not a spatial-map' }, 400);
+      }
+
+      const mapPayload = parseSpatialMapPayload(currentMapState.payload);
+      if (!mapPayload) {
+        return c.json({ error: 'Spatial-map payload is invalid' }, 400);
+      }
+
+      const existing = mapPayload.entries.find((existingEntry) => existingEntry.organismId === targetOrganismId);
+      if (existing) {
+        return c.json({ status: 'already-surfaced', entry: existing });
+      }
+
+      const payload = {
+        entries: [...mapPayload.entries, entry],
+        width: mapPayload.width,
+        height: mapPayload.height,
+        ...(mapPayload.minSeparation !== undefined ? { minSeparation: mapPayload.minSeparation } : {}),
+      };
+
+      try {
+        const state = await appendState(
+          {
+            organismId: mapId,
+            contentTypeId: 'spatial-map' as ContentTypeId,
+            payload,
+            appendedBy: userId,
+          },
+          {
+            organismRepository: container.organismRepository,
+            stateRepository: container.stateRepository,
+            contentTypeRegistry: container.contentTypeRegistry,
+            eventPublisher: container.eventPublisher,
+            identityGenerator: container.identityGenerator,
+            visibilityRepository: container.visibilityRepository,
+            relationshipRepository: container.relationshipRepository,
+            compositionRepository: container.compositionRepository,
+          },
+        );
+
+        return c.json({ status: 'surfaced', entry, state, derived }, 201);
+      } catch (err) {
+        const e = err as DomainError;
+
+        if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+        if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+
+        const retryableSpatialMapValidation =
+          e.kind === 'ValidationFailedError' &&
+          e.contentTypeId === 'spatial-map' &&
+          isSpatialMapTransitionConflict(e.issues);
+        const retryableSequenceConflict = isStateSequenceConflictError(err);
+
+        if ((retryableSpatialMapValidation || retryableSequenceConflict) && attempt < SURFACE_APPEND_MAX_ATTEMPTS) {
+          continue;
+        }
+
+        if (retryableSpatialMapValidation || retryableSequenceConflict) {
+          return c.json({ error: SURFACE_APPEND_CONFLICT_ERROR }, 409);
+        }
+
+        if (e.kind === 'ValidationFailedError') return c.json({ error: e.message }, 400);
+        throw err;
+      }
+    }
+
+    return c.json({ error: SURFACE_APPEND_CONFLICT_ERROR }, 409);
   });
 
   // Record observation event
