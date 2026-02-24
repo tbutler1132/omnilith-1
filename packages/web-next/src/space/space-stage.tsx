@@ -50,6 +50,11 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
+const ALTITUDE_RANK: Readonly<Record<Altitude, number>> = {
+  high: 0,
+  mid: 1,
+  close: 2,
+};
 
 export function SpaceStage({
   worldMapId,
@@ -66,6 +71,7 @@ export function SpaceStage({
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('idle');
   const [transitionOpacity, setTransitionOpacity] = useState(0);
   const fadeFrameRef = useRef<number | null>(null);
+  const previousAltitudeRef = useRef<Altitude | null>(null);
   const interiorTransitioningRef = useRef(false);
 
   const { width, height, entries, entryCount, loading, error } = useSpatialMap(currentMapId);
@@ -310,6 +316,17 @@ export function SpaceStage({
   useEffect(() => {
     onAltitudeChange(altitude);
   }, [altitude, onAltitudeChange]);
+
+  useEffect(() => {
+    const previousAltitude = previousAltitudeRef.current;
+    const isZoomingOut = previousAltitude !== null && ALTITUDE_RANK[altitude] < ALTITUDE_RANK[previousAltitude];
+
+    if (isZoomingOut) {
+      setFocusedOrganismId(null);
+    }
+
+    previousAltitudeRef.current = altitude;
+  }, [altitude]);
 
   useEffect(() => {
     onAltitudeControlReady(changeAltitude);

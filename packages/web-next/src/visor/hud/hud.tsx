@@ -11,7 +11,7 @@ import { OpenVisorShell } from '../open/index.js';
 import type { VisorMode } from '../visor-route.js';
 import { AppDockSlot, SpatialControlsSlot } from './slots/index.js';
 import { VisorWidgetLane } from './widget-lane.js';
-import { CompassWidget } from './widgets/index.js';
+import { CompassWidget, MapLegendWidget } from './widgets/index.js';
 
 type OpenVisorPhase = 'hidden' | 'opening' | 'open' | 'closing';
 
@@ -110,6 +110,7 @@ export function VisorHud({
           {showCompass ? (
             <VisorWidgetLane>
               <CompassWidget />
+              <MapLegendWidget />
             </VisorWidgetLane>
           ) : null}
         </>

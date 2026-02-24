@@ -8,6 +8,7 @@
 import type { CSSProperties } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { MarkerPreview } from './marker-preview.js';
+import { resolveMarkerVariant } from './marker-variant.js';
 import type { EntryOrganismMetadata } from './use-entry-organisms.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 
@@ -57,6 +58,10 @@ export function SpaceOrganismLayer({
         const markerName = markerData?.name ?? formatLabel(entry.organismId);
         const isEnterable = Boolean(enterTargetMapId || contentTypeId);
         const isFocused = focusedOrganismId === entry.organismId;
+        const markerVariant = resolveMarkerVariant({
+          name: markerName,
+          contentTypeId,
+        });
         const sizeMultiplier = clamp(entry.size ?? 1, 0.6, 2.4);
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
         const dotSize = BASE_MARKER_SIZE * sizeMultiplier;
@@ -73,9 +78,14 @@ export function SpaceOrganismLayer({
           <button
             key={entry.organismId}
             type="button"
-            className={`space-organism-marker ${isEnterable ? 'space-organism-marker--enterable' : ''} ${
-              isFocused ? 'space-organism-marker--focused' : ''
-            }`}
+            className={[
+              'space-organism-marker',
+              markerVariant !== 'default' ? `space-organism-marker--${markerVariant}` : null,
+              isEnterable ? 'space-organism-marker--enterable' : null,
+              isFocused ? 'space-organism-marker--focused' : null,
+            ]
+              .filter(Boolean)
+              .join(' ')}
             style={markerStyle}
             onPointerDown={(event) => event.stopPropagation()}
             onClick={(event) => {

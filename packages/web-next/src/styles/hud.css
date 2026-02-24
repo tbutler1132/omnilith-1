@@ -601,11 +601,64 @@
     var(--visor-glow-soft);
 }
 
+.visor-widget-label {
+  font-size: 0.58rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(224, 238, 255, 0.88);
+}
+
 .compass-widget-label {
   font-size: 0.62rem;
   letter-spacing: 0.08em;
   font-weight: 600;
   opacity: 0.9;
+}
+
+.map-legend-widget {
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.36rem;
+  padding: 0.46rem 0.52rem 0.5rem;
+  min-height: 0;
+}
+
+.map-legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+}
+
+.map-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.56rem;
+  line-height: 1.2;
+  color: rgba(223, 238, 255, 0.84);
+}
+
+.map-legend-marker {
+  width: 0.8rem;
+  height: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.map-legend-marker .space-organism-dot {
+  width: 0.56rem;
+  height: 0.56rem;
+}
+
+.map-legend-marker .space-organism-dot::after {
+  display: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
