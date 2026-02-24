@@ -54,6 +54,8 @@ describe('VisorHud', () => {
     const html = renderHud({ mode: 'open', appId: 'profile' });
     expect(html).toContain('Open visor');
     expect(html).toContain('Visor apps');
+    expect(html).toContain('Collapse app rail');
+    expect(html).toContain('aria-expanded="true"');
     expect(html).toContain('Close');
     expect(html).not.toContain('Map legend');
   });

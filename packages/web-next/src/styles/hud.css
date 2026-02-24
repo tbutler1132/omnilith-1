@@ -138,10 +138,15 @@
 }
 
 .open-visor-body {
+  --open-visor-rail-width: 8.3rem;
   display: grid;
-  grid-template-columns: 8.3rem minmax(0, 1fr);
+  grid-template-columns: var(--open-visor-rail-width) minmax(0, 1fr);
   gap: 0.58rem;
   min-height: 0;
+}
+
+.open-visor-body[data-rail-collapsed='true'] {
+  --open-visor-rail-width: 3.2rem;
 }
 
 .open-visor-rail {
@@ -160,6 +165,37 @@
     0 0 26px rgba(90, 145, 225, 0.2);
 }
 
+.open-visor-rail--collapsed {
+  align-items: center;
+  padding-inline: 0.34rem;
+}
+
+.open-visor-rail-toggle {
+  width: 100%;
+  min-height: 1.9rem;
+  border: 1px solid rgba(199, 226, 255, 0.28);
+  border-radius: 0.54rem;
+  background: rgba(157, 205, 255, 0.1);
+  color: rgba(235, 247, 255, 0.9);
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+.open-visor-rail-toggle:hover {
+  border-color: rgba(199, 226, 255, 0.42);
+  background: rgba(157, 205, 255, 0.18);
+  box-shadow: 0 0 14px rgba(102, 168, 255, 0.2);
+}
+
+.open-visor-app-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.42rem;
+}
+
 .open-visor-app-button {
   width: 100%;
   min-height: 2.4rem;
@@ -174,6 +210,13 @@
   text-transform: uppercase;
   padding: 0.44rem 0.35rem;
   cursor: pointer;
+}
+
+.open-visor-rail--collapsed .open-visor-app-button {
+  min-height: 2.3rem;
+  padding: 0;
+  font-size: 0.76rem;
+  letter-spacing: 0.01em;
 }
 
 .open-visor-app-button--active {
@@ -977,8 +1020,13 @@
   }
 
   .open-visor-body {
+    --open-visor-rail-width: 6.8rem;
     grid-template-columns: 6.8rem minmax(0, 1fr);
     gap: 0.42rem;
+  }
+
+  .open-visor-body[data-rail-collapsed='true'] {
+    --open-visor-rail-width: 2.9rem;
   }
 
   .open-visor-rail {
@@ -986,10 +1034,21 @@
     gap: 0.36rem;
   }
 
+  .open-visor-rail-toggle {
+    min-height: 1.74rem;
+    font-size: 0.68rem;
+  }
+
   .open-visor-app-button {
     min-height: 2.1rem;
     font-size: 0.6rem;
     letter-spacing: 0.04em;
+  }
+
+  .open-visor-rail--collapsed .open-visor-app-button {
+    min-height: 2rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.02em;
   }
 
   .open-visor-app-pane {
