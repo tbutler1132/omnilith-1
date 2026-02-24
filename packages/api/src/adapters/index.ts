@@ -5,4 +5,5 @@ export { PgOrganismRepository } from './pg-organism-repository.js';
 export { PgProposalRepository } from './pg-proposal-repository.js';
 export { PgRelationshipRepository } from './pg-relationship-repository.js';
 export { PgStateRepository } from './pg-state-repository.js';
+export { PgSurfaceRepository } from './pg-surface-repository.js';
 export { PgVisibilityRepository } from './pg-visibility-repository.js';

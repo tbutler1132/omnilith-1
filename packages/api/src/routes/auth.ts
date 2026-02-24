@@ -58,12 +58,12 @@ export function authRoutes(container: Container) {
         passwordHash,
       });
 
-      // Create personal organism (spatial-map — the user's space)
+      // Create personal organism (text/markdown — private by default, surfaced intentionally)
       const personalOrganism = await createOrganism(
         {
-          name: `${body.email.split('@')[0]}'s Space`,
-          contentTypeId: 'spatial-map' as ContentTypeId,
-          payload: { entries: [], width: 2000, height: 2000 },
+          name: `${body.email.split('@')[0]}'s Practice`,
+          contentTypeId: 'text' as ContentTypeId,
+          payload: { content: '', format: 'markdown', metadata: { isPersonalOrganism: true } },
           createdBy: userId,
           openTrunk: true,
         },

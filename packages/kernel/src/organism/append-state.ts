@@ -19,6 +19,7 @@ import type { EventPublisher } from '../events/event-publisher.js';
 import type { ContentTypeId, IdentityGenerator, OrganismId, UserId } from '../identity.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccessOrThrow } from '../visibility/check-access.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { OrganismRepository } from './organism-repository.js';
 import type { OrganismState } from './organism-state.js';
@@ -38,6 +39,7 @@ export interface AppendStateDeps {
   readonly eventPublisher: EventPublisher;
   readonly identityGenerator: IdentityGenerator;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly compositionRepository: CompositionRepository;
 }
@@ -51,6 +53,7 @@ export async function appendState(input: AppendStateInput, deps: AppendStateDeps
   // Visibility check — a user who cannot see the organism cannot write to it
   await checkAccessOrThrow(input.appendedBy, input.organismId, 'append-state', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,

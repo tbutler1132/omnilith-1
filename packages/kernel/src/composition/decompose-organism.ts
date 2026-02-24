@@ -9,6 +9,7 @@ import type { IdentityGenerator, OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccessOrThrow } from '../visibility/check-access.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { CompositionRepository } from './composition-repository.js';
 
@@ -23,6 +24,7 @@ export interface DecomposeOrganismDeps {
   readonly organismRepository: OrganismRepository;
   readonly compositionRepository: CompositionRepository;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly eventPublisher: EventPublisher;
   readonly identityGenerator: IdentityGenerator;
@@ -32,6 +34,7 @@ export async function decomposeOrganism(input: DecomposeOrganismInput, deps: Dec
   if (input.enforceAccess ?? true) {
     await checkAccessOrThrow(input.decomposedBy, input.parentId, 'decompose', {
       visibilityRepository: deps.visibilityRepository,
+      surfaceRepository: deps.surfaceRepository,
       relationshipRepository: deps.relationshipRepository,
       compositionRepository: deps.compositionRepository,
       organismRepository: deps.organismRepository,

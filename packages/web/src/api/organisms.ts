@@ -35,6 +35,8 @@ import type {
   OpenProposalResponse,
   RecordObservationRequest,
   RecordObservationResponse,
+  SurfaceOrganismOnMapRequest,
+  SurfaceOrganismOnMapResponse,
   ThresholdOrganismRequest,
   ThresholdOrganismResponse,
 } from './types.js';
@@ -165,6 +167,13 @@ export function appendState(organismId: string, contentTypeId: string, payload: 
   return apiFetch<AppendStateResponse>(`/organisms/${organismId}/states`, {
     method: 'POST',
     body: JSON.stringify(body),
+  });
+}
+
+export function surfaceOrganismOnMap(mapId: string, input: SurfaceOrganismOnMapRequest) {
+  return apiFetch<SurfaceOrganismOnMapResponse>(`/organisms/${mapId}/surface`, {
+    method: 'POST',
+    body: JSON.stringify(input),
   });
 }
 

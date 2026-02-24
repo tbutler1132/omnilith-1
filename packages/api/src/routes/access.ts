@@ -18,6 +18,7 @@ export async function requireOrganismAccess(
 ): Promise<Response | null> {
   const decision = await checkAccess(userId, organismId, action, {
     visibilityRepository: container.visibilityRepository,
+    surfaceRepository: container.surfaceRepository,
     relationshipRepository: container.relationshipRepository,
     compositionRepository: container.compositionRepository,
     organismRepository: container.organismRepository,
@@ -41,6 +42,7 @@ export async function requirePublicOrganismView(
 ): Promise<Response | null> {
   const decision = await checkAccess(null, organismId, 'view', {
     visibilityRepository: container.visibilityRepository,
+    surfaceRepository: container.surfaceRepository,
     relationshipRepository: container.relationshipRepository,
     compositionRepository: container.compositionRepository,
     organismRepository: container.organismRepository,

@@ -6,6 +6,7 @@ export { InMemoryProposalRepository } from './in-memory-proposal-repository.js';
 export { InMemoryQueryPort } from './in-memory-query-port.js';
 export { InMemoryRelationshipRepository } from './in-memory-relationship-repository.js';
 export { InMemoryStateRepository } from './in-memory-state-repository.js';
+export { InMemorySurfaceRepository } from './in-memory-surface-repository.js';
 export { InMemoryVisibilityRepository } from './in-memory-visibility-repository.js';
 export {
   createPassthroughContentType,

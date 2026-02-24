@@ -7,7 +7,16 @@
  */
 
 import { allContentTypes } from '@omnilith/content-types';
-import type { ContentTypeRegistry, RelationshipId, UserId } from '@omnilith/kernel';
+import type {
+  ContentTypeRegistry,
+  OrganismId,
+  OrganismState,
+  RelationshipId,
+  StateId,
+  StateRepository,
+  Timestamp,
+  UserId,
+} from '@omnilith/kernel';
 import {
   createTestIdentityGenerator,
   InMemoryCompositionRepository,
@@ -18,6 +27,7 @@ import {
   InMemoryQueryPort,
   InMemoryRelationshipRepository,
   InMemoryStateRepository,
+  InMemorySurfaceRepository,
   InMemoryVisibilityRepository,
   resetIdCounter,
 } from '@omnilith/kernel/src/testing/index.js';
@@ -44,6 +54,7 @@ function createTestContainer(): Container {
   const proposalRepository = new InMemoryProposalRepository();
   const eventPublisher = new InMemoryEventPublisher();
   const relationshipRepository = new InMemoryRelationshipRepository();
+  const surfaceRepository = new InMemorySurfaceRepository(stateRepository);
 
   return {
     organismRepository,
@@ -53,6 +64,7 @@ function createTestContainer(): Container {
     eventPublisher,
     eventRepository: eventPublisher, // dual interface
     visibilityRepository: new InMemoryVisibilityRepository(),
+    surfaceRepository,
     relationshipRepository,
     contentTypeRegistry: registry as ContentTypeRegistry,
     identityGenerator: createTestIdentityGenerator(),
@@ -92,13 +104,21 @@ function createTestApp(container: Container, testUserId: UserId = 'test-user' as
     for (const rel of stewardships) {
       const state = await container.stateRepository.findCurrentByOrganismId(rel.organismId);
       if (!state) continue;
+      if (state.contentTypeId === 'text') {
+        const payload = state.payload as Record<string, unknown> | null;
+        const metadata = payload?.metadata as Record<string, unknown> | undefined;
+        if (metadata?.isPersonalOrganism && !personalOrganismId) {
+          personalOrganismId = rel.organismId;
+          continue;
+        }
+        if (metadata?.isHomePage && !homePageOrganismId) {
+          homePageOrganismId = rel.organismId;
+          continue;
+        }
+      }
+
       if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
         personalOrganismId = rel.organismId;
-      } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
-        const payload = state.payload as Record<string, unknown> | null;
-        if ((payload?.metadata as Record<string, unknown> | undefined)?.isHomePage) {
-          homePageOrganismId = rel.organismId;
-        }
       }
     }
 
@@ -127,6 +147,76 @@ async function createTestOrganism(app: Hono<AuthEnv>, options?: { openTrunk?: bo
   });
   const body = await res.json();
   return body;
+}
+
+class ConcurrentMapWriteStateRepository implements StateRepository {
+  private mapReadCount = 0;
+  private hasInjectedConcurrentWrite = false;
+
+  constructor(
+    private readonly base: InMemoryStateRepository,
+    private readonly mapId: OrganismId,
+    private readonly concurrentEntryOrganismId: OrganismId,
+  ) {}
+
+  async append(state: OrganismState): Promise<void> {
+    await this.base.append(state);
+  }
+
+  async findById(id: StateId): Promise<OrganismState | undefined> {
+    return this.base.findById(id);
+  }
+
+  async findCurrentByOrganismId(organismId: OrganismId): Promise<OrganismState | undefined> {
+    if (organismId === this.mapId) {
+      this.mapReadCount += 1;
+      if (this.mapReadCount === 2 && !this.hasInjectedConcurrentWrite) {
+        await this.injectConcurrentWrite();
+      }
+    }
+
+    return this.base.findCurrentByOrganismId(organismId);
+  }
+
+  async findHistoryByOrganismId(organismId: OrganismId): Promise<ReadonlyArray<OrganismState>> {
+    return this.base.findHistoryByOrganismId(organismId);
+  }
+
+  private async injectConcurrentWrite(): Promise<void> {
+    const current = await this.base.findCurrentByOrganismId(this.mapId);
+    if (!current || current.contentTypeId !== 'spatial-map') return;
+
+    const payload = current.payload as {
+      readonly entries: Array<{
+        readonly organismId: string;
+        readonly x: number;
+        readonly y: number;
+        readonly size?: number;
+        readonly emphasis?: number;
+      }>;
+      readonly width: number;
+      readonly height: number;
+      readonly minSeparation?: number;
+    };
+
+    await this.base.append({
+      id: `state_concurrent_writer_${current.sequenceNumber + 1}` as StateId,
+      organismId: this.mapId,
+      contentTypeId: current.contentTypeId,
+      payload: {
+        entries: [...payload.entries, { organismId: this.concurrentEntryOrganismId, x: 420, y: 420, size: 1.25 }],
+        width: payload.width,
+        height: payload.height,
+        ...(payload.minSeparation !== undefined ? { minSeparation: payload.minSeparation } : {}),
+      },
+      createdAt: (current.createdAt + 1) as Timestamp,
+      createdBy: 'concurrent-user' as UserId,
+      sequenceNumber: current.sequenceNumber + 1,
+      parentStateId: current.id,
+    });
+
+    this.hasInjectedConcurrentWrite = true;
+  }
 }
 
 describe('organism routes', () => {
@@ -297,6 +387,179 @@ describe('organism routes', () => {
     });
 
     expect(res.status).toBe(403);
+  });
+
+  it('POST /organisms/:id/states rejects spatial-map appends in favor of surface route', async () => {
+    const createRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 2000, height: 2000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism } = await createRes.json();
+
+    const res = await app.request(`/organisms/${organism.id}/states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 2000, height: 2000 },
+      }),
+    });
+
+    expect(res.status).toBe(400);
+    const body = await res.json();
+    expect(body.error).toContain('/organisms/:id/surface');
+  });
+
+  it('POST /organisms/:id/surface appends a derived-size map entry', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Field Note',
+        contentTypeId: 'text',
+        payload: { content: 'hello world', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const surfaceRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: target.id,
+        x: 100,
+        y: 120,
+      }),
+    });
+
+    expect(surfaceRes.status).toBe(201);
+    const surfaceBody = await surfaceRes.json();
+    expect(surfaceBody.status).toBe('surfaced');
+    expect(surfaceBody.entry.organismId).toBe(target.id);
+    expect(typeof surfaceBody.entry.size).toBe('number');
+    expect(surfaceBody.entry.size).toBeGreaterThan(0);
+
+    const mapStateRes = await app.request(`/organisms/${map.id}`);
+    expect(mapStateRes.status).toBe(200);
+    const mapBody = await mapStateRes.json();
+    const payload = mapBody.currentState.payload as { entries: Array<{ organismId: string; size?: number }> };
+    expect(payload.entries).toHaveLength(1);
+    expect(payload.entries[0]?.organismId).toBe(target.id);
+    expect(typeof payload.entries[0]?.size).toBe('number');
+  });
+
+  it('POST /organisms/:id/surface is idempotent for already surfaced organisms', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Target',
+        contentTypeId: 'text',
+        payload: { content: 'a', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const firstRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organismId: target.id, x: 200, y: 240 }),
+    });
+    expect(firstRes.status).toBe(201);
+
+    const secondRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organismId: target.id, x: 200, y: 240 }),
+    });
+    expect(secondRes.status).toBe(200);
+    const secondBody = await secondRes.json();
+    expect(secondBody.status).toBe('already-surfaced');
+
+    const statesRes = await app.request(`/organisms/${map.id}/states`);
+    expect(statesRes.status).toBe(200);
+    const statesBody = await statesRes.json();
+    expect(statesBody.states).toHaveLength(2);
+  });
+
+  it('POST /organisms/:id/surface retries with latest map state when a concurrent write lands first', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Target',
+        contentTypeId: 'text',
+        payload: { content: 'a', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    container.stateRepository = new ConcurrentMapWriteStateRepository(
+      container.stateRepository as InMemoryStateRepository,
+      map.id as OrganismId,
+      'org-concurrent-writer' as OrganismId,
+    );
+
+    const surfaceRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organismId: target.id, x: 200, y: 240 }),
+    });
+
+    expect(surfaceRes.status).toBe(201);
+    const surfaceBody = await surfaceRes.json();
+    expect(surfaceBody.status).toBe('surfaced');
+
+    const mapStateRes = await app.request(`/organisms/${map.id}`);
+    expect(mapStateRes.status).toBe(200);
+    const mapBody = await mapStateRes.json();
+    const payload = mapBody.currentState.payload as { entries: Array<{ organismId: string }> };
+    expect(payload.entries).toHaveLength(2);
+    expect(payload.entries.map((entry) => entry.organismId)).toEqual(
+      expect.arrayContaining(['org-concurrent-writer', target.id]),
+    );
   });
 
   it('POST /organisms/:id/children composes organisms', async () => {
@@ -787,14 +1050,14 @@ describe('query and listing routes', () => {
   });
 
   it('GET /auth/me returns current user session info with personal and home page organisms', async () => {
-    // Create personal organism (spatial-map) and home page (text with isHomePage)
+    // Create personal organism (text with isPersonalOrganism) and home page (text with isHomePage)
     const personalRes = await app.request('/organisms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'My Space',
-        contentTypeId: 'spatial-map',
-        payload: { entries: [], width: 2000, height: 2000 },
+        name: 'My Practice',
+        contentTypeId: 'text',
+        payload: { content: '', format: 'markdown', metadata: { isPersonalOrganism: true } },
       }),
     });
     const { organism: personal } = await personalRes.json();
@@ -889,6 +1152,19 @@ describe('authorization enforcement', () => {
   it('members-only organisms are visible to parent-community members and denied to non-members', async () => {
     const { organism: community } = await createTestOrganism(ownerApp, { name: 'Community' });
     const { organism: child } = await createTestOrganism(ownerApp, { name: 'Child' });
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Members Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 2500, height: 2500 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
 
     await ownerApp.request(`/organisms/${community.id}/children`, {
       method: 'POST',
@@ -910,6 +1186,17 @@ describe('authorization enforcement', () => {
       role: 'member',
       createdAt: container.identityGenerator.timestamp(),
     });
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: child.id,
+        x: 333,
+        y: 444,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
 
     const denied = await outsiderApp.request(`/organisms/${child.id}`);
     expect(denied.status).toBe(403);
@@ -989,6 +1276,30 @@ describe('public read routes', () => {
 
   it('guest can read a public organism via /public routes', async () => {
     const { organism } = await createTestOrganism(ownerApp);
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Public Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 4000, height: 4000 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: organism.id,
+        x: 250,
+        y: 250,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
 
     const organismRes = await publicApp.request(`/public/organisms/${organism.id}`);
     expect(organismRes.status).toBe(200);
@@ -1015,5 +1326,12 @@ describe('public read routes', () => {
 
     const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
     expect(contributionsRes.status).toBe(404);
+  });
+
+  it('guest receives 404 for unsurfaced organisms even without explicit private visibility', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+
+    const res = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(res.status).toBe(404);
   });
 });

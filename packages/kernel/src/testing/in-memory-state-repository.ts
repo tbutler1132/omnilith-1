@@ -33,4 +33,13 @@ export class InMemoryStateRepository implements StateRepository {
   async findHistoryByOrganismId(organismId: OrganismId): Promise<ReadonlyArray<OrganismState>> {
     return this.byOrganism.get(organismId) ?? [];
   }
+
+  findCurrentStates(): ReadonlyArray<OrganismState> {
+    const currentStates: OrganismState[] = [];
+    for (const states of this.byOrganism.values()) {
+      if (states.length === 0) continue;
+      currentStates.push(states[states.length - 1]);
+    }
+    return currentStates;
+  }
 }

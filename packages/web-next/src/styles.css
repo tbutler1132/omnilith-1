@@ -1,0 +1,10 @@
+/**
+ * web-next style entrypoint.
+ *
+ * Aggregates modular style layers so layout, space rendering, and HUD
+ * concerns stay separated as the rewrite expands.
+ */
+
+@import './styles/base.css';
+@import './styles/space.css';
+@import './styles/hud.css';

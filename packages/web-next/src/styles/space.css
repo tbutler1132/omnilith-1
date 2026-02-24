@@ -1,0 +1,481 @@
+.space-map {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.map-viewport {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+}
+
+.map-viewport--dragging {
+  cursor: grabbing;
+}
+
+.map-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  will-change: transform;
+}
+
+.ground-plane {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.space-organism-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.space-organism-marker {
+  --space-marker-fill: rgba(175, 209, 246, 0.82);
+  --space-marker-focused-fill: rgba(222, 238, 255, 0.96);
+  --space-marker-focus-ring: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  --space-marker-halo-border: rgba(124, 108, 240, 0.45);
+  --space-marker-shape-radius: 999px;
+  --space-marker-shape-transform: none;
+  --space-marker-shape-clip-path: none;
+  --space-marker-badge-border: rgba(183, 214, 246, 0.36);
+  --space-marker-badge-text: rgba(183, 214, 246, 0.92);
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  pointer-events: auto;
+  text-align: left;
+  cursor: default;
+  overflow: hidden;
+}
+
+.map-legend-marker {
+  --space-marker-fill: rgba(175, 209, 246, 0.82);
+  --space-marker-focused-fill: rgba(222, 238, 255, 0.96);
+  --space-marker-focus-ring: 0 0 0 3px rgba(124, 108, 240, 0.3);
+  --space-marker-halo-border: rgba(124, 108, 240, 0.45);
+  --space-marker-shape-radius: 999px;
+  --space-marker-shape-transform: none;
+  --space-marker-shape-clip-path: none;
+  --space-marker-badge-border: rgba(183, 214, 246, 0.36);
+  --space-marker-badge-text: rgba(183, 214, 246, 0.92);
+}
+
+.space-organism-marker--enterable {
+  cursor: pointer;
+}
+
+.space-organism-marker--focused {
+  box-shadow: 0 0 0 2px rgba(190, 224, 255, 0.25);
+}
+
+.space-organism-marker--focused .space-organism-dot {
+  box-shadow:
+    0 0 0 1px rgba(238, 249, 255, 0.42),
+    0 0 18px rgba(146, 204, 255, 0.75),
+    0 0 34px rgba(100, 176, 255, 0.56);
+}
+
+.space-organism-dot {
+  position: relative;
+  border-radius: var(--space-marker-shape-radius);
+  background: var(--space-marker-fill);
+  transform: var(--space-marker-shape-transform);
+  clip-path: var(--space-marker-shape-clip-path);
+  transition: transform 150ms ease, background 150ms ease;
+  box-shadow:
+    0 0 0 1px rgba(220, 238, 255, 0.28),
+    0 0 12px rgba(120, 175, 255, 0.55),
+    0 0 24px rgba(80, 145, 235, 0.38);
+}
+
+.space-organism-dot::after {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 1px solid var(--space-marker-halo-border);
+  border-radius: 999px;
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+.space-organism-marker--enterable .space-organism-dot {
+  box-shadow:
+    0 0 0 1px rgba(226, 241, 255, 0.36),
+    0 0 14px rgba(130, 188, 255, 0.6),
+    0 0 30px rgba(92, 158, 246, 0.46);
+}
+
+.space-organism-marker--enterable:hover .space-organism-dot {
+  transform: scale(1.14);
+}
+
+.space-organism-marker--enterable:hover .space-organism-dot::after {
+  opacity: 1;
+  animation: marker-halo-pulse 1.1s ease-out infinite;
+}
+
+.space-organism-marker--tiny .space-organism-dot::after {
+  opacity: var(--space-marker-tiny-halo-opacity, 0.35);
+  transform: scale(1);
+  animation: none;
+}
+
+.space-organism-marker--focused .space-organism-dot {
+  background: var(--space-marker-focused-fill);
+  box-shadow: var(--space-marker-focus-ring);
+}
+
+.space-organism-marker--community,
+.map-legend-marker--community {
+  --space-marker-fill: #e09050;
+  --space-marker-focused-fill: #f0a060;
+  --space-marker-focus-ring: 0 0 0 3px rgba(240, 160, 96, 0.3);
+  --space-marker-badge-border: rgba(224, 144, 80, 0.3);
+  --space-marker-badge-text: #e09050;
+}
+
+.space-organism-marker--song,
+.map-legend-marker--song {
+  --space-marker-fill: #4cae8c;
+  --space-marker-focused-fill: #6bc8a7;
+  --space-marker-focus-ring: 0 0 0 3px rgba(107, 200, 167, 0.3);
+  --space-marker-shape-radius: 6px;
+  --space-marker-shape-transform: rotate(45deg);
+  --space-marker-badge-border: rgba(76, 174, 140, 0.35);
+  --space-marker-badge-text: #4cae8c;
+}
+
+.space-organism-marker--hero-journey-scene,
+.map-legend-marker--hero-journey-scene {
+  --space-marker-fill: #d29a3a;
+  --space-marker-focused-fill: #e2b256;
+  --space-marker-focus-ring: 0 0 0 3px rgba(236, 176, 74, 0.35), 0 0 18px rgba(236, 176, 74, 0.45);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(
+    50% 2%,
+    61% 23%,
+    84% 14%,
+    75% 36%,
+    98% 50%,
+    75% 64%,
+    84% 86%,
+    61% 77%,
+    50% 98%,
+    39% 77%,
+    16% 86%,
+    25% 64%,
+    2% 50%,
+    25% 36%,
+    16% 14%,
+    39% 23%
+  );
+  --space-marker-badge-border: rgba(236, 176, 74, 0.4);
+  --space-marker-badge-text: #f4d486;
+}
+
+.space-organism-marker--hero-journey-scene .space-organism-dot::after,
+.map-legend-marker--hero-journey-scene .space-organism-dot::after {
+  border-color: rgba(243, 192, 88, 0.62);
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.space-organism-marker--github-repository,
+.map-legend-marker--github-repository {
+  --space-marker-fill: #d28b38;
+  --space-marker-focused-fill: #efaa59;
+  --space-marker-focus-ring: 0 0 0 3px rgba(239, 170, 89, 0.3);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(25% 5%, 75% 5%, 95% 50%, 75% 95%, 25% 95%, 5% 50%);
+  --space-marker-badge-border: rgba(239, 170, 89, 0.36);
+  --space-marker-badge-text: #efaa59;
+}
+
+.space-organism-marker--institution,
+.map-legend-marker--institution {
+  --space-marker-fill: #c0a041;
+  --space-marker-focused-fill: #e1bf57;
+  --space-marker-focus-ring: 0 0 0 3px rgba(225, 191, 87, 0.3);
+  --space-marker-shape-radius: 4px;
+  --space-marker-shape-clip-path: polygon(8% 20%, 50% 4%, 92% 20%, 92% 80%, 8% 80%);
+  --space-marker-badge-border: rgba(225, 191, 87, 0.36);
+  --space-marker-badge-text: #e6c96c;
+}
+
+.space-organism-marker--system,
+.map-legend-marker--system {
+  --space-marker-fill: #4a9fb1;
+  --space-marker-focused-fill: #61bacf;
+  --space-marker-focus-ring: 0 0 0 3px rgba(97, 186, 207, 0.28);
+  --space-marker-shape-radius: 2px;
+  --space-marker-badge-border: rgba(97, 186, 207, 0.34);
+  --space-marker-badge-text: #73cde2;
+}
+
+.space-organism-marker--regulation,
+.map-legend-marker--regulation {
+  --space-marker-fill: #4ea06f;
+  --space-marker-focused-fill: #65be89;
+  --space-marker-focus-ring: 0 0 0 3px rgba(101, 190, 137, 0.3);
+  --space-marker-shape-radius: 0;
+  --space-marker-shape-clip-path: polygon(50% 4%, 96% 32%, 78% 92%, 22% 92%, 4% 32%);
+  --space-marker-badge-border: rgba(101, 190, 137, 0.35);
+  --space-marker-badge-text: #73c99a;
+}
+
+.space-organism-mid,
+.space-organism-close {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(192, 220, 250, 0.24);
+  border-radius: 0.72rem;
+  background: rgba(6, 11, 19, 0.84);
+  backdrop-filter: blur(1px);
+  color: rgba(238, 246, 255, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.space-organism-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  padding: 0.5rem 0.42rem;
+}
+
+.space-organism-close {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 0.34rem;
+  padding: 0.42rem;
+}
+
+.space-organism-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  font-size: 0.52rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--space-marker-badge-text);
+  border: 1px solid var(--space-marker-badge-border);
+  border-radius: 0.3rem;
+  background: rgba(10, 16, 28, 0.74);
+  padding: 0.14rem 0.3rem;
+}
+
+.space-organism-name {
+  font-size: 0.66rem;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: rgba(239, 247, 255, 0.94);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.space-organism-mid .space-organism-name {
+  width: 100%;
+  text-align: center;
+}
+
+.space-organism-preview {
+  min-height: 0;
+  border: 1px solid rgba(180, 211, 245, 0.2);
+  border-radius: 0.5rem;
+  background: rgba(2, 5, 10, 0.8);
+  padding: 0.34rem 0.38rem;
+  overflow: hidden;
+}
+
+.space-marker-preview-text {
+  margin: 0;
+  font-size: 0.57rem;
+  line-height: 1.35;
+  color: rgba(218, 234, 250, 0.9);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
+}
+
+@keyframes marker-halo-pulse {
+  0% {
+    transform: scale(0.85);
+    opacity: 0.42;
+  }
+
+  70% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
+.space-transition-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  background: rgba(22, 38, 62, 0.58);
+  mix-blend-mode: screen;
+  z-index: 3;
+}
+
+.space-transition-overlay--entering {
+  filter: blur(0.5px);
+}
+
+.space-transition-overlay--exiting {
+  filter: blur(0.2px);
+}
+
+.space-organism-interior-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: #000;
+  pointer-events: auto;
+}
+
+.space-organism-interior-body {
+  position: absolute;
+  inset: 0;
+  overflow-y: auto;
+  padding: 6.2rem 1.6rem 2rem;
+}
+
+.text-renderer {
+  line-height: 1.8;
+  font-size: 18px;
+  color: #f2f2f2;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.text-heading-1 {
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1.2;
+  margin: 0 0 24px;
+  color: #f2f2f2;
+}
+
+.text-heading-2 {
+  font-size: 24px;
+  font-weight: 600;
+  line-height: 1.3;
+  margin: 32px 0 16px;
+  color: #f2f2f2;
+}
+
+.text-heading-3 {
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 28px 0 12px;
+  color: #f2f2f2;
+}
+
+.text-heading-4,
+.text-heading-5,
+.text-heading-6 {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 24px 0 8px;
+  color: #bcbcbc;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.text-paragraph {
+  margin: 0 0 20px;
+  color: #f2f2f2;
+}
+
+.text-paragraph:last-child {
+  margin-bottom: 0;
+}
+
+.space-interior-fallback-label {
+  margin: 0 0 0.5rem;
+}
+
+.space-interior-fallback pre {
+  margin: 0;
+  padding: 0.7rem;
+  border: 1px solid rgba(185, 216, 248, 0.2);
+  border-radius: 0.56rem;
+  background: rgba(0, 0, 0, 0.42);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.space-map-status {
+  position: absolute;
+  top: 9rem;
+  left: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 0.7rem;
+  background: rgba(0, 0, 0, 0.72);
+  padding: 0.65rem 0.8rem;
+  min-width: 14rem;
+}
+
+.space-map-status p {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: #e5e5e5;
+}
+
+@media (max-width: 720px) {
+  .space-organism-interior-body {
+    padding: 6rem 1rem 1.4rem;
+  }
+
+  .text-renderer {
+    font-size: 16px;
+  }
+
+  .text-heading-1 {
+    font-size: 28px;
+  }
+
+  .text-heading-2 {
+    font-size: 22px;
+  }
+
+  .space-map-status {
+    top: 8.4rem;
+    left: 0.75rem;
+    right: 0.75rem;
+    margin-right: 8.9rem;
+    min-width: unset;
+  }
+}

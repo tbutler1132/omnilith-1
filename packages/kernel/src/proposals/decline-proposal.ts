@@ -10,6 +10,7 @@ import type { IdentityGenerator, ProposalId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { Proposal } from './proposal.js';
 import type { ProposalRepository } from './proposal-repository.js';
@@ -27,6 +28,7 @@ export interface DeclineProposalDeps {
   readonly eventPublisher: EventPublisher;
   readonly relationshipRepository: RelationshipRepository;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly identityGenerator: IdentityGenerator;
 }
 
@@ -42,6 +44,7 @@ export async function declineProposal(input: DeclineProposalInput, deps: Decline
 
   const accessDecision = await checkAccess(input.declinedBy, proposal.organismId, 'decline-proposal', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,

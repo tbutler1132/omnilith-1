@@ -57,6 +57,7 @@ export function proposalRoutes(container: Container) {
         eventPublisher: container.eventPublisher,
         identityGenerator: container.identityGenerator,
         visibilityRepository: container.visibilityRepository,
+        surfaceRepository: container.surfaceRepository,
         relationshipRepository: container.relationshipRepository,
         compositionRepository: container.compositionRepository,
       });
@@ -99,6 +100,7 @@ export function proposalRoutes(container: Container) {
           eventPublisher: container.eventPublisher,
           relationshipRepository: container.relationshipRepository,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           identityGenerator: container.identityGenerator,
         },
       );
@@ -150,6 +152,7 @@ export function proposalRoutes(container: Container) {
           eventPublisher: container.eventPublisher,
           relationshipRepository: container.relationshipRepository,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           identityGenerator: container.identityGenerator,
         },
       );

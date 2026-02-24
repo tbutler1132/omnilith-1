@@ -20,6 +20,7 @@ import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { StateRepository } from '../organism/state-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityLevel } from '../visibility/visibility.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { Proposal, ProposalMutation } from './proposal.js';
@@ -51,6 +52,7 @@ export interface OpenProposalDeps {
   readonly eventPublisher: EventPublisher;
   readonly identityGenerator: IdentityGenerator;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly compositionRepository: CompositionRepository;
 }
@@ -63,6 +65,7 @@ export async function openProposal(input: OpenProposalInput, deps: OpenProposalD
 
   const accessDecision = await checkAccess(input.proposedBy, input.organismId, 'open-proposal', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,

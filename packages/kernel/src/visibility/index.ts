@@ -10,5 +10,6 @@ export {
   changeVisibility,
 } from './change-visibility.js';
 export { checkAccessOrThrow } from './check-access.js';
+export type { SurfaceRepository } from './surface-repository.js';
 export type { VisibilityLevel, VisibilityRecord } from './visibility.js';
 export type { VisibilityRepository } from './visibility-repository.js';

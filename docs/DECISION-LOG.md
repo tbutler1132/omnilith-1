@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 23, 2026  
+Updated: February 24, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -1051,6 +1051,59 @@ This direction preserves Phase 1 momentum and architecture coherence while creat
 The detailed decision record is captured in:
 
 - `docs/decisions/036-world-map-governance-platform-custody-and-closed-loop-credit-policy.md`
+
+### Move 51: Derived Surface Size, Lease Units, and Crowding-First Allocation
+
+Map space economy direction was narrowed into an implementable Phase 1 policy shape.
+
+Sizing direction:
+
+- `spatial-map.entries[].size` is system-derived at surfacing, not manually set by callers.
+- community organisms derive size from their referenced spatial-map area (`mapOrganismId`), normalized to a baseline map area.
+- non-community organisms derive size from a compositional mass formula combining payload mass, state-history mass, and child-composition mass.
+
+Allocation direction:
+
+- lease consumption uses area-like units (`unitsRequired = ceil(size^2)`).
+- surfacing requires lease headroom; otherwise expansion must be integrated first.
+- size is lease-fixed at integration time in Phase 1 (no continuous auto-resize churn).
+
+Crowding direction:
+
+- a global occupancy ratio introduces warning/surcharge/block thresholds before absolute lease exhaustion.
+- local nearest-neighbor spacing checks add placement-level overcrowding constraints.
+- this intentionally makes practical crowding pressure appear before pure unit exhaustion in many regions.
+
+Architecture posture:
+
+- no kernel refactor required for the initial model.
+- implement through policy organisms, economic ledger/policy organisms, and API/query adapters.
+- if strict atomic settlement across economic debit and map mutation becomes mandatory, a future extension may be required.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/037-derived-surface-size-lease-units-and-crowding-first-map-allocation.md`
+
+### Move 52: Web-Next Visor App Spatial Context Contract
+
+Open visor apps in `web-next` now share one standardized rendering-layer contract for spatial context instead of app-specific inference logic.
+
+Direction:
+
+- keep spatial app context out of kernel and define it only in `web-next` rendering/app contracts
+- provide both an initial snapshot and subscription updates so apps can react to map navigation deterministically
+- include map/boundary/selection/viewport fields plus contract metadata (`timestamp`, `coordinateSystemVersion`)
+- preserve null-safe shape for partial context availability so apps can degrade gracefully
+
+Architecture impact:
+
+- no new kernel concern or port was introduced
+- context is sourced from `SpaceStage` and routed through `PlatformShell` -> `VisorHud` -> `OpenVisorShell` -> app props
+- this creates a stable seam for first-party and future third-party app behavior in open visor mode
+
+The detailed decision record is captured in:
+
+- `docs/decisions/038-web-next-visor-app-spatial-context-contract.md`
 
 ---
 

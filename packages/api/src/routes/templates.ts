@@ -89,6 +89,7 @@ export function templateRoutes(container: Container) {
       organismRepository: container.organismRepository,
       compositionRepository: container.compositionRepository,
       visibilityRepository: container.visibilityRepository,
+      surfaceRepository: container.surfaceRepository,
       relationshipRepository: container.relationshipRepository,
       eventPublisher: container.eventPublisher,
       identityGenerator: container.identityGenerator,

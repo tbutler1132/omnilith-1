@@ -39,6 +39,7 @@ For a fresh coding session that needs current implementation context fast:
 
 ## Active Implementation Guides
 
+- Space/Visor `web-next` rebuild plan: `docs/SPACE-VISOR-WEB-NEXT-PLAN.md`
 - Adaptive visor extension workflow: `docs/ADAPTIVE-VISOR-EXTENSION-GUIDE.md`
 - Adaptive visor panel planning: `docs/ADAPTIVE-VISOR-PANEL-FEATURE-PLAYBOOK.md`
 - Relationships panel specification: `docs/ADAPTIVE-VISOR-RELATIONSHIPS-PANEL-SPEC.md`
