@@ -1052,6 +1052,38 @@ The detailed decision record is captured in:
 
 - `docs/decisions/036-world-map-governance-platform-custody-and-closed-loop-credit-policy.md`
 
+### Move 51: Derived Surface Size, Lease Units, and Crowding-First Allocation
+
+Map space economy direction was narrowed into an implementable Phase 1 policy shape.
+
+Sizing direction:
+
+- `spatial-map.entries[].size` is system-derived at surfacing, not manually set by callers.
+- community organisms derive size from their referenced spatial-map area (`mapOrganismId`), normalized to a baseline map area.
+- non-community organisms derive size from a compositional mass formula combining payload mass, state-history mass, and child-composition mass.
+
+Allocation direction:
+
+- lease consumption uses area-like units (`unitsRequired = ceil(size^2)`).
+- surfacing requires lease headroom; otherwise expansion must be integrated first.
+- size is lease-fixed at integration time in Phase 1 (no continuous auto-resize churn).
+
+Crowding direction:
+
+- a global occupancy ratio introduces warning/surcharge/block thresholds before absolute lease exhaustion.
+- local nearest-neighbor spacing checks add placement-level overcrowding constraints.
+- this intentionally makes practical crowding pressure appear before pure unit exhaustion in many regions.
+
+Architecture posture:
+
+- no kernel refactor required for the initial model.
+- implement through policy organisms, economic ledger/policy organisms, and API/query adapters.
+- if strict atomic settlement across economic debit and map mutation becomes mandatory, a future extension may be required.
+
+The detailed decision record is captured in:
+
+- `docs/decisions/037-derived-surface-size-lease-units-and-crowding-first-map-allocation.md`
+
 ---
 
 ## Summary of What We're Building
