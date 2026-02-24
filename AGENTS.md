@@ -51,7 +51,7 @@ omnilith/
     api/           — HTTP adapter, imports kernel
                      implements storage ports (Postgres, object storage)
                      exposes operations as endpoints
-    web/           — React + Vite, calls the API
+    web-next/      — React + Vite, calls the API
                      content-type renderers and differs
                      universal layer, systems view
 ```
@@ -67,7 +67,7 @@ omnilith/
 - `packages/kernel/` imports nothing from any other package. Ever.
 - `packages/content-types/` imports only contracts and interfaces from `kernel/`. Never concrete implementations.
 - `packages/api/` imports from `kernel/`. Implements outbound ports (storage, event persistence).
-- `packages/web/` imports content-type renderers and calls the API. Never touches the kernel directly.
+- `packages/web-next/` imports content-type renderers and calls the API. Never touches the kernel directly.
 - New capabilities enter through `content-types/`, never through kernel modifications.
 - Never add special-case code to the kernel for a specific content type. If you feel the urge, ask whether it can be expressed as a composition of organisms instead.
 
