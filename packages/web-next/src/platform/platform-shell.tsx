@@ -6,7 +6,7 @@
  */
 
 import { useCallback, useEffect, useState } from 'react';
-import { loginWithPassword, logoutSession } from '../api/auth.js';
+import { fetchSession, loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
 import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
@@ -50,6 +50,7 @@ export function PlatformShell() {
     loading: true,
     error: null,
   });
+  const [personalOrganismId, setPersonalOrganismId] = useState<string | null | undefined>(undefined);
   const [arrivalPlayed, setArrivalPlayed] = useState(false);
   const [arrivalVisible, setArrivalVisible] = useState(false);
   const isAuthenticated = readSessionId() !== null;
@@ -104,19 +105,44 @@ export function PlatformShell() {
 
   const handleOpenApp = useCallback(
     (appId: string) => {
-      const targetedOrganismId = resolveOpenAppTargetOrganismId({
-        appId,
-        enteredOrganismId,
-        boundaryOrganismId,
-        visorOrganismId: visorRoute.organismId,
-      });
-      updateVisorRoute({
-        mode: 'open',
-        appId,
-        organismId: targetedOrganismId,
-      });
+      const openApp = async () => {
+        let nextPersonalOrganismId = personalOrganismId ?? null;
+
+        if (appId === 'cadence' && isAuthenticated && personalOrganismId === undefined) {
+          try {
+            const session = await fetchSession();
+            nextPersonalOrganismId = session.personalOrganismId ?? null;
+            setPersonalOrganismId(nextPersonalOrganismId);
+          } catch {
+            nextPersonalOrganismId = null;
+            setPersonalOrganismId(null);
+          }
+        }
+
+        const targetedOrganismId = resolveOpenAppTargetOrganismId({
+          appId,
+          enteredOrganismId,
+          boundaryOrganismId,
+          visorOrganismId: visorRoute.organismId,
+          personalOrganismId: nextPersonalOrganismId,
+        });
+        updateVisorRoute({
+          mode: 'open',
+          appId,
+          organismId: targetedOrganismId,
+        });
+      };
+
+      void openApp();
     },
-    [boundaryOrganismId, enteredOrganismId, updateVisorRoute, visorRoute.organismId],
+    [
+      boundaryOrganismId,
+      enteredOrganismId,
+      isAuthenticated,
+      personalOrganismId,
+      updateVisorRoute,
+      visorRoute.organismId,
+    ],
   );
 
   const handleCloseVisor = useCallback(() => {
@@ -184,6 +210,36 @@ export function PlatformShell() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setPersonalOrganismId(undefined);
+      return;
+    }
+
+    if (personalOrganismId !== undefined) {
+      return;
+    }
+
+    let cancelled = false;
+    fetchSession()
+      .then((session) => {
+        if (cancelled) {
+          return;
+        }
+        setPersonalOrganismId(session.personalOrganismId ?? null);
+      })
+      .catch(() => {
+        if (cancelled) {
+          return;
+        }
+        setPersonalOrganismId(null);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated, personalOrganismId]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -283,6 +339,7 @@ export function PlatformShell() {
         mode={visorRoute.mode}
         appId={visorRoute.appId}
         organismId={visorRoute.organismId}
+        personalOrganismId={personalOrganismId ?? null}
         altitude={altitude}
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}

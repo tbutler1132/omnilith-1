@@ -22,6 +22,7 @@ interface VisorHudProps {
   readonly mode: VisorMode;
   readonly appId: string | null;
   readonly organismId: string | null;
+  readonly personalOrganismId?: string | null;
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
   readonly showCompass: boolean;
@@ -39,6 +40,7 @@ export function VisorHud({
   mode,
   appId,
   organismId,
+  personalOrganismId,
   altitude,
   showAltitudeControls,
   showCompass,
@@ -136,6 +138,7 @@ export function VisorHud({
         <OpenVisorShell
           appId={presentedAppId}
           organismId={organismId}
+          personalOrganismId={personalOrganismId}
           phase={openPhaseForShell}
           onOpenApp={onOpenApp}
           onRequestClose={onCloseVisor}

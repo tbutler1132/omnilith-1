@@ -294,23 +294,25 @@ function hashPassword(password: string): string {
   return `${salt}:${hash}`;
 }
 
-async function ensureDevUser(container: Container): Promise<void> {
+async function ensureDevUser(container: Container): Promise<UserId> {
   const existingDevUser = await container.db.select().from(users).where(eq(users.email, DEV_USER_EMAIL));
   if (existingDevUser.length > 0) {
-    return;
+    return existingDevUser[0].id as UserId;
   }
 
+  const userId = container.identityGenerator.userId();
   await container.db.insert(users).values({
-    id: container.identityGenerator.userId(),
+    id: userId,
     email: DEV_USER_EMAIL,
     passwordHash: hashPassword(DEV_USER_PASSWORD),
   });
 
   console.log(`World-map-only seed ensured dev user: ${DEV_USER_EMAIL} / ${DEV_USER_PASSWORD}`);
+  return userId;
 }
 
 export async function seedWorldMapOnly(container: Container): Promise<void> {
-  await ensureDevUser(container);
+  const devUserId = await ensureDevUser(container);
 
   const existing = await container.db
     .select()
@@ -356,6 +358,48 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     relationshipRepository: container.relationshipRepository,
     compositionRepository: container.compositionRepository,
   };
+
+  const devPersonalOrganism = await createOrganism(
+    {
+      name: 'Dev Practice',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: [
+          '# Dev Practice',
+          '',
+          'Personal organism seeded for local development.',
+          '',
+          '- Private by default',
+          '- Surface intentionally when ready',
+        ].join('\n'),
+        format: 'markdown',
+        metadata: { isPersonalOrganism: true },
+      },
+      createdBy: devUserId,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  await container.visibilityRepository.save({
+    organismId: devPersonalOrganism.organism.id,
+    level: 'private',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+
+  const devPersonalManualCadenceChildren = await createManualCadenceChildren(
+    'Dev Practice',
+    'dev-practice',
+    devUserId,
+    createDeps,
+  );
+
+  await composeManualCadenceChildren(
+    devPersonalOrganism.organism.id,
+    devPersonalManualCadenceChildren,
+    devUserId,
+    composeDeps,
+  );
 
   const capitalMap = await createOrganism(
     {
@@ -462,6 +506,6 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
   });
 
   console.log(
-    `Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community (${capitalCommunity.organism.id}) and Capital Field Note (${capitalFieldNote.organism.id})`,
+    `Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community (${capitalCommunity.organism.id}), Capital Field Note (${capitalFieldNote.organism.id}), and Dev Practice (${devPersonalOrganism.organism.id})`,
   );
 }

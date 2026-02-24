@@ -28,10 +28,16 @@ function getPayloadContent(payload: unknown): string | undefined {
   return typeof content === 'string' ? content : undefined;
 }
 
-export function CadenceApp({ onRequestClose, organismId }: VisorAppRenderProps) {
+export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: VisorAppRenderProps) {
   void onRequestClose;
 
   const { data, loading, error } = useBoundaryCadence(organismId);
+  const targetedOrganismLabel = data?.boundary.name ?? organismId;
+  const isPersonalTarget =
+    organismId !== null &&
+    personalOrganismId !== null &&
+    personalOrganismId !== undefined &&
+    organismId === personalOrganismId;
   const cadenceChildren = useMemo(() => presentBoundaryCadenceChildren(data?.children ?? []), [data?.children]);
   const cadenceChildrenByTab = useMemo(() => groupBoundaryCadenceChildrenByTab(cadenceChildren), [cadenceChildren]);
 
@@ -51,6 +57,12 @@ export function CadenceApp({ onRequestClose, organismId }: VisorAppRenderProps) 
   return (
     <section className="cadence-app">
       <h2 className="cadence-app-title">Boundary Cadence</h2>
+      {targetedOrganismLabel ? (
+        <p className="cadence-app-status">
+          Looking at: <strong>{targetedOrganismLabel}</strong>
+          {isPersonalTarget ? ' (your personal organism)' : ''}
+        </p>
+      ) : null}
 
       {!organismId ? <p className="cadence-app-status">Enter an organism to view boundary cadence.</p> : null}
       {organismId && loading ? <p className="cadence-app-status">Loading boundary cadence...</p> : null}

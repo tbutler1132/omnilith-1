@@ -101,13 +101,21 @@ function createTestApp(container: Container, testUserId: UserId = 'test-user' as
     for (const rel of stewardships) {
       const state = await container.stateRepository.findCurrentByOrganismId(rel.organismId);
       if (!state) continue;
+      if (state.contentTypeId === 'text') {
+        const payload = state.payload as Record<string, unknown> | null;
+        const metadata = payload?.metadata as Record<string, unknown> | undefined;
+        if (metadata?.isPersonalOrganism && !personalOrganismId) {
+          personalOrganismId = rel.organismId;
+          continue;
+        }
+        if (metadata?.isHomePage && !homePageOrganismId) {
+          homePageOrganismId = rel.organismId;
+          continue;
+        }
+      }
+
       if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
         personalOrganismId = rel.organismId;
-      } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
-        const payload = state.payload as Record<string, unknown> | null;
-        if ((payload?.metadata as Record<string, unknown> | undefined)?.isHomePage) {
-          homePageOrganismId = rel.organismId;
-        }
       }
     }
 
@@ -1039,14 +1047,14 @@ describe('query and listing routes', () => {
   });
 
   it('GET /auth/me returns current user session info with personal and home page organisms', async () => {
-    // Create personal organism (spatial-map) and home page (text with isHomePage)
+    // Create personal organism (text with isPersonalOrganism) and home page (text with isHomePage)
     const personalRes = await app.request('/organisms', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        name: 'My Space',
-        contentTypeId: 'spatial-map',
-        payload: { entries: [], width: 2000, height: 2000 },
+        name: 'My Practice',
+        contentTypeId: 'text',
+        payload: { content: '', format: 'markdown', metadata: { isPersonalOrganism: true } },
       }),
     });
     const { organism: personal } = await personalRes.json();

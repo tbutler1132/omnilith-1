@@ -163,6 +163,39 @@ export interface AppendStateResponse {
   readonly state: OrganismState;
 }
 
+export interface SurfaceOrganismOnMapRequest {
+  readonly organismId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly emphasis?: number;
+}
+
+export interface SurfaceMapEntry {
+  readonly organismId: string;
+  readonly x: number;
+  readonly y: number;
+  readonly size?: number;
+  readonly emphasis?: number;
+}
+
+export interface DerivedSurfaceEntrySize {
+  readonly size: number;
+  readonly strategy: 'community-map-area' | 'compositional-mass';
+  readonly inputs: Readonly<Record<string, number | string>>;
+}
+
+export type SurfaceOrganismOnMapResponse =
+  | {
+      readonly status: 'already-surfaced';
+      readonly entry: SurfaceMapEntry;
+    }
+  | {
+      readonly status: 'surfaced';
+      readonly entry: SurfaceMapEntry;
+      readonly state: OrganismState;
+      readonly derived: DerivedSurfaceEntrySize;
+    };
+
 export interface RecordObservationRequest {
   readonly targetOrganismId: string;
   readonly metric: string;

@@ -16,11 +16,21 @@ export interface LogoutResponse {
   readonly ok: boolean;
 }
 
+export interface SessionResponse {
+  readonly userId: string;
+  readonly personalOrganismId: string | null;
+  readonly homePageOrganismId: string | null;
+}
+
 export async function loginWithPassword(email: string, password: string): Promise<LoginResponse> {
   return apiFetch<LoginResponse>('/auth/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
+}
+
+export async function fetchSession(): Promise<SessionResponse> {
+  return apiFetch<SessionResponse>('/auth/me');
 }
 
 export async function logoutSession(): Promise<LogoutResponse> {

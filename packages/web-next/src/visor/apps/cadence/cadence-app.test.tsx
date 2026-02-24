@@ -5,6 +5,10 @@ import { CadenceApp } from './cadence-app.js';
 
 interface MockCadenceState {
   readonly data: {
+    readonly boundary: {
+      readonly id: string;
+      readonly name: string;
+    };
     readonly children: ReadonlyArray<{
       readonly childId: string;
       readonly name: string;
@@ -55,6 +59,10 @@ describe('CadenceApp', () => {
   it('renders cadence previews when cadence organisms are present', () => {
     mockCadenceState = {
       data: {
+        boundary: {
+          id: 'boundary-1',
+          name: 'Dev Practice',
+        },
         children: [
           {
             childId: 'child-1',
@@ -81,10 +89,14 @@ describe('CadenceApp', () => {
       createElement(CadenceApp, {
         onRequestClose: () => {},
         organismId: 'boundary-1',
+        personalOrganismId: 'boundary-1',
       }),
     );
 
     expect(html).toContain('Boundary Cadence');
+    expect(html).toContain('Looking at:');
+    expect(html).toContain('Dev Practice');
+    expect(html).toContain('(your personal organism)');
     expect(html).toContain('capital-community-variables');
     expect(html).toContain('Capital Community Variables');
     expect(requestedOrganismId).toBe('boundary-1');

@@ -34,6 +34,10 @@ interface FetchChildrenResponse {
 }
 
 export interface BoundaryCadenceData {
+  readonly boundary: {
+    readonly id: string;
+    readonly name: string;
+  };
   readonly children: ReadonlyArray<BoundaryCadenceCandidateChild>;
 }
 
@@ -44,6 +48,7 @@ interface UseBoundaryCadenceResult {
 }
 
 async function loadCadenceChildren(parentOrganismId: string): Promise<BoundaryCadenceData> {
+  const parentResponse = await apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${parentOrganismId}`));
   const childResponse = await apiFetch<FetchChildrenResponse>(
     resolvePublicApiPath(`/organisms/${parentOrganismId}/children`),
   );
@@ -66,6 +71,10 @@ async function loadCadenceChildren(parentOrganismId: string): Promise<BoundaryCa
   );
 
   return {
+    boundary: {
+      id: parentResponse.organism.id,
+      name: parentResponse.organism.name,
+    },
     children: childRecords.filter((child): child is BoundaryCadenceCandidateChild => child !== null),
   };
 }

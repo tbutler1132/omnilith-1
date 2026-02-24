@@ -37,8 +37,8 @@ function readEntriesFromPayload(payload: unknown): SpatialMapEntryLike[] {
   return maybeEntries.filter(isEntryLike);
 }
 
-function sameEntry(a: SpatialMapEntryLike, b: SpatialMapEntryLike): boolean {
-  return a.x === b.x && a.y === b.y && a.size === b.size && a.emphasis === b.emphasis;
+function samePosition(a: SpatialMapEntryLike, b: SpatialMapEntryLike): boolean {
+  return a.x === b.x && a.y === b.y;
 }
 
 export function validateSpatialMap(payload: unknown, context?: ValidationContext): ValidationResult {
@@ -128,8 +128,8 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
           issues.push(`existing entry removed: ${prev.organismId}`);
           continue;
         }
-        if (!sameEntry(prev, next)) {
-          issues.push(`existing entry modified: ${prev.organismId}`);
+        if (!samePosition(prev, next)) {
+          issues.push(`existing entry moved: ${prev.organismId}`);
         }
       }
     }

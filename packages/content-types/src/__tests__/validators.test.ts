@@ -268,6 +268,57 @@ describe('spatial-map validator', () => {
     expect(result.valid).toBe(false);
     expect(result.issues).toContain('existing entry removed: org-2');
   });
+
+  it('allows updating existing entry size during transition validation', () => {
+    const result = validateSpatialMap(
+      {
+        entries: [
+          { organismId: 'org-1', x: 100, y: 100, size: 1.2 },
+          { organismId: 'org-2', x: 300, y: 300 },
+        ],
+        width: 1000,
+        height: 1000,
+      },
+      {
+        previousPayload: {
+          entries: [
+            { organismId: 'org-1', x: 100, y: 100, size: 1 },
+            { organismId: 'org-2', x: 300, y: 300 },
+          ],
+          width: 1000,
+          height: 1000,
+        },
+      },
+    );
+
+    expect(result.valid).toBe(true);
+  });
+
+  it('rejects moving an existing entry during transition validation', () => {
+    const result = validateSpatialMap(
+      {
+        entries: [
+          { organismId: 'org-1', x: 120, y: 100, size: 1 },
+          { organismId: 'org-2', x: 300, y: 300 },
+        ],
+        width: 1000,
+        height: 1000,
+      },
+      {
+        previousPayload: {
+          entries: [
+            { organismId: 'org-1', x: 100, y: 100, size: 1 },
+            { organismId: 'org-2', x: 300, y: 300 },
+          ],
+          width: 1000,
+          height: 1000,
+        },
+      },
+    );
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('existing entry moved: org-1');
+  });
 });
 
 describe('composition-reference validator', () => {

@@ -13,12 +13,20 @@ import { OpenVisorHeader } from './open-visor-header.js';
 interface OpenVisorShellProps {
   readonly appId: string | null;
   readonly organismId: string | null;
+  readonly personalOrganismId?: string | null;
   readonly phase: 'opening' | 'open' | 'closing';
   readonly onOpenApp: (appId: string) => void;
   readonly onRequestClose: () => void;
 }
 
-export function OpenVisorShell({ appId, organismId, phase, onOpenApp, onRequestClose }: OpenVisorShellProps) {
+export function OpenVisorShell({
+  appId,
+  organismId,
+  personalOrganismId,
+  phase,
+  onOpenApp,
+  onRequestClose,
+}: OpenVisorShellProps) {
   const [railCollapsed, setRailCollapsed] = useState(false);
   const apps = listVisorApps();
   const activeApp = resolveVisorApp(appId);
@@ -66,7 +74,11 @@ export function OpenVisorShell({ appId, organismId, phase, onOpenApp, onRequestC
         </aside>
 
         <div className="open-visor-app-pane">
-          <ActiveAppComponent onRequestClose={onRequestClose} organismId={organismId} />
+          <ActiveAppComponent
+            onRequestClose={onRequestClose}
+            organismId={organismId}
+            personalOrganismId={personalOrganismId}
+          />
         </div>
       </div>
     </section>

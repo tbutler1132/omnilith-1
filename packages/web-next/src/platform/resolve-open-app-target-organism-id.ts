@@ -11,6 +11,7 @@ interface ResolveOpenAppTargetOrganismIdInput {
   readonly enteredOrganismId: string | null;
   readonly boundaryOrganismId: string | null;
   readonly visorOrganismId: string | null;
+  readonly personalOrganismId: string | null;
 }
 
 function isOrganismScopedApp(appId: string): boolean {
@@ -18,6 +19,10 @@ function isOrganismScopedApp(appId: string): boolean {
 }
 
 export function resolveOpenAppTargetOrganismId(input: ResolveOpenAppTargetOrganismIdInput): string | null {
+  if (input.appId === 'cadence' && input.personalOrganismId) {
+    return input.personalOrganismId;
+  }
+
   if (!isOrganismScopedApp(input.appId)) {
     return input.visorOrganismId;
   }

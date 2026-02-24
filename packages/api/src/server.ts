@@ -70,13 +70,22 @@ export function createServer(container: Container, config?: ServerConfig) {
     for (const rel of stewardships) {
       const state = await container.stateRepository.findCurrentByOrganismId(rel.organismId);
       if (!state) continue;
+      if (state.contentTypeId === 'text') {
+        const payload = state.payload as Record<string, unknown> | null;
+        const metadata = payload?.metadata as Record<string, unknown> | undefined;
+        if (metadata?.isPersonalOrganism && !personalOrganismId) {
+          personalOrganismId = rel.organismId;
+          continue;
+        }
+        if (metadata?.isHomePage && !homePageOrganismId) {
+          homePageOrganismId = rel.organismId;
+          continue;
+        }
+      }
+
+      // Backwards-compatibility for accounts created before personal metadata.
       if (state.contentTypeId === 'spatial-map' && !personalOrganismId) {
         personalOrganismId = rel.organismId;
-      } else if (state.contentTypeId === 'text' && !homePageOrganismId) {
-        const payload = state.payload as Record<string, unknown> | null;
-        if ((payload?.metadata as Record<string, unknown> | undefined)?.isHomePage) {
-          homePageOrganismId = rel.organismId;
-        }
       }
     }
 
