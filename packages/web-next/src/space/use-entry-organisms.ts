@@ -27,6 +27,7 @@ export interface EntryOrganismMetadata {
   readonly organismId: string;
   readonly name: string;
   readonly contentTypeId: string | null;
+  readonly currentPayload: unknown;
   readonly enterTargetMapId: string | null;
 }
 
@@ -87,6 +88,7 @@ export function useEntryOrganisms(ids: ReadonlyArray<string>): UseEntryOrganisms
             organismId: response.organism.id,
             name: response.organism.name,
             contentTypeId: response.currentState?.contentTypeId ?? null,
+            currentPayload: response.currentState?.payload ?? null,
             enterTargetMapId: resolveEnterTargetMapId(response),
           };
           return [id, metadata] as const;
@@ -97,6 +99,7 @@ export function useEntryOrganisms(ids: ReadonlyArray<string>): UseEntryOrganisms
               organismId: id,
               name: id,
               contentTypeId: null,
+              currentPayload: null,
               enterTargetMapId: null,
             } satisfies EntryOrganismMetadata,
           ] as const;

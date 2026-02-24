@@ -39,21 +39,25 @@
 .space-organism-marker {
   position: absolute;
   transform: translate(-50%, -50%);
-  display: inline-flex;
-  flex-direction: column;
+  display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.36rem;
+  border-radius: 0.75rem;
   border: none;
   background: transparent;
   padding: 0;
   margin: 0;
   pointer-events: auto;
+  text-align: left;
   cursor: default;
 }
 
 .space-organism-marker--enterable {
   cursor: pointer;
+}
+
+.space-organism-marker--focused {
+  box-shadow: 0 0 0 2px rgba(190, 224, 255, 0.25);
 }
 
 .space-organism-marker--focused .space-organism-dot {
@@ -79,22 +83,83 @@
     0 0 30px rgba(92, 158, 246, 0.46);
 }
 
-.space-organism-label {
-  font-size: 0.62rem;
-  line-height: 1;
-  letter-spacing: 0.04em;
-  color: rgba(232, 242, 255, 0.9);
-  padding: 0.22rem 0.34rem;
-  border: 1px solid rgba(205, 228, 255, 0.26);
-  border-radius: 0.36rem;
-  background: rgba(6, 10, 18, 0.74);
+.space-organism-mid,
+.space-organism-close {
+  width: 100%;
+  height: 100%;
+  border: 1px solid rgba(192, 220, 250, 0.24);
+  border-radius: 0.72rem;
+  background: rgba(6, 11, 19, 0.84);
   backdrop-filter: blur(1px);
-  white-space: nowrap;
+  color: rgba(238, 246, 255, 0.94);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 
-.space-organism-marker--focused .space-organism-label {
-  border-color: rgba(220, 240, 255, 0.38);
-  color: rgba(242, 249, 255, 0.96);
+.space-organism-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.28rem;
+  padding: 0.5rem 0.42rem;
+}
+
+.space-organism-close {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  gap: 0.34rem;
+  padding: 0.42rem;
+}
+
+.space-organism-type-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  font-size: 0.52rem;
+  line-height: 1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(183, 214, 246, 0.92);
+  border: 1px solid rgba(183, 214, 246, 0.36);
+  border-radius: 0.3rem;
+  background: rgba(10, 16, 28, 0.74);
+  padding: 0.14rem 0.3rem;
+}
+
+.space-organism-name {
+  font-size: 0.66rem;
+  line-height: 1.2;
+  letter-spacing: 0.03em;
+  color: rgba(239, 247, 255, 0.94);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.space-organism-mid .space-organism-name {
+  width: 100%;
+  text-align: center;
+}
+
+.space-organism-preview {
+  min-height: 0;
+  border: 1px solid rgba(180, 211, 245, 0.2);
+  border-radius: 0.5rem;
+  background: rgba(2, 5, 10, 0.8);
+  padding: 0.34rem 0.38rem;
+  overflow: hidden;
+}
+
+.space-marker-preview-text {
+  margin: 0;
+  font-size: 0.57rem;
+  line-height: 1.35;
+  color: rgba(218, 234, 250, 0.9);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;
+  overflow: hidden;
 }
 
 .space-transition-overlay {
