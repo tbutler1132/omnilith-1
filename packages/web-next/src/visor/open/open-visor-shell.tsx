@@ -11,12 +11,13 @@ import { OpenVisorHeader } from './open-visor-header.js';
 
 interface OpenVisorShellProps {
   readonly appId: string | null;
+  readonly organismId: string | null;
   readonly phase: 'opening' | 'open' | 'closing';
   readonly onOpenApp: (appId: string) => void;
   readonly onRequestClose: () => void;
 }
 
-export function OpenVisorShell({ appId, phase, onOpenApp, onRequestClose }: OpenVisorShellProps) {
+export function OpenVisorShell({ appId, organismId, phase, onOpenApp, onRequestClose }: OpenVisorShellProps) {
   const apps = listVisorApps();
   const activeApp = resolveVisorApp(appId);
   const ActiveAppComponent = activeApp.component;
@@ -45,9 +46,7 @@ export function OpenVisorShell({ appId, phase, onOpenApp, onRequestClose }: Open
         </aside>
 
         <div className="open-visor-app-pane">
-          <div className="open-visor-app-canvas">
-            <ActiveAppComponent onRequestClose={onRequestClose} />
-          </div>
+          <ActiveAppComponent onRequestClose={onRequestClose} organismId={organismId} />
         </div>
       </div>
     </section>

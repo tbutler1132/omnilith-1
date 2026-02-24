@@ -17,9 +17,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(46rem 28rem at 78% -5%, rgba(125, 184, 255, 0.12), transparent 60%),
-    radial-gradient(38rem 24rem at 16% 118%, rgba(95, 152, 229, 0.08), transparent 62%);
+  background: rgba(110, 170, 240, 0.08);
   opacity: 0.78;
 }
 
@@ -71,12 +69,12 @@
 
 .app-dock-button {
   min-width: 4.6rem;
-  height: 2rem;
+  min-height: 2rem;
   border: 1px solid rgba(212, 234, 255, 0.3);
   border-radius: 0.52rem;
-  background: linear-gradient(140deg, rgba(170, 210, 255, 0.12), rgba(170, 210, 255, 0.03));
+  background: rgba(170, 210, 255, 0.08);
   color: rgba(244, 250, 255, 0.92);
-  padding: 0 0.7rem;
+  padding: 0.14rem 0.82rem;
   font-size: 0.72rem;
   letter-spacing: 0.03em;
   font-weight: 600;
@@ -195,7 +193,8 @@
     var(--visor-glow-inset),
     0 0 30px rgba(72, 128, 214, 0.2);
   min-height: 0;
-  overflow: hidden;
+  overflow: auto;
+  padding: 0.9rem 0.94rem 0.94rem;
 }
 
 .open-visor-shell-header::after,
@@ -207,12 +206,7 @@
   pointer-events: none;
   opacity: 0;
   mix-blend-mode: screen;
-  background:
-    radial-gradient(circle at 20% 40%, rgba(156, 208, 255, 0.42) 0 1.4px, transparent 2.8px),
-    radial-gradient(circle at 64% 25%, rgba(185, 226, 255, 0.34) 0 1.2px, transparent 2.4px),
-    radial-gradient(circle at 78% 68%, rgba(139, 198, 255, 0.28) 0 1.4px, transparent 2.6px),
-    linear-gradient(120deg, rgba(86, 138, 216, 0.2), rgba(160, 210, 255, 0.06));
-  background-size: 19px 19px, 23px 23px, 27px 27px, 100% 100%;
+  background: rgba(136, 194, 255, 0.16);
 }
 
 .open-visor-shell[data-phase='opening'] {
@@ -395,7 +389,7 @@
   height: 1.95rem;
   border: 1px solid rgba(212, 234, 255, 0.28);
   border-radius: 0.56rem;
-  background: linear-gradient(145deg, rgba(160, 208, 255, 0.14), rgba(160, 208, 255, 0.04));
+  background: rgba(160, 208, 255, 0.1);
   color: rgba(236, 247, 255, 0.93);
   font-size: 0.66rem;
   letter-spacing: 0.05em;
@@ -406,33 +400,117 @@
   box-shadow: 0 0 18px rgba(92, 150, 224, 0.22);
 }
 
-.open-visor-app-canvas {
-  height: 100%;
-  overflow: auto;
-  padding: 0.9rem 0.94rem 0.94rem;
-}
-
-.profile-app {
+.profile-app,
+.organism-app {
   min-height: 100%;
-  border: 1px solid rgba(255, 255, 255, 0.16);
-  border-radius: 0.72rem;
-  background: rgba(7, 12, 22, 0.6);
-  padding: 0.9rem;
+  display: grid;
+  align-content: start;
+  gap: 0.74rem;
 }
 
-.profile-app-title {
+.profile-app-title,
+.organism-app-title {
   margin: 0;
-  font-size: 0.98rem;
-  line-height: 1.2;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
   color: rgba(243, 250, 255, 0.95);
-  margin-bottom: 0.72rem;
+}
+
+.profile-app-body {
+  display: grid;
+  gap: 0.48rem;
 }
 
 .profile-app-body p {
-  margin: 0 0 0.52rem;
-  font-size: 0.77rem;
-  line-height: 1.5;
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.52;
   color: rgba(203, 223, 246, 0.9);
+  max-width: 58ch;
+}
+
+.organism-overview-meta {
+  margin: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.organism-overview-meta-row {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  gap: 0.58rem;
+  align-items: baseline;
+}
+
+.organism-overview-meta-row dt {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(178, 206, 238, 0.84);
+}
+
+.organism-overview-meta-row dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(225, 239, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.organism-overview-status {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.88);
+}
+
+.organism-wireframe-panel {
+  position: relative;
+  margin: 0;
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  min-height: 6.25rem;
+  overflow: hidden;
+}
+
+.organism-wireframe-canvas {
+  width: 100%;
+  height: 6.25rem;
+  display: block;
+}
+
+.organism-wireframe-fallback {
+  margin: 0;
+  min-height: 6.25rem;
+  display: grid;
+  place-items: center;
+  padding: 0.72rem;
+  font-size: 0.66rem;
+  line-height: 1.45;
+  color: rgba(205, 224, 246, 0.88);
+}
+
+.organism-overview-payload {
+  margin: 0;
+  padding: 0.68rem;
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  color: rgba(228, 242, 255, 0.92);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  max-height: 18rem;
+  overflow: auto;
 }
 
 .space-nav-content {
@@ -456,7 +534,7 @@
   height: 1.45rem;
   border-radius: 999px;
   border: 1px solid rgba(212, 234, 255, 0.3);
-  background: linear-gradient(145deg, rgba(164, 207, 255, 0.16), rgba(164, 207, 255, 0.04));
+  background: rgba(164, 207, 255, 0.1);
   color: rgba(241, 247, 255, 0.92);
   display: inline-flex;
   align-items: center;
@@ -620,7 +698,7 @@
   min-height: 2.2rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(212, 234, 255, 0.28);
-  background: linear-gradient(145deg, rgba(160, 208, 255, 0.14), rgba(160, 208, 255, 0.04));
+  background: rgba(160, 208, 255, 0.1);
   color: rgba(236, 247, 255, 0.93);
   font-size: 0.63rem;
   letter-spacing: 0.07em;
@@ -747,11 +825,14 @@
     letter-spacing: 0.04em;
   }
 
-  .open-visor-app-canvas {
+  .open-visor-app-pane {
     padding: 0.72rem;
   }
 
-  .profile-app {
-    padding: 0.72rem;
+  .organism-wireframe-panel,
+  .organism-wireframe-canvas,
+  .organism-wireframe-fallback {
+    min-height: 5.6rem;
+    height: 5.6rem;
   }
 }

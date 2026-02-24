@@ -17,6 +17,7 @@ function renderHud(
     createElement(VisorHud, {
       mode: input.mode ?? 'closed',
       appId: input.appId ?? null,
+      organismId: null,
       altitude: input.altitude ?? 'high',
       showAltitudeControls: input.showAltitudeControls ?? true,
       showCompass: input.showCompass ?? true,
@@ -39,6 +40,7 @@ describe('VisorHud', () => {
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
     expect(html).toContain('Open Profile app');
+    expect(html).toContain('Open Organism app');
   });
 
   it('hides right-side widgets when compass lane is disabled', () => {
