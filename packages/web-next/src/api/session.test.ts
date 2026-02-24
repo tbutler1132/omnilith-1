@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { hasSessionId, readSessionId } from './session.js';
+import { clearSessionId, hasSessionId, readSessionId } from './session.js';
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -25,5 +25,16 @@ describe('session helpers', () => {
 
     expect(readSessionId()).toBeNull();
     expect(hasSessionId()).toBe(false);
+  });
+
+  it('clears the stored session id when storage supports removeItem', () => {
+    const removeItem = vi.fn();
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => 'session-42'),
+      removeItem,
+    } satisfies Pick<Storage, 'getItem' | 'removeItem'>);
+
+    clearSessionId();
+    expect(removeItem).toHaveBeenCalledWith('sessionId');
   });
 });

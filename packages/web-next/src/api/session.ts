@@ -29,3 +29,16 @@ export function readSessionId(): string | null {
 export function hasSessionId(): boolean {
   return readSessionId() !== null;
 }
+
+export function clearSessionId(): void {
+  if (typeof localStorage === 'undefined') {
+    return;
+  }
+
+  const storage: Partial<Storage> = localStorage;
+  if (typeof storage.removeItem !== 'function') {
+    return;
+  }
+
+  storage.removeItem(SESSION_ID_KEY);
+}

@@ -40,6 +40,78 @@ describe('apiFetch', () => {
     expect(headers.get('Content-Type')).toBe('application/json');
   });
 
+  it('retries public organism reads after 401 and clears stale session ids', async () => {
+    const removeItem = vi.fn();
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => 'stale-session'),
+      removeItem,
+    } satisfies Pick<Storage, 'getItem' | 'removeItem'>);
+
+    const fetchMock = vi
+      .fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ error: 'Unauthorized' }), {
+          status: 401,
+          headers: { 'Content-Type': 'application/json' },
+        }),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            organism: { id: 'example', name: 'Example' },
+            currentState: null,
+          }),
+          {
+            status: 200,
+            headers: { 'Content-Type': 'application/json' },
+          },
+        ),
+      );
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await apiFetch<{
+      organism: { id: string; name: string };
+      currentState: null;
+    }>('/organisms/example');
+
+    expect(result.organism.id).toBe('example');
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(fetchMock.mock.calls[0]?.[0]).toBe('/api/organisms/example');
+    expect(fetchMock.mock.calls[1]?.[0]).toBe('/api/public/organisms/example');
+
+    const firstHeaders = new Headers(fetchMock.mock.calls[0]?.[1]?.headers);
+    const secondHeaders = new Headers(fetchMock.mock.calls[1]?.[1]?.headers);
+    expect(firstHeaders.get('Authorization')).toBe('Bearer stale-session');
+    expect(secondHeaders.get('Authorization')).toBeNull();
+    expect(removeItem).toHaveBeenCalledWith('sessionId');
+  });
+
+  it('does not retry public path for non-GET requests', async () => {
+    const removeItem = vi.fn();
+    vi.stubGlobal('localStorage', {
+      getItem: vi.fn(() => 'session-123'),
+      removeItem,
+    } satisfies Pick<Storage, 'getItem' | 'removeItem'>);
+
+    const fetchMock = vi.fn<(input: RequestInfo | URL, init?: RequestInit) => Promise<Response>>(async () => {
+      return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+        status: 401,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    await expect(
+      apiFetch('/organisms/example', {
+        method: 'POST',
+        body: JSON.stringify({ name: 'Example' }),
+      }),
+    ).rejects.toEqual(new ApiError(401, 'Unauthorized'));
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(removeItem).not.toHaveBeenCalled();
+  });
+
   it('throws ApiError with response fallback message when error payload is not json', async () => {
     vi.stubGlobal('localStorage', {
       getItem: vi.fn(() => null),

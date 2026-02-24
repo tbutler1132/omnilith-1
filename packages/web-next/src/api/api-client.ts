@@ -5,7 +5,7 @@
  * keeping rendering modules decoupled from HTTP implementation details.
  */
 
-import { readSessionId } from './session.js';
+import { clearSessionId, readSessionId } from './session.js';
 
 export class ApiError extends Error {
   constructor(
@@ -17,7 +17,30 @@ export class ApiError extends Error {
   }
 }
 
+function normalizeApiPath(path: string): string {
+  return path.startsWith('/') ? path : `/${path}`;
+}
+
+function resolvePublicRetryPath(path: string, method: string | undefined): string | null {
+  const normalizedMethod = (method ?? 'GET').toUpperCase();
+  if (normalizedMethod !== 'GET') {
+    return null;
+  }
+
+  const normalizedPath = normalizeApiPath(path);
+  if (normalizedPath.startsWith('/public/')) {
+    return null;
+  }
+
+  if (!normalizedPath.startsWith('/organisms/')) {
+    return null;
+  }
+
+  return `/public${normalizedPath}`;
+}
+
 export async function apiFetch<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const normalizedPath = normalizeApiPath(path);
   const sessionId = readSessionId();
   const headers = new Headers(options.headers);
 
@@ -29,10 +52,28 @@ export async function apiFetch<T>(path: string, options: RequestInit = {}): Prom
     headers.set('Content-Type', 'application/json');
   }
 
-  const response = await fetch(`/api${path}`, {
+  let response = await fetch(`/api${normalizedPath}`, {
     ...options,
     headers,
   });
+
+  if (response.status === 401 && sessionId) {
+    const retryPath = resolvePublicRetryPath(normalizedPath, options.method);
+    if (retryPath) {
+      clearSessionId();
+      const retryHeaders = new Headers(options.headers);
+      retryHeaders.delete('Authorization');
+
+      if (!retryHeaders.has('Content-Type') && options.body) {
+        retryHeaders.set('Content-Type', 'application/json');
+      }
+
+      response = await fetch(`/api${retryPath}`, {
+        ...options,
+        headers: retryHeaders,
+      });
+    }
+  }
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({ error: response.statusText }));

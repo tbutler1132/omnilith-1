@@ -6,7 +6,6 @@
  */
 
 import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
 import { resolveWireframeModelSpec } from './wireframe-model-spec.js';
 
 interface OrganismWireframePreviewProps {
@@ -21,11 +20,11 @@ export function OrganismWireframePreview({ contentTypeId }: OrganismWireframePre
     let disposed = false;
     let frameId = 0;
     let cleanupResize: (() => void) | null = null;
-    let renderer: THREE.WebGLRenderer | null = null;
-    let geometry: THREE.BufferGeometry | null = null;
-    let edgeGeometry: THREE.BufferGeometry | null = null;
-    let meshMaterial: THREE.Material | null = null;
-    let edgeMaterial: THREE.Material | null = null;
+    let renderer: import('three').WebGLRenderer | null = null;
+    let geometry: import('three').BufferGeometry | null = null;
+    let edgeGeometry: import('three').BufferGeometry | null = null;
+    let meshMaterial: import('three').Material | null = null;
+    let edgeMaterial: import('three').Material | null = null;
     setLoadError(null);
 
     const canvas = canvasRef.current;
@@ -33,86 +32,95 @@ export function OrganismWireframePreview({ contentTypeId }: OrganismWireframePre
       return;
     }
 
-    try {
-      const spec = resolveWireframeModelSpec(contentTypeId);
-      renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-      const scene = new THREE.Scene();
-      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
-      camera.position.set(0, 0, 3);
+    const boot = async () => {
+      try {
+        const THREE = await import('three');
+        if (disposed) {
+          return;
+        }
 
-      geometry =
-        spec.geometryKind === 'icosahedron'
-          ? new THREE.IcosahedronGeometry(0.95, 0)
-          : new THREE.BoxGeometry(1.5, 1.5, 1.5, 1, 1, 1);
+        const spec = resolveWireframeModelSpec(contentTypeId);
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 100);
+        camera.position.set(0, 0, 3);
 
-      meshMaterial = new THREE.MeshBasicMaterial({
-        color: spec.colorHex,
-        wireframe: true,
-      });
-      const mesh = new THREE.Mesh(geometry, meshMaterial);
-      scene.add(mesh);
+        geometry =
+          spec.geometryKind === 'icosahedron'
+            ? new THREE.IcosahedronGeometry(0.95, 0)
+            : new THREE.BoxGeometry(1.5, 1.5, 1.5, 1, 1, 1);
 
-      edgeGeometry = new THREE.EdgesGeometry(geometry);
-      edgeMaterial = new THREE.LineBasicMaterial({
-        color: spec.colorHex,
-        transparent: true,
-        opacity: 0.48,
-      });
-      const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
-      scene.add(edgeLines);
+        meshMaterial = new THREE.MeshBasicMaterial({
+          color: spec.colorHex,
+          wireframe: true,
+        });
+        const mesh = new THREE.Mesh(geometry, meshMaterial);
+        scene.add(mesh);
 
-      const resize = () => {
-        const host = canvas.parentElement;
-        const width = Math.max(host?.clientWidth ?? 0, 1);
-        const height = Math.max(host?.clientHeight ?? 0, 1);
-        const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
-        renderer?.setPixelRatio(pixelRatio);
-        renderer?.setSize(width, height, false);
-        camera.aspect = width / height;
-        camera.updateProjectionMatrix();
-      };
+        edgeGeometry = new THREE.EdgesGeometry(geometry);
+        edgeMaterial = new THREE.LineBasicMaterial({
+          color: spec.colorHex,
+          transparent: true,
+          opacity: 0.48,
+        });
+        const edgeLines = new THREE.LineSegments(edgeGeometry, edgeMaterial);
+        scene.add(edgeLines);
 
-      const renderScene = () => {
-        renderer?.render(scene, camera);
-      };
-
-      resize();
-      const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
-
-      if (mediaQuery.matches) {
-        renderScene();
-      } else {
-        const animate = () => {
-          if (disposed) {
-            return;
-          }
-
-          mesh.rotation.x = 0;
-          mesh.rotation.y += spec.rotationSpeedY;
-          edgeLines.rotation.x = mesh.rotation.x;
-          edgeLines.rotation.y = mesh.rotation.y;
-
-          renderScene();
-          frameId = window.requestAnimationFrame(animate);
+        const resize = () => {
+          const host = canvas.parentElement;
+          const width = Math.max(host?.clientWidth ?? 0, 1);
+          const height = Math.max(host?.clientHeight ?? 0, 1);
+          const pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+          renderer?.setPixelRatio(pixelRatio);
+          renderer?.setSize(width, height, false);
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
         };
 
-        frameId = window.requestAnimationFrame(animate);
-      }
+        const renderScene = () => {
+          renderer?.render(scene, camera);
+        };
 
-      const handleResize = () => {
-        if (disposed) return;
         resize();
-        renderScene();
-      };
-      window.addEventListener('resize', handleResize);
-      cleanupResize = () => {
-        window.removeEventListener('resize', handleResize);
-      };
-    } catch {
-      if (!disposed) {
-        setLoadError('Wireframe preview unavailable on this device.');
+        const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        if (mediaQuery.matches) {
+          renderScene();
+        } else {
+          const animate = () => {
+            if (disposed) {
+              return;
+            }
+
+            mesh.rotation.x = 0;
+            mesh.rotation.y += spec.rotationSpeedY;
+            edgeLines.rotation.x = mesh.rotation.x;
+            edgeLines.rotation.y = mesh.rotation.y;
+
+            renderScene();
+            frameId = window.requestAnimationFrame(animate);
+          };
+
+          frameId = window.requestAnimationFrame(animate);
+        }
+
+        const handleResize = () => {
+          if (disposed) return;
+          resize();
+          renderScene();
+        };
+        window.addEventListener('resize', handleResize);
+        cleanupResize = () => {
+          window.removeEventListener('resize', handleResize);
+        };
+      } catch {
+        if (!disposed) {
+          setLoadError('Wireframe preview unavailable on this device.');
+        }
       }
-    }
+    };
+
+    void boot();
 
     return () => {
       disposed = true;

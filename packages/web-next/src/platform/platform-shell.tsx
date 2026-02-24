@@ -8,7 +8,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
-import { readSessionId } from '../api/session.js';
+import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage } from '../space/space-stage.js';
 import { VisorHud } from '../visor/hud/index.js';
@@ -127,7 +127,7 @@ export function PlatformShell() {
         // Best effort: clear local auth state even if API logout fails.
       })
       .finally(() => {
-        localStorage.removeItem('sessionId');
+        clearSessionId();
         window.location.reload();
       });
   }, []);
