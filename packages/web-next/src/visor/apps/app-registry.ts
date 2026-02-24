@@ -6,10 +6,15 @@
  */
 
 import type { VisorAppDefinition } from './app-contract.js';
+import { cadenceAppDefinition } from './cadence/index.js';
 import { organismAppDefinition } from './organism/index.js';
 import { profileAppDefinition } from './profile/index.js';
 
-const VISOR_APPS: ReadonlyArray<VisorAppDefinition> = [profileAppDefinition, organismAppDefinition];
+const VISOR_APPS: ReadonlyArray<VisorAppDefinition> = [
+  profileAppDefinition,
+  organismAppDefinition,
+  cadenceAppDefinition,
+];
 
 function fallbackVisorApp(): VisorAppDefinition {
   const fallback = VISOR_APPS[0];

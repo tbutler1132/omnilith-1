@@ -7,6 +7,7 @@ describe('visor app registry', () => {
     expect(apps.length).toBeGreaterThan(0);
     expect(apps[0]?.id).toBe('profile');
     expect(apps.some((app) => app.id === 'organism')).toBe(true);
+    expect(apps.some((app) => app.id === 'cadence')).toBe(true);
   });
 
   it('resolves explicit app ids and falls back to the default app', () => {

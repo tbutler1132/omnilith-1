@@ -13,6 +13,7 @@ import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage } from '../space/space-stage.js';
 import { VisorHud } from '../visor/hud/index.js';
 import { parseVisorRoute, type VisorRoute, writeVisorRoute } from '../visor/visor-route.js';
+import { resolveOpenAppTargetOrganismId } from './resolve-open-app-target-organism-id.js';
 import {
   DEV_SHORTCUT_LOGIN_EMAIL,
   DEV_SHORTCUT_LOGIN_PASSWORD,
@@ -41,6 +42,7 @@ export function PlatformShell() {
   const [altitude, setAltitude] = useState<Altitude>('high');
   const [isInInterior, setIsInInterior] = useState(false);
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
+  const [boundaryOrganismId, setBoundaryOrganismId] = useState<string | null>(null);
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
   const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
@@ -102,15 +104,19 @@ export function PlatformShell() {
 
   const handleOpenApp = useCallback(
     (appId: string) => {
-      const targetedOrganismId =
-        appId === 'organism' ? (enteredOrganismId ?? visorRoute.organismId) : visorRoute.organismId;
+      const targetedOrganismId = resolveOpenAppTargetOrganismId({
+        appId,
+        enteredOrganismId,
+        boundaryOrganismId,
+        visorOrganismId: visorRoute.organismId,
+      });
       updateVisorRoute({
         mode: 'open',
         appId,
         organismId: targetedOrganismId,
       });
     },
-    [enteredOrganismId, updateVisorRoute, visorRoute.organismId],
+    [boundaryOrganismId, enteredOrganismId, updateVisorRoute, visorRoute.organismId],
   );
 
   const handleCloseVisor = useCallback(() => {
@@ -271,6 +277,7 @@ export function PlatformShell() {
         onBackControlReady={handleBackControlReady}
         onInteriorChange={setIsInInterior}
         onEnteredOrganismChange={setEnteredOrganismId}
+        onBoundaryOrganismChange={setBoundaryOrganismId}
       />
       <VisorHud
         mode={visorRoute.mode}

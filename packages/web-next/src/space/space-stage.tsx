@@ -24,6 +24,7 @@ interface SpaceStageProps {
   readonly onBackControlReady: (handler: (() => void) | null) => void;
   readonly onInteriorChange: (isInInterior: boolean) => void;
   readonly onEnteredOrganismChange: (organismId: string | null) => void;
+  readonly onBoundaryOrganismChange: (organismId: string | null) => void;
 }
 
 interface FocusPoint {
@@ -35,6 +36,7 @@ interface FocusPoint {
 interface MapHistoryEntry {
   readonly mapId: string;
   readonly returnFocus: FocusPoint | null;
+  readonly boundaryOrganismId: string | null;
 }
 
 interface MarkerActivationInput {
@@ -60,9 +62,11 @@ export function SpaceStage({
   onBackControlReady,
   onInteriorChange,
   onEnteredOrganismChange,
+  onBoundaryOrganismChange,
 }: SpaceStageProps) {
   const [currentMapId, setCurrentMapId] = useState(worldMapId);
   const [mapHistory, setMapHistory] = useState<ReadonlyArray<MapHistoryEntry>>([]);
+  const [currentBoundaryOrganismId, setCurrentBoundaryOrganismId] = useState<string | null>(null);
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [focusedOrganismId, setFocusedOrganismId] = useState<string | null>(null);
   const [pendingFocusAfterSwitch, setPendingFocusAfterSwitch] = useState<FocusPoint | null>(null);
@@ -116,6 +120,7 @@ export function SpaceStage({
   useEffect(() => {
     setCurrentMapId(worldMapId);
     setMapHistory([]);
+    setCurrentBoundaryOrganismId(null);
     setEnteredOrganismId(null);
     setFocusedOrganismId(null);
     setPendingFocusAfterSwitch(null);
@@ -173,15 +178,17 @@ export function SpaceStage({
           {
             mapId: currentMapId,
             returnFocus: from,
+            boundaryOrganismId: currentBoundaryOrganismId,
           },
         ]);
         setCurrentMapId(targetMapId);
+        setCurrentBoundaryOrganismId(from.organismId);
         setEnteredOrganismId(null);
         setFocusedOrganismId(null);
         setPendingFocusAfterSwitch(null);
       });
     },
-    [animateTo, currentMapId, runExitTransition, transitionPhase],
+    [animateTo, currentBoundaryOrganismId, currentMapId, runExitTransition, transitionPhase],
   );
 
   const handleEnterOrganism = useCallback(
@@ -241,6 +248,7 @@ export function SpaceStage({
     runExitTransition(() => {
       setMapHistory((current) => current.slice(0, -1));
       setCurrentMapId(previous.mapId);
+      setCurrentBoundaryOrganismId(previous.boundaryOrganismId);
       setFocusedOrganismId(null);
       setPendingFocusAfterSwitch(previous.returnFocus);
     });
@@ -333,6 +341,10 @@ export function SpaceStage({
   useEffect(() => {
     onEnteredOrganismChange(enteredOrganismId);
   }, [enteredOrganismId, onEnteredOrganismChange]);
+
+  useEffect(() => {
+    onBoundaryOrganismChange(currentBoundaryOrganismId);
+  }, [currentBoundaryOrganismId, onBoundaryOrganismChange]);
 
   useEffect(() => {
     if (enteredOrganismId === null) {
