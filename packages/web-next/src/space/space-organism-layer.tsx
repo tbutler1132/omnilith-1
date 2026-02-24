@@ -28,9 +28,23 @@ interface SpaceOrganismLayerProps {
 
 const BASE_MARKER_SIZE = 16;
 const BASE_MARKER_FRAME_SIZE = 160;
+const MIN_RENDERABLE_SIZE_MULTIPLIER = 0.000001;
+const DETAIL_CARD_MIN_SIZE_MULTIPLIER = 0.35;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+export function resolveMarkerSizeMultiplier(entrySize: number | undefined): number {
+  if (typeof entrySize !== 'number' || !Number.isFinite(entrySize) || entrySize <= 0) {
+    return 1;
+  }
+
+  return Math.max(entrySize, MIN_RENDERABLE_SIZE_MULTIPLIER);
+}
+
+export function shouldRenderDetailCard(sizeMultiplier: number): boolean {
+  return sizeMultiplier >= DETAIL_CARD_MIN_SIZE_MULTIPLIER;
 }
 
 function formatLabel(organismId: string): string {
@@ -62,8 +76,9 @@ export function SpaceOrganismLayer({
           name: markerName,
           contentTypeId,
         });
-        const sizeMultiplier = clamp(entry.size ?? 1, 0.6, 2.4);
+        const sizeMultiplier = resolveMarkerSizeMultiplier(entry.size);
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
+        const showDetailCard = shouldRenderDetailCard(sizeMultiplier);
         const dotSize = BASE_MARKER_SIZE * sizeMultiplier;
         const frameSize = BASE_MARKER_FRAME_SIZE * sizeMultiplier;
         const markerStyle: CSSProperties = {
@@ -105,14 +120,14 @@ export function SpaceOrganismLayer({
               <span className="space-organism-dot" style={{ width: dotSize, height: dotSize }} />
             ) : null}
 
-            {altitude === 'mid' ? (
+            {altitude === 'mid' && showDetailCard ? (
               <span className="space-organism-mid">
                 <span className="space-organism-type-badge">{contentTypeId ?? 'unknown'}</span>
                 <span className="space-organism-name">{markerName}</span>
               </span>
             ) : null}
 
-            {altitude === 'close' ? (
+            {altitude === 'close' && showDetailCard ? (
               <span className="space-organism-close">
                 <span className="space-organism-type-badge">{contentTypeId ?? 'unknown'}</span>
                 <span className="space-organism-name">{markerName}</span>
@@ -120,6 +135,10 @@ export function SpaceOrganismLayer({
                   <MarkerPreview contentTypeId={contentTypeId} payload={currentPayload} />
                 </span>
               </span>
+            ) : null}
+
+            {(altitude === 'mid' || altitude === 'close') && !showDetailCard ? (
+              <span className="space-organism-dot" style={{ width: dotSize, height: dotSize }} />
             ) : null}
           </button>
         );

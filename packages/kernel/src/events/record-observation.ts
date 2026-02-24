@@ -11,6 +11,7 @@ import type { ContentTypeId, IdentityGenerator, OrganismId, Timestamp, UserId } 
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccessOrThrow } from '../visibility/check-access.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import type { DomainEvent } from './event.js';
 import type { EventPublisher } from './event-publisher.js';
@@ -29,6 +30,7 @@ export interface RecordObservationDeps {
   readonly eventPublisher: EventPublisher;
   readonly identityGenerator: IdentityGenerator;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly compositionRepository: CompositionRepository;
 }
@@ -58,12 +60,14 @@ export async function recordObservation(
 
   await checkAccessOrThrow(input.observedBy, input.organismId, 'record-observation', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,
   });
   await checkAccessOrThrow(input.observedBy, input.targetOrganismId, 'view', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,

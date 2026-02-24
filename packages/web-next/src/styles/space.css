@@ -56,9 +56,12 @@
   background: transparent;
   padding: 0;
   margin: 0;
+  min-width: 0;
+  min-height: 0;
   pointer-events: auto;
   text-align: left;
   cursor: default;
+  overflow: hidden;
 }
 
 .map-legend-marker {

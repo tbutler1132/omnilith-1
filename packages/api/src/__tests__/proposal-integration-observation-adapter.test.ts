@@ -11,6 +11,7 @@ import {
   InMemoryQueryPort,
   InMemoryRelationshipRepository,
   InMemoryStateRepository,
+  InMemorySurfaceRepository,
   InMemoryVisibilityRepository,
   resetIdCounter,
 } from '@omnilith/kernel/src/testing/index.js';
@@ -32,6 +33,7 @@ function createTestContainer(): Container {
   const proposalRepository = new InMemoryProposalRepository();
   const eventPublisher = new InMemoryEventPublisher();
   const relationshipRepository = new InMemoryRelationshipRepository();
+  const surfaceRepository = new InMemorySurfaceRepository(stateRepository);
 
   return {
     organismRepository,
@@ -41,6 +43,7 @@ function createTestContainer(): Container {
     eventPublisher,
     eventRepository: eventPublisher,
     visibilityRepository: new InMemoryVisibilityRepository(),
+    surfaceRepository,
     relationshipRepository,
     contentTypeRegistry: registry as ContentTypeRegistry,
     identityGenerator: createTestIdentityGenerator(),

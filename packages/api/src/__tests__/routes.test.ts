@@ -27,6 +27,7 @@ import {
   InMemoryQueryPort,
   InMemoryRelationshipRepository,
   InMemoryStateRepository,
+  InMemorySurfaceRepository,
   InMemoryVisibilityRepository,
   resetIdCounter,
 } from '@omnilith/kernel/src/testing/index.js';
@@ -53,6 +54,7 @@ function createTestContainer(): Container {
   const proposalRepository = new InMemoryProposalRepository();
   const eventPublisher = new InMemoryEventPublisher();
   const relationshipRepository = new InMemoryRelationshipRepository();
+  const surfaceRepository = new InMemorySurfaceRepository(stateRepository);
 
   return {
     organismRepository,
@@ -62,6 +64,7 @@ function createTestContainer(): Container {
     eventPublisher,
     eventRepository: eventPublisher, // dual interface
     visibilityRepository: new InMemoryVisibilityRepository(),
+    surfaceRepository,
     relationshipRepository,
     contentTypeRegistry: registry as ContentTypeRegistry,
     identityGenerator: createTestIdentityGenerator(),
@@ -1149,6 +1152,19 @@ describe('authorization enforcement', () => {
   it('members-only organisms are visible to parent-community members and denied to non-members', async () => {
     const { organism: community } = await createTestOrganism(ownerApp, { name: 'Community' });
     const { organism: child } = await createTestOrganism(ownerApp, { name: 'Child' });
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Members Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 2500, height: 2500 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
 
     await ownerApp.request(`/organisms/${community.id}/children`, {
       method: 'POST',
@@ -1170,6 +1186,17 @@ describe('authorization enforcement', () => {
       role: 'member',
       createdAt: container.identityGenerator.timestamp(),
     });
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: child.id,
+        x: 333,
+        y: 444,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
 
     const denied = await outsiderApp.request(`/organisms/${child.id}`);
     expect(denied.status).toBe(403);
@@ -1249,6 +1276,30 @@ describe('public read routes', () => {
 
   it('guest can read a public organism via /public routes', async () => {
     const { organism } = await createTestOrganism(ownerApp);
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Public Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 4000, height: 4000 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: organism.id,
+        x: 250,
+        y: 250,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
 
     const organismRes = await publicApp.request(`/public/organisms/${organism.id}`);
     expect(organismRes.status).toBe(200);
@@ -1275,5 +1326,12 @@ describe('public read routes', () => {
 
     const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
     expect(contributionsRes.status).toBe(404);
+  });
+
+  it('guest receives 404 for unsurfaced organisms even without explicit private visibility', async () => {
+    const { organism } = await createTestOrganism(ownerApp);
+
+    const res = await publicApp.request(`/public/organisms/${organism.id}`);
+    expect(res.status).toBe(404);
   });
 });

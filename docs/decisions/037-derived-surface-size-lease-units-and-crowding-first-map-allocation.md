@@ -120,3 +120,17 @@ If the organism's underlying mass later exceeds current allocation, a follow-up 
 ## Status
 
 Accepted (Phase 1 constants accepted; calibration expected through policy state updates).
+
+Amended by `039-unsurfaced-private-and-recursive-space-accounting.md` for:
+
+- unsurfaced effective visibility resolution
+- recursive unsurfaced descendant space accounting
+
+Amended by `040-target-map-relative-surface-size-normalization.md` for:
+
+- target-map capacity normalization of derived size
+
+Amended by `041-boundary-proportional-world-map-sizing-and-unclamped-map-context-floor.md` for:
+
+- boundary-proportional world-map transfer semantics
+- removal of non-community map-context minimum floor inflation

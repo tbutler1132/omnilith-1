@@ -22,6 +22,8 @@ import type { OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { Relationship } from '../relationships/relationship.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
+import type { SurfaceRepository } from './surface-repository.js';
+import type { VisibilityLevel } from './visibility.js';
 import type { VisibilityRepository } from './visibility-repository.js';
 
 export type ActionType =
@@ -42,6 +44,7 @@ export interface AccessDecision {
 
 export interface AccessControlDeps {
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly compositionRepository: CompositionRepository;
   readonly organismRepository: OrganismRepository;
@@ -60,7 +63,9 @@ export async function checkAccess(
 
   // Step 1: Visibility check
   const visibility = await deps.visibilityRepository.findByOrganismId(organismId);
-  const level = visibility?.level ?? 'public';
+  const configuredLevel = visibility?.level ?? 'public';
+  const isSurfaced = deps.surfaceRepository ? await deps.surfaceRepository.isSurfaced(organismId) : true;
+  const level: VisibilityLevel = isSurfaced ? configuredLevel : 'private';
 
   // Guest caller path: unauthenticated users can only view public organisms.
   if (userId === null) {

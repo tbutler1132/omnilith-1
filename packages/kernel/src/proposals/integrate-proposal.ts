@@ -26,6 +26,7 @@ import type { StateRepository } from '../organism/state-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from '../visibility/access-control.js';
 import { changeVisibility } from '../visibility/change-visibility.js';
+import type { SurfaceRepository } from '../visibility/surface-repository.js';
 import type { VisibilityRepository } from '../visibility/visibility-repository.js';
 import { evaluateProposal } from './evaluate-proposal.js';
 import type { Proposal } from './proposal.js';
@@ -45,6 +46,7 @@ export interface IntegrateProposalDeps {
   readonly eventPublisher: EventPublisher;
   readonly relationshipRepository: RelationshipRepository;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly identityGenerator: IdentityGenerator;
 }
 
@@ -68,6 +70,7 @@ export async function integrateProposal(
   // Check integration authority
   const accessDecision = await checkAccess(input.integratedBy, proposal.organismId, 'integrate-proposal', {
     visibilityRepository: deps.visibilityRepository,
+    surfaceRepository: deps.surfaceRepository,
     relationshipRepository: deps.relationshipRepository,
     compositionRepository: deps.compositionRepository,
     organismRepository: deps.organismRepository,
@@ -165,6 +168,7 @@ export async function integrateProposal(
           organismRepository: deps.organismRepository,
           compositionRepository: deps.compositionRepository,
           visibilityRepository: deps.visibilityRepository,
+          surfaceRepository: deps.surfaceRepository,
           relationshipRepository: deps.relationshipRepository,
           eventPublisher: deps.eventPublisher,
           identityGenerator: deps.identityGenerator,
@@ -184,6 +188,7 @@ export async function integrateProposal(
           organismRepository: deps.organismRepository,
           compositionRepository: deps.compositionRepository,
           visibilityRepository: deps.visibilityRepository,
+          surfaceRepository: deps.surfaceRepository,
           relationshipRepository: deps.relationshipRepository,
           eventPublisher: deps.eventPublisher,
           identityGenerator: deps.identityGenerator,
@@ -202,6 +207,7 @@ export async function integrateProposal(
         {
           organismRepository: deps.organismRepository,
           visibilityRepository: deps.visibilityRepository,
+          surfaceRepository: deps.surfaceRepository,
           relationshipRepository: deps.relationshipRepository,
           compositionRepository: deps.compositionRepository,
           eventPublisher: deps.eventPublisher,

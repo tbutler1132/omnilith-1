@@ -13,6 +13,7 @@ import type { IdentityGenerator, OrganismId, UserId } from '../identity.js';
 import type { OrganismRepository } from '../organism/organism-repository.js';
 import type { RelationshipRepository } from '../relationships/relationship-repository.js';
 import { checkAccess } from './access-control.js';
+import type { SurfaceRepository } from './surface-repository.js';
 import type { VisibilityRecord } from './visibility.js';
 import type { VisibilityRepository } from './visibility-repository.js';
 
@@ -26,6 +27,7 @@ export interface ChangeVisibilityInput {
 export interface ChangeVisibilityDeps {
   readonly organismRepository: OrganismRepository;
   readonly visibilityRepository: VisibilityRepository;
+  readonly surfaceRepository?: SurfaceRepository;
   readonly relationshipRepository: RelationshipRepository;
   readonly compositionRepository: CompositionRepository;
   readonly eventPublisher: EventPublisher;
@@ -44,6 +46,7 @@ export async function changeVisibility(
   if (input.enforceAccess ?? true) {
     const accessDecision = await checkAccess(input.changedBy, input.organismId, 'change-visibility', {
       visibilityRepository: deps.visibilityRepository,
+      surfaceRepository: deps.surfaceRepository,
       relationshipRepository: deps.relationshipRepository,
       compositionRepository: deps.compositionRepository,
       organismRepository: deps.organismRepository,

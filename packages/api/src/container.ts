@@ -18,6 +18,7 @@ import type {
   QueryPort,
   RelationshipRepository,
   StateRepository,
+  SurfaceRepository,
   VisibilityRepository,
 } from '@omnilith/kernel';
 import { UuidIdentityGenerator } from './adapters/identity-generator.js';
@@ -29,6 +30,7 @@ import { PgProposalRepository } from './adapters/pg-proposal-repository.js';
 import { PgQueryPort } from './adapters/pg-query-port.js';
 import { PgRelationshipRepository } from './adapters/pg-relationship-repository.js';
 import { PgStateRepository } from './adapters/pg-state-repository.js';
+import { PgSurfaceRepository } from './adapters/pg-surface-repository.js';
 import { PgVisibilityRepository } from './adapters/pg-visibility-repository.js';
 import type { Database } from './db/connection.js';
 import { createGitHubPlugin, type GitHubPlugin } from './github/plugin.js';
@@ -42,6 +44,7 @@ export interface Container {
   eventPublisher: EventPublisher;
   eventRepository: EventRepository;
   visibilityRepository: VisibilityRepository;
+  surfaceRepository: SurfaceRepository;
   relationshipRepository: RelationshipRepository;
   contentTypeRegistry: ContentTypeRegistry;
   identityGenerator: IdentityGenerator;
@@ -60,6 +63,7 @@ export function createContainer(db: Database): Container {
   const eventPublisher = new PgEventPublisher(db);
   const eventRepository = new PgEventRepository(db);
   const visibilityRepository = new PgVisibilityRepository(db);
+  const surfaceRepository = new PgSurfaceRepository(db);
   const relationshipRepository = new PgRelationshipRepository(db);
   const identityGenerator = new UuidIdentityGenerator();
   const queryPort = new PgQueryPort(db);
@@ -78,6 +82,7 @@ export function createContainer(db: Database): Container {
     eventPublisher,
     eventRepository,
     visibilityRepository,
+    surfaceRepository,
     relationshipRepository,
     contentTypeRegistry,
     identityGenerator,

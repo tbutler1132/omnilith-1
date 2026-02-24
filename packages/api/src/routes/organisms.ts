@@ -189,6 +189,7 @@ export function organismRoutes(container: Container) {
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           relationshipRepository: container.relationshipRepository,
           compositionRepository: container.compositionRepository,
         },
@@ -229,11 +230,12 @@ export function organismRoutes(container: Container) {
     if (!targetExists) return c.json({ error: `Organism not found: ${targetOrganismId}` }, 404);
 
     const derived = await deriveSurfaceEntrySize(
-      { organismId: targetOrganismId },
+      { organismId: targetOrganismId, mapOrganismId: mapId },
       {
         organismRepository: container.organismRepository,
         stateRepository: container.stateRepository,
         compositionRepository: container.compositionRepository,
+        surfaceRepository: container.surfaceRepository,
       },
     );
 
@@ -286,6 +288,7 @@ export function organismRoutes(container: Container) {
             eventPublisher: container.eventPublisher,
             identityGenerator: container.identityGenerator,
             visibilityRepository: container.visibilityRepository,
+            surfaceRepository: container.surfaceRepository,
             relationshipRepository: container.relationshipRepository,
             compositionRepository: container.compositionRepository,
           },
@@ -355,6 +358,7 @@ export function organismRoutes(container: Container) {
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           relationshipRepository: container.relationshipRepository,
           compositionRepository: container.compositionRepository,
         },
@@ -417,6 +421,7 @@ export function organismRoutes(container: Container) {
           organismRepository: container.organismRepository,
           compositionRepository: container.compositionRepository,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           relationshipRepository: container.relationshipRepository,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
@@ -447,6 +452,7 @@ export function organismRoutes(container: Container) {
           organismRepository: container.organismRepository,
           compositionRepository: container.compositionRepository,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           relationshipRepository: container.relationshipRepository,
           eventPublisher: container.eventPublisher,
           identityGenerator: container.identityGenerator,
@@ -564,7 +570,17 @@ export function organismRoutes(container: Container) {
     if (accessError) return accessError;
 
     const record = await container.visibilityRepository.findByOrganismId(id);
-    return c.json({ visibility: record ?? { organismId: id, level: 'public' } });
+    if (record) {
+      return c.json({ visibility: record });
+    }
+
+    const surfaced = await container.surfaceRepository.isSurfaced(id);
+    return c.json({
+      visibility: {
+        organismId: id,
+        level: surfaced ? 'public' : 'private',
+      },
+    });
   });
 
   app.put('/:id/visibility', async (c) => {
@@ -584,6 +600,7 @@ export function organismRoutes(container: Container) {
         {
           organismRepository: container.organismRepository,
           visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
           relationshipRepository: container.relationshipRepository,
           compositionRepository: container.compositionRepository,
           eventPublisher: container.eventPublisher,

@@ -173,5 +173,6 @@ export {
 } from './visibility/change-visibility.js';
 export { checkAccessOrThrow } from './visibility/check-access.js';
 // Visibility + Access Control
+export type { SurfaceRepository } from './visibility/surface-repository.js';
 export type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';
 export type { VisibilityRepository } from './visibility/visibility-repository.js';

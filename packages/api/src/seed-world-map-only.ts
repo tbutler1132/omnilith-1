@@ -11,12 +11,16 @@ import { appendState, composeOrganism, createOrganism } from '@omnilith/kernel';
 import { eq } from 'drizzle-orm';
 import type { Container } from './container.js';
 import { platformConfig, users } from './db/schema.js';
+import { deriveSurfaceEntrySize } from './surface/derive-surface-entry-size.js';
+import { parseSpatialMapPayload, type SpatialMapEntrySnapshot } from './surface/spatial-map-payload.js';
 
 const WORLD_MAP_ONLY_SEED_KEY = 'world_map_only_seed_complete';
 const WORLD_MAP_KEY = 'world_map_id';
 const SYSTEM_USER_ID = 'system' as UserId;
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
+const SIZE_EPSILON = 1e-6;
+const WORLD_MAP_SIZE_STABILIZATION_MAX_PASSES = 6;
 
 type CreateOrganismDeps = Parameters<typeof createOrganism>[1];
 type ComposeOrganismDeps = Parameters<typeof composeOrganism>[1];
@@ -37,6 +41,19 @@ interface ManualCadenceChildren {
   readonly retrosOrganismId: OrganismId;
   readonly tasksOrganismId: OrganismId;
   readonly inboxOrganismId: OrganismId;
+}
+
+function sizeDiffers(current: number | undefined, next: number): boolean {
+  if (current === undefined) return true;
+  return Math.abs(current - next) > SIZE_EPSILON;
+}
+
+function withUpdatedEntrySize(
+  entries: ReadonlyArray<SpatialMapEntrySnapshot>,
+  organismId: OrganismId,
+  size: number,
+): ReadonlyArray<SpatialMapEntrySnapshot> {
+  return entries.map((entry) => (entry.organismId === organismId ? { ...entry, size } : entry));
 }
 
 function buildVariableRowsForBoundary(boundarySlug: string): ReadonlyArray<string> {
@@ -359,6 +376,13 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     compositionRepository: container.compositionRepository,
   };
 
+  const deriveSurfaceSizeDeps = {
+    organismRepository: container.organismRepository,
+    stateRepository: container.stateRepository,
+    compositionRepository: container.compositionRepository,
+    surfaceRepository: container.surfaceRepository,
+  };
+
   const devPersonalOrganism = await createOrganism(
     {
       name: 'Dev Practice',
@@ -437,19 +461,35 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     createDeps,
   );
 
+  const capitalFieldNoteContent = [
+    '# Capital Field Note',
+    '',
+    'This is a simple text organism surfaced on the world map for web-next slice testing.',
+    '',
+    '- Enter from Space',
+    '- Confirm non-map content type rendering',
+  ].join('\n');
+
   const capitalFieldNote = await createOrganism(
     {
       name: 'Capital Field Note',
       contentTypeId: 'text' as ContentTypeId,
       payload: {
-        content: [
-          '# Capital Field Note',
-          '',
-          'This is a simple text organism surfaced on the world map for web-next slice testing.',
-          '',
-          '- Enter from Space',
-          '- Confirm non-map content type rendering',
-        ].join('\n'),
+        content: capitalFieldNoteContent,
+        format: 'markdown',
+      },
+      createdBy: SYSTEM_USER_ID,
+      openTrunk: true,
+    },
+    createDeps,
+  );
+
+  const capitalCommunityMapFieldNote = await createOrganism(
+    {
+      name: 'Capital Community Field Note',
+      contentTypeId: 'text' as ContentTypeId,
+      payload: {
+        content: capitalFieldNoteContent,
         format: 'markdown',
       },
       createdBy: SYSTEM_USER_ID,
@@ -476,6 +516,45 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     composeDeps,
   );
 
+  await composeOrganism(
+    {
+      parentId: capitalCommunity.organism.id,
+      childId: capitalCommunityMapFieldNote.organism.id,
+      composedBy: SYSTEM_USER_ID,
+    },
+    composeDeps,
+  );
+
+  const capitalCommunityMapFieldNoteSize = await deriveSurfaceEntrySize(
+    {
+      organismId: capitalFieldNote.organism.id,
+      mapOrganismId: capitalMap.organism.id,
+    },
+    deriveSurfaceSizeDeps,
+  );
+
+  await appendState(
+    {
+      organismId: capitalMap.organism.id,
+      contentTypeId: 'spatial-map' as ContentTypeId,
+      payload: {
+        entries: [
+          {
+            organismId: capitalCommunityMapFieldNote.organism.id,
+            x: 1060,
+            y: 980,
+            size: capitalCommunityMapFieldNoteSize.size,
+            emphasis: 0.68,
+          },
+        ],
+        width: 2000,
+        height: 2000,
+      },
+      appendedBy: SYSTEM_USER_ID,
+    },
+    appendDeps,
+  );
+
   await composeManualCadenceChildren(
     capitalCommunity.organism.id,
     capitalCommunityManualCadenceChildren,
@@ -500,12 +579,74 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
     appendDeps,
   );
 
+  for (let pass = 0; pass < WORLD_MAP_SIZE_STABILIZATION_MAX_PASSES; pass += 1) {
+    const worldMapState = await container.stateRepository.findCurrentByOrganismId(worldMapId);
+    if (!worldMapState || worldMapState.contentTypeId !== ('spatial-map' as ContentTypeId)) {
+      break;
+    }
+
+    const worldMapPayload = parseSpatialMapPayload(worldMapState.payload);
+    if (!worldMapPayload) {
+      break;
+    }
+
+    const communityEntry = worldMapPayload.entries.find((entry) => entry.organismId === capitalCommunity.organism.id);
+    const fieldNoteEntry = worldMapPayload.entries.find((entry) => entry.organismId === capitalFieldNote.organism.id);
+    if (!communityEntry || !fieldNoteEntry) {
+      break;
+    }
+
+    const nextCommunitySize = await deriveSurfaceEntrySize(
+      {
+        organismId: capitalCommunity.organism.id,
+        mapOrganismId: worldMapId,
+      },
+      deriveSurfaceSizeDeps,
+    );
+    const nextFieldNoteSize = await deriveSurfaceEntrySize(
+      {
+        organismId: capitalFieldNote.organism.id,
+        mapOrganismId: worldMapId,
+      },
+      deriveSurfaceSizeDeps,
+    );
+
+    const communityChanged = sizeDiffers(communityEntry.size, nextCommunitySize.size);
+    const fieldNoteChanged = sizeDiffers(fieldNoteEntry.size, nextFieldNoteSize.size);
+    if (!communityChanged && !fieldNoteChanged) {
+      break;
+    }
+
+    let nextEntries = worldMapPayload.entries;
+    if (communityChanged) {
+      nextEntries = withUpdatedEntrySize(nextEntries, capitalCommunity.organism.id, nextCommunitySize.size);
+    }
+    if (fieldNoteChanged) {
+      nextEntries = withUpdatedEntrySize(nextEntries, capitalFieldNote.organism.id, nextFieldNoteSize.size);
+    }
+
+    await appendState(
+      {
+        organismId: worldMapId,
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: {
+          entries: nextEntries,
+          width: worldMapPayload.width,
+          height: worldMapPayload.height,
+          ...(worldMapPayload.minSeparation !== undefined ? { minSeparation: worldMapPayload.minSeparation } : {}),
+        },
+        appendedBy: SYSTEM_USER_ID,
+      },
+      appendDeps,
+    );
+  }
+
   await container.db.insert(platformConfig).values({
     key: WORLD_MAP_ONLY_SEED_KEY,
     value: new Date().toISOString(),
   });
 
   console.log(
-    `Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community (${capitalCommunity.organism.id}), Capital Field Note (${capitalFieldNote.organism.id}), and Dev Practice (${devPersonalOrganism.organism.id})`,
+    `Using OMNILITH_SEED_PROFILE=world-map-only with Capital Community (${capitalCommunity.organism.id}), Capital Field Note (${capitalFieldNote.organism.id}), Capital Community Field Note (${capitalCommunityMapFieldNote.organism.id}), and Dev Practice (${devPersonalOrganism.organism.id})`,
   );
 }

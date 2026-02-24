@@ -98,11 +98,12 @@ async function main(): Promise<void> {
 
     for (const entry of mapPayload.entries) {
       const derived = await deriveSurfaceEntrySize(
-        { organismId: entry.organismId },
+        { organismId: entry.organismId, mapOrganismId: worldMapId },
         {
           organismRepository: container.organismRepository,
           stateRepository: container.stateRepository,
           compositionRepository: container.compositionRepository,
+          surfaceRepository: container.surfaceRepository,
         },
       );
 
@@ -150,6 +151,7 @@ async function main(): Promise<void> {
         eventPublisher: container.eventPublisher,
         identityGenerator: container.identityGenerator,
         visibilityRepository: container.visibilityRepository,
+        surfaceRepository: container.surfaceRepository,
         relationshipRepository: container.relationshipRepository,
         compositionRepository: container.compositionRepository,
       },

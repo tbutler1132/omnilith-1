@@ -151,7 +151,17 @@ export function publicOrganismRoutes(container: Container) {
     if (accessError) return accessError;
 
     const visibility = await container.visibilityRepository.findByOrganismId(id);
-    return c.json({ visibility: visibility ?? { organismId: id, level: 'public' } });
+    if (visibility) {
+      return c.json({ visibility });
+    }
+
+    const surfaced = await container.surfaceRepository.isSurfaced(id);
+    return c.json({
+      visibility: {
+        organismId: id,
+        level: surfaced ? 'public' : 'private',
+      },
+    });
   });
 
   app.get('/:id/proposals', async (c) => {
