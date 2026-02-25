@@ -10,6 +10,7 @@ import styles from './cadence-app.module.css';
 
 interface CadenceMarkdownPreviewProps {
   readonly content: string;
+  readonly className?: string;
 }
 
 interface TableBlock {
@@ -188,7 +189,7 @@ function renderMarkdownBlocks(lines: ReadonlyArray<string>): ReactNode[] {
   return blocks;
 }
 
-export function CadenceMarkdownPreview({ content }: CadenceMarkdownPreviewProps) {
+export function CadenceMarkdownPreview({ content, className }: CadenceMarkdownPreviewProps) {
   const lines = normalizePreviewLines(content);
   const blocks = renderMarkdownBlocks(lines);
 
@@ -196,7 +197,7 @@ export function CadenceMarkdownPreview({ content }: CadenceMarkdownPreviewProps)
     return null;
   }
 
-  return <div className={styles.markdownPreview}>{blocks}</div>;
+  return <div className={className ? `${styles.markdownPreview} ${className}` : styles.markdownPreview}>{blocks}</div>;
 }
 
 function resolveHeadingClassName(level: number): string {
