@@ -79,6 +79,7 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
   }, [organismId]);
 
   const activeTabChildren = cadenceChildrenByTab.find((entry) => entry.tabId === activeTabId)?.children ?? [];
+  const singleChildInTab = activeTabChildren.length === 1;
   const editingChild = editingChildId
     ? (cadenceChildren.find((child) => child.childId === editingChildId) ?? null)
     : null;
@@ -191,7 +192,7 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
             </div>
           </section>
         ) : (
-          <>
+          <section className={styles.cadenceAppReadScreen}>
             <div className={styles.cadenceAppTabRow} role="tablist" aria-label="Boundary cadence tabs">
               {BOUNDARY_CADENCE_TABS.map((tab) => {
                 const count = cadenceChildrenByTab.find((entry) => entry.tabId === tab.id)?.children.length ?? 0;
@@ -221,42 +222,47 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
               <p className={styles.cadenceAppEmpty}>No cadence organism is composed for this tab yet.</p>
             ) : null}
 
-            {activeTabChildren.map((child) => {
-              const previewContent = getPayloadContent(child.payload);
-              const editable = canEditCadenceChild(child);
+            {activeTabChildren.length > 0 ? (
+              <div className={styles.cadenceAppReadContent}>
+                {activeTabChildren.map((child) => {
+                  const previewContent = getPayloadContent(child.payload);
+                  const editable = canEditCadenceChild(child);
 
-              return (
-                <article key={child.childId} className={styles.cadenceAppChild}>
-                  <header className={styles.cadenceAppChildHeader}>
-                    <h3 className={styles.cadenceAppChildName}>{child.name}</h3>
-                    <span className={styles.cadenceAppChildType}>{child.contentTypeId ?? 'unknown'}</span>
-                  </header>
+                  return (
+                    <article
+                      key={child.childId}
+                      className={`${styles.cadenceAppChild} ${singleChildInTab ? styles.cadenceAppChildSingle : ''}`}
+                    >
+                      <div className={styles.cadenceAppChildMeta}>
+                        <h3 className={styles.cadenceAppChildName}>{child.name}</h3>
+                        <span className={styles.cadenceAppChildType}>{child.contentTypeId ?? 'unknown'}</span>
+                        {editable ? (
+                          <button
+                            type="button"
+                            className={styles.cadenceAppActionButton}
+                            onClick={() => handleBeginEdit(child.childId, child.payload)}
+                          >
+                            Edit
+                          </button>
+                        ) : null}
+                      </div>
 
-                  {editable ? (
-                    <div className={styles.cadenceAppActions}>
-                      <button
-                        type="button"
-                        className={styles.cadenceAppActionButton}
-                        onClick={() => handleBeginEdit(child.childId, child.payload)}
-                      >
-                        Edit
-                      </button>
-                    </div>
-                  ) : null}
-
-                  {previewContent ? (
-                    <div className={styles.cadenceAppPreview}>
-                      <CadenceMarkdownPreview content={previewContent} />
-                    </div>
-                  ) : (
-                    <p className={styles.cadenceAppPreviewEmpty}>
-                      No markdown preview is available for this cadence organism.
-                    </p>
-                  )}
-                </article>
-              );
-            })}
-          </>
+                      {previewContent ? (
+                        <CadenceMarkdownPreview
+                          content={previewContent}
+                          className={`${styles.cadenceAppPreview} ${singleChildInTab ? styles.cadenceAppPreviewSingle : ''}`}
+                        />
+                      ) : (
+                        <p className={styles.cadenceAppPreviewEmpty}>
+                          No markdown preview is available for this cadence organism.
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : null}
+          </section>
         )
       ) : null}
     </section>
