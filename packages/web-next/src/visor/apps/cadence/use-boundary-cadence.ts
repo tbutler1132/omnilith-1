@@ -1,37 +1,15 @@
 /**
  * Boundary cadence data hook.
  *
- * Loads composed children for one organism and fetches each child's current
- * state so the cadence app can project Move 48 cadence organisms.
+ * Loads one boundary and its composed children (with current state) so the
+ * cadence app can project Move 48 cadence organisms in a single read pass.
  */
 
-import { useEffect, useState } from 'react';
+import type { FetchChildrenWithStateResponse, FetchOrganismResponse } from '@omnilith/api-contracts';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../../../api/api-client.js';
 import { resolvePublicApiPath } from '../../../api/public-api-path.js';
 import type { BoundaryCadenceCandidateChild } from './boundary-cadence-presenter.js';
-
-interface OrganismRecord {
-  readonly id: string;
-  readonly name: string;
-}
-
-interface OrganismStateRecord {
-  readonly contentTypeId: string;
-  readonly payload: unknown;
-}
-
-interface FetchOrganismResponse {
-  readonly organism: OrganismRecord;
-  readonly currentState: OrganismStateRecord | null;
-}
-
-interface CompositionChildRecord {
-  readonly childId: string;
-}
-
-interface FetchChildrenResponse {
-  readonly children: ReadonlyArray<CompositionChildRecord>;
-}
 
 export interface BoundaryCadenceData {
   readonly boundary: {
@@ -45,46 +23,51 @@ interface UseBoundaryCadenceResult {
   readonly data: BoundaryCadenceData | null;
   readonly loading: boolean;
   readonly error: Error | null;
+  readonly reload: () => void;
 }
 
-async function loadCadenceChildren(parentOrganismId: string): Promise<BoundaryCadenceData> {
+interface UseBoundaryCadenceState {
+  readonly data: BoundaryCadenceData | null;
+  readonly loading: boolean;
+  readonly error: Error | null;
+}
+
+async function loadCadenceChildren(parentOrganismId: string, reloadCount: number): Promise<BoundaryCadenceData> {
+  void reloadCount;
+
   const parentResponse = await apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${parentOrganismId}`));
-  const childResponse = await apiFetch<FetchChildrenResponse>(
-    resolvePublicApiPath(`/organisms/${parentOrganismId}/children`),
+  const childResponse = await apiFetch<FetchChildrenWithStateResponse>(
+    resolvePublicApiPath(`/organisms/${parentOrganismId}/children-with-state`),
   );
 
-  const childRecords = await Promise.all(
-    childResponse.children.map(async (child): Promise<BoundaryCadenceCandidateChild | null> => {
-      try {
-        const response = await apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${child.childId}`));
-
-        return {
-          childId: child.childId,
-          name: response.organism.name,
-          contentTypeId: response.currentState?.contentTypeId ?? null,
-          payload: response.currentState?.payload,
-        };
-      } catch {
-        return null;
-      }
-    }),
-  );
+  const childRecords: BoundaryCadenceCandidateChild[] = childResponse.children.map((child) => ({
+    childId: child.composition.childId,
+    name: child.organism.name,
+    openTrunk: child.organism.openTrunk,
+    contentTypeId: child.currentState?.contentTypeId ?? null,
+    payload: child.currentState?.payload,
+  }));
 
   return {
     boundary: {
       id: parentResponse.organism.id,
       name: parentResponse.organism.name,
     },
-    children: childRecords.filter((child): child is BoundaryCadenceCandidateChild => child !== null),
+    children: childRecords,
   };
 }
 
 export function useBoundaryCadence(organismId: string | null): UseBoundaryCadenceResult {
-  const [state, setState] = useState<UseBoundaryCadenceResult>({
+  const [reloadCount, setReloadCount] = useState(0);
+  const [state, setState] = useState<UseBoundaryCadenceState>({
     data: null,
     loading: false,
     error: null,
   });
+
+  const reload = useCallback(() => {
+    setReloadCount((count) => count + 1);
+  }, []);
 
   useEffect(() => {
     if (!organismId) {
@@ -103,7 +86,7 @@ export function useBoundaryCadence(organismId: string | null): UseBoundaryCadenc
       error: null,
     });
 
-    loadCadenceChildren(organismId)
+    loadCadenceChildren(organismId, reloadCount)
       .then((data) => {
         if (cancelled) {
           return;
@@ -130,7 +113,10 @@ export function useBoundaryCadence(organismId: string | null): UseBoundaryCadenc
     return () => {
       cancelled = true;
     };
-  }, [organismId]);
+  }, [organismId, reloadCount]);
 
-  return state;
+  return {
+    ...state,
+    reload,
+  };
 }

@@ -21,6 +21,7 @@ export const BOUNDARY_CADENCE_TABS: ReadonlyArray<{ id: BoundaryCadenceTabId; la
 export interface BoundaryCadenceCandidateChild {
   readonly childId: string;
   readonly name: string;
+  readonly openTrunk: boolean;
   readonly contentTypeId: string | null;
   readonly payload: unknown;
 }
@@ -29,6 +30,7 @@ export interface BoundaryCadenceChild {
   readonly tabId: BoundaryCadenceTabId;
   readonly childId: string;
   readonly name: string;
+  readonly openTrunk: boolean;
   readonly contentTypeId: string | null;
   readonly payload: unknown;
 }
@@ -125,6 +127,7 @@ export function presentBoundaryCadenceChildren(
       tabId,
       childId: child.childId,
       name: child.name,
+      openTrunk: child.openTrunk,
       contentTypeId: child.contentTypeId,
       payload: child.payload,
     });

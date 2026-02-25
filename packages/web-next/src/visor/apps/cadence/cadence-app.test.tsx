@@ -13,18 +13,21 @@ interface MockCadenceState {
     readonly children: ReadonlyArray<{
       readonly childId: string;
       readonly name: string;
+      readonly openTrunk: boolean;
       readonly contentTypeId: string | null;
       readonly payload: unknown;
     }>;
   } | null;
   readonly loading: boolean;
   readonly error: Error | null;
+  readonly reload: () => void;
 }
 
 let mockCadenceState: MockCadenceState = {
   data: null,
   loading: false,
   error: null,
+  reload: () => {},
 };
 let requestedOrganismId: string | null = null;
 
@@ -41,6 +44,7 @@ describe('CadenceApp', () => {
       data: null,
       loading: false,
       error: null,
+      reload: () => {},
     };
     requestedOrganismId = null;
   });
@@ -70,6 +74,7 @@ describe('CadenceApp', () => {
           {
             childId: 'child-1',
             name: 'capital-community-variables',
+            openTrunk: true,
             contentTypeId: 'text',
             payload: {
               content: '# Capital Community Variables\n\n- Review sensor readings.',
@@ -79,6 +84,7 @@ describe('CadenceApp', () => {
           {
             childId: 'child-2',
             name: 'capital-community-load-sensor',
+            openTrunk: true,
             contentTypeId: 'sensor',
             payload: {},
           },
@@ -86,6 +92,7 @@ describe('CadenceApp', () => {
       },
       loading: false,
       error: null,
+      reload: () => {},
     };
 
     const html = renderToStaticMarkup(
@@ -104,6 +111,7 @@ describe('CadenceApp', () => {
     expect(html).toContain('(your personal organism)');
     expect(html).toContain('capital-community-variables');
     expect(html).toContain('Capital Community Variables');
+    expect(html).toContain('Edit');
     expect(requestedOrganismId).toBe('boundary-1');
   });
 });
