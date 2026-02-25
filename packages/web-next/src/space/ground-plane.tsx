@@ -17,6 +17,7 @@ interface GroundPlaneProps {
 const GRID_SPACING = 700;
 const LINE_OFFSET = 0;
 const DARK_GRID_LINE_COLOR = 'rgba(74, 74, 74, 0.72)';
+const GRID_GLOW_COLOR = '#ffe4b3';
 const GLOW_BOOT_DELAY_MS = 220;
 const GLOW_BOOT_FADE_MS = 1140;
 const GLOW_DIP_FADE_MS = 190;
@@ -331,14 +332,14 @@ export const GroundPlane = memo(function GroundPlane({
                   dx="0"
                   dy="0"
                   stdDeviation={profile.glowStdDevNear}
-                  floodColor="#ffffff"
+                  floodColor={GRID_GLOW_COLOR}
                   floodOpacity={profile.glowOpacityNear}
                 />
                 <feDropShadow
                   dx="0"
                   dy="0"
                   stdDeviation={profile.glowStdDevFar}
-                  floodColor="#ffffff"
+                  floodColor={GRID_GLOW_COLOR}
                   floodOpacity={profile.glowOpacityFar}
                 />
               </filter>
