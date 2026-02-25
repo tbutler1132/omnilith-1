@@ -29,7 +29,7 @@ The regulator runtime reads direct children of each boundary organism and perfor
 
 ## Prerequisites
 
-1. API and web are running (`pnpm run dev:unified`).
+1. API and web are running (`pnpm run dev:v1-demo`).
 2. You can threshold and compose organisms.
 3. You know the boundary organism ID you want to regulate.
 4. If using workers, `DATABASE_URL` is configured.

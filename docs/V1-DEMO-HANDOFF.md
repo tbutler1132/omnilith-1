@@ -27,10 +27,8 @@ Primary records:
 
 Use these from repo root:
 
-- Unified profile: `pnpm run dev:unified`
-- Legacy aliases: `pnpm run dev:demo`, `pnpm run dev:auth`
-- Reset unified DB: `pnpm run db:reset:unified`
-- Legacy reset aliases: `pnpm run db:reset:demo`, `pnpm run db:reset:auth`
+- V1 demo profile: `pnpm run dev:v1-demo` (alias: `pnpm run dev:unified`)
+- Reset v1 demo DB: `pnpm run db:reset:v1-demo` (alias: `pnpm run db:reset:unified`)
 - Full verification: `pnpm run check`
 
 Current profile wiring is in:
@@ -48,7 +46,7 @@ Workaround used successfully in this session:
 
 ```sh
 psql postgres://localhost:5432/omnilith_dev -c "DROP SCHEMA IF EXISTS drizzle CASCADE;"
-pnpm run db:reset:unified
+pnpm run db:reset:v1-demo
 ```
 
 ## Hero's Journey modeling (clean, no hardcoded stage-song map in renderer)
@@ -150,8 +148,8 @@ These IDs are ephemeral and change on reset; included only as execution confirma
 
 When resuming later:
 
-1. Run `pnpm run db:reset:unified` (if it fails, drop `drizzle` schema then rerun).
-2. Run `pnpm run dev:unified`.
+1. Run `pnpm run db:reset:v1-demo` (if it fails, drop `drizzle` schema then rerun).
+2. Run `pnpm run dev:v1-demo`.
 3. Open Hero's Journey and verify:
    - stage cards render,
    - candidate songs render from stage composition-reference,
@@ -160,5 +158,5 @@ When resuming later:
 4. If expanding songs/stages, edit only:
    - `packages/api/src/seed-blueprints/hero-journey-v1-demo.json`
 5. Re-run:
-   - `pnpm run db:reset:unified`
+   - `pnpm run db:reset:v1-demo`
    - `pnpm run check`
