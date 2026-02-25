@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { listVisorApps, resolveVisorApp } from './app-registry.js';
+import { clearVisorAppRoutes, listVisorApps, resolveVisorApp } from './app-registry.js';
 
 describe('visor app registry', () => {
   it('lists registered visor apps', () => {
@@ -14,5 +14,12 @@ describe('visor app registry', () => {
     expect(resolveVisorApp('profile').id).toBe('profile');
     expect(resolveVisorApp(null).id).toBe('profile');
     expect(resolveVisorApp('missing').id).toBe('profile');
+  });
+
+  it('clears app-specific route params', () => {
+    const cleared = clearVisorAppRoutes(new URLSearchParams('visor=open&app=organism&organismTab=my-organisms'));
+
+    expect(cleared.get('organismTab')).toBeNull();
+    expect(cleared.get('app')).toBe('organism');
   });
 });

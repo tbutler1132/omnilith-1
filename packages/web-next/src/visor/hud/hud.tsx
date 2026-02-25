@@ -7,6 +7,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { Altitude } from '../../contracts/altitude.js';
+import type { VisorAppOpenRequest } from '../apps/app-contract.js';
 import type { VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorShell } from '../open/index.js';
 import type { VisorMode } from '../visor-route.js';
@@ -24,6 +25,7 @@ interface VisorHudProps {
   readonly appId: string | null;
   readonly organismId: string | null;
   readonly personalOrganismId?: string | null;
+  readonly appRouteState?: unknown;
   readonly spatialContext: VisorAppSpatialContext;
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
@@ -34,6 +36,8 @@ interface VisorHudProps {
   readonly onGoBack: () => void;
   readonly canGoBack: boolean;
   readonly onOpenApp: (appId: string) => void;
+  readonly onOpenAppRequest: (request: VisorAppOpenRequest) => void;
+  readonly onChangeAppRouteState?: (nextState: unknown) => void;
   readonly onCloseVisor: () => void;
   readonly onLogout: () => void;
 }
@@ -43,6 +47,7 @@ export function VisorHud({
   appId,
   organismId,
   personalOrganismId,
+  appRouteState,
   spatialContext,
   altitude,
   showAltitudeControls,
@@ -53,6 +58,8 @@ export function VisorHud({
   onGoBack,
   canGoBack,
   onOpenApp,
+  onOpenAppRequest,
+  onChangeAppRouteState,
   onCloseVisor,
   onLogout,
 }: VisorHudProps) {
@@ -143,9 +150,12 @@ export function VisorHud({
           appId={presentedAppId}
           organismId={organismId}
           personalOrganismId={personalOrganismId}
+          appRouteState={appRouteState}
           spatialContext={spatialContext}
           phase={openPhaseForShell}
           onOpenApp={onOpenApp}
+          onOpenAppRequest={onOpenAppRequest}
+          onChangeAppRouteState={onChangeAppRouteState}
           onRequestClose={onCloseVisor}
         />
       ) : null}

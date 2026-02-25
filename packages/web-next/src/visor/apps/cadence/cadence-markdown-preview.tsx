@@ -6,6 +6,7 @@
  */
 
 import type { ReactNode } from 'react';
+import styles from './cadence-app.module.css';
 
 interface CadenceMarkdownPreviewProps {
   readonly content: string;
@@ -93,7 +94,7 @@ function renderMarkdownBlocks(lines: ReadonlyArray<string>): ReactNode[] {
       const level = headingMatch[1].length;
       const clampedLevel = Math.min(level, 3);
       blocks.push(
-        <div key={`heading-${index}`} className={`hud-markdown-heading hud-markdown-heading--${clampedLevel}`}>
+        <div key={`heading-${index}`} className={resolveHeadingClassName(clampedLevel)}>
           {headingMatch[2].trim()}
         </div>,
       );
@@ -111,8 +112,8 @@ function renderMarkdownBlocks(lines: ReadonlyArray<string>): ReactNode[] {
       const table = parseTableBlock(tableLines);
       if (table) {
         blocks.push(
-          <div key={`table-${index}`} className="hud-markdown-table-wrap">
-            <table className="hud-markdown-table">
+          <div key={`table-${index}`} className={styles.markdownTableWrap}>
+            <table className={styles.markdownTable}>
               <thead>
                 <tr>
                   {table.headers.map((header, headerIndex) => (
@@ -151,7 +152,7 @@ function renderMarkdownBlocks(lines: ReadonlyArray<string>): ReactNode[] {
 
       if (items.length > 0) {
         blocks.push(
-          <ul key={`list-${index}`} className="hud-markdown-list">
+          <ul key={`list-${index}`} className={styles.markdownList}>
             {items.map((item, itemIndex) => (
               // biome-ignore lint/suspicious/noArrayIndexKey: static parsed list items
               <li key={itemIndex}>{item}</li>
@@ -174,7 +175,7 @@ function renderMarkdownBlocks(lines: ReadonlyArray<string>): ReactNode[] {
 
     if (paragraphLines.length > 0) {
       blocks.push(
-        <p key={`paragraph-${index}`} className="hud-markdown-paragraph">
+        <p key={`paragraph-${index}`} className={styles.markdownParagraph}>
           {paragraphLines.join(' ')}
         </p>,
       );
@@ -195,5 +196,17 @@ export function CadenceMarkdownPreview({ content }: CadenceMarkdownPreviewProps)
     return null;
   }
 
-  return <div className="hud-markdown-preview">{blocks}</div>;
+  return <div className={styles.markdownPreview}>{blocks}</div>;
+}
+
+function resolveHeadingClassName(level: number): string {
+  if (level <= 1) {
+    return `${styles.markdownHeading} ${styles.markdownHeadingLevel1}`;
+  }
+
+  if (level === 2) {
+    return `${styles.markdownHeading} ${styles.markdownHeadingLevel2}`;
+  }
+
+  return `${styles.markdownHeading} ${styles.markdownHeadingLevel3}`;
 }

@@ -7,18 +7,24 @@
  */
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import type { VisorAppOpenRequest } from '../apps/app-contract.js';
 import { listVisorApps, resolveVisorApp } from '../apps/index.js';
 import { createSpatialContextChannel } from '../apps/spatial-context-channel.js';
 import type { SpatialContextChangedListener, VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorHeader } from './open-visor-header.js';
 
+const DEFAULT_APP_BOOT_MS = 520;
+
 interface OpenVisorShellProps {
   readonly appId: string | null;
   readonly organismId: string | null;
   readonly personalOrganismId?: string | null;
+  readonly appRouteState?: unknown;
   readonly spatialContext: VisorAppSpatialContext;
   readonly phase: 'opening' | 'open' | 'closing';
   readonly onOpenApp: (appId: string) => void;
+  readonly onOpenAppRequest: (request: VisorAppOpenRequest) => void;
+  readonly onChangeAppRouteState?: (nextState: unknown) => void;
   readonly onRequestClose: () => void;
 }
 
@@ -26,17 +32,32 @@ export function OpenVisorShell({
   appId,
   organismId,
   personalOrganismId,
+  appRouteState,
   spatialContext,
   phase,
   onOpenApp,
+  onOpenAppRequest,
+  onChangeAppRouteState,
   onRequestClose,
 }: OpenVisorShellProps) {
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const [isBootingApp, setIsBootingApp] = useState(true);
+  const appPaneRef = useRef<HTMLDivElement | null>(null);
   const spatialContextChannelRef = useRef(createSpatialContextChannel(spatialContext));
+  const appBootTimerRef = useRef<number | null>(null);
   const apps = listVisorApps();
   const activeApp = resolveVisorApp(appId);
   const ActiveAppComponent = activeApp.component;
+  const AppLoadingComponent = activeApp.loadingComponent ?? GenericVisorAppLoading;
+  const activeAppId = activeApp.id;
+  const appBootDurationMs = Math.max(0, activeApp.bootDurationMs ?? DEFAULT_APP_BOOT_MS);
   const railToggleLabel = railCollapsed ? 'Expand app rail' : 'Collapse app rail';
+  const clearAppBootTimer = useCallback(() => {
+    if (appBootTimerRef.current !== null) {
+      window.clearTimeout(appBootTimerRef.current);
+      appBootTimerRef.current = null;
+    }
+  }, []);
   const onSpatialContextChanged = useCallback(
     (listener: SpatialContextChangedListener) => spatialContextChannelRef.current.subscribe(listener),
     [],
@@ -45,6 +66,22 @@ export function OpenVisorShell({
   useEffect(() => {
     spatialContextChannelRef.current.publish(spatialContext);
   }, [spatialContext]);
+
+  useEffect(() => {
+    if (!activeAppId) {
+      return;
+    }
+
+    clearAppBootTimer();
+    setIsBootingApp(true);
+
+    appBootTimerRef.current = window.setTimeout(() => {
+      setIsBootingApp(false);
+      appBootTimerRef.current = null;
+    }, appBootDurationMs);
+  }, [activeAppId, appBootDurationMs, clearAppBootTimer]);
+
+  useEffect(() => clearAppBootTimer, [clearAppBootTimer]);
 
   return (
     <section className="open-visor-shell" data-phase={phase} aria-label="Open visor">
@@ -86,17 +123,35 @@ export function OpenVisorShell({
           </div>
         </aside>
 
-        <div className="open-visor-app-pane">
-          <ActiveAppComponent
-            onRequestClose={onRequestClose}
-            organismId={organismId}
-            personalOrganismId={personalOrganismId}
-            spatialContext={spatialContext}
-            onSpatialContextChanged={onSpatialContextChanged}
-          />
+        <div key={activeAppId} ref={appPaneRef} className="open-visor-app-pane">
+          {isBootingApp ? (
+            <output className="open-visor-app-boot" aria-live="polite">
+              <AppLoadingComponent appLabel={activeApp.label} />
+            </output>
+          ) : (
+            <ActiveAppComponent
+              onRequestClose={onRequestClose}
+              organismId={organismId}
+              personalOrganismId={personalOrganismId}
+              spatialContext={spatialContext}
+              onSpatialContextChanged={onSpatialContextChanged}
+              appRouteState={appRouteState}
+              onChangeAppRouteState={onChangeAppRouteState}
+              onOpenApp={onOpenAppRequest}
+            />
+          )}
         </div>
       </div>
     </section>
+  );
+}
+
+function GenericVisorAppLoading({ appLabel }: { appLabel: string }) {
+  return (
+    <div className="open-visor-loading">
+      <span className="open-visor-loading-orb" aria-hidden="true" />
+      <p className="open-visor-loading-label">Booting {appLabel}</p>
+    </div>
   );
 }
 

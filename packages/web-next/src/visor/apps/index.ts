@@ -1,5 +1,11 @@
-export type { VisorAppDefinition, VisorAppRenderProps } from './app-contract.js';
-export { listVisorApps, resolveVisorApp } from './app-registry.js';
+export type {
+  VisorAppDefinition,
+  VisorAppLoadingRenderProps,
+  VisorAppOpenRequest,
+  VisorAppRenderProps,
+  VisorAppRouteCodec,
+} from './app-contract.js';
+export { clearVisorAppRoutes, listVisorApps, resolveVisorApp } from './app-registry.js';
 export { CadenceApp, cadenceAppDefinition } from './cadence/index.js';
 export { OrganismApp, organismAppDefinition } from './organism/index.js';
 export type {

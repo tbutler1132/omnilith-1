@@ -14,6 +14,7 @@ import {
   isBoundaryCadenceTabId,
   presentBoundaryCadenceChildren,
 } from './boundary-cadence-presenter.js';
+import styles from './cadence-app.module.css';
 import { CadenceMarkdownPreview } from './cadence-markdown-preview.js';
 import { useBoundaryCadence } from './use-boundary-cadence.js';
 
@@ -55,26 +56,26 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
   const activeTabChildren = cadenceChildrenByTab.find((entry) => entry.tabId === activeTabId)?.children ?? [];
 
   return (
-    <section className="cadence-app">
-      <h2 className="cadence-app-title">Boundary Cadence</h2>
+    <section className={styles.cadenceApp}>
+      <h2 className={styles.cadenceAppTitle}>Boundary Cadence</h2>
       {targetedOrganismLabel ? (
-        <p className="cadence-app-status">
+        <p className={styles.cadenceAppStatus}>
           Looking at: <strong>{targetedOrganismLabel}</strong>
           {isPersonalTarget ? ' (your personal organism)' : ''}
         </p>
       ) : null}
 
-      {!organismId ? <p className="cadence-app-status">Enter an organism to view boundary cadence.</p> : null}
-      {organismId && loading ? <p className="cadence-app-status">Loading boundary cadence...</p> : null}
-      {organismId && error ? <p className="cadence-app-status">Failed to load boundary cadence.</p> : null}
+      {!organismId ? <p className={styles.cadenceAppStatus}>Enter an organism to view boundary cadence.</p> : null}
+      {organismId && loading ? <p className={styles.cadenceAppStatus}>Loading boundary cadence...</p> : null}
+      {organismId && error ? <p className={styles.cadenceAppStatus}>Failed to load boundary cadence.</p> : null}
 
       {organismId && !loading && !error && cadenceChildren.length === 0 ? (
-        <p className="cadence-app-status">No Move 48 cadence organisms are composed in this boundary yet.</p>
+        <p className={styles.cadenceAppStatus}>No Move 48 cadence organisms are composed in this boundary yet.</p>
       ) : null}
 
       {organismId && !loading && !error && cadenceChildren.length > 0 ? (
         <>
-          <div className="cadence-app-tab-row" role="tablist" aria-label="Boundary cadence tabs">
+          <div className={styles.cadenceAppTabRow} role="tablist" aria-label="Boundary cadence tabs">
             {BOUNDARY_CADENCE_TABS.map((tab) => {
               const count = cadenceChildrenByTab.find((entry) => entry.tabId === tab.id)?.children.length ?? 0;
 
@@ -84,7 +85,7 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
                   type="button"
                   role="tab"
                   aria-selected={tab.id === activeTabId}
-                  className={`cadence-app-tab-button ${tab.id === activeTabId ? 'cadence-app-tab-button--active' : ''}`}
+                  className={`${styles.cadenceAppTabButton} ${tab.id === activeTabId ? styles.cadenceAppTabButtonActive : ''}`}
                   onClick={() => {
                     if (!isBoundaryCadenceTabId(tab.id)) {
                       return;
@@ -93,32 +94,32 @@ export function CadenceApp({ onRequestClose, organismId, personalOrganismId }: V
                   }}
                 >
                   {tab.label}
-                  <span className="cadence-app-tab-count">{count}</span>
+                  <span className={styles.cadenceAppTabCount}>{count}</span>
                 </button>
               );
             })}
           </div>
 
           {activeTabChildren.length === 0 ? (
-            <p className="cadence-app-empty">No cadence organism is composed for this tab yet.</p>
+            <p className={styles.cadenceAppEmpty}>No cadence organism is composed for this tab yet.</p>
           ) : null}
 
           {activeTabChildren.map((child) => {
             const previewContent = getPayloadContent(child.payload);
 
             return (
-              <article key={child.childId} className="cadence-app-child">
-                <header className="cadence-app-child-header">
-                  <h3 className="cadence-app-child-name">{child.name}</h3>
-                  <span className="cadence-app-child-type">{child.contentTypeId ?? 'unknown'}</span>
+              <article key={child.childId} className={styles.cadenceAppChild}>
+                <header className={styles.cadenceAppChildHeader}>
+                  <h3 className={styles.cadenceAppChildName}>{child.name}</h3>
+                  <span className={styles.cadenceAppChildType}>{child.contentTypeId ?? 'unknown'}</span>
                 </header>
 
                 {previewContent ? (
-                  <div className="cadence-app-preview">
+                  <div className={styles.cadenceAppPreview}>
                     <CadenceMarkdownPreview content={previewContent} />
                   </div>
                 ) : (
-                  <p className="cadence-app-preview-empty">
+                  <p className={styles.cadenceAppPreviewEmpty}>
                     No markdown preview is available for this cadence organism.
                   </p>
                 )}

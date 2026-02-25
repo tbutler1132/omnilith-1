@@ -12,8 +12,11 @@ import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage, type SpaceStageSpatialSnapshot } from '../space/space-stage.js';
 import {
+  clearVisorAppRoutes,
   createEmptySpatialContext,
+  resolveVisorApp,
   SPATIAL_CONTEXT_COORDINATE_SYSTEM_VERSION,
+  type VisorAppOpenRequest,
   type VisorAppSpatialContext,
 } from '../visor/apps/index.js';
 import { VisorHud } from '../visor/hud/index.js';
@@ -60,6 +63,11 @@ export function PlatformShell() {
   const [arrivalVisible, setArrivalVisible] = useState(false);
   const [spatialContext, setSpatialContext] = useState<VisorAppSpatialContext>(() => createEmptySpatialContext());
   const isAuthenticated = readSessionId() !== null;
+  const activeApp = resolveVisorApp(visorRoute.appId);
+  const appRouteState =
+    typeof window !== 'undefined' && visorRoute.mode === 'open' && activeApp.routeCodec
+      ? activeApp.routeCodec.parseRoute(new URLSearchParams(window.location.search))
+      : null;
 
   const renderArrivalOverlay = (mode: 'loading' | 'arrival') => (
     <div
@@ -117,25 +125,66 @@ export function PlatformShell() {
     });
   }, []);
 
-  const updateVisorRoute = useCallback((nextRoute: VisorRoute) => {
+  const commitVisorSearchParams = useCallback((nextParams: URLSearchParams) => {
+    const nextRoute = parseVisorRoute(nextParams);
+
     if (typeof window === 'undefined') {
       setVisorRoute(nextRoute);
       return;
     }
 
-    const nextParams = writeVisorRoute(new URLSearchParams(window.location.search), nextRoute);
     const nextQuery = nextParams.toString();
     const nextUrl = `${window.location.pathname}${nextQuery.length > 0 ? `?${nextQuery}` : ''}${window.location.hash}`;
     window.history.pushState({}, '', nextUrl);
     setVisorRoute(nextRoute);
   }, []);
 
-  const handleOpenApp = useCallback(
-    (appId: string) => {
+  const updateVisorRoute = useCallback(
+    (nextRoute: VisorRoute) => {
+      const searchParams =
+        typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+      let nextParams = clearVisorAppRoutes(searchParams);
+      nextParams = writeVisorRoute(nextParams, nextRoute);
+      commitVisorSearchParams(nextParams);
+    },
+    [commitVisorSearchParams],
+  );
+
+  const handleChangeAppRouteState = useCallback(
+    (nextState: unknown) => {
+      if (typeof window === 'undefined') {
+        return;
+      }
+
+      if (!activeApp.routeCodec) {
+        return;
+      }
+
+      let nextParams = clearVisorAppRoutes(new URLSearchParams(window.location.search));
+      nextParams = writeVisorRoute(nextParams, {
+        mode: 'open',
+        appId: activeApp.id,
+        organismId: visorRoute.organismId,
+      });
+
+      nextParams = activeApp.routeCodec.writeRoute(nextParams, nextState);
+      commitVisorSearchParams(nextParams);
+    },
+    [activeApp, commitVisorSearchParams, visorRoute.organismId],
+  );
+
+  const handleOpenAppRequest = useCallback(
+    (request: VisorAppOpenRequest) => {
       const openApp = async () => {
+        const appId = request.appId;
         let nextPersonalOrganismId = personalOrganismId ?? null;
 
-        if (appId === 'cadence' && isAuthenticated && personalOrganismId === undefined) {
+        if (
+          appId === 'cadence' &&
+          request.organismId === undefined &&
+          isAuthenticated &&
+          personalOrganismId === undefined
+        ) {
           try {
             const session = await fetchSession();
             nextPersonalOrganismId = session.personalOrganismId ?? null;
@@ -146,18 +195,33 @@ export function PlatformShell() {
           }
         }
 
-        const targetedOrganismId = resolveOpenAppTargetOrganismId({
-          appId,
-          enteredOrganismId,
-          boundaryOrganismId,
-          visorOrganismId: visorRoute.organismId,
-          personalOrganismId: nextPersonalOrganismId,
-        });
-        updateVisorRoute({
+        const targetedOrganismId =
+          request.organismId !== undefined
+            ? request.organismId
+            : resolveOpenAppTargetOrganismId({
+                appId,
+                enteredOrganismId,
+                boundaryOrganismId,
+                visorOrganismId: visorRoute.organismId,
+                personalOrganismId: nextPersonalOrganismId,
+              });
+
+        let nextParams =
+          typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+
+        nextParams = clearVisorAppRoutes(nextParams);
+        nextParams = writeVisorRoute(nextParams, {
           mode: 'open',
           appId,
           organismId: targetedOrganismId,
         });
+
+        const targetApp = resolveVisorApp(appId);
+        if (request.appRouteState !== undefined && targetApp.routeCodec) {
+          nextParams = targetApp.routeCodec.writeRoute(nextParams, request.appRouteState);
+        }
+
+        commitVisorSearchParams(nextParams);
       };
 
       void openApp();
@@ -167,9 +231,16 @@ export function PlatformShell() {
       enteredOrganismId,
       isAuthenticated,
       personalOrganismId,
-      updateVisorRoute,
+      commitVisorSearchParams,
       visorRoute.organismId,
     ],
+  );
+
+  const handleOpenApp = useCallback(
+    (appId: string) => {
+      handleOpenAppRequest({ appId });
+    },
+    [handleOpenAppRequest],
   );
 
   const handleCloseVisor = useCallback(() => {
@@ -368,6 +439,7 @@ export function PlatformShell() {
         appId={visorRoute.appId}
         organismId={visorRoute.organismId}
         personalOrganismId={personalOrganismId ?? null}
+        appRouteState={appRouteState}
         spatialContext={spatialContext}
         altitude={altitude}
         showAltitudeControls={!isInInterior}
@@ -378,6 +450,8 @@ export function PlatformShell() {
         onGoBack={handleBackRequested}
         canGoBack={Boolean(backHandler)}
         onOpenApp={handleOpenApp}
+        onOpenAppRequest={handleOpenAppRequest}
+        onChangeAppRouteState={handleChangeAppRouteState}
         onCloseVisor={handleCloseVisor}
         onLogout={handleLogout}
       />

@@ -1,0 +1,229 @@
+.organismApp {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.74rem;
+}
+
+.organismAppTitle {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
+  color: rgba(243, 250, 255, 0.95);
+}
+
+.organismAppTabRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.organismAppTabButton {
+  border: 1px solid rgba(177, 206, 238, 0.26);
+  border-radius: 999px;
+  background: rgba(160, 208, 255, 0.08);
+  color: rgba(225, 239, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.3rem 0.52rem;
+  cursor: pointer;
+}
+
+.organismAppTabButtonActive {
+  border-color: rgba(211, 235, 255, 0.54);
+  background: rgba(158, 211, 255, 0.2);
+  color: rgba(245, 251, 255, 0.97);
+}
+
+.organismAppStatus,
+.organismAppEmpty {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.88);
+}
+
+.organismAppList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.organismAppListItem {
+  margin: 0;
+}
+
+.organismAppOpenButton {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(177, 206, 238, 0.2);
+  border-radius: 0.56rem;
+  background: rgba(5, 11, 20, 0.5);
+  color: rgba(225, 239, 255, 0.9);
+  padding: 0.48rem 0.54rem;
+  display: grid;
+  gap: 0.2rem;
+  cursor: pointer;
+}
+
+.organismAppOpenButton:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.organismAppOpenButtonActive {
+  border-color: rgba(211, 235, 255, 0.54);
+  background: rgba(158, 211, 255, 0.16);
+}
+
+.organismAppOpenButtonName {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: rgba(236, 247, 255, 0.95);
+  overflow-wrap: anywhere;
+}
+
+.organismAppOpenButtonMeta {
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: rgba(190, 218, 245, 0.9);
+  overflow-wrap: anywhere;
+}
+
+.organismOverviewMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.organismOverviewMetaRow {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  gap: 0.58rem;
+  align-items: baseline;
+}
+
+.organismOverviewMetaRow dt {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(178, 206, 238, 0.84);
+}
+
+.organismOverviewMetaRow dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(225, 239, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.organismOverviewStatus {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.88);
+}
+
+.organismOverviewPayload {
+  margin: 0;
+  padding: 0.68rem;
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  color: rgba(228, 242, 255, 0.92);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 18rem;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+.organismWireframePanel {
+  --organism-wireframe-accent: #91abc8;
+  --organism-wireframe-duration: 18s;
+  position: relative;
+  margin: 0;
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  min-height: 6.25rem;
+  overflow: hidden;
+}
+
+.organismWireframePanel::before {
+  content: '';
+  position: absolute;
+  inset: -24%;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--organism-wireframe-accent) 36%, transparent),
+    transparent 68%
+  );
+  opacity: 0.42;
+  filter: blur(12px);
+  pointer-events: none;
+}
+
+.organismWireframeSvg {
+  width: 100%;
+  height: 6.25rem;
+  display: block;
+  position: relative;
+  z-index: 1;
+}
+
+.organismWireframeRotor {
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  animation: organismWireframeSpin var(--organism-wireframe-duration) linear infinite;
+}
+
+.organismWireframeLine {
+  fill: none;
+  stroke: color-mix(in srgb, var(--organism-wireframe-accent) 72%, #f4fbff 28%);
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.76;
+}
+
+.organismWireframeLineStrong {
+  opacity: 0.94;
+  stroke-width: 1.65;
+}
+
+@keyframes organismWireframeSpin {
+  from {
+    transform: rotateY(0deg);
+  }
+
+  to {
+    transform: rotateY(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .organismWireframeRotor {
+    animation: none;
+  }
+}

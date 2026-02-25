@@ -1,0 +1,190 @@
+.cadenceApp {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.74rem;
+}
+
+.cadenceAppTitle {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
+  color: rgba(243, 250, 255, 0.95);
+}
+
+.cadenceAppStatus,
+.cadenceAppEmpty,
+.cadenceAppPreviewEmpty {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.88);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cadenceAppTabRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.cadenceAppTabButton {
+  border: 1px solid rgba(177, 206, 238, 0.26);
+  border-radius: 999px;
+  background: rgba(160, 208, 255, 0.08);
+  color: rgba(225, 239, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.3rem 0.52rem;
+  cursor: pointer;
+}
+
+.cadenceAppTabButtonActive {
+  border-color: rgba(211, 235, 255, 0.54);
+  background: rgba(158, 211, 255, 0.2);
+  color: rgba(245, 251, 255, 0.97);
+}
+
+.cadenceAppTabCount {
+  min-width: 1rem;
+  border-radius: 999px;
+  padding: 0.05rem 0.32rem;
+  background: rgba(9, 20, 35, 0.7);
+  color: rgba(206, 228, 248, 0.88);
+  font-size: 0.56rem;
+  text-align: center;
+}
+
+.cadenceAppChild {
+  display: grid;
+  gap: 0.46rem;
+  border: 1px solid rgba(177, 206, 238, 0.2);
+  border-radius: 0.6rem;
+  background: rgba(5, 11, 20, 0.5);
+  padding: 0.52rem 0.56rem;
+}
+
+.cadenceAppChildHeader {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.46rem;
+  align-items: start;
+}
+
+.cadenceAppChildName {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.71rem;
+  line-height: 1.35;
+  color: rgba(236, 247, 255, 0.95);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.cadenceAppChildType {
+  font-size: 0.56rem;
+  line-height: 1;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: rgba(190, 218, 245, 0.9);
+  border: 1px solid rgba(167, 200, 236, 0.24);
+  border-radius: 999px;
+  padding: 0.18rem 0.36rem;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  white-space: normal;
+}
+
+.cadenceAppPreview {
+  margin: 0;
+  border: 1px solid rgba(177, 206, 238, 0.16);
+  border-radius: 0.54rem;
+  background: rgba(4, 9, 16, 0.74);
+  padding: 0.44rem 0.48rem;
+  max-height: 13.5rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.markdownPreview {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.markdownHeading {
+  color: rgba(235, 247, 255, 0.95);
+  font-weight: 600;
+  line-height: 1.24;
+}
+
+.markdownHeadingLevel1 {
+  font-size: 0.76rem;
+}
+
+.markdownHeadingLevel2,
+.markdownHeadingLevel3 {
+  font-size: 0.7rem;
+}
+
+.markdownParagraph {
+  margin: 0;
+  color: rgba(219, 237, 255, 0.92);
+  font-size: 0.66rem;
+  line-height: 1.44;
+}
+
+.markdownList {
+  margin: 0;
+  padding-left: 1rem;
+  color: rgba(219, 237, 255, 0.92);
+  font-size: 0.66rem;
+  line-height: 1.44;
+  display: flex;
+  flex-direction: column;
+  gap: 0.24rem;
+}
+
+.markdownList li {
+  margin: 0;
+}
+
+.markdownTableWrap {
+  overflow-x: hidden;
+}
+
+.markdownTable {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 0.6rem;
+  color: rgba(219, 237, 255, 0.92);
+}
+
+.markdownTable th,
+.markdownTable td {
+  border: 1px solid rgba(172, 204, 236, 0.2);
+  padding: 0.24rem 0.34rem;
+  text-align: left;
+  vertical-align: top;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+.markdownTable th {
+  background: rgba(150, 196, 238, 0.1);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}

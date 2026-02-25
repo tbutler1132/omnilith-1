@@ -6,15 +6,16 @@
  */
 
 import type { VisorAppRenderProps } from '../app-contract.js';
+import styles from './profile-app.module.css';
 
 export function ProfileApp({ onRequestClose }: VisorAppRenderProps) {
   void onRequestClose;
 
   return (
-    <section className="profile-app">
-      <h2 className="profile-app-title">Profile</h2>
+    <section className={styles.profileApp}>
+      <h2 className={styles.profileAppTitle}>Profile</h2>
 
-      <div className="profile-app-body">
+      <div className={styles.profileAppBody}>
         <p>This is the first isolated Visor app placeholder.</p>
         <p>Future profile content will live entirely inside this app module.</p>
       </div>

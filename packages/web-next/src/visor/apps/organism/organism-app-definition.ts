@@ -6,10 +6,21 @@
 
 import type { VisorAppDefinition } from '../app-contract.js';
 import { OrganismApp } from './organism-app.js';
+import {
+  clearOrganismAppRoute,
+  type OrganismAppRouteState,
+  parseOrganismAppRoute,
+  writeOrganismAppRoute,
+} from './organism-app-route.js';
 
-export const organismAppDefinition: VisorAppDefinition = {
+export const organismAppDefinition: VisorAppDefinition<OrganismAppRouteState> = {
   id: 'organism',
   label: 'Organism',
-  description: 'Simple overview of one organism state payload.',
+  description: 'Overview and user-scoped organism navigation.',
   component: OrganismApp,
+  routeCodec: {
+    clearRoute: clearOrganismAppRoute,
+    parseRoute: parseOrganismAppRoute,
+    writeRoute: writeOrganismAppRoute,
+  },
 };
