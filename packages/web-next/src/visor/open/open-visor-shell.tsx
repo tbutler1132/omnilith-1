@@ -133,18 +133,24 @@ export function OpenVisorShell({
           </button>
 
           <div className="open-visor-app-list">
-            {apps.map((app) => (
-              <button
-                key={app.id}
-                type="button"
-                className={`open-visor-app-button ${app.id === activeApp.id ? 'open-visor-app-button--active' : ''}`}
-                onClick={() => onOpenApp(app.id)}
-                aria-label={`${app.label} app`}
-                title={railCollapsed ? app.label : undefined}
-              >
-                {railCollapsed ? compactAppLabel(app.label) : app.label}
-              </button>
-            ))}
+            {apps.map((app) => {
+              const AppIcon = app.icon;
+              return (
+                <button
+                  key={app.id}
+                  type="button"
+                  className={`open-visor-app-button ${app.id === activeApp.id ? 'open-visor-app-button--active' : ''}`}
+                  onClick={() => onOpenApp(app.id)}
+                  aria-label={`${app.label} app`}
+                  title={railCollapsed ? app.label : undefined}
+                >
+                  <span className="open-visor-app-button-content">
+                    <AppIcon className="open-visor-app-icon" aria-hidden="true" />
+                    <span className="open-visor-app-label">{app.label}</span>
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </aside>
 
@@ -178,15 +184,4 @@ function GenericVisorAppLoading({ appLabel }: { appLabel: string }) {
       <p className="open-visor-loading-label">Booting {appLabel}</p>
     </div>
   );
-}
-
-function compactAppLabel(label: string): string {
-  const parts = label
-    .trim()
-    .split(/\s+/)
-    .filter((part) => part.length > 0);
-
-  if (parts.length === 0) return '?';
-  if (parts.length === 1) return parts[0].slice(0, 1).toUpperCase();
-  return `${parts[0].slice(0, 1)}${parts[1].slice(0, 1)}`.toUpperCase();
 }

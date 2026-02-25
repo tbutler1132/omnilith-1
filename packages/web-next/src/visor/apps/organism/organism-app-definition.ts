@@ -6,6 +6,7 @@
 
 import type { VisorAppDefinition } from '../app-contract.js';
 import { OrganismApp } from './organism-app.js';
+import { OrganismAppIcon } from './organism-app-icon.js';
 import {
   clearOrganismAppRoute,
   type OrganismAppRouteState,
@@ -17,6 +18,7 @@ export const organismAppDefinition: VisorAppDefinition<OrganismAppRouteState> = 
   id: 'organism',
   label: 'Organism',
   description: 'Overview and user-scoped organism navigation.',
+  icon: OrganismAppIcon,
   component: OrganismApp,
   routeCodec: {
     clearRoute: clearOrganismAppRoute,
