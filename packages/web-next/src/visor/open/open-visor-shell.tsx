@@ -41,6 +41,7 @@ export function OpenVisorShell({
   onRequestClose,
 }: OpenVisorShellProps) {
   const [railCollapsed, setRailCollapsed] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const [isBootingApp, setIsBootingApp] = useState(true);
   const appPaneRef = useRef<HTMLDivElement | null>(null);
   const spatialContextChannelRef = useRef(createSpatialContextChannel(spatialContext));
@@ -52,6 +53,7 @@ export function OpenVisorShell({
   const activeAppId = activeApp.id;
   const appBootDurationMs = Math.max(0, activeApp.bootDurationMs ?? DEFAULT_APP_BOOT_MS);
   const railToggleLabel = railCollapsed ? 'Expand app rail' : 'Collapse app rail';
+  const expandLabel = isExpanded ? 'Restore' : 'Expand';
   const clearAppBootTimer = useCallback(() => {
     if (appBootTimerRef.current !== null) {
       window.clearTimeout(appBootTimerRef.current);
@@ -84,12 +86,35 @@ export function OpenVisorShell({
   useEffect(() => clearAppBootTimer, [clearAppBootTimer]);
 
   return (
-    <section className="open-visor-shell" data-phase={phase} aria-label="Open visor">
+    <section
+      className="open-visor-shell"
+      data-phase={phase}
+      data-expanded={isExpanded ? 'true' : 'false'}
+      aria-label="Open visor"
+    >
       <OpenVisorHeader
         appLabel={activeApp.label}
         appDescription={activeApp.description}
+        isExpanded={isExpanded}
+        onToggleExpanded={() => setIsExpanded((current) => !current)}
         onRequestClose={onRequestClose}
       />
+      {isExpanded ? (
+        <div className="open-visor-expanded-controls">
+          <button
+            type="button"
+            className="open-visor-expand-button"
+            onClick={() => setIsExpanded(false)}
+            aria-pressed="true"
+            aria-label={`${expandLabel} visor app`}
+          >
+            {expandLabel}
+          </button>
+          <button type="button" className="open-visor-close-button" onClick={onRequestClose}>
+            Close
+          </button>
+        </div>
+      ) : null}
 
       <div className="open-visor-body" data-rail-collapsed={railCollapsed ? 'true' : 'false'}>
         <aside

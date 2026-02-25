@@ -8,10 +8,20 @@
 interface OpenVisorHeaderProps {
   readonly appLabel: string;
   readonly appDescription: string;
+  readonly isExpanded: boolean;
+  readonly onToggleExpanded: () => void;
   readonly onRequestClose: () => void;
 }
 
-export function OpenVisorHeader({ appLabel, appDescription, onRequestClose }: OpenVisorHeaderProps) {
+export function OpenVisorHeader({
+  appLabel,
+  appDescription,
+  isExpanded,
+  onToggleExpanded,
+  onRequestClose,
+}: OpenVisorHeaderProps) {
+  const expandLabel = isExpanded ? 'Restore' : 'Expand';
+
   return (
     <header className="open-visor-shell-header">
       <div>
@@ -19,9 +29,20 @@ export function OpenVisorHeader({ appLabel, appDescription, onRequestClose }: Op
         <h1 className="open-visor-shell-title">{appLabel}</h1>
         <p className="open-visor-shell-description">{appDescription}</p>
       </div>
-      <button type="button" className="open-visor-close-button" onClick={onRequestClose}>
-        Close
-      </button>
+      <div className="open-visor-shell-actions">
+        <button
+          type="button"
+          className="open-visor-expand-button"
+          onClick={onToggleExpanded}
+          aria-pressed={isExpanded}
+          aria-label={`${expandLabel} visor app`}
+        >
+          {expandLabel}
+        </button>
+        <button type="button" className="open-visor-close-button" onClick={onRequestClose}>
+          Close
+        </button>
+      </div>
     </header>
   );
 }

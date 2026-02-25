@@ -58,6 +58,7 @@ describe('VisorHud', () => {
     expect(html).toContain('Open visor');
     expect(html).toContain('Visor apps');
     expect(html).toContain('Booting Profile');
+    expect(html).toContain('Expand');
     expect(html).toContain('Collapse app rail');
     expect(html).toContain('aria-expanded="true"');
     expect(html).toContain('Close');
