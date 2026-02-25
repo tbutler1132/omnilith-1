@@ -11,7 +11,7 @@ import type { VisorAppOpenRequest } from '../apps/app-contract.js';
 import type { VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorShell } from '../open/index.js';
 import type { VisorMode } from '../visor-route.js';
-import { AppDockSlot, SpatialControlsSlot } from './slots/index.js';
+import { AppDockSlot, SpatialAltitudeSlot, SpatialControlsSlot } from './slots/index.js';
 import { VisorWidgetLane } from './widget-lane.js';
 import { CompassWidget, MapLegendWidget } from './widgets/index.js';
 
@@ -122,9 +122,13 @@ export function VisorHud({
             spatialContext={spatialContext}
             showAltitudeControls={showAltitudeControls}
             navigationLabel={navigationLabel}
-            onChangeAltitude={onChangeAltitude}
             onGoBack={onGoBack}
             canGoBack={canGoBack}
+          />
+          <SpatialAltitudeSlot
+            altitude={altitude}
+            showAltitudeControls={showAltitudeControls}
+            onChangeAltitude={onChangeAltitude}
           />
           <AppDockSlot onOpenApp={onOpenApp} />
           {showWidgetLane ? (

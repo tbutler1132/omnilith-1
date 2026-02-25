@@ -40,6 +40,8 @@ describe('VisorHud', () => {
   it('renders closed HUD controls and map widgets', () => {
     const html = renderHud({ mode: 'closed', showCompass: true, showAltitudeControls: true });
     expect(html).toContain('Spatial navigation');
+    expect(html).toContain('spatial-controls-slot');
+    expect(html).toContain('spatial-altitude-slot');
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
     expect(html).toContain('Open Profile app');
@@ -51,6 +53,12 @@ describe('VisorHud', () => {
     expect(html).toContain('Log out');
     expect(html).not.toContain('Map legend');
     expect(html).not.toContain('Compass pointing north');
+  });
+
+  it('hides altitude slot when spatial altitude controls are disabled', () => {
+    const html = renderHud({ mode: 'closed', showAltitudeControls: false });
+    expect(html).not.toContain('spatial-altitude-slot');
+    expect(html).not.toContain('Map readout');
   });
 
   it('renders open visor shell in open mode', () => {

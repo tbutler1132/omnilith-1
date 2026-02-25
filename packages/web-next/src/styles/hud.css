@@ -44,6 +44,14 @@
   z-index: 21;
 }
 
+.spatial-altitude-slot {
+  position: fixed;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  pointer-events: auto;
+  z-index: 21;
+}
+
 .app-dock-slot {
   position: fixed;
   left: 0.9rem;
@@ -933,6 +941,11 @@
     align-items: flex-start;
     flex-wrap: nowrap;
     gap: 0.4rem;
+  }
+
+  .spatial-altitude-slot {
+    right: 0.7rem;
+    bottom: 0.7rem;
   }
 
   .space-readout-widget {
