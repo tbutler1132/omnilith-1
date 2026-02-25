@@ -33,7 +33,7 @@ async function start() {
   console.log(`World map seeded: ${worldMapId}`);
 
   if (bootstrapPolicy.bootstrapSeedEnabled) {
-    // Seed profile (default: focused v1-demo, configurable via OMNILITH_SEED_PROFILE)
+    // Seed profile (default: world-map-only, configurable via OMNILITH_SEED_PROFILE)
     await seedDev(container);
   } else {
     console.log('Bootstrap seed disabled for this runtime.');

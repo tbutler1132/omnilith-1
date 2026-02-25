@@ -1,8 +1,8 @@
 /**
  * Seed profile router + legacy full-dev seed implementation.
  *
- * Default profile is v1-demo (focused unified local environment).
- * A world-map-only profile is available for plain rendering experiments.
+ * Default profile is world-map-only for main local development.
+ * The v1-demo profile remains available for reference and focused demo work.
  * The full-dev seed remains available as an explicit legacy profile
  * for deep local experimentation.
  *
@@ -23,7 +23,7 @@ const DEV_SEED_KEY = 'dev_seed_complete';
 const SONG_STARTER_TEMPLATE_KEY = 'dev_song_starter_template_id';
 const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
-const DEFAULT_SEED_PROFILE = 'v1-demo';
+const DEFAULT_SEED_PROFILE = 'world-map-only';
 const PROJECT_GITHUB_OWNER = 'tbutler1132';
 const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
 const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
@@ -163,8 +163,8 @@ export async function seedDev(container: Container): Promise<void> {
   }
 
   if (seedProfile !== 'full-dev') {
-    console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to v1-demo seed.`);
-    await seedV1Demo(container);
+    console.warn(`Unknown OMNILITH_SEED_PROFILE="${seedProfile}". Falling back to world-map-only seed.`);
+    await seedWorldMapOnly(container);
     return;
   }
 
