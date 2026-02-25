@@ -5,6 +5,7 @@
  * so Space can render seeded organisms directly on the grid.
  */
 
+import type { FetchOrganismResponse } from '@omnilith/api-contracts';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
 import { resolvePublicApiPath } from '../api/public-api-path.js';
@@ -15,14 +16,6 @@ export interface SpatialMapEntry {
   readonly y: number;
   readonly size?: number;
   readonly emphasis?: number;
-}
-
-interface OrganismState {
-  readonly payload: unknown;
-}
-
-interface FetchOrganismResponse {
-  readonly currentState: OrganismState | null;
 }
 
 interface SpatialMapState {

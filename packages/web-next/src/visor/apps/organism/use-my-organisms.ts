@@ -5,24 +5,10 @@
  * a direct "My organisms" navigation surface when the user is signed in.
  */
 
+import type { FetchUserOrganismsResponse } from '@omnilith/api-contracts';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../api/api-client.js';
 import { hasSessionId } from '../../../api/session.js';
-
-interface MyOrganismRecord {
-  readonly organism: {
-    readonly id: string;
-    readonly name: string;
-  };
-  readonly currentState?: {
-    readonly contentTypeId: string;
-    readonly payload: unknown;
-  };
-}
-
-interface FetchMyOrganismsResponse {
-  readonly organisms: ReadonlyArray<MyOrganismRecord>;
-}
 
 export interface MyOrganismSummary {
   readonly id: string;
@@ -75,7 +61,7 @@ export function useMyOrganisms(enabled: boolean): UseMyOrganismsResult {
       requiresSignIn: false,
     });
 
-    apiFetch<FetchMyOrganismsResponse>('/users/me/organisms')
+    apiFetch<FetchUserOrganismsResponse>('/users/me/organisms')
       .then((response) => {
         if (cancelled) {
           return;
