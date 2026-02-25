@@ -1,0 +1,28 @@
+.profileApp {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.74rem;
+}
+
+.profileAppTitle {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
+  color: rgba(243, 250, 255, 0.95);
+}
+
+.profileAppBody {
+  display: grid;
+  gap: 0.48rem;
+}
+
+.profileAppBody p {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.52;
+  color: rgba(203, 223, 246, 0.9);
+  max-width: 58ch;
+}

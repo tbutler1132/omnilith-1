@@ -12,7 +12,7 @@ import { profileAppDefinition } from './profile/index.js';
 
 const VISOR_APPS: ReadonlyArray<VisorAppDefinition> = [
   profileAppDefinition,
-  organismAppDefinition,
+  organismAppDefinition as VisorAppDefinition,
   cadenceAppDefinition,
 ];
 
@@ -35,4 +35,18 @@ export function resolveVisorApp(appId: string | null): VisorAppDefinition {
   }
 
   return VISOR_APPS.find((app) => app.id === appId) ?? fallbackVisorApp();
+}
+
+export function clearVisorAppRoutes(searchParams: URLSearchParams): URLSearchParams {
+  let next = new URLSearchParams(searchParams);
+
+  for (const app of VISOR_APPS) {
+    if (!app.routeCodec?.clearRoute) {
+      continue;
+    }
+
+    next = app.routeCodec.clearRoute(next);
+  }
+
+  return next;
 }

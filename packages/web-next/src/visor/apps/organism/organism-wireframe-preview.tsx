@@ -7,6 +7,7 @@
  */
 
 import type { CSSProperties } from 'react';
+import styles from './organism-app.module.css';
 import { resolveWireframeModelSpec } from './wireframe-model-spec.js';
 
 interface OrganismWireframePreviewProps {
@@ -23,35 +24,35 @@ export function OrganismWireframePreview({ contentTypeId }: OrganismWireframePre
   } as CSSProperties;
 
   return (
-    <div className="organism-wireframe-panel" style={panelStyle} aria-hidden="true">
-      <svg viewBox="0 0 128 128" className="organism-wireframe-svg" focusable="false" role="presentation">
-        <g className="organism-wireframe-rotor">
+    <div className={styles.organismWireframePanel} style={panelStyle} aria-hidden="true">
+      <svg viewBox="0 0 128 128" className={styles.organismWireframeSvg} focusable="false" role="presentation">
+        <g className={styles.organismWireframeRotor}>
           {spec.geometryKind === 'icosahedron' ? (
             <>
               <polygon
-                className="organism-wireframe-line organism-wireframe-line--strong"
+                className={`${styles.organismWireframeLine} ${styles.organismWireframeLineStrong}`}
                 points="64,10 24,34 24,94 64,118 104,94 104,34"
               />
-              <polyline className="organism-wireframe-line" points="64,10 64,118" />
-              <polyline className="organism-wireframe-line" points="24,34 64,56 104,34" />
-              <polyline className="organism-wireframe-line" points="24,94 64,72 104,94" />
-              <line className="organism-wireframe-line" x1="24" y1="34" x2="104" y2="94" />
-              <line className="organism-wireframe-line" x1="104" y1="34" x2="24" y2="94" />
+              <polyline className={styles.organismWireframeLine} points="64,10 64,118" />
+              <polyline className={styles.organismWireframeLine} points="24,34 64,56 104,34" />
+              <polyline className={styles.organismWireframeLine} points="24,94 64,72 104,94" />
+              <line className={styles.organismWireframeLine} x1="24" y1="34" x2="104" y2="94" />
+              <line className={styles.organismWireframeLine} x1="104" y1="34" x2="24" y2="94" />
             </>
           ) : (
             <>
               <rect
-                className="organism-wireframe-line organism-wireframe-line--strong"
+                className={`${styles.organismWireframeLine} ${styles.organismWireframeLineStrong}`}
                 x="24"
                 y="28"
                 width="58"
                 height="58"
               />
-              <rect className="organism-wireframe-line" x="44" y="42" width="58" height="58" />
-              <line className="organism-wireframe-line" x1="24" y1="28" x2="44" y2="42" />
-              <line className="organism-wireframe-line" x1="82" y1="28" x2="102" y2="42" />
-              <line className="organism-wireframe-line" x1="24" y1="86" x2="44" y2="100" />
-              <line className="organism-wireframe-line" x1="82" y1="86" x2="102" y2="100" />
+              <rect className={styles.organismWireframeLine} x="44" y="42" width="58" height="58" />
+              <line className={styles.organismWireframeLine} x1="24" y1="28" x2="44" y2="42" />
+              <line className={styles.organismWireframeLine} x1="82" y1="28" x2="102" y2="42" />
+              <line className={styles.organismWireframeLine} x1="24" y1="86" x2="44" y2="100" />
+              <line className={styles.organismWireframeLine} x1="82" y1="86" x2="102" y2="100" />
             </>
           )}
         </g>

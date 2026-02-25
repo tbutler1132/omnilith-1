@@ -20,9 +20,9 @@ describe('CadenceMarkdownPreview', () => {
       }),
     );
 
-    expect(html).toContain('hud-markdown-heading');
-    expect(html).toContain('<ul class="hud-markdown-list">');
-    expect(html).toContain('<table class="hud-markdown-table">');
+    expect(html).toContain('Capital Community Variables');
+    expect(html).toContain('<ul');
+    expect(html).toContain('<table');
     expect(html).toContain('<th>Variable</th>');
     expect(html).toContain('<td>governance-load</td>');
   });
