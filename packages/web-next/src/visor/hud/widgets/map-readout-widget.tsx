@@ -1,13 +1,13 @@
 /**
- * Spatial readout widget.
+ * Map readout widget.
  *
- * Shows live map telemetry so stewards can inspect cursor position and
- * hovered/focused organism surface data without opening a separate panel.
+ * Shows live map telemetry in the right HUD widget lane so stewards can
+ * inspect cursor and selection state without opening a separate panel.
  */
 
 import type { VisorAppSpatialContext, VisorAppSurfaceEntrySnapshot } from '../../apps/spatial-context-contract.js';
 
-interface SpatialReadoutWidgetProps {
+interface MapReadoutWidgetProps {
   readonly spatialContext: VisorAppSpatialContext;
 }
 
@@ -57,26 +57,26 @@ function formatMapLabel(mapOrganismId: string | null): string {
   return `${mapOrganismId.slice(0, 8)}...${mapOrganismId.slice(-4)}`;
 }
 
-export function SpatialReadoutWidget({ spatialContext }: SpatialReadoutWidgetProps) {
+export function MapReadoutWidget({ spatialContext }: MapReadoutWidgetProps) {
   return (
-    <section className="space-readout-widget" aria-label="Map readout">
-      <p className="space-readout-title">Map readout</p>
-      <dl className="space-readout-table">
-        <div className="space-readout-row">
-          <dt className="space-readout-key">Map</dt>
-          <dd className="space-readout-value">{formatMapLabel(spatialContext.mapOrganismId)}</dd>
+    <section className="visor-widget map-readout-widget" aria-label="Map readout">
+      <p className="visor-widget-label">Map readout</p>
+      <dl className="map-readout-table">
+        <div className="map-readout-row">
+          <dt className="map-readout-key">Map</dt>
+          <dd className="map-readout-value">{formatMapLabel(spatialContext.mapOrganismId)}</dd>
         </div>
-        <div className="space-readout-row">
-          <dt className="space-readout-key">Cursor</dt>
-          <dd className="space-readout-value">{formatPoint(spatialContext.cursorWorld)}</dd>
+        <div className="map-readout-row">
+          <dt className="map-readout-key">Cursor</dt>
+          <dd className="map-readout-value">{formatPoint(spatialContext.cursorWorld)}</dd>
         </div>
-        <div className="space-readout-row">
-          <dt className="space-readout-key">Hover</dt>
-          <dd className="space-readout-value">{formatEntry(spatialContext.hoveredEntry)}</dd>
+        <div className="map-readout-row">
+          <dt className="map-readout-key">Hover</dt>
+          <dd className="map-readout-value">{formatEntry(spatialContext.hoveredEntry)}</dd>
         </div>
-        <div className="space-readout-row">
-          <dt className="space-readout-key">Focus</dt>
-          <dd className="space-readout-value">{formatEntry(spatialContext.focusedEntry)}</dd>
+        <div className="map-readout-row">
+          <dt className="map-readout-key">Focus</dt>
+          <dd className="map-readout-value">{formatEntry(spatialContext.focusedEntry)}</dd>
         </div>
       </dl>
     </section>

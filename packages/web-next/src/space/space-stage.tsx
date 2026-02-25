@@ -158,7 +158,7 @@ export function SpaceStage({
   const previousAltitudeRef = useRef<Altitude | null>(null);
   const interiorTransitioningRef = useRef(false);
 
-  const { width, height, entries, entryCount, loading, error } = useSpatialMap(currentMapId);
+  const { width, height, entries, loading, error } = useSpatialMap(currentMapId);
   const entryIds = useMemo(() => entries.map((entry) => entry.organismId), [entries]);
   const entriesById = useMemo(
     () =>
@@ -607,17 +607,6 @@ export function SpaceStage({
         style={{ opacity: transitionOpacity }}
         aria-hidden
       />
-
-      {enteredOrganismId ? null : (
-        <div className="space-map-status">
-          <p>Map: {currentMapId}</p>
-          <p>Entries: {entryCount}</p>
-          <p>Depth: {mapHistory.length}</p>
-          <p>Altitude: {altitude}</p>
-          <p>Entered: none</p>
-          <p>High/Mid: focus then enter. Close: enter directly.</p>
-        </div>
-      )}
     </main>
   );
 }

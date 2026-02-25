@@ -13,7 +13,7 @@ import { OpenVisorShell } from '../open/index.js';
 import type { VisorMode } from '../visor-route.js';
 import { AppDockSlot, SpatialAltitudeSlot, SpatialControlsSlot } from './slots/index.js';
 import { VisorWidgetLane } from './widget-lane.js';
-import { CompassWidget, MapLegendWidget } from './widgets/index.js';
+import { CompassWidget, MapLegendWidget, MapReadoutWidget } from './widgets/index.js';
 
 type OpenVisorPhase = 'hidden' | 'opening' | 'open' | 'closing';
 
@@ -110,7 +110,7 @@ export function VisorHud({
 
   const showOpenVisor = openVisorPhase !== 'hidden';
   const showClosedHud = mode === 'closed';
-  const showWidgetLane = showLogoutButton || showCompass;
+  const showWidgetLane = showLogoutButton || showCompass || showAltitudeControls;
   const openPhaseForShell: Exclude<OpenVisorPhase, 'hidden'> = openVisorPhase === 'hidden' ? 'open' : openVisorPhase;
 
   return (
@@ -119,8 +119,6 @@ export function VisorHud({
         <>
           <SpatialControlsSlot
             altitude={altitude}
-            spatialContext={spatialContext}
-            showAltitudeControls={showAltitudeControls}
             navigationLabel={navigationLabel}
             onGoBack={onGoBack}
             canGoBack={canGoBack}
@@ -138,6 +136,7 @@ export function VisorHud({
                   Log out
                 </button>
               ) : null}
+              {showAltitudeControls ? <MapReadoutWidget spatialContext={spatialContext} /> : null}
               {showCompass ? (
                 <>
                   <CompassWidget />

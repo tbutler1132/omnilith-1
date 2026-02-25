@@ -42,6 +42,7 @@ describe('VisorHud', () => {
     expect(html).toContain('Spatial navigation');
     expect(html).toContain('spatial-controls-slot');
     expect(html).toContain('spatial-altitude-slot');
+    expect(html).toContain('Map readout');
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
     expect(html).toContain('Open Profile app');
@@ -51,6 +52,7 @@ describe('VisorHud', () => {
   it('hides right-side widgets when compass lane is disabled', () => {
     const html = renderHud({ mode: 'closed', showCompass: false });
     expect(html).toContain('Log out');
+    expect(html).toContain('Map readout');
     expect(html).not.toContain('Map legend');
     expect(html).not.toContain('Compass pointing north');
   });

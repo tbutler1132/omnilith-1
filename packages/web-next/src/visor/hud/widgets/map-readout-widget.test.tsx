@@ -2,11 +2,11 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { createEmptySpatialContext } from '../../apps/spatial-context-contract.js';
-import { SpatialReadoutWidget } from './spatial-readout-widget.js';
+import { MapReadoutWidget } from './map-readout-widget.js';
 
 function renderReadout(overrides: Partial<ReturnType<typeof createEmptySpatialContext>> = {}) {
   return renderToStaticMarkup(
-    createElement(SpatialReadoutWidget, {
+    createElement(MapReadoutWidget, {
       spatialContext: {
         ...createEmptySpatialContext(),
         ...overrides,
@@ -15,7 +15,7 @@ function renderReadout(overrides: Partial<ReturnType<typeof createEmptySpatialCo
   );
 }
 
-describe('SpatialReadoutWidget', () => {
+describe('MapReadoutWidget', () => {
   it('renders fallback values when map telemetry is not available', () => {
     const html = renderReadout();
     expect(html).toContain('Map readout');
