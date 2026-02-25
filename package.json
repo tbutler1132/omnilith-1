@@ -39,6 +39,9 @@
     "hooks:pre-push": "pnpm run check",
     "issue-proposals:validate": "node scripts/issue-proposals.mjs validate",
     "issue-proposals:sync": "node scripts/issue-proposals.mjs sync",
+    "cadence:export": "node scripts/cadence-sync.mjs export",
+    "cadence:sync": "node scripts/cadence-sync.mjs sync",
+    "cadence:gui": "node scripts/cadence-sync-gui.mjs",
     "agent:receiver": "node scripts/agent-webhook-receiver.mjs"
   },
   "devDependencies": {
