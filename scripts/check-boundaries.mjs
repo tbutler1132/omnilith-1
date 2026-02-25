@@ -18,14 +18,17 @@ const packageRules = {
   kernel: {
     allowedWorkspaceImports: [],
   },
+  'api-contracts': {
+    allowedWorkspaceImports: [],
+  },
   'content-types': {
     allowedWorkspaceImports: ['@omnilith/kernel'],
   },
   api: {
-    allowedWorkspaceImports: ['@omnilith/kernel', '@omnilith/content-types'],
+    allowedWorkspaceImports: ['@omnilith/api-contracts', '@omnilith/content-types', '@omnilith/kernel'],
   },
   'web-next': {
-    allowedWorkspaceImports: ['@omnilith/content-types'],
+    allowedWorkspaceImports: ['@omnilith/api-contracts', '@omnilith/content-types'],
   },
 };
 

@@ -5,29 +5,18 @@
  * an explicitly targeted organism when provided, otherwise the world map.
  */
 
+import type { FetchOrganismResponse } from '@omnilith/api-contracts';
 import { useEffect, useState } from 'react';
 import { apiFetch } from '../../../api/api-client.js';
 import { fetchWorldMap } from '../../../api/fetch-world-map.js';
 import { resolvePublicApiPath } from '../../../api/public-api-path.js';
 
-interface OrganismRecord {
-  readonly id: string;
-  readonly name: string;
-}
-
-interface OrganismStateRecord {
-  readonly contentTypeId: string;
-  readonly payload: unknown;
-}
-
-interface FetchOrganismResponse {
-  readonly organism: OrganismRecord;
-  readonly currentState: OrganismStateRecord | null;
-}
+type OrganismRecord = FetchOrganismResponse['organism'];
+type OrganismStateRecord = FetchOrganismResponse['currentState'];
 
 export interface OrganismOverviewData {
   readonly organism: OrganismRecord;
-  readonly currentState: OrganismStateRecord | null;
+  readonly currentState: OrganismStateRecord;
 }
 
 interface UseOrganismOverviewResult {

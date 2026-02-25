@@ -5,24 +5,12 @@
  * decide whether an entry is enterable and where it should route.
  */
 
+import type { FetchOrganismResponse } from '@omnilith/api-contracts';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
 import { resolvePublicApiPath } from '../api/public-api-path.js';
 
-export interface OrganismRecord {
-  readonly id: string;
-  readonly name: string;
-}
-
-export interface OrganismStateRecord {
-  readonly contentTypeId: string;
-  readonly payload: unknown;
-}
-
-export interface FetchOrganismResponse {
-  readonly organism: OrganismRecord;
-  readonly currentState: OrganismStateRecord | null;
-}
+export type { FetchOrganismResponse };
 
 export interface EntryOrganismMetadata {
   readonly organismId: string;

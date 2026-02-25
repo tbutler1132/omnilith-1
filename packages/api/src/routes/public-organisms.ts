@@ -60,6 +60,36 @@ export function publicOrganismRoutes(container: Container) {
     return c.json({ children });
   });
 
+  app.get('/:id/children-with-state', async (c) => {
+    const id = c.req.param('id') as OrganismId;
+    const accessError = await requirePublicOrganismView(c, container, id);
+    if (accessError) return accessError;
+
+    const children = await queryChildren(id, {
+      compositionRepository: container.compositionRepository,
+    });
+
+    const childrenWithState = await Promise.all(
+      children.map(async (composition) => {
+        const organism = await container.organismRepository.findById(composition.childId);
+        if (!organism) {
+          return null;
+        }
+
+        const currentState = await container.stateRepository.findCurrentByOrganismId(composition.childId);
+        return {
+          composition,
+          organism,
+          currentState: currentState ?? null,
+        };
+      }),
+    );
+
+    return c.json({
+      children: childrenWithState.filter((child): child is NonNullable<typeof child> => child !== null),
+    });
+  });
+
   app.get('/:id/vitality', async (c) => {
     const id = c.req.param('id') as OrganismId;
     const accessError = await requirePublicOrganismView(c, container, id);

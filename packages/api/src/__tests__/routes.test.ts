@@ -600,6 +600,48 @@ describe('organism routes', () => {
     expect(children[0].childId).toBe(child.id);
   });
 
+  it('GET /organisms/:id/children-with-state returns composed children with organism and current state', async () => {
+    const parentRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Boundary',
+        contentTypeId: 'text',
+        payload: { content: 'boundary', format: 'plaintext' },
+      }),
+    });
+    const { organism: parent } = await parentRes.json();
+
+    const childRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Cadence Variables',
+        contentTypeId: 'text',
+        payload: { content: '# Variables', format: 'markdown' },
+        openTrunk: true,
+      }),
+    });
+    const { organism: child } = await childRes.json();
+
+    const composeRes = await app.request(`/organisms/${parent.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+    expect(composeRes.status).toBe(201);
+
+    const res = await app.request(`/organisms/${parent.id}/children-with-state`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.children).toHaveLength(1);
+    expect(body.children[0].composition.parentId).toBe(parent.id);
+    expect(body.children[0].composition.childId).toBe(child.id);
+    expect(body.children[0].organism.name).toBe('Cadence Variables');
+    expect(body.children[0].organism.openTrunk).toBe(true);
+    expect(body.children[0].currentState?.contentTypeId).toBe('text');
+  });
+
   it('POST /organisms/:id/observations records an organism.observed event', async () => {
     const sensorRes = await app.request('/organisms', {
       method: 'POST',
@@ -1311,6 +1353,85 @@ describe('public read routes', () => {
 
     const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
     expect(contributionsRes.status).toBe(200);
+  });
+
+  it('guest can read composed children with state via /public routes', async () => {
+    const parentRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Public Boundary',
+        contentTypeId: 'text',
+        payload: { content: 'boundary', format: 'plaintext' },
+      }),
+    });
+    expect(parentRes.status).toBe(201);
+    const { organism: parent } = await parentRes.json();
+
+    const childRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Public Cadence Variables',
+        contentTypeId: 'text',
+        payload: { content: '# Variables', format: 'markdown' },
+        openTrunk: true,
+      }),
+    });
+    expect(childRes.status).toBe(201);
+    const { organism: child } = await childRes.json();
+
+    const composeRes = await ownerApp.request(`/organisms/${parent.id}/children`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ childId: child.id }),
+    });
+    expect(composeRes.status).toBe(201);
+
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Public Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 4000, height: 4000 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
+
+    const surfaceParentRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: parent.id,
+        x: 350,
+        y: 350,
+      }),
+    });
+    expect(surfaceParentRes.status).toBe(201);
+
+    const surfaceChildRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: child.id,
+        x: 450,
+        y: 450,
+      }),
+    });
+    expect(surfaceChildRes.status).toBe(201);
+
+    const res = await publicApp.request(`/public/organisms/${parent.id}/children-with-state`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.children).toHaveLength(1);
+    expect(body.children[0].composition.parentId).toBe(parent.id);
+    expect(body.children[0].composition.childId).toBe(child.id);
+    expect(body.children[0].organism.name).toBe('Public Cadence Variables');
+    expect(body.children[0].currentState?.contentTypeId).toBe('text');
   });
 
   it('guest receives 404 for non-public organisms via /public routes', async () => {

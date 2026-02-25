@@ -5,11 +5,8 @@
  * API connectivity before broader rendering logic is introduced.
  */
 
+import type { FetchWorldMapResponse } from '@omnilith/api-contracts';
 import { apiFetch } from './api-client.js';
-
-export interface FetchWorldMapResponse {
-  readonly worldMapId: string | null;
-}
 
 export function fetchWorldMap(): Promise<FetchWorldMapResponse> {
   return apiFetch<FetchWorldMapResponse>('/platform/world-map');

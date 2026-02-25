@@ -5,15 +5,17 @@
 import type {
   AppendStateRequest,
   ComposeChildRequest,
+  RecordObservationRequest,
+  ThresholdOrganismRequest,
+  UpdateVisibilityRequest,
+} from '@omnilith/api-contracts';
+import type {
   ContentTypeId,
   DomainError,
   EventType,
   OrganismId,
-  RecordObservationRequest,
   RelationshipType,
-  ThresholdOrganismRequest,
   Timestamp,
-  UpdateVisibilityRequest,
   UserId,
 } from '@omnilith/kernel';
 import {
@@ -397,6 +399,38 @@ export function organismRoutes(container: Container) {
       compositionRepository: container.compositionRepository,
     });
     return c.json({ children });
+  });
+
+  // Query children with organism + current state in one response
+  app.get('/:id/children-with-state', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const accessError = await requireOrganismAccess(c, container, userId, id, 'view');
+    if (accessError) return accessError;
+
+    const children = await queryChildren(id, {
+      compositionRepository: container.compositionRepository,
+    });
+
+    const childrenWithState = await Promise.all(
+      children.map(async (composition) => {
+        const organism = await container.organismRepository.findById(composition.childId);
+        if (!organism) {
+          return null;
+        }
+
+        const currentState = await container.stateRepository.findCurrentByOrganismId(composition.childId);
+        return {
+          composition,
+          organism,
+          currentState: currentState ?? null,
+        };
+      }),
+    );
+
+    return c.json({
+      children: childrenWithState.filter((child): child is NonNullable<typeof child> => child !== null),
+    });
   });
 
   // Compose child into parent

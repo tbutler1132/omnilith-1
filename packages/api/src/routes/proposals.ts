@@ -3,15 +3,12 @@
  */
 
 import type {
-  ContentTypeId,
   DeclineProposalRequest,
-  DomainError,
   OpenMutationProposalRequest,
   OpenProposalMutationRequest,
   OpenProposalRequest,
-  OrganismId,
-  ProposalId,
-} from '@omnilith/kernel';
+} from '@omnilith/api-contracts';
+import type { ContentTypeId, DomainError, OrganismId, ProposalId } from '@omnilith/kernel';
 import { declineProposal, integrateProposal, openProposal } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import type { Container } from '../container.js';

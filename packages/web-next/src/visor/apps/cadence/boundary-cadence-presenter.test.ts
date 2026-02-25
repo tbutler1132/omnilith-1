@@ -7,6 +7,7 @@ describe('presentBoundaryCadenceChildren', () => {
       {
         childId: 'org-variables',
         name: 'capital-community-variables',
+        openTrunk: true,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Variables',
@@ -16,12 +17,14 @@ describe('presentBoundaryCadenceChildren', () => {
       {
         childId: 'org-sensor',
         name: 'capital-community-load-sensor',
+        openTrunk: true,
         contentTypeId: 'sensor',
         payload: {},
       },
       {
         childId: 'org-trajectory',
         name: 'capital-community-trajectory',
+        openTrunk: true,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Trajectory',
@@ -35,6 +38,7 @@ describe('presentBoundaryCadenceChildren', () => {
         tabId: 'variables',
         childId: 'org-variables',
         name: 'capital-community-variables',
+        openTrunk: true,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Variables',
@@ -45,6 +49,7 @@ describe('presentBoundaryCadenceChildren', () => {
         tabId: 'trajectory',
         childId: 'org-trajectory',
         name: 'capital-community-trajectory',
+        openTrunk: true,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Trajectory',
@@ -59,6 +64,7 @@ describe('presentBoundaryCadenceChildren', () => {
       {
         childId: 'org-retro',
         name: 'weekly-learning-journal',
+        openTrunk: false,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Retros\n\n### Intentions',
@@ -68,6 +74,7 @@ describe('presentBoundaryCadenceChildren', () => {
       {
         childId: 'org-task',
         name: 'working-board',
+        openTrunk: false,
         contentTypeId: 'text',
         payload: {
           content: '# Capital Community Tasks\n\n## Now',
@@ -88,6 +95,7 @@ describe('presentBoundaryCadenceChildren', () => {
             tabId: 'retros',
             childId: 'org-retro',
             name: 'weekly-learning-journal',
+            openTrunk: false,
             contentTypeId: 'text',
             payload: {
               content: '# Capital Community Retros\n\n### Intentions',
@@ -103,6 +111,7 @@ describe('presentBoundaryCadenceChildren', () => {
             tabId: 'tasks',
             childId: 'org-task',
             name: 'working-board',
+            openTrunk: false,
             contentTypeId: 'text',
             payload: {
               content: '# Capital Community Tasks\n\n## Now',

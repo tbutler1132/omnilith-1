@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.13.0",
+    "@omnilith/api-contracts": "workspace:*",
     "@omnilith/content-types": "workspace:*",
     "@omnilith/kernel": "workspace:*",
     "drizzle-orm": "^0.38.0",

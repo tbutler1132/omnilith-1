@@ -7,15 +7,132 @@
  * becomes a compile-time error instead of a silent runtime bug.
  */
 
-import type { CompositionRecord } from './composition/composition.js';
-import type { DomainEvent } from './events/event.js';
-import type { OrganismId } from './identity.js';
-import type { Organism } from './organism/organism.js';
-import type { OrganismState } from './organism/organism-state.js';
-import type { Proposal } from './proposals/proposal.js';
-import type { OrganismContributions, OrganismWithState, VitalityData } from './query/query-port.js';
-import type { Relationship } from './relationships/relationship.js';
-import type { VisibilityLevel, VisibilityRecord } from './visibility/visibility.js';
+// ---------------------------------------------------------------------------
+// Wire primitives + shared DTOs
+// ---------------------------------------------------------------------------
+
+export type ApiId = string;
+export type ApiTimestamp = number;
+
+export type VisibilityLevel = 'public' | 'members' | 'private';
+export type RelationshipType = 'membership' | 'integration-authority' | 'stewardship';
+export type MembershipRole = 'founder' | 'member';
+export type ProposalStatus = 'open' | 'integrated' | 'declined';
+
+export type EventType =
+  | 'organism.created'
+  | 'state.appended'
+  | 'organism.observed'
+  | 'organism.composed'
+  | 'organism.decomposed'
+  | 'proposal.opened'
+  | 'proposal.integrated'
+  | 'proposal.declined'
+  | 'visibility.changed';
+
+export interface Organism {
+  readonly id: ApiId;
+  readonly name: string;
+  readonly createdAt: ApiTimestamp;
+  readonly createdBy: ApiId;
+  readonly openTrunk: boolean;
+  readonly forkedFromId?: ApiId;
+}
+
+export interface OrganismState {
+  readonly id: ApiId;
+  readonly organismId: ApiId;
+  readonly contentTypeId: string;
+  readonly payload: unknown;
+  readonly createdAt: ApiTimestamp;
+  readonly createdBy: ApiId;
+  readonly sequenceNumber: number;
+  readonly parentStateId?: ApiId;
+}
+
+export interface CompositionRecord {
+  readonly parentId: ApiId;
+  readonly childId: ApiId;
+  readonly composedAt: ApiTimestamp;
+  readonly composedBy: ApiId;
+  readonly position?: number;
+}
+
+export interface ProposalMutation {
+  readonly kind: 'append-state' | 'compose' | 'decompose' | 'change-visibility';
+  readonly contentTypeId?: string;
+  readonly payload?: unknown;
+  readonly childId?: ApiId;
+  readonly position?: number;
+  readonly level?: VisibilityLevel;
+}
+
+export interface Proposal {
+  readonly id: ApiId;
+  readonly organismId: ApiId;
+  readonly mutation: ProposalMutation;
+  readonly proposedContentTypeId: string;
+  readonly proposedPayload: unknown;
+  readonly description?: string;
+  readonly proposedBy: ApiId;
+  readonly status: ProposalStatus;
+  readonly createdAt: ApiTimestamp;
+  readonly resolvedAt?: ApiTimestamp;
+  readonly resolvedBy?: ApiId;
+  readonly declineReason?: string;
+}
+
+export interface DomainEvent {
+  readonly id: ApiId;
+  readonly type: EventType;
+  readonly organismId: ApiId;
+  readonly actorId: ApiId;
+  readonly occurredAt: ApiTimestamp;
+  readonly payload: Record<string, unknown>;
+}
+
+export interface Relationship {
+  readonly id: ApiId;
+  readonly type: RelationshipType;
+  readonly userId: ApiId;
+  readonly organismId: ApiId;
+  readonly role?: MembershipRole;
+  readonly createdAt: ApiTimestamp;
+}
+
+export interface VisibilityRecord {
+  readonly organismId: ApiId;
+  readonly level: VisibilityLevel;
+  readonly updatedAt: ApiTimestamp;
+}
+
+export interface OrganismWithState {
+  readonly organism: Organism;
+  readonly currentState: OrganismState | undefined;
+}
+
+export interface VitalityData {
+  readonly organismId: ApiId;
+  readonly recentStateChanges: number;
+  readonly openProposalCount: number;
+  readonly lastActivityAt?: ApiTimestamp;
+}
+
+export interface OrganismContributor {
+  readonly userId: ApiId;
+  readonly stateCount: number;
+  readonly proposalCount: number;
+  readonly integrationCount: number;
+  readonly declineCount: number;
+  readonly eventCount: number;
+  readonly eventTypeCounts: Readonly<Partial<Record<EventType, number>>>;
+  readonly lastContributedAt?: ApiTimestamp;
+}
+
+export interface OrganismContributions {
+  readonly organismId: ApiId;
+  readonly contributors: ReadonlyArray<OrganismContributor>;
+}
 
 // ---------------------------------------------------------------------------
 // Organisms
@@ -35,9 +152,20 @@ export interface ThresholdOrganismResponse {
 }
 
 /** GET /organisms/:id */
+interface FetchOrganismRecord {
+  readonly id: string;
+  readonly name: string;
+  readonly openTrunk?: boolean;
+}
+
+interface FetchOrganismStateRecord {
+  readonly contentTypeId: string;
+  readonly payload: unknown;
+}
+
 export interface FetchOrganismResponse {
-  readonly organism: Organism;
-  readonly currentState: OrganismState | null;
+  readonly organism: FetchOrganismRecord;
+  readonly currentState: FetchOrganismStateRecord | null;
 }
 
 /** GET /organisms */
@@ -57,7 +185,7 @@ export interface AppendStateResponse {
 
 /** POST /organisms/:id/observations — record an observation event */
 export interface RecordObservationRequest {
-  readonly targetOrganismId: OrganismId;
+  readonly targetOrganismId: ApiId;
   readonly metric: string;
   readonly value: number;
   readonly sampledAt: number;
@@ -94,6 +222,17 @@ export interface DecomposeChildResponse {
 /** GET /organisms/:id/children */
 export interface FetchChildrenResponse {
   readonly children: ReadonlyArray<CompositionRecord>;
+}
+
+/** GET /organisms/:id/children-with-state */
+export interface ChildWithStateRecord {
+  readonly composition: CompositionRecord;
+  readonly organism: Organism;
+  readonly currentState: OrganismState | null;
+}
+
+export interface FetchChildrenWithStateResponse {
+  readonly children: ReadonlyArray<ChildWithStateRecord>;
 }
 
 /** GET /organisms/:id/parent */
@@ -210,7 +349,7 @@ export interface FetchRelationshipsResponse {
 
 /** POST /templates/:id/instantiate */
 export interface InstantiateTemplateResponse {
-  readonly organisms: ReadonlyArray<{ ref: string; organismId: OrganismId }>;
+  readonly organisms: ReadonlyArray<{ ref: string; organismId: ApiId }>;
 }
 
 // ---------------------------------------------------------------------------
@@ -233,5 +372,5 @@ export interface FetchUserProposalsResponse {
 
 /** GET /platform/world-map */
 export interface FetchWorldMapResponse {
-  readonly worldMapId: string;
+  readonly worldMapId: string | null;
 }
