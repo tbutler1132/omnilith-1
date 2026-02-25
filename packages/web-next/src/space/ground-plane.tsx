@@ -15,7 +15,7 @@ interface GroundPlaneProps {
 }
 
 const GRID_SPACING = 700;
-const LINE_OFFSET = 0.5;
+const LINE_OFFSET = 0;
 const DARK_GRID_LINE_COLOR = 'rgba(74, 74, 74, 0.72)';
 const GLOW_BOOT_DELAY_MS = 220;
 const GLOW_BOOT_FADE_MS = 1140;
@@ -301,21 +301,30 @@ export const GroundPlane = memo(function GroundPlane({
       style={{
         width,
         height,
+        transform: 'translateZ(0)',
       }}
     >
-      <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} aria-hidden>
+      <svg
+        width={width}
+        height={height}
+        viewBox={`0 0 ${width} ${height}`}
+        shapeRendering="geometricPrecision"
+        aria-hidden
+      >
         <title>Ground plane grid</title>
         <defs>
           {ALTITUDE_ORDER.map((level) => {
             const profile = ALTITUDE_GLOW_PROFILES[level];
+            const glowFilterMargin = Math.ceil(profile.glowStdDevFar * 10 + profile.lineStrokeWidth * 6);
             return (
               <filter
                 key={`${glowFilterPrefix}-${level}`}
                 id={`${glowFilterPrefix}-${level}`}
-                x="-24%"
-                y="-24%"
-                width="148%"
-                height="148%"
+                filterUnits="userSpaceOnUse"
+                x={originX - glowFilterMargin}
+                y={originY - glowFilterMargin}
+                width={fullGridWidth + glowFilterMargin * 2}
+                height={fullGridHeight + glowFilterMargin * 2}
                 colorInterpolationFilters="sRGB"
               >
                 <feDropShadow
@@ -342,6 +351,7 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={DARK_GRID_LINE_COLOR}
             strokeWidth={glowProfile.lineStrokeWidth}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
             fill="none"
           />
           <path
@@ -349,6 +359,7 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={DARK_GRID_LINE_COLOR}
             strokeWidth={glowProfile.lineStrokeWidth}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
             fill="none"
           />
         </g>
@@ -364,6 +375,7 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={glowProfile.lineColor}
             strokeWidth={glowProfile.lineStrokeWidth}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
             fill="none"
           />
           <path
@@ -371,6 +383,7 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={glowProfile.lineColor}
             strokeWidth={glowProfile.lineStrokeWidth}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
             fill="none"
           />
           <path
@@ -379,6 +392,7 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={glowProfile.lineColor}
             strokeWidth={glowProfile.lineStrokeWidth * 0.7}
             strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
           />
         </g>
       </svg>

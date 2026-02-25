@@ -25,6 +25,36 @@
   will-change: transform;
 }
 
+.map-crosshair {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 6;
+  opacity: 0.72;
+}
+
+.map-crosshair__line {
+  position: absolute;
+  background: rgba(194, 218, 248, 0.3);
+  box-shadow:
+    0 0 4px rgba(154, 201, 248, 0.24),
+    0 0 9px rgba(104, 176, 242, 0.16);
+}
+
+.map-crosshair__line--vertical {
+  top: 0;
+  bottom: 0;
+  width: 0.75px;
+  transform: translateX(-0.375px);
+}
+
+.map-crosshair__line--horizontal {
+  left: 0;
+  right: 0;
+  height: 0.75px;
+  transform: translateY(-0.375px);
+}
+
 .ground-plane {
   position: absolute;
   top: 0;

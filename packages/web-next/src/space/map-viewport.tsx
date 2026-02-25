@@ -46,6 +46,7 @@ export function MapViewport({
   children,
 }: MapViewportProps) {
   const [isDragging, setIsDragging] = useState(false);
+  const [cursorScreen, setCursorScreen] = useState<PointerPosition | null>(null);
 
   const activePointerIdRef = useRef<number | null>(null);
   const previousPointerRef = useRef<PointerPosition | null>(null);
@@ -68,6 +69,16 @@ export function MapViewport({
 
   const handlePointerMove = useCallback(
     (event: React.PointerEvent<HTMLDivElement>) => {
+      const viewportRect = event.currentTarget.getBoundingClientRect();
+      const nextCursorScreen =
+        event.pointerType === 'touch'
+          ? null
+          : {
+              x: event.clientX - viewportRect.left,
+              y: event.clientY - viewportRect.top,
+            };
+      setCursorScreen(nextCursorScreen);
+
       if (activePointerIdRef.current !== event.pointerId || !previousPointerRef.current) {
         onPointerWorldMove?.(toWorldPoint(event, event.currentTarget, viewport, screenSize));
         return;
@@ -106,11 +117,20 @@ export function MapViewport({
       onPointerMove={handlePointerMove}
       onPointerUp={(event) => releasePointer(event.pointerId)}
       onPointerCancel={(event) => releasePointer(event.pointerId)}
-      onPointerLeave={() => onPointerWorldMove?.(null)}
+      onPointerLeave={() => {
+        setCursorScreen(null);
+        onPointerWorldMove?.(null);
+      }}
     >
       <div className="map-world" style={{ transform, transformOrigin: '0 0' }}>
         {children}
       </div>
+      {cursorScreen ? (
+        <div className="map-crosshair" aria-hidden>
+          <div className="map-crosshair__line map-crosshair__line--vertical" style={{ left: cursorScreen.x }} />
+          <div className="map-crosshair__line map-crosshair__line--horizontal" style={{ top: cursorScreen.y }} />
+        </div>
+      ) : null}
     </div>
   );
 }
