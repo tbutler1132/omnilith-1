@@ -35,6 +35,8 @@ interface UseViewportResult {
 }
 
 const ALTITUDE_ANIMATION_DURATION_MS = 300;
+const ALTITUDE_ANIMATION_DURATION_IN_MS = 430;
+const ALTITUDE_ANIMATION_DURATION_OUT_MS = 620;
 
 export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseViewportResult {
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -111,10 +113,14 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
       const next = nextAltitude(currentAltitude, direction);
       if (!next) return;
 
-      animateTo({
-        ...current,
-        zoom: zoomForAltitude(next),
-      });
+      const durationMs = direction === 'out' ? ALTITUDE_ANIMATION_DURATION_OUT_MS : ALTITUDE_ANIMATION_DURATION_IN_MS;
+      animateTo(
+        {
+          ...current,
+          zoom: zoomForAltitude(next),
+        },
+        { durationMs },
+      );
     },
     [animateTo],
   );

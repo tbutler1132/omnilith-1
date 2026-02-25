@@ -2,12 +2,14 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
+  background: #000;
 }
 
 .map-viewport {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  background: #000;
   cursor: grab;
   touch-action: none;
 }

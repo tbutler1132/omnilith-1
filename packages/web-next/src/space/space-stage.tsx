@@ -15,7 +15,7 @@ import { resolveMarkerActivationIntent, shouldClearFocusedOrganism } from './spa
 import { useEntryOrganisms } from './use-entry-organisms.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
-import { frameOrganism, frameOrganismEnter } from './viewport-math.js';
+import { frameOrganism, frameOrganismEnter, nextAltitude } from './viewport-math.js';
 
 interface SpaceStageProps {
   readonly worldMapId: string;
@@ -97,6 +97,7 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
+const ALTITUDE_RECALIBRATION_LEAD_MS = 240;
 
 function resolveSurfaceEntrySnapshot(
   organismId: string | null,
@@ -149,9 +150,11 @@ export function SpaceStage({
   const [hoveredOrganismId, setHoveredOrganismId] = useState<string | null>(null);
   const [cursorWorld, setCursorWorld] = useState<{ x: number; y: number } | null>(null);
   const [pendingFocusAfterSwitch, setPendingFocusAfterSwitch] = useState<FocusPoint | null>(null);
+  const [groundPlaneRecalibrationEpoch, setGroundPlaneRecalibrationEpoch] = useState(0);
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('idle');
   const [transitionOpacity, setTransitionOpacity] = useState(0);
   const fadeFrameRef = useRef<number | null>(null);
+  const altitudeDelayTimerRef = useRef<number | null>(null);
   const previousAltitudeRef = useRef<Altitude | null>(null);
   const interiorTransitioningRef = useRef(false);
 
@@ -219,6 +222,11 @@ export function SpaceStage({
   );
 
   useEffect(() => {
+    if (altitudeDelayTimerRef.current !== null) {
+      window.clearTimeout(altitudeDelayTimerRef.current);
+      altitudeDelayTimerRef.current = null;
+    }
+
     setCurrentMapId(worldMapId);
     setMapHistory([]);
     setCurrentBoundaryOrganismId(null);
@@ -233,6 +241,14 @@ export function SpaceStage({
   }, [cancelFade, worldMapId]);
 
   useEffect(() => cancelFade, [cancelFade]);
+
+  useEffect(() => {
+    return () => {
+      if (altitudeDelayTimerRef.current !== null) {
+        window.clearTimeout(altitudeDelayTimerRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!pendingFocusAfterSwitch) {
@@ -452,9 +468,30 @@ export function SpaceStage({
   }, [altitude]);
 
   useEffect(() => {
-    onAltitudeControlReady(changeAltitude);
+    const handleAltitudeControl = (direction: 'in' | 'out') => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
+        return;
+      }
+
+      if (altitudeDelayTimerRef.current !== null) {
+        return;
+      }
+
+      const next = nextAltitude(altitude, direction);
+      if (!next) {
+        return;
+      }
+
+      setGroundPlaneRecalibrationEpoch((previous) => previous + 1);
+      altitudeDelayTimerRef.current = window.setTimeout(() => {
+        changeAltitude(direction);
+        altitudeDelayTimerRef.current = null;
+      }, ALTITUDE_RECALIBRATION_LEAD_MS);
+    };
+
+    onAltitudeControlReady(handleAltitudeControl);
     return () => onAltitudeControlReady(null);
-  }, [changeAltitude, onAltitudeControlReady]);
+  }, [altitude, changeAltitude, onAltitudeControlReady, transitionPhase]);
 
   useEffect(() => {
     onBackControlReady(canGoBack ? handleGoBack : null);
@@ -546,7 +583,12 @@ export function SpaceStage({
         onViewportChange={setViewport}
         onPointerWorldMove={setCursorWorld}
       >
-        <GroundPlane width={width} height={height} />
+        <GroundPlane
+          width={width}
+          height={height}
+          altitude={altitude}
+          recalibrationEpoch={groundPlaneRecalibrationEpoch}
+        />
         <SpaceOrganismLayer
           entries={entries}
           altitude={altitude}
