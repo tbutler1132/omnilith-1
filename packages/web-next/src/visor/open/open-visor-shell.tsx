@@ -6,9 +6,9 @@
  * the right. The app rail can collapse into a compact quick-switch mode.
  */
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { type ComponentType, type SVGProps, useCallback, useEffect, useRef, useState } from 'react';
 import type { VisorAppOpenRequest } from '../apps/app-contract.js';
-import { listVisorApps, resolveVisorApp } from '../apps/index.js';
+import { listCoreVisorApps, listExtraVisorApps, resolveVisorApp } from '../apps/index.js';
 import { createSpatialContextChannel } from '../apps/spatial-context-channel.js';
 import type { SpatialContextChangedListener, VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
 import { OpenVisorHeader } from './open-visor-header.js';
@@ -46,7 +46,8 @@ export function OpenVisorShell({
   const appPaneRef = useRef<HTMLDivElement | null>(null);
   const spatialContextChannelRef = useRef(createSpatialContextChannel(spatialContext));
   const appBootTimerRef = useRef<number | null>(null);
-  const apps = listVisorApps();
+  const coreApps = listCoreVisorApps();
+  const extraApps = listExtraVisorApps();
   const activeApp = resolveVisorApp(appId);
   const ActiveAppComponent = activeApp.component;
   const AppLoadingComponent = activeApp.loadingComponent ?? GenericVisorAppLoading;
@@ -133,24 +134,33 @@ export function OpenVisorShell({
           </button>
 
           <div className="open-visor-app-list">
-            {apps.map((app) => {
-              const AppIcon = app.icon;
-              return (
-                <button
-                  key={app.id}
-                  type="button"
-                  className={`open-visor-app-button ${app.id === activeApp.id ? 'open-visor-app-button--active' : ''}`}
-                  onClick={() => onOpenApp(app.id)}
-                  aria-label={`${app.label} app`}
-                  title={railCollapsed ? app.label : undefined}
-                >
-                  <span className="open-visor-app-button-content">
-                    <AppIcon className="open-visor-app-icon" aria-hidden="true" />
-                    <span className="open-visor-app-label">{app.label}</span>
-                  </span>
-                </button>
-              );
-            })}
+            {coreApps.map((app) => (
+              <VisorAppLaunchButton
+                key={app.id}
+                appId={app.id}
+                appLabel={app.label}
+                isActive={app.id === activeApp.id}
+                railCollapsed={railCollapsed}
+                onOpenApp={onOpenApp}
+                AppIcon={app.icon}
+              />
+            ))}
+            {extraApps.length > 0 ? (
+              <>
+                <p className="open-visor-app-group-label">Extra</p>
+                {extraApps.map((app) => (
+                  <VisorAppLaunchButton
+                    key={app.id}
+                    appId={app.id}
+                    appLabel={app.label}
+                    isActive={app.id === activeApp.id}
+                    railCollapsed={railCollapsed}
+                    onOpenApp={onOpenApp}
+                    AppIcon={app.icon}
+                  />
+                ))}
+              </>
+            ) : null}
           </div>
         </aside>
 
@@ -183,5 +193,38 @@ function GenericVisorAppLoading({ appLabel }: { appLabel: string }) {
       <span className="open-visor-loading-orb" aria-hidden="true" />
       <p className="open-visor-loading-label">Booting {appLabel}</p>
     </div>
+  );
+}
+
+interface VisorAppLaunchButtonProps {
+  readonly appId: string;
+  readonly appLabel: string;
+  readonly isActive: boolean;
+  readonly railCollapsed: boolean;
+  readonly onOpenApp: (appId: string) => void;
+  readonly AppIcon: ComponentType<SVGProps<SVGSVGElement>>;
+}
+
+function VisorAppLaunchButton({
+  appId,
+  appLabel,
+  isActive,
+  railCollapsed,
+  onOpenApp,
+  AppIcon,
+}: VisorAppLaunchButtonProps) {
+  return (
+    <button
+      type="button"
+      className={`open-visor-app-button ${isActive ? 'open-visor-app-button--active' : ''}`}
+      onClick={() => onOpenApp(appId)}
+      aria-label={`${appLabel} app`}
+      title={railCollapsed ? appLabel : undefined}
+    >
+      <span className="open-visor-app-button-content">
+        <AppIcon className="open-visor-app-icon" aria-hidden="true" />
+        <span className="open-visor-app-label">{appLabel}</span>
+      </span>
+    </button>
   );
 }

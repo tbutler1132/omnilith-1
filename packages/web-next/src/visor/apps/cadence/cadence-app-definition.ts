@@ -12,6 +12,8 @@ export const cadenceAppDefinition: VisorAppDefinition = {
   id: 'cadence',
   label: 'Cadence',
   description: 'View Move 48 boundary cadence organisms composed in this boundary.',
+  registryTier: 'extra',
+  official: true,
   icon: CadenceAppIcon,
   component: CadenceApp,
 };

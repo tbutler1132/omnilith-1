@@ -2,12 +2,21 @@ export type {
   VisorAppDefinition,
   VisorAppLoadingRenderProps,
   VisorAppOpenRequest,
+  VisorAppRegistryTier,
   VisorAppRenderProps,
   VisorAppRouteCodec,
 } from './app-contract.js';
-export { clearVisorAppRoutes, listVisorApps, resolveVisorApp } from './app-registry.js';
+export {
+  clearVisorAppRoutes,
+  listCoreVisorApps,
+  listExtraVisorApps,
+  listVisorApps,
+  resolveVisorApp,
+} from './app-registry.js';
 export { CadenceApp, cadenceAppDefinition } from './cadence/index.js';
+export { coreVisorAppDefinitions } from './core/index.js';
 export { OrganismApp, organismAppDefinition } from './organism/index.js';
+export { OrganismViewApp, organismViewAppDefinition } from './organism-view/index.js';
 export type {
   SpatialContextChangedListener,
   VisorAppSpatialContext,

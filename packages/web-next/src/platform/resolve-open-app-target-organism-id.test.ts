@@ -49,4 +49,16 @@ describe('resolveOpenAppTargetOrganismId', () => {
 
     expect(resolved).toBe('org-route');
   });
+
+  it('treats core visor workbench apps as organism-scoped', () => {
+    const resolved = resolveOpenAppTargetOrganismId({
+      appId: 'proposal-workbench',
+      enteredOrganismId: 'org-entered',
+      boundaryOrganismId: 'org-boundary',
+      visorOrganismId: 'org-route',
+      personalOrganismId: 'org-personal',
+    });
+
+    expect(resolved).toBe('org-entered');
+  });
 });

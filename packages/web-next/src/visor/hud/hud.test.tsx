@@ -55,8 +55,9 @@ describe('VisorHud', () => {
     expect(html).toContain('Map readout');
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
-    expect(html).toContain('Open Profile app');
-    expect(html).toContain('Open Organism app');
+    expect(html).toContain('Open Organism View app');
+    expect(html).toContain('Open Proposal Workbench app');
+    expect(html).not.toContain('Open Profile app');
   });
 
   it('hides right-side widgets when compass lane is disabled', () => {

@@ -7,10 +7,12 @@
 
 import type { VisorAppDefinition } from './app-contract.js';
 import { cadenceAppDefinition } from './cadence/index.js';
+import { coreVisorAppDefinitions } from './core/index.js';
 import { organismAppDefinition } from './organism/index.js';
 import { profileAppDefinition } from './profile/index.js';
 
 const VISOR_APPS: ReadonlyArray<VisorAppDefinition> = [
+  ...coreVisorAppDefinitions,
   profileAppDefinition,
   organismAppDefinition as VisorAppDefinition,
   cadenceAppDefinition,
@@ -27,6 +29,14 @@ function fallbackVisorApp(): VisorAppDefinition {
 
 export function listVisorApps(): ReadonlyArray<VisorAppDefinition> {
   return VISOR_APPS;
+}
+
+export function listCoreVisorApps(): ReadonlyArray<VisorAppDefinition> {
+  return VISOR_APPS.filter((app) => app.registryTier === 'core');
+}
+
+export function listExtraVisorApps(): ReadonlyArray<VisorAppDefinition> {
+  return VISOR_APPS.filter((app) => app.registryTier === 'extra');
 }
 
 export function resolveVisorApp(appId: string | null): VisorAppDefinition {

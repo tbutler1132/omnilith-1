@@ -8,6 +8,8 @@
 import type { ComponentType, SVGProps } from 'react';
 import type { SpatialContextChangedListener, VisorAppSpatialContext } from './spatial-context-contract.js';
 
+export type VisorAppRegistryTier = 'core' | 'extra';
+
 export interface VisorAppOpenRequest {
   readonly appId: string;
   readonly organismId?: string | null;
@@ -43,6 +45,8 @@ export interface VisorAppDefinition<TRouteState = unknown> {
   readonly id: string;
   readonly label: string;
   readonly description: string;
+  readonly registryTier: VisorAppRegistryTier;
+  readonly official: boolean;
   readonly icon: ComponentType<SVGProps<SVGSVGElement>>;
   readonly component: ComponentType<VisorAppRenderProps<TRouteState>>;
   readonly routeCodec?: VisorAppRouteCodec<TRouteState>;

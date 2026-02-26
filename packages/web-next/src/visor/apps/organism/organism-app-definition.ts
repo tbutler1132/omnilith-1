@@ -18,6 +18,8 @@ export const organismAppDefinition: VisorAppDefinition<OrganismAppRouteState> = 
   id: 'organism',
   label: 'Organism',
   description: 'Overview and user-scoped organism navigation.',
+  registryTier: 'extra',
+  official: true,
   icon: OrganismAppIcon,
   component: OrganismApp,
   routeCodec: {

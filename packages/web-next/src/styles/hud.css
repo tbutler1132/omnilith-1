@@ -115,8 +115,10 @@
 .app-dock-shell {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.42rem;
   padding: 0.36rem;
+  max-width: min(21rem, calc(100vw - 1.8rem));
   border: 1px solid var(--visor-line);
   border-radius: 0.68rem;
   background: var(--visor-surface);
@@ -128,18 +130,23 @@
 }
 
 .app-dock-button {
-  min-width: 4.6rem;
-  min-height: 2rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  min-width: 2.1rem;
+  min-height: 2.1rem;
+  display: grid;
+  place-items: center;
   border: 1px solid rgba(212, 234, 255, 0.3);
-  border-radius: 0.52rem;
+  border-radius: 999px;
   background: rgba(170, 210, 255, 0.08);
   color: rgba(244, 250, 255, 0.92);
-  padding: 0.14rem 0.82rem;
-  font-size: 0.72rem;
-  letter-spacing: 0.03em;
-  font-weight: 600;
-  text-transform: uppercase;
+  padding: 0;
   cursor: pointer;
+}
+
+.app-dock-icon {
+  width: 0.96rem;
+  height: 0.96rem;
 }
 
 .app-dock-button:disabled {
@@ -156,11 +163,12 @@
   pointer-events: auto;
   z-index: 22;
   isolation: isolate;
+  transition: inset 300ms cubic-bezier(0.22, 0.72, 0.22, 1), grid-template-rows 320ms cubic-bezier(0.22, 0.72, 0.22, 1);
 }
 
 .open-visor-shell[data-expanded='true'] {
   inset: 0.78rem;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: 0fr minmax(0, 1fr);
 }
 
 .open-visor-shell-header {
@@ -178,10 +186,23 @@
   justify-content: space-between;
   gap: 0.8rem;
   padding: 0.74rem 0.94rem 0.7rem;
+  min-height: 0;
+  overflow: hidden;
+  transform-origin: top center;
+  transition:
+    opacity 240ms ease,
+    transform 320ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    padding 300ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    border-color 260ms ease;
 }
 
 .open-visor-shell[data-expanded='true'] .open-visor-shell-header {
-  display: none;
+  opacity: 0;
+  transform: translateY(-0.45rem) scale(0.98);
+  padding-top: 0;
+  padding-bottom: 0;
+  border-color: transparent;
+  pointer-events: none;
 }
 
 .open-visor-shell-kicker {
@@ -212,11 +233,14 @@
   grid-template-columns: var(--open-visor-rail-width) minmax(0, 1fr);
   gap: 0.58rem;
   min-height: 0;
-  transition: grid-template-columns 260ms cubic-bezier(0.22, 0.72, 0.22, 1);
+  transition:
+    grid-template-columns 320ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    gap 280ms cubic-bezier(0.22, 0.72, 0.22, 1);
 }
 
 .open-visor-shell[data-expanded='true'] .open-visor-body {
-  grid-template-columns: minmax(0, 1fr);
+  --open-visor-rail-width: 0rem;
+  gap: 0;
 }
 
 .open-visor-body[data-rail-collapsed='true'] {
@@ -237,7 +261,13 @@
   box-shadow:
     var(--visor-glow-inset),
     0 0 26px rgba(90, 145, 225, 0.2);
-  transition: padding 260ms cubic-bezier(0.22, 0.72, 0.22, 1);
+  min-width: 0;
+  transform-origin: left center;
+  transition:
+    opacity 230ms ease,
+    transform 320ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    padding 300ms cubic-bezier(0.22, 0.72, 0.22, 1),
+    border-color 260ms ease;
 }
 
 .open-visor-rail--collapsed {
@@ -246,7 +276,11 @@
 }
 
 .open-visor-shell[data-expanded='true'] .open-visor-rail {
-  display: none;
+  opacity: 0;
+  transform: translateX(-0.35rem) scale(0.97);
+  padding: 0;
+  border-color: transparent;
+  pointer-events: none;
 }
 
 .open-visor-rail-toggle {
@@ -273,6 +307,15 @@
   display: flex;
   flex-direction: column;
   gap: 0.42rem;
+}
+
+.open-visor-app-group-label {
+  margin: 0.5rem 0 0.08rem;
+  padding: 0 0.08rem;
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(205, 225, 247, 0.56);
 }
 
 .open-visor-app-button {
@@ -336,6 +379,10 @@
   align-items: center;
 }
 
+.open-visor-rail--collapsed .open-visor-app-group-label {
+  display: none;
+}
+
 .open-visor-rail--collapsed .open-visor-app-button {
   width: 2.1rem;
   height: 2.1rem;
@@ -383,6 +430,7 @@
   overflow-y: auto;
   overflow-x: hidden;
   padding: 0.9rem 0.94rem 0.94rem;
+  transition: padding 320ms cubic-bezier(0.22, 0.72, 0.22, 1);
 }
 
 .open-visor-shell[data-expanded='true'] .open-visor-app-pane {
@@ -1233,7 +1281,7 @@
 }
 
 .app-dock-slot {
-  filter: drop-shadow(0 0 12px rgba(145, 255, 110, 0.24));
+  filter: drop-shadow(0 0 12px rgba(248, 252, 255, 0.34));
 }
 
 .space-nav-content,
@@ -1314,11 +1362,11 @@
 }
 
 .app-dock-shell {
-  border-color: rgba(149, 255, 110, 0.54);
-  background: rgba(19, 46, 14, 0.3);
+  border-color: rgba(246, 251, 255, 0.72);
+  background: rgba(18, 34, 48, 0.34);
   box-shadow:
-    inset 0 0 0 1px rgba(227, 255, 215, 0.11),
-    0 0 16px rgba(149, 255, 110, 0.26);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.2),
+    0 0 16px rgba(243, 249, 255, 0.34);
 }
 
 .open-visor-shell-header {
@@ -1410,11 +1458,11 @@
 }
 
 .app-dock-button {
-  border-color: rgba(149, 255, 110, 0.56);
-  background: rgba(24, 53, 16, 0.28);
+  border-color: rgba(240, 248, 255, 0.72);
+  background: rgba(20, 36, 52, 0.4);
   box-shadow:
-    inset 0 0 0 1px rgba(226, 255, 212, 0.1),
-    0 0 12px rgba(149, 255, 110, 0.28);
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 12px rgba(233, 245, 255, 0.3);
 }
 
 .open-visor-rail-toggle {
@@ -1553,8 +1601,17 @@
 }
 
 .map-legend-widget {
-  border-color: rgba(82, 231, 255, 0.54);
-  background: rgba(6, 35, 54, 0.3);
+  border-color: rgba(149, 255, 110, 0.56);
+  background: rgba(19, 46, 14, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(227, 255, 215, 0.11),
+    0 0 16px rgba(149, 255, 110, 0.24);
+}
+
+.map-legend-widget .visor-widget-label,
+.map-legend-item {
+  color: rgba(226, 255, 212, 0.96);
+  text-shadow: 0 0 8px rgba(149, 255, 110, 0.26);
 }
 
 .open-visor-app-icon,
@@ -1572,7 +1629,7 @@
 }
 
 .map-legend-marker .space-organism-dot {
-  box-shadow: 0 0 10px rgba(118, 239, 255, 0.24);
+  box-shadow: 0 0 10px rgba(149, 255, 110, 0.24);
 }
 
 .open-visor-shell-actions,
