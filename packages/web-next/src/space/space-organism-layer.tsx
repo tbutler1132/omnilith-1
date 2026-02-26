@@ -43,10 +43,7 @@ interface SpaceOrganismLayerProps {
 const BASE_MARKER_SIZE = 16;
 const BASE_MARKER_FRAME_SIZE = 160;
 const HALO_OPACITY_CSS_VARIABLE = '--space-marker-tiny-halo-opacity';
-const HIGH_ALTITUDE_FRAME_PADDING_RATIO = 1.06;
-const HIGH_ALTITUDE_SHAPE_RADIUS = '999px';
-const HIGH_ALTITUDE_SHAPE_TRANSFORM = 'none';
-const HIGH_ALTITUDE_SHAPE_CLIP_PATH = 'none';
+const HIGH_ALTITUDE_FRAME_PADDING_RATIO = 1.24;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -179,14 +176,6 @@ export function SpaceOrganismLayer({
             sizePolicy.haloStrength,
           );
         }
-        if (altitude === 'high') {
-          (markerStyle as Record<string, string | number | undefined>)['--space-marker-shape-radius'] =
-            HIGH_ALTITUDE_SHAPE_RADIUS;
-          (markerStyle as Record<string, string | number | undefined>)['--space-marker-shape-transform'] =
-            HIGH_ALTITUDE_SHAPE_TRANSFORM;
-          (markerStyle as Record<string, string | number | undefined>)['--space-marker-shape-clip-path'] =
-            HIGH_ALTITUDE_SHAPE_CLIP_PATH;
-        }
 
         return (
           <button
@@ -196,7 +185,7 @@ export function SpaceOrganismLayer({
               'space-organism-marker',
               altitude === 'high' ? 'space-organism-marker--high-altitude' : null,
               markerVariant !== 'default' ? `space-organism-marker--${markerVariant}` : null,
-              sizePolicy.haloVisible ? 'space-organism-marker--tiny' : null,
+              sizePolicy.haloVisible && altitude !== 'high' ? 'space-organism-marker--tiny' : null,
               isEnterable ? 'space-organism-marker--enterable' : null,
               isFocused ? 'space-organism-marker--focused' : null,
             ]
