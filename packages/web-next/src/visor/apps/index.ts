@@ -33,3 +33,4 @@ export {
   SPATIAL_CONTEXT_COORDINATE_SYSTEM_VERSION,
 } from './spatial-context-contract.js';
 export { SystemsViewApp, systemsViewAppDefinition } from './systems-view/index.js';
+export { TextEditorApp, textEditorAppDefinition } from './text-editor/index.js';
