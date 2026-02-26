@@ -1,0 +1,191 @@
+.mapStudioApp {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.mapStudioTitle {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  color: rgba(236, 244, 238, 0.95);
+}
+
+.mapStudioTarget {
+  margin: 0;
+  font-size: 0.81rem;
+  color: rgba(179, 203, 191, 0.86);
+}
+
+.mapStudioStatus,
+.mapStudioEmpty,
+.mapStudioSectionError,
+.mapStudioNotice {
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.mapStudioStatus,
+.mapStudioEmpty {
+  color: rgba(185, 211, 197, 0.85);
+}
+
+.mapStudioSectionError {
+  color: rgba(242, 165, 165, 0.92);
+}
+
+.mapStudioNotice {
+  color: rgba(170, 231, 193, 0.9);
+}
+
+.mapStudioMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(84, 122, 100, 0.48);
+  background: rgba(8, 14, 10, 0.62);
+}
+
+.mapStudioMetaRow {
+  display: grid;
+  grid-template-columns: 8.2rem 1fr;
+  column-gap: 0.7rem;
+}
+
+.mapStudioMetaRow dt {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(150, 181, 166, 0.76);
+}
+
+.mapStudioMetaRow dd {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(224, 238, 230, 0.93);
+  word-break: break-word;
+}
+
+.mapStudioWorkspace {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.mapStudioLane {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border-radius: 0.78rem;
+  border: 1px solid rgba(74, 108, 88, 0.48);
+  background: rgba(8, 13, 9, 0.62);
+}
+
+.mapStudioLaneTitle {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(156, 190, 172, 0.78);
+}
+
+.mapStudioList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.44rem;
+}
+
+.mapStudioListItem {
+  margin: 0;
+}
+
+.mapStudioListButton {
+  width: 100%;
+  appearance: none;
+  margin: 0;
+  text-align: left;
+  display: grid;
+  gap: 0.16rem;
+  padding: 0.58rem 0.66rem;
+  border-radius: 0.62rem;
+  border: 1px solid rgba(76, 113, 92, 0.5);
+  background: rgba(5, 10, 7, 0.68);
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+
+.mapStudioListButton:hover {
+  border-color: rgba(151, 226, 178, 0.62);
+  background: rgba(20, 31, 24, 0.68);
+}
+
+.mapStudioListButton:focus-visible {
+  outline: 2px solid rgba(154, 233, 182, 0.8);
+  outline-offset: 1px;
+}
+
+.mapStudioListButtonSelected {
+  border-color: rgba(165, 236, 188, 0.8);
+  box-shadow: 0 0 0 1px rgba(165, 236, 188, 0.4) inset;
+}
+
+.mapStudioPrimary {
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(229, 242, 235, 0.95);
+}
+
+.mapStudioSecondary {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(153, 183, 168, 0.84);
+  word-break: break-word;
+}
+
+.mapStudioCandidatePanel {
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.58rem 0.66rem;
+  border-radius: 0.62rem;
+  border: 1px solid rgba(76, 113, 92, 0.5);
+  background: rgba(5, 10, 7, 0.68);
+}
+
+.mapStudioActionButton {
+  margin-top: 0.32rem;
+  width: fit-content;
+  appearance: none;
+  border: 1px solid rgba(121, 160, 137, 0.44);
+  background: rgba(10, 16, 12, 0.52);
+  color: rgba(227, 242, 233, 0.92);
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.mapStudioActionButton:hover:not(:disabled) {
+  border-color: rgba(151, 226, 178, 0.62);
+  background: rgba(20, 31, 24, 0.68);
+}
+
+.mapStudioActionButton:focus-visible {
+  outline: 2px solid rgba(154, 233, 182, 0.8);
+  outline-offset: 1px;
+}
+
+.mapStudioActionButton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+

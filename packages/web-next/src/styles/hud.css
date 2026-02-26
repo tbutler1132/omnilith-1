@@ -1306,6 +1306,19 @@
     0 0 9px rgba(98, 237, 255, 0.1);
 }
 
+/* Keep app content scrollable inside the open visor pane. */
+.open-visor-app-pane {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Allow app rail buttons to scroll when the list exceeds available height. */
+.open-visor-app-list {
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .space-nav-content::before,
 .altitude-controls::before,
 .map-pan-controls::before,

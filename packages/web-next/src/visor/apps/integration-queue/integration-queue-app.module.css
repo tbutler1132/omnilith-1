@@ -1,0 +1,192 @@
+.integrationQueueApp {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.integrationQueueTitle {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  color: rgba(236, 244, 238, 0.95);
+}
+
+.integrationQueueTarget {
+  margin: 0;
+  font-size: 0.81rem;
+  color: rgba(179, 203, 191, 0.86);
+}
+
+.integrationQueueControls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.integrationQueueLegend {
+  margin-right: 0.5rem;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(154, 185, 170, 0.72);
+}
+
+.integrationQueueTabButton,
+.integrationQueueFilterButton,
+.integrationQueueActionButton {
+  appearance: none;
+  border: 1px solid rgba(123, 157, 139, 0.45);
+  background: rgba(10, 16, 12, 0.5);
+  color: rgba(224, 238, 229, 0.9);
+  border-radius: 999px;
+  padding: 0.32rem 0.76rem;
+  font-size: 0.75rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.integrationQueueTabButtonActive,
+.integrationQueueFilterButtonActive {
+  background: rgba(120, 199, 143, 0.28);
+  border-color: rgba(143, 228, 169, 0.62);
+  color: rgba(233, 255, 241, 0.96);
+}
+
+.integrationQueueTabButton:disabled,
+.integrationQueueFilterButton:disabled,
+.integrationQueueActionButton:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.integrationQueueCount {
+  margin: 0;
+  font-size: 0.73rem;
+  color: rgba(149, 177, 162, 0.85);
+}
+
+.integrationQueueStatus,
+.integrationQueueEmpty,
+.integrationQueueSectionError,
+.integrationQueueHint {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(185, 211, 197, 0.85);
+}
+
+.integrationQueueSectionError {
+  color: rgba(242, 165, 165, 0.92);
+}
+
+.integrationQueueList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.integrationQueueListItem {
+  margin: 0;
+}
+
+.integrationQueueListButton {
+  width: 100%;
+  display: grid;
+  gap: 0.18rem;
+  text-align: left;
+  border: 1px solid rgba(74, 112, 90, 0.45);
+  border-radius: 0.65rem;
+  background: rgba(7, 12, 9, 0.68);
+  color: inherit;
+  padding: 0.58rem 0.68rem;
+  cursor: pointer;
+}
+
+.integrationQueueListButton:focus-visible {
+  outline: 2px solid rgba(154, 233, 182, 0.8);
+  outline-offset: 1px;
+}
+
+.integrationQueuePrimary {
+  font-size: 0.84rem;
+  color: rgba(230, 243, 236, 0.96);
+}
+
+.integrationQueueSecondary {
+  font-size: 0.72rem;
+  color: rgba(153, 183, 168, 0.82);
+}
+
+.integrationQueueStatusBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: fit-content;
+  padding: 0.1rem 0.44rem;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(228, 246, 236, 0.95);
+  background: rgba(91, 136, 110, 0.42);
+}
+
+.integrationQueueStatusBadge[data-status='integrated'] {
+  background: rgba(90, 127, 172, 0.4);
+  color: rgba(223, 236, 255, 0.94);
+}
+
+.integrationQueueStatusBadge[data-status='declined'] {
+  background: rgba(161, 98, 103, 0.4);
+  color: rgba(255, 223, 226, 0.94);
+}
+
+.integrationQueuePanel {
+  display: grid;
+  gap: 0.85rem;
+  padding: 0.85rem;
+  border: 1px solid rgba(79, 118, 95, 0.5);
+  border-radius: 0.82rem;
+  background: rgba(9, 16, 11, 0.6);
+}
+
+.integrationQueueMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.integrationQueueMetaRow {
+  display: grid;
+  grid-template-columns: 7rem 1fr;
+  column-gap: 0.7rem;
+}
+
+.integrationQueueMetaRow dt {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(150, 181, 166, 0.76);
+}
+
+.integrationQueueMetaRow dd {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(224, 238, 230, 0.93);
+  word-break: break-word;
+}
+
+.integrationQueueDecisionRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.44rem;
+}

@@ -207,6 +207,11 @@ export function PlatformShell() {
         return;
       }
 
+      // Ignore late app route sync writes after close has been requested.
+      if (visorRoute.mode !== 'open') {
+        return;
+      }
+
       if (!activeApp.routeCodec) {
         return;
       }
@@ -221,7 +226,7 @@ export function PlatformShell() {
       nextParams = activeApp.routeCodec.writeRoute(nextParams, nextState);
       commitVisorSearchParams(nextParams);
     },
-    [activeApp, commitVisorSearchParams, visorRoute.organismId],
+    [activeApp, commitVisorSearchParams, visorRoute.mode, visorRoute.organismId],
   );
 
   const handleOpenAppRequest = useCallback(
