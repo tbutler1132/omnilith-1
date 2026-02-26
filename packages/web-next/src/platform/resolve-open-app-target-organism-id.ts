@@ -18,6 +18,7 @@ function isOrganismScopedApp(appId: string): boolean {
   return (
     appId === 'organism' ||
     appId === 'cadence' ||
+    appId === 'text-editor' ||
     appId === 'organism-view' ||
     appId === 'proposal-workbench' ||
     appId === 'integration-queue' ||
