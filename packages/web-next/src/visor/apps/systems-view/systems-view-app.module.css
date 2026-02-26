@@ -1,0 +1,171 @@
+.systemsViewApp {
+  display: grid;
+  gap: 0.9rem;
+}
+
+.systemsViewTitle {
+  margin: 0;
+  font-size: 1.08rem;
+  letter-spacing: 0.01em;
+  color: rgba(236, 244, 238, 0.95);
+}
+
+.systemsViewTarget {
+  margin: 0;
+  font-size: 0.81rem;
+  color: rgba(179, 203, 191, 0.86);
+}
+
+.systemsViewStatus,
+.systemsViewEmpty,
+.systemsViewSectionError {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(185, 211, 197, 0.85);
+}
+
+.systemsViewSectionError {
+  color: rgba(242, 165, 165, 0.92);
+}
+
+.systemsViewMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(84, 122, 100, 0.48);
+  background: rgba(8, 14, 10, 0.62);
+}
+
+.systemsViewMetaRow {
+  display: grid;
+  grid-template-columns: 8.2rem 1fr;
+  column-gap: 0.7rem;
+}
+
+.systemsViewMetaRow dt {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(150, 181, 166, 0.76);
+}
+
+.systemsViewMetaRow dd {
+  margin: 0;
+  font-size: 0.82rem;
+  color: rgba(224, 238, 230, 0.93);
+  word-break: break-word;
+}
+
+.systemsViewLanes {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.systemsViewLane {
+  display: grid;
+  gap: 0.45rem;
+  padding: 0.7rem;
+  border-radius: 0.78rem;
+  border: 1px solid rgba(74, 108, 88, 0.48);
+  background: rgba(8, 13, 9, 0.62);
+}
+
+.systemsViewLaneTitle {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(156, 190, 172, 0.78);
+}
+
+.systemsViewNodeCard {
+  display: grid;
+  gap: 0.16rem;
+  padding: 0.58rem 0.66rem;
+  border-radius: 0.62rem;
+  border: 1px solid rgba(76, 113, 92, 0.5);
+  background: rgba(5, 10, 7, 0.68);
+}
+
+.systemsViewNodeCardTarget {
+  border-color: rgba(138, 214, 164, 0.66);
+  background: rgba(11, 20, 14, 0.76);
+}
+
+.systemsViewNodeCardSelected {
+  border-color: rgba(165, 236, 188, 0.8);
+  box-shadow: 0 0 0 1px rgba(165, 236, 188, 0.4) inset;
+}
+
+.systemsViewSelectedTag {
+  margin: 0;
+  width: fit-content;
+  padding: 0.08rem 0.34rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(220, 255, 233, 0.95);
+  background: rgba(93, 155, 116, 0.52);
+}
+
+.systemsViewNodePrimary {
+  margin: 0;
+  font-size: 0.84rem;
+  color: rgba(229, 242, 235, 0.95);
+}
+
+.systemsViewNodeSecondary {
+  margin: 0;
+  font-size: 0.72rem;
+  color: rgba(153, 183, 168, 0.84);
+  word-break: break-word;
+}
+
+.systemsViewChildrenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.44rem;
+}
+
+.systemsViewChildItem {
+  margin: 0;
+}
+
+.systemsViewActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  margin-top: 0.3rem;
+}
+
+.systemsViewActionButton {
+  appearance: none;
+  border: 1px solid rgba(121, 160, 137, 0.44);
+  background: rgba(10, 16, 12, 0.52);
+  color: rgba(227, 242, 233, 0.92);
+  border-radius: 999px;
+  padding: 0.28rem 0.65rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+
+.systemsViewActionButton:hover {
+  border-color: rgba(151, 226, 178, 0.62);
+  background: rgba(20, 31, 24, 0.68);
+}
+
+.systemsViewActionButton:focus-visible {
+  outline: 2px solid rgba(154, 233, 182, 0.8);
+  outline-offset: 1px;
+}

@@ -1,0 +1,144 @@
+.queryExplorerApp {
+  display: grid;
+  gap: 14px;
+}
+
+.queryExplorerTitle {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.queryExplorerDescription {
+  margin: 0;
+  color: var(--hud-text-dim);
+  font-size: 0.9rem;
+}
+
+.queryExplorerBoundaryHint {
+  margin: 0;
+  color: var(--hud-text-dim);
+  font-size: 0.82rem;
+}
+
+.queryExplorerFilters {
+  display: grid;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 38%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--hud-surface) 72%, transparent);
+}
+
+.queryExplorerField {
+  display: grid;
+  gap: 6px;
+  font-size: 0.82rem;
+  color: var(--hud-text-dim);
+}
+
+.queryExplorerInput {
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 35%, transparent);
+  background: color-mix(in srgb, var(--hud-surface) 80%, transparent);
+  color: var(--hud-text);
+  font: inherit;
+}
+
+.queryExplorerInput:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--hud-accent) 64%, transparent);
+  outline-offset: 1px;
+}
+
+.queryExplorerFilterActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.queryExplorerActionButton {
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 42%, transparent);
+  background: color-mix(in srgb, var(--hud-surface) 76%, transparent);
+  color: var(--hud-text);
+  padding: 7px 10px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.queryExplorerActionButton:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.queryExplorerPagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.queryExplorerMeta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--hud-text-dim);
+}
+
+.queryExplorerStatus {
+  margin: 0;
+  font-size: 0.84rem;
+  color: var(--hud-text-dim);
+}
+
+.queryExplorerSectionError {
+  margin: 0;
+  color: var(--hud-warning);
+  font-size: 0.82rem;
+}
+
+.queryExplorerResults {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 10px;
+}
+
+.queryExplorerResultItem {
+  margin: 0;
+}
+
+.queryExplorerResultCard {
+  display: grid;
+  gap: 6px;
+  padding: 10px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--hud-accent) 28%, transparent);
+  background: color-mix(in srgb, var(--hud-surface) 70%, transparent);
+}
+
+.queryExplorerResultCardSelected {
+  border-color: color-mix(in srgb, var(--hud-accent) 58%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--hud-accent) 34%, transparent);
+}
+
+.queryExplorerPrimary {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.queryExplorerSecondary {
+  margin: 0;
+  font-size: 0.78rem;
+  color: var(--hud-text-dim);
+}
+
+.queryExplorerCardActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
