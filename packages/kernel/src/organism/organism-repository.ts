@@ -12,4 +12,5 @@ export interface OrganismRepository {
   save(organism: Organism): Promise<void>;
   findById(id: OrganismId): Promise<Organism | undefined>;
   exists(id: OrganismId): Promise<boolean>;
+  setOpenTrunk(id: OrganismId, openTrunk: boolean): Promise<boolean>;
 }

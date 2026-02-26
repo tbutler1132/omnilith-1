@@ -3,7 +3,9 @@ import {
   altitudeFromZoom,
   applyPan,
   clampToMap,
+  createAltitudeZoomProfile,
   createInitialViewport,
+  frameOrganismFocus,
   nextAltitude,
   zoomForAltitude,
 } from './viewport-math.js';
@@ -50,5 +52,25 @@ describe('viewport math', () => {
     expect(nextAltitude('close', 'out')).toBe('mid');
     expect(nextAltitude('mid', 'out')).toBe('high');
     expect(nextAltitude('high', 'out')).toBeNull();
+  });
+
+  it('supports map-specific altitude zoom profiles', () => {
+    const profile = createAltitudeZoomProfile(2.1);
+
+    expect(zoomForAltitude('high', profile)).toBeCloseTo(0.525);
+    expect(zoomForAltitude('mid', profile)).toBeCloseTo(1.26);
+    expect(zoomForAltitude('close', profile)).toBeCloseTo(2.73);
+    expect(altitudeFromZoom(1.21, profile)).toBe('mid');
+    expect(createInitialViewport(2000, 2000, profile).zoom).toBeCloseTo(0.525);
+  });
+
+  it('frames focused organisms at close zoom', () => {
+    const profile = createAltitudeZoomProfile(3.88);
+
+    expect(frameOrganismFocus(100, 200, profile)).toEqual({
+      x: 100,
+      y: 200,
+      zoom: zoomForAltitude('close', profile),
+    });
   });
 });

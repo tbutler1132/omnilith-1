@@ -5,12 +5,13 @@
  * then renders the plain map slice with the minimal closed HUD scaffold.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchSession, loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
 import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage, type SpaceStageSpatialSnapshot } from '../space/space-stage.js';
+import { useEntryOrganisms } from '../space/use-entry-organisms.js';
 import {
   clearVisorAppRoutes,
   createEmptySpatialContext,
@@ -28,6 +29,8 @@ import {
   isSecretLoginShortcut,
 } from './secret-login-shortcut.js';
 
+type PanDirection = 'up' | 'down' | 'left' | 'right';
+
 interface LoadState {
   readonly worldMapId: string | null;
   readonly loading: boolean;
@@ -36,6 +39,7 @@ interface LoadState {
 
 const ARRIVAL_OVERLAY_MS = 1400;
 const INITIAL_LOADING_MIN_MS = 900;
+const WORLD_MAP_LABEL = 'World Map';
 
 function readVisorRouteFromWindow(): VisorRoute {
   if (typeof window === 'undefined') {
@@ -52,6 +56,8 @@ export function PlatformShell() {
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [boundaryOrganismId, setBoundaryOrganismId] = useState<string | null>(null);
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
+  const [centerMapHandler, setCenterMapHandler] = useState<(() => void) | null>(null);
+  const [panMapHandler, setPanMapHandler] = useState<((direction: PanDirection) => void) | null>(null);
   const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
     worldMapId: null,
@@ -68,6 +74,30 @@ export function PlatformShell() {
     typeof window !== 'undefined' && visorRoute.mode === 'open' && activeApp.routeCodec
       ? activeApp.routeCodec.parseRoute(new URLSearchParams(window.location.search))
       : null;
+  const boundaryPath = spatialContext.boundaryPath;
+  const currentBoundaryPathId = boundaryPath.length > 0 ? boundaryPath[boundaryPath.length - 1] : null;
+  const parentBoundaryPathId = boundaryPath.length > 1 ? boundaryPath[boundaryPath.length - 2] : null;
+  const isWorldMapLevel = enteredOrganismId === null && currentBoundaryPathId === null;
+  const currentNavOrganismId = enteredOrganismId ?? currentBoundaryPathId;
+  const parentNavOrganismId = enteredOrganismId ? currentBoundaryPathId : parentBoundaryPathId;
+  const navOrganismIds = useMemo(() => {
+    const nextIds = [currentNavOrganismId, parentNavOrganismId].filter(
+      (organismId): organismId is string => typeof organismId === 'string' && organismId.length > 0,
+    );
+    return Array.from(new Set(nextIds));
+  }, [currentNavOrganismId, parentNavOrganismId]);
+  const { byId: navOrganismsById } = useEntryOrganisms(navOrganismIds);
+  const navigationCurrentLabel = isWorldMapLevel
+    ? WORLD_MAP_LABEL
+    : currentNavOrganismId
+      ? (navOrganismsById[currentNavOrganismId]?.name ?? currentNavOrganismId)
+      : WORLD_MAP_LABEL;
+  const navigationUpTargetLabel =
+    parentNavOrganismId === null
+      ? WORLD_MAP_LABEL
+      : (navOrganismsById[parentNavOrganismId]?.name ?? parentNavOrganismId);
+  const showNavigationUpControl = !isWorldMapLevel;
+  const canGoUp = Boolean(backHandler);
 
   const renderArrivalOverlay = (mode: 'loading' | 'arrival') => (
     <div
@@ -93,11 +123,30 @@ export function PlatformShell() {
     setBackHandler(() => handler);
   }, []);
 
+  const handleCenterMapControlReady = useCallback((handler: (() => void) | null) => {
+    setCenterMapHandler(() => handler);
+  }, []);
+
+  const handlePanMapControlReady = useCallback((handler: ((direction: PanDirection) => void) | null) => {
+    setPanMapHandler(() => handler);
+  }, []);
+
   const handleAltitudeChangeRequested = useCallback(
     (direction: 'in' | 'out') => {
       changeAltitudeHandler?.(direction);
     },
     [changeAltitudeHandler],
+  );
+
+  const handleCenterMapRequested = useCallback(() => {
+    centerMapHandler?.();
+  }, [centerMapHandler]);
+
+  const handlePanMapRequested = useCallback(
+    (direction: PanDirection) => {
+      panMapHandler?.(direction);
+    },
+    [panMapHandler],
   );
 
   const handleBackRequested = useCallback(() => {
@@ -107,6 +156,8 @@ export function PlatformShell() {
   const handleSpatialContextChange = useCallback((snapshot: SpaceStageSpatialSnapshot) => {
     setSpatialContext({
       mapOrganismId: snapshot.mapOrganismId,
+      mapSize: snapshot.mapSize,
+      mapEntries: snapshot.mapEntries,
       focusedOrganismId: snapshot.focusedOrganismId,
       cursorWorld: snapshot.cursorWorld,
       hoveredEntry: snapshot.hoveredEntry,
@@ -428,6 +479,8 @@ export function PlatformShell() {
         worldMapId={state.worldMapId}
         onAltitudeChange={setAltitude}
         onAltitudeControlReady={handleAltitudeControlReady}
+        onCenterControlReady={handleCenterMapControlReady}
+        onPanControlReady={handlePanMapControlReady}
         onBackControlReady={handleBackControlReady}
         onInteriorChange={setIsInInterior}
         onEnteredOrganismChange={setEnteredOrganismId}
@@ -445,10 +498,14 @@ export function PlatformShell() {
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}
         showLogoutButton={isAuthenticated}
-        navigationLabel={isInInterior ? 'Organism interior' : null}
+        navigationCurrentLabel={navigationCurrentLabel}
+        navigationUpTargetLabel={navigationUpTargetLabel}
         onChangeAltitude={handleAltitudeChangeRequested}
-        onGoBack={handleBackRequested}
-        canGoBack={Boolean(backHandler)}
+        onCenterMap={handleCenterMapRequested}
+        onPanMap={handlePanMapRequested}
+        onGoUp={handleBackRequested}
+        showNavigationUpControl={showNavigationUpControl}
+        canGoUp={canGoUp}
         onOpenApp={handleOpenApp}
         onOpenAppRequest={handleOpenAppRequest}
         onChangeAppRouteState={handleChangeAppRouteState}

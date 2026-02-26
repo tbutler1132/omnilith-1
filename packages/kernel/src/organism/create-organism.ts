@@ -62,7 +62,7 @@ export async function createOrganism(
     name: input.name,
     createdAt: now,
     createdBy: input.createdBy,
-    openTrunk: input.openTrunk ?? false,
+    openTrunk: input.openTrunk ?? true,
   };
 
   const initialState: OrganismState = {

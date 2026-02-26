@@ -19,52 +19,75 @@ export interface ScreenSize {
 }
 
 const MAP_PADDING = 100;
-interface AltitudeLevel {
-  readonly level: Altitude;
-  readonly zoom: number;
+const ALTITUDE_ORDER: readonly Altitude[] = ['high', 'mid', 'close'];
+
+export interface AltitudeZoomProfile {
+  readonly high: number;
+  readonly mid: number;
+  readonly close: number;
 }
 
-const ALTITUDES: readonly AltitudeLevel[] = [
-  { level: 'high', zoom: 0.25 },
-  { level: 'mid', zoom: 0.6 },
-  { level: 'close', zoom: 1.3 },
-] as const;
+export const DEFAULT_ALTITUDE_ZOOM_PROFILE: AltitudeZoomProfile = {
+  high: 0.25,
+  mid: 0.6,
+  close: 1.3,
+};
 
 /** Zoom level used while transitioning into a map interior boundary. */
 export const ENTER_ZOOM = 4.0;
 
-export function createInitialViewport(mapWidth: number, mapHeight: number): ViewportState {
+export function createAltitudeZoomProfile(scale: number): AltitudeZoomProfile {
+  const normalizedScale = Number.isFinite(scale) ? Math.max(0.001, scale) : 1;
+
   return {
-    x: mapWidth / 2,
-    y: mapHeight / 2,
-    zoom: zoomForAltitude('high'),
+    high: DEFAULT_ALTITUDE_ZOOM_PROFILE.high * normalizedScale,
+    mid: DEFAULT_ALTITUDE_ZOOM_PROFILE.mid * normalizedScale,
+    close: DEFAULT_ALTITUDE_ZOOM_PROFILE.close * normalizedScale,
   };
 }
 
-export function zoomForAltitude(altitude: Altitude): number {
-  const found = ALTITUDES.find((item) => item.level === altitude);
-  return found ? found.zoom : ALTITUDES[0].zoom;
+export function createInitialViewport(
+  mapWidth: number,
+  mapHeight: number,
+  zoomProfile: AltitudeZoomProfile = DEFAULT_ALTITUDE_ZOOM_PROFILE,
+): ViewportState {
+  return {
+    x: mapWidth / 2,
+    y: mapHeight / 2,
+    zoom: zoomForAltitude('high', zoomProfile),
+  };
 }
 
-export function altitudeFromZoom(zoom: number): Altitude {
-  let closest = ALTITUDES[0];
-  let minDistance = Math.abs(zoom - closest.zoom);
+export function zoomForAltitude(
+  altitude: Altitude,
+  zoomProfile: AltitudeZoomProfile = DEFAULT_ALTITUDE_ZOOM_PROFILE,
+): number {
+  return zoomProfile[altitude];
+}
 
-  for (let index = 1; index < ALTITUDES.length; index += 1) {
-    const distance = Math.abs(zoom - ALTITUDES[index].zoom);
+export function altitudeFromZoom(
+  zoom: number,
+  zoomProfile: AltitudeZoomProfile = DEFAULT_ALTITUDE_ZOOM_PROFILE,
+): Altitude {
+  let closest = ALTITUDE_ORDER[0];
+  let minDistance = Math.abs(zoom - zoomProfile[closest]);
+
+  for (let index = 1; index < ALTITUDE_ORDER.length; index += 1) {
+    const candidate = ALTITUDE_ORDER[index];
+    const distance = Math.abs(zoom - zoomProfile[candidate]);
     if (distance < minDistance) {
-      closest = ALTITUDES[index];
+      closest = candidate;
       minDistance = distance;
     }
   }
 
-  return closest.level;
+  return closest;
 }
 
 export function nextAltitude(current: Altitude, direction: 'in' | 'out'): Altitude | null {
-  const index = ALTITUDES.findIndex((item) => item.level === current);
+  const index = ALTITUDE_ORDER.indexOf(current);
   const nextIndex = direction === 'in' ? index + 1 : index - 1;
-  return ALTITUDES[nextIndex]?.level ?? null;
+  return ALTITUDE_ORDER[nextIndex] ?? null;
 }
 
 export function interpolateViewport(from: ViewportState, to: ViewportState, t: number): ViewportState {
@@ -75,11 +98,27 @@ export function interpolateViewport(from: ViewportState, to: ViewportState, t: n
   };
 }
 
-export function frameOrganism(wx: number, wy: number): ViewportState {
+export function frameOrganism(
+  wx: number,
+  wy: number,
+  zoomProfile: AltitudeZoomProfile = DEFAULT_ALTITUDE_ZOOM_PROFILE,
+): ViewportState {
   return {
     x: wx,
     y: wy,
-    zoom: zoomForAltitude('close'),
+    zoom: zoomForAltitude('close', zoomProfile),
+  };
+}
+
+export function frameOrganismFocus(
+  wx: number,
+  wy: number,
+  zoomProfile: AltitudeZoomProfile = DEFAULT_ALTITUDE_ZOOM_PROFILE,
+): ViewportState {
+  return {
+    x: wx,
+    y: wy,
+    zoom: zoomForAltitude('close', zoomProfile),
   };
 }
 
@@ -91,10 +130,26 @@ export function frameOrganismEnter(wx: number, wy: number): ViewportState {
   };
 }
 
+function resolveDevicePixelRatio(): number {
+  if (typeof window === 'undefined') {
+    return 1;
+  }
+
+  const ratio = window.devicePixelRatio;
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+}
+
+function snapScreenCoordinateToDevicePixel(value: number): number {
+  const ratio = resolveDevicePixelRatio();
+  return Math.round(value * ratio) / ratio;
+}
+
 export function getWorldTransform(viewport: ViewportState, screen: ScreenSize): string {
   const tx = screen.width / 2 - viewport.x * viewport.zoom;
   const ty = screen.height / 2 - viewport.y * viewport.zoom;
-  return `translate(${tx}px, ${ty}px) scale(${viewport.zoom})`;
+  const snappedTx = snapScreenCoordinateToDevicePixel(tx);
+  const snappedTy = snapScreenCoordinateToDevicePixel(ty);
+  return `translate3d(${snappedTx}px, ${snappedTy}px, 0) scale(${viewport.zoom})`;
 }
 
 export function applyPan(viewport: ViewportState, screenDx: number, screenDy: number): ViewportState {

@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 24, 2026  
+Updated: February 26, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -1104,6 +1104,73 @@ Architecture impact:
 The detailed decision record is captured in:
 
 - `docs/decisions/038-web-next-visor-app-spatial-context-contract.md`
+
+### Move 53: Map-Scale-Neutral Grid Rendering and Small-Text Surface Sizing
+
+Map sizing and spatial rendering were tightened to preserve proportional truth and visual consistency.
+
+Direction:
+
+- reduce compositional map-context inflation so short text organisms derive as genuinely small entries
+- clamp target-map capacity normalization to avoid upscaling on smaller maps
+- apply migration/backfill so existing map entries reflect updated derivation
+- normalize ground-plane glow and stroke geometry against map zoom scale to reduce world/community thickness mismatch
+- keep focus framing at preview zoom so focused organisms remain contextual rather than over-zoomed
+
+Architecture impact:
+
+- no kernel changes
+- changes are constrained to API surface-size derivation/migration and `web-next` rendering-layer ground-plane/focus behavior
+- map semantics and rendering behavior remain separated: derivation owns size truth, rendering owns perceptual consistency
+
+The detailed decision record is captured in:
+
+- `docs/decisions/042-map-scale-neutral-grid-and-small-text-surface-sizing.md`
+
+### Move 54: World-Map Unit-Grid Simplification Mode
+
+To support a major restructuring window, map behavior was intentionally reduced to deterministic unit-grid rules.
+
+Direction:
+
+- every surfaced organism now occupies exactly one unit (`size = 1`)
+- spatial placement is treated as integer grid coordinates
+- world-map bounds are standardized to `5000 x 5000` with `minSeparation = 1`
+- `community` content type remains registered for compatibility but is removed from active surfaced seed/render paths
+- simplified seed profiles anchor governance with a parent Text boundary and an integration-policy organism
+- a dedicated migration path normalizes existing world-map entries and removes surfaced `community` entries
+
+Architecture impact:
+
+- no kernel changes
+- API surface-size derivation and seed profiles were simplified to unit-grid semantics
+- web-next marker/navigation behavior no longer depends on community map indirection for active world-map interaction
+
+The detailed decision record is captured in:
+
+- `docs/decisions/043-world-map-unit-grid-simplification-mode.md`
+
+### Move 55: Personal Organisms as Digital-Twin Boundaries
+
+Personal tending direction was clarified to avoid ambiguity about where cybernetic regulation should live.
+
+Direction:
+
+- personal organism remains the canonical boundary for personal regulation
+- regulation organisms for personal tending are composed inside that boundary (directly or via a regulation-bundle child)
+- threshold remains lightweight: personal organisms start simple, regulation composition is added incrementally
+- `user` remains infrastructure; personal organism represents practice/trajectory, not the person
+- top-level regulation organisms remain valid for intentional reuse patterns across multiple boundaries
+
+Architecture impact:
+
+- no kernel changes
+- direction is implemented through composition and rendering patterns
+- delegation and authority remain explicit and organism-local
+
+The detailed decision record is captured in:
+
+- `docs/decisions/044-personal-organisms-as-digital-twin-boundaries.md`
 
 ---
 

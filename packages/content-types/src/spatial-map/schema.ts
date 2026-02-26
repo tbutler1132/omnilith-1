@@ -20,4 +20,5 @@ export interface SpatialMapEntry {
   readonly y: number;
   readonly size?: number;
   readonly emphasis?: number;
+  readonly curationScale?: number;
 }

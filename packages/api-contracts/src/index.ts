@@ -28,7 +28,8 @@ export type EventType =
   | 'proposal.opened'
   | 'proposal.integrated'
   | 'proposal.declined'
-  | 'visibility.changed';
+  | 'visibility.changed'
+  | 'organism.open-trunk-changed';
 
 export interface Organism {
   readonly id: ApiId;
@@ -166,6 +167,11 @@ interface FetchOrganismStateRecord {
 export interface FetchOrganismResponse {
   readonly organism: FetchOrganismRecord;
   readonly currentState: FetchOrganismStateRecord | null;
+}
+
+/** GET /public/organisms?ids=<id,id,...> */
+export interface FetchOrganismBatchResponse {
+  readonly organisms: ReadonlyArray<FetchOrganismResponse>;
 }
 
 /** GET /organisms */
@@ -317,6 +323,15 @@ export interface UpdateVisibilityResponse {
 /** GET /organisms/:id/visibility */
 export interface FetchVisibilityResponse {
   readonly visibility: VisibilityRecord;
+}
+
+/** PUT /organisms/:id/open-trunk */
+export interface UpdateOpenTrunkRequest {
+  readonly openTrunk: boolean;
+}
+
+export interface UpdateOpenTrunkResponse {
+  readonly organism: Organism;
 }
 
 // ---------------------------------------------------------------------------

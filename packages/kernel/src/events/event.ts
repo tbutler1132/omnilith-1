@@ -17,7 +17,8 @@ export type EventType =
   | 'proposal.opened'
   | 'proposal.integrated'
   | 'proposal.declined'
-  | 'visibility.changed';
+  | 'visibility.changed'
+  | 'organism.open-trunk-changed';
 
 export interface DomainEvent {
   readonly id: EventId;

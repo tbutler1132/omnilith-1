@@ -1,40 +1,39 @@
 /**
  * Spatial controls slot.
  *
- * Reserves the top-left HUD slot for map navigation and altitude controls.
- * This slice mirrors the old map widget shapes with placeholder-only state.
+ * Reserves the top-left HUD slot for one-level spatial boundary navigation.
  */
-
-import type { Altitude } from '../../../contracts/altitude.js';
 import type { VisorAppSpatialContext } from '../../apps/spatial-context-contract.js';
-import { AltitudeControlsWidget } from './altitude-controls-widget.js';
+import { SpatialMiniMapWidget } from '../widgets/spatial-mini-map-widget.js';
 import { SpatialNavWidget } from './spatial-nav-widget.js';
-import { SpatialReadoutWidget } from './spatial-readout-widget.js';
 
 interface SpatialControlsSlotProps {
-  readonly altitude: Altitude;
   readonly spatialContext: VisorAppSpatialContext;
-  readonly showAltitudeControls: boolean;
-  readonly navigationLabel?: string | null;
-  readonly onChangeAltitude: (direction: 'in' | 'out') => void;
-  readonly onGoBack: () => void;
-  readonly canGoBack: boolean;
+  readonly currentLabel: string;
+  readonly upTargetLabel: string | null;
+  readonly onGoUp: () => void;
+  readonly showUpControl: boolean;
+  readonly canGoUp: boolean;
 }
 
 export function SpatialControlsSlot({
-  altitude,
   spatialContext,
-  showAltitudeControls,
-  navigationLabel,
-  onChangeAltitude,
-  onGoBack,
-  canGoBack,
+  currentLabel,
+  upTargetLabel,
+  onGoUp,
+  showUpControl,
+  canGoUp,
 }: SpatialControlsSlotProps) {
   return (
     <div className="spatial-controls-slot">
-      <SpatialNavWidget altitude={altitude} contextLabel={navigationLabel} onGoBack={onGoBack} canGoBack={canGoBack} />
-      {showAltitudeControls ? <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} /> : null}
-      {showAltitudeControls ? <SpatialReadoutWidget spatialContext={spatialContext} /> : null}
+      <SpatialMiniMapWidget spatialContext={spatialContext} />
+      <SpatialNavWidget
+        currentLabel={currentLabel}
+        upTargetLabel={upTargetLabel}
+        onGoUp={onGoUp}
+        showUpControl={showUpControl}
+        canGoUp={canGoUp}
+      />
     </div>
   );
 }

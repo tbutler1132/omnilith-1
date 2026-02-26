@@ -244,6 +244,7 @@ describe('organism routes', () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.organism).toBeDefined();
+    expect(body.organism.openTrunk).toBe(true);
     expect(body.initialState).toBeDefined();
     expect(body.initialState.sequenceNumber).toBe(1);
   });
@@ -389,6 +390,30 @@ describe('organism routes', () => {
     expect(res.status).toBe(403);
   });
 
+  it('PUT /organisms/:id/open-trunk updates regulatory mode for the steward', async () => {
+    const created = await createTestOrganism(app, { openTrunk: true });
+    const organismId = created.organism.id as string;
+
+    const updateRes = await app.request(`/organisms/${organismId}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(updateRes.status).toBe(200);
+    const updateBody = await updateRes.json();
+    expect(updateBody.organism.openTrunk).toBe(false);
+
+    const appendRes = await app.request(`/organisms/${organismId}/states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'text',
+        payload: { content: 'v2', format: 'plaintext' },
+      }),
+    });
+    expect(appendRes.status).toBe(403);
+  });
+
   it('POST /organisms/:id/states rejects spatial-map appends in favor of surface route', async () => {
     const createRes = await app.request('/organisms', {
       method: 'POST',
@@ -464,6 +489,46 @@ describe('organism routes', () => {
     expect(payload.entries).toHaveLength(1);
     expect(payload.entries[0]?.organismId).toBe(target.id);
     expect(typeof payload.entries[0]?.size).toBe('number');
+  });
+
+  it('POST /organisms/:id/surface rejects out-of-range curation scale', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Field Note',
+        contentTypeId: 'text',
+        payload: { content: 'hello world', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const surfaceRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: target.id,
+        x: 100,
+        y: 120,
+        curationScale: 1.4,
+      }),
+    });
+
+    expect(surfaceRes.status).toBe(400);
+    const body = await surfaceRes.json();
+    expect(body.error).toContain('curationScale');
   });
 
   it('POST /organisms/:id/surface is idempotent for already surfaced organisms', async () => {
@@ -1271,6 +1336,24 @@ describe('authorization enforcement', () => {
     expect(decomposeDenied.status).toBe(403);
   });
 
+  it('changing open-trunk mode requires stewardship', async () => {
+    const { organism } = await createTestOrganism(ownerApp, { name: 'Draft', openTrunk: true });
+
+    const denied = await outsiderApp.request(`/organisms/${organism.id}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(denied.status).toBe(403);
+
+    const allowed = await ownerApp.request(`/organisms/${organism.id}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(allowed.status).toBe(200);
+  });
+
   it('opening and listing proposals require organism access', async () => {
     const { organism } = await createTestOrganism(ownerApp, { name: 'Private Draft' });
     await container.visibilityRepository.save({
@@ -1353,6 +1436,52 @@ describe('public read routes', () => {
 
     const contributionsRes = await publicApp.request(`/public/organisms/${organism.id}/contributions`);
     expect(contributionsRes.status).toBe(200);
+  });
+
+  it('guest can batch-read public organisms and private entries are omitted', async () => {
+    const { organism: publicOrganism } = await createTestOrganism(ownerApp);
+    const { organism: privateOrganism } = await createTestOrganism(ownerApp, {
+      name: 'Private Organism',
+    });
+
+    await container.visibilityRepository.save({
+      organismId: privateOrganism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Batch Public Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 4000, height: 4000 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: publicOrganism.id,
+        x: 300,
+        y: 300,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
+
+    const batchRes = await publicApp.request(
+      `/public/organisms?ids=${publicOrganism.id},${privateOrganism.id},missing-organism`,
+    );
+    expect(batchRes.status).toBe(200);
+    const body = await batchRes.json();
+    expect(body.organisms).toHaveLength(1);
+    expect(body.organisms[0]?.organism.id).toBe(publicOrganism.id);
   });
 
   it('guest can read composed children with state via /public routes', async () => {

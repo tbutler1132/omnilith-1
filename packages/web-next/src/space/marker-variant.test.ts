@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { resolveMarkerVariant } from './marker-variant.js';
 
 describe('resolveMarkerVariant', () => {
-  it('returns community marker variant for community content', () => {
-    expect(resolveMarkerVariant({ name: 'Capital Community', contentTypeId: 'community' })).toBe('community');
+  it('returns default marker variant for community content in simplified mode', () => {
+    expect(resolveMarkerVariant({ name: 'Capital Community', contentTypeId: 'community' })).toBe('default');
   });
 
   it('returns institution and system variants for key composition references', () => {

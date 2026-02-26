@@ -1,13 +1,12 @@
 /**
  * Space stage map surface for web-next Slice 1.
  *
- * Renders the world map grid with drag navigation plus lightweight organism
- * markers from spatial-map entries.
+ * Renders world map drag navigation plus lightweight organism markers from
+ * spatial-map entries.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
-import { GroundPlane } from './ground-plane.js';
 import { OrganismInterior } from './interior/organism-interior.js';
 import { MapViewport } from './map-viewport.js';
 import { SpaceOrganismLayer } from './space-organism-layer.js';
@@ -15,12 +14,16 @@ import { resolveMarkerActivationIntent, shouldClearFocusedOrganism } from './spa
 import { useEntryOrganisms } from './use-entry-organisms.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
-import { frameOrganism, frameOrganismEnter } from './viewport-math.js';
+import { frameOrganism, frameOrganismEnter, frameOrganismFocus, nextAltitude } from './viewport-math.js';
+
+type PanDirection = 'up' | 'down' | 'left' | 'right';
 
 interface SpaceStageProps {
   readonly worldMapId: string;
   readonly onAltitudeChange: (altitude: Altitude) => void;
   readonly onAltitudeControlReady: (handler: ((direction: 'in' | 'out') => void) | null) => void;
+  readonly onCenterControlReady: (handler: (() => void) | null) => void;
+  readonly onPanControlReady: (handler: ((direction: PanDirection) => void) | null) => void;
   readonly onBackControlReady: (handler: (() => void) | null) => void;
   readonly onInteriorChange: (isInInterior: boolean) => void;
   readonly onEnteredOrganismChange: (organismId: string | null) => void;
@@ -59,6 +62,15 @@ export interface SpaceStageSpatialSnapshot {
   };
   readonly surfaceSelection: ReadonlyArray<string>;
   readonly boundaryPath: ReadonlyArray<string>;
+  readonly mapSize: {
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly mapEntries: ReadonlyArray<{
+    readonly organismId: string;
+    readonly x: number;
+    readonly y: number;
+  }>;
 }
 
 interface FocusPoint {
@@ -97,6 +109,11 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
+const CENTER_TRANSITION_MS = 420;
+const PAN_TRANSITION_MS = 260;
+const PAN_STEP_SCREEN_FRACTION = 0.16;
+const PAN_STEP_SCREEN_MIN_PX = 72;
+const PAN_STEP_SCREEN_MAX_PX = 180;
 
 function resolveSurfaceEntrySnapshot(
   organismId: string | null,
@@ -135,6 +152,8 @@ export function SpaceStage({
   worldMapId,
   onAltitudeChange,
   onAltitudeControlReady,
+  onCenterControlReady,
+  onPanControlReady,
   onBackControlReady,
   onInteriorChange,
   onEnteredOrganismChange,
@@ -155,7 +174,7 @@ export function SpaceStage({
   const previousAltitudeRef = useRef<Altitude | null>(null);
   const interiorTransitioningRef = useRef(false);
 
-  const { width, height, entries, entryCount, loading, error } = useSpatialMap(currentMapId);
+  const { width, height, entries, loading, error } = useSpatialMap(currentMapId);
   const entryIds = useMemo(() => entries.map((entry) => entry.organismId), [entries]);
   const entriesById = useMemo(
     () =>
@@ -180,10 +199,11 @@ export function SpaceStage({
     () => resolveSurfaceEntrySnapshot(focusedOrganismId, entriesById, entryOrganismsById),
     [entriesById, entryOrganismsById, focusedOrganismId],
   );
-  const { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude } = useViewport({
-    mapWidth: width,
-    mapHeight: height,
-  });
+  const { viewport, screenSize, altitude, altitudeZoomProfile, containerRef, setViewport, animateTo, changeAltitude } =
+    useViewport({
+      mapWidth: width,
+      mapHeight: height,
+    });
 
   const cancelFade = useCallback(() => {
     if (fadeFrameRef.current !== null) {
@@ -243,12 +263,12 @@ export function SpaceStage({
       return;
     }
 
-    animateTo(frameOrganism(pendingFocusAfterSwitch.x, pendingFocusAfterSwitch.y), {
+    animateTo(frameOrganismFocus(pendingFocusAfterSwitch.x, pendingFocusAfterSwitch.y, altitudeZoomProfile), {
       durationMs: FOCUS_TRANSITION_MS,
     });
     setFocusedOrganismId(null);
     setPendingFocusAfterSwitch(null);
-  }, [animateTo, loading, pendingFocusAfterSwitch]);
+  }, [altitudeZoomProfile, animateTo, loading, pendingFocusAfterSwitch]);
 
   const runExitTransition = useCallback(
     (afterEnterComplete: () => void) => {
@@ -328,13 +348,13 @@ export function SpaceStage({
     setEnteredOrganismId(null);
     setFocusedOrganismId(null);
     setHoveredOrganismId(null);
-    animateTo(frameOrganism(exitX, exitY), {
+    animateTo(frameOrganism(exitX, exitY, altitudeZoomProfile), {
       durationMs: INTERIOR_EXIT_TRANSITION_MS,
       onComplete: () => {
         interiorTransitioningRef.current = false;
       },
     });
-  }, [animateTo, transitionPhase, viewport.x, viewport.y]);
+  }, [altitudeZoomProfile, animateTo, transitionPhase, viewport.x, viewport.y]);
 
   const handleGoBack = useCallback(() => {
     if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
@@ -413,9 +433,9 @@ export function SpaceStage({
       }
 
       setFocusedOrganismId(input.organismId);
-      animateTo(frameOrganism(input.x, input.y), { durationMs: FOCUS_TRANSITION_MS });
+      animateTo(frameOrganismFocus(input.x, input.y, altitudeZoomProfile), { durationMs: FOCUS_TRANSITION_MS });
     },
-    [altitude, animateTo, focusedOrganismId, handleEnterMap, handleEnterOrganism, transitionPhase],
+    [altitude, altitudeZoomProfile, animateTo, focusedOrganismId, handleEnterMap, handleEnterOrganism, transitionPhase],
   );
 
   const canGoBack = (enteredOrganismId !== null || mapHistory.length > 0) && transitionPhase === 'idle';
@@ -452,9 +472,89 @@ export function SpaceStage({
   }, [altitude]);
 
   useEffect(() => {
-    onAltitudeControlReady(changeAltitude);
+    const handleAltitudeControl = (direction: 'in' | 'out') => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
+        return;
+      }
+
+      const next = nextAltitude(altitude, direction);
+      if (!next) {
+        return;
+      }
+
+      changeAltitude(direction);
+    };
+
+    onAltitudeControlReady(handleAltitudeControl);
     return () => onAltitudeControlReady(null);
-  }, [changeAltitude, onAltitudeControlReady]);
+  }, [altitude, changeAltitude, onAltitudeControlReady, transitionPhase]);
+
+  useEffect(() => {
+    const handleCenterControl = () => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current || enteredOrganismId !== null) {
+        return;
+      }
+
+      if (width <= 0 || height <= 0) {
+        return;
+      }
+
+      animateTo(
+        {
+          x: width / 2,
+          y: height / 2,
+          zoom: viewport.zoom,
+        },
+        { durationMs: CENTER_TRANSITION_MS },
+      );
+    };
+
+    onCenterControlReady(handleCenterControl);
+    return () => onCenterControlReady(null);
+  }, [animateTo, enteredOrganismId, height, onCenterControlReady, transitionPhase, viewport.zoom, width]);
+
+  useEffect(() => {
+    const handlePanControl = (direction: PanDirection) => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current || enteredOrganismId !== null) {
+        return;
+      }
+
+      const baseDimension = Math.min(screenSize.width, screenSize.height);
+      if (baseDimension <= 0 || viewport.zoom <= 0) {
+        return;
+      }
+
+      const panStepScreenPx = Math.max(
+        PAN_STEP_SCREEN_MIN_PX,
+        Math.min(PAN_STEP_SCREEN_MAX_PX, baseDimension * PAN_STEP_SCREEN_FRACTION),
+      );
+      const panStepWorld = panStepScreenPx / viewport.zoom;
+      const dx = direction === 'left' ? -panStepWorld : direction === 'right' ? panStepWorld : 0;
+      const dy = direction === 'up' ? -panStepWorld : direction === 'down' ? panStepWorld : 0;
+
+      animateTo(
+        {
+          x: viewport.x + dx,
+          y: viewport.y + dy,
+          zoom: viewport.zoom,
+        },
+        { durationMs: PAN_TRANSITION_MS },
+      );
+    };
+
+    onPanControlReady(handlePanControl);
+    return () => onPanControlReady(null);
+  }, [
+    animateTo,
+    enteredOrganismId,
+    onPanControlReady,
+    screenSize.height,
+    screenSize.width,
+    transitionPhase,
+    viewport.x,
+    viewport.y,
+    viewport.zoom,
+  ]);
 
   useEffect(() => {
     onBackControlReady(canGoBack ? handleGoBack : null);
@@ -488,20 +588,32 @@ export function SpaceStage({
       },
       surfaceSelection,
       boundaryPath,
+      mapSize: {
+        width,
+        height,
+      },
+      mapEntries: entries.map((entry) => ({
+        organismId: entry.organismId,
+        x: entry.x,
+        y: entry.y,
+      })),
     });
   }, [
     altitude,
     boundaryPath,
     cursorWorld,
     currentMapId,
+    height,
     focusedOrganismId,
     focusedEntry,
     hoveredEntry,
     onSpatialContextChange,
     surfaceSelection,
+    entries,
     viewport.x,
     viewport.y,
     viewport.zoom,
+    width,
   ]);
 
   useEffect(() => {
@@ -546,11 +658,13 @@ export function SpaceStage({
         onViewportChange={setViewport}
         onPointerWorldMove={setCursorWorld}
       >
-        <GroundPlane width={width} height={height} />
         <SpaceOrganismLayer
           entries={entries}
+          mapWidth={width}
+          mapHeight={height}
           altitude={altitude}
           zoom={viewport.zoom}
+          altitudeZoomProfile={altitudeZoomProfile}
           entryOrganismsById={entryOrganismsById}
           focusedOrganismId={focusedOrganismId}
           onHoverOrganismChange={setHoveredOrganismId}
@@ -565,17 +679,6 @@ export function SpaceStage({
         style={{ opacity: transitionOpacity }}
         aria-hidden
       />
-
-      {enteredOrganismId ? null : (
-        <div className="space-map-status">
-          <p>Map: {currentMapId}</p>
-          <p>Entries: {entryCount}</p>
-          <p>Depth: {mapHistory.length}</p>
-          <p>Altitude: {altitude}</p>
-          <p>Entered: none</p>
-          <p>High/Mid: focus then enter. Close: enter directly.</p>
-        </div>
-      )}
     </main>
   );
 }

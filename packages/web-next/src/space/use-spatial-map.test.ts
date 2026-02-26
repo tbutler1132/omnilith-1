@@ -29,6 +29,7 @@ describe('parseSpatialMapPayload', () => {
         { organismId: 'org_bad_1', x: '100', y: 200 },
         { organismId: 'org_bad_2', x: 100 },
         { organismId: 'org_bad_3', x: 100, y: 100, size: 'large' },
+        { organismId: 'org_bad_4', x: 100, y: 100, emphasis: 'high' },
       ],
     });
 

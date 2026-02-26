@@ -31,6 +31,15 @@ export class PgOrganismRepository implements OrganismRepository {
     const rows = await this.db.select({ id: organisms.id }).from(organisms).where(eq(organisms.id, id));
     return rows.length > 0;
   }
+
+  async setOpenTrunk(id: OrganismId, openTrunk: boolean): Promise<boolean> {
+    const rows = await this.db
+      .update(organisms)
+      .set({ openTrunk })
+      .where(eq(organisms.id, id))
+      .returning({ id: organisms.id });
+    return rows.length > 0;
+  }
 }
 
 function toOrganism(row: typeof organisms.$inferSelect): Organism {

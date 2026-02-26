@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Oxanium:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
 .visor-hud-layer {
   --visor-surface: rgba(7, 12, 22, 0.66);
   --visor-surface-strong: rgba(4, 9, 18, 0.82);
@@ -37,11 +39,69 @@
   top: 0.9rem;
   left: 0.9rem;
   display: flex;
-  flex-direction: row;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
   gap: 0.45rem;
   pointer-events: auto;
   z-index: 21;
+}
+
+.spatial-altitude-slot {
+  position: fixed;
+  right: 0.9rem;
+  bottom: 0.9rem;
+  pointer-events: auto;
+  z-index: 21;
+}
+
+.spatial-altitude-controls-group {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.42rem;
+}
+
+.map-pan-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.18rem;
+  width: 4.7rem;
+  padding: 0.28rem;
+  border: 1px solid var(--visor-line);
+  border-radius: 0.55rem;
+  background: var(--visor-surface);
+  color: var(--visor-text);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
+}
+
+.map-pan-btn {
+  min-height: 1.26rem;
+  border: none;
+  border-radius: 0.42rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.84rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.map-pan-legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+}
+
+.map-pan-spacer {
+  display: block;
 }
 
 .app-dock-slot {
@@ -623,6 +683,11 @@
   pointer-events: auto;
 }
 
+.spatial-controls-slot .space-nav-content {
+  align-self: center;
+  justify-content: center;
+}
+
 .space-nav-back-btn {
   width: 1.8rem;
   height: 1.45rem;
@@ -755,46 +820,128 @@
   background: rgba(239, 249, 255, 0.96);
 }
 
-.space-readout-widget {
-  min-width: 15.5rem;
-  max-width: min(27rem, calc(100vw - 2.8rem));
-  padding: 0.46rem 0.56rem 0.52rem;
+.map-center-btn {
+  min-width: 3.3rem;
+  min-height: 2.1rem;
   border: 1px solid var(--visor-line);
-  border-radius: 0.62rem;
+  border-radius: 0.55rem;
   background: var(--visor-surface);
-  backdrop-filter: blur(10px);
   color: var(--visor-text);
+  backdrop-filter: blur(10px);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.52rem;
+  cursor: pointer;
   box-shadow:
     var(--visor-glow-inset),
     var(--visor-glow-soft);
+}
+
+.map-readout-widget {
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 0.36rem;
+  padding: 0.46rem 0.52rem 0.5rem;
+  min-height: 0;
   pointer-events: none;
 }
 
-.space-readout-title {
-  margin: 0 0 0.34rem;
-  font-size: 0.54rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(226, 239, 254, 0.86);
+.spatial-mini-map-widget {
+  width: 8.4rem;
+  height: 8.4rem;
+  min-height: 8.4rem;
+  align-items: stretch;
+  justify-content: stretch;
+  gap: 0;
+  padding: 0;
+  pointer-events: none;
+  overflow: hidden;
 }
 
-.space-readout-table {
+.spatial-mini-map-canvas {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 0.42rem;
+  border: none;
+  background-color: #000;
+  background-image:
+    linear-gradient(rgba(203, 225, 246, 0.09) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(203, 225, 246, 0.09) 1px, transparent 1px);
+  background-size: 16px 16px;
+  overflow: hidden;
+}
+
+.spatial-mini-map-boundary {
+  display: none;
+}
+
+.spatial-mini-map-marker {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.spatial-mini-map-entry {
+  position: absolute;
+  width: 0.22rem;
+  height: 0.22rem;
+  border-radius: 999px;
+  transform: translate(-50%, -50%);
+  background: rgba(220, 232, 244, 0.74);
+  box-shadow: 0 0 4px rgba(220, 232, 244, 0.2);
+}
+
+.spatial-mini-map-marker--cursor {
+  width: 0.16rem;
+  height: 0.16rem;
+  border-radius: 999px;
+  background: rgba(243, 197, 129, 0.88);
+  box-shadow: 0 0 7px rgba(243, 197, 129, 0.34);
+}
+
+.spatial-mini-map-marker--focus {
+  width: 0.62rem;
+  height: 0.62rem;
+  border-radius: 999px;
+  border: 1px solid rgba(190, 228, 196, 0.84);
+  background: rgba(190, 228, 196, 0.12);
+  box-shadow: 0 0 8px rgba(162, 198, 168, 0.28);
+}
+
+.spatial-mini-map-empty {
+  margin: 0;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.53rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(199, 220, 245, 0.72);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.map-readout-table {
+  width: 100%;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 0.22rem;
 }
 
-.space-readout-row {
+.map-readout-row {
   margin: 0;
   display: grid;
-  grid-template-columns: 2.8rem minmax(0, 1fr);
+  grid-template-columns: 2.35rem minmax(0, 1fr);
   column-gap: 0.32rem;
   align-items: baseline;
 }
 
-.space-readout-key {
+.map-readout-key {
   margin: 0;
   font-size: 0.52rem;
   letter-spacing: 0.07em;
@@ -802,7 +949,7 @@
   color: rgba(203, 223, 247, 0.76);
 }
 
-.space-readout-value {
+.map-readout-value {
   margin: 0;
   font-size: 0.56rem;
   line-height: 1.25;
@@ -929,15 +1076,28 @@
   .spatial-controls-slot {
     top: 0.7rem;
     left: 0.7rem;
-    flex-direction: row;
-    align-items: flex-start;
-    flex-wrap: nowrap;
+    flex-direction: column;
+    align-items: center;
     gap: 0.4rem;
   }
 
-  .space-readout-widget {
-    min-width: 12.8rem;
-    max-width: min(20rem, calc(100vw - 8rem));
+  .spatial-mini-map-widget {
+    width: 7.8rem;
+    height: 7.8rem;
+    min-height: 7.8rem;
+  }
+
+  .spatial-altitude-slot {
+    right: 0.7rem;
+    bottom: 0.7rem;
+  }
+
+  .spatial-altitude-controls-group {
+    gap: 0.34rem;
+  }
+
+  .map-pan-controls {
+    width: 4.2rem;
   }
 
   .visor-widget-lane {
@@ -1032,4 +1192,493 @@
     padding: 0 0.52rem;
   }
 
+}
+
+/* Digital chroma HUD overrides (no gradients) */
+.visor-hud-layer {
+  --visor-display-font: 'Oxanium', 'Orbitron', 'Rajdhani', 'Avenir Next', 'Segoe UI', sans-serif;
+  --visor-mono-font: 'Share Tech Mono', 'IBM Plex Mono', 'SFMono-Regular', Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+  --visor-scanline-texture: repeating-linear-gradient(
+    to bottom,
+    rgba(231, 251, 255, 0.14) 0 1px,
+    rgba(231, 251, 255, 0) 1px 4px
+  );
+  --visor-surface: rgba(5, 12, 22, 0.86);
+  --visor-surface-strong: rgba(4, 10, 19, 0.92);
+  --visor-line: rgba(115, 236, 255, 0.66);
+  --visor-line-soft: rgba(115, 236, 255, 0.32);
+  --visor-text: rgba(236, 250, 255, 0.98);
+  font-family: var(--visor-display-font);
+}
+
+.visor-hud-layer::before,
+.visor-hud-layer::after {
+  background: transparent;
+  opacity: 0;
+  animation: none;
+}
+
+.visor-widget-lane {
+  width: 11.4rem;
+  gap: 0.52rem;
+}
+
+.spatial-controls-slot {
+  filter: drop-shadow(0 0 12px rgba(84, 235, 255, 0.24));
+}
+
+.spatial-altitude-slot {
+  filter: drop-shadow(0 0 12px rgba(255, 119, 227, 0.24));
+}
+
+.app-dock-slot {
+  filter: drop-shadow(0 0 12px rgba(145, 255, 110, 0.24));
+}
+
+.space-nav-content,
+.altitude-controls,
+.map-pan-controls,
+.app-dock-shell,
+.visor-widget,
+.open-visor-shell-header,
+.open-visor-rail,
+.open-visor-app-pane {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+  border-width: 2px;
+  border-style: solid;
+  background: rgba(7, 16, 30, 0.36);
+  color: var(--visor-text);
+  backdrop-filter: blur(12px) saturate(1.16);
+  -webkit-backdrop-filter: blur(12px) saturate(1.16);
+  box-shadow:
+    inset 0 0 0 1px rgba(228, 255, 255, 0.08),
+    0 0 9px rgba(98, 237, 255, 0.1);
+}
+
+.space-nav-content::before,
+.altitude-controls::before,
+.map-pan-controls::before,
+.app-dock-shell::before,
+.visor-widget::before,
+.open-visor-shell-header::before,
+.open-visor-rail::before,
+.open-visor-app-pane::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  background-image: var(--visor-scanline-texture);
+  background-size: 100% 4px;
+  opacity: 0.08;
+  mix-blend-mode: screen;
+}
+
+.space-nav-content > *,
+.altitude-controls > *,
+.map-pan-controls > *,
+.app-dock-shell > *,
+.visor-widget > *,
+.open-visor-shell-header > *,
+.open-visor-rail > *,
+.open-visor-app-pane > * {
+  position: relative;
+  z-index: 1;
+}
+
+.space-nav-content {
+  border-color: rgba(104, 239, 255, 0.56);
+  background: rgba(7, 42, 50, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(220, 255, 255, 0.11),
+    0 0 16px rgba(86, 236, 255, 0.28);
+}
+
+.altitude-controls {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(50, 14, 58, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 223, 251, 0.1),
+    0 0 16px rgba(255, 122, 232, 0.26);
+}
+
+.map-pan-controls {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(50, 14, 58, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 223, 251, 0.1),
+    0 0 16px rgba(255, 122, 232, 0.26);
+}
+
+.app-dock-shell {
+  border-color: rgba(149, 255, 110, 0.54);
+  background: rgba(19, 46, 14, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(227, 255, 215, 0.11),
+    0 0 16px rgba(149, 255, 110, 0.26);
+}
+
+.open-visor-shell-header {
+  border-color: rgba(97, 236, 255, 0.54);
+  background: rgba(8, 38, 51, 0.32);
+}
+
+.open-visor-rail {
+  border-color: rgba(255, 124, 233, 0.52);
+  background: rgba(50, 12, 53, 0.32);
+}
+
+.open-visor-app-pane {
+  border-color: rgba(149, 255, 110, 0.46);
+  background: rgba(16, 43, 13, 0.28);
+}
+
+.space-nav-label,
+.altitude-label,
+.visor-widget-label,
+.open-visor-shell-kicker,
+.open-visor-loading-label {
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  color: rgba(225, 250, 255, 0.96);
+  text-shadow: 0 0 8px rgba(111, 240, 255, 0.26);
+}
+
+.open-visor-shell-title,
+.open-visor-shell-description,
+.map-legend-item,
+.map-readout-value {
+  color: rgba(232, 251, 255, 0.97);
+}
+
+.app-dock-button,
+.open-visor-rail-toggle,
+.open-visor-app-button,
+.open-visor-expand-button,
+.open-visor-close-button,
+.space-nav-back-btn,
+.altitude-btn,
+.map-pan-btn,
+.map-center-btn,
+.visor-logout-widget {
+  font-family: var(--visor-display-font);
+  border-width: 2px;
+  border-style: solid;
+  background: rgba(7, 16, 30, 0.3);
+  color: rgba(240, 252, 255, 0.98);
+  text-shadow: 0 0 8px rgba(111, 240, 255, 0.3);
+  transition:
+    transform 130ms ease,
+    border-color 170ms ease,
+    box-shadow 170ms ease,
+    filter 170ms ease;
+}
+
+.space-nav-back-btn {
+  border-color: rgba(102, 240, 255, 0.58);
+  background: rgba(7, 49, 59, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(213, 255, 255, 0.1),
+    0 0 12px rgba(83, 234, 255, 0.3);
+}
+
+.altitude-btn {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(60, 14, 64, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 251, 0.1),
+    0 0 12px rgba(255, 122, 232, 0.28);
+}
+
+.map-pan-btn {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(60, 14, 64, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 251, 0.1),
+    0 0 12px rgba(255, 122, 232, 0.28);
+}
+
+.map-center-btn {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(60, 14, 64, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 251, 0.1),
+    0 0 12px rgba(255, 122, 232, 0.28);
+}
+
+.app-dock-button {
+  border-color: rgba(149, 255, 110, 0.56);
+  background: rgba(24, 53, 16, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(226, 255, 212, 0.1),
+    0 0 12px rgba(149, 255, 110, 0.28);
+}
+
+.open-visor-rail-toggle {
+  border-color: rgba(255, 170, 69, 0.56);
+  background: rgba(62, 39, 10, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 190, 0.1),
+    0 0 12px rgba(255, 170, 69, 0.28);
+}
+
+.open-visor-app-button {
+  border-color: rgba(105, 238, 255, 0.56);
+  background: rgba(8, 44, 56, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(213, 255, 255, 0.08),
+    0 0 12px rgba(86, 234, 255, 0.24);
+}
+
+.open-visor-expand-button {
+  border-color: rgba(255, 170, 69, 0.62);
+  background: rgba(64, 39, 10, 0.32);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 188, 0.1),
+    0 0 13px rgba(255, 170, 69, 0.3);
+}
+
+.open-visor-close-button,
+.visor-logout-widget {
+  border-color: rgba(255, 112, 112, 0.62);
+  background: rgba(66, 12, 16, 0.32);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 213, 213, 0.1),
+    0 0 13px rgba(255, 112, 112, 0.3);
+}
+
+.open-visor-app-button--active {
+  border-color: rgba(255, 177, 73, 0.72);
+  background: rgba(78, 48, 12, 0.46);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 234, 202, 0.12),
+    0 0 15px rgba(255, 177, 73, 0.34);
+}
+
+.app-dock-button:hover,
+.open-visor-rail-toggle:hover,
+.open-visor-app-button:hover,
+.open-visor-expand-button:hover,
+.open-visor-close-button:hover,
+.space-nav-back-btn:hover,
+.altitude-btn:hover,
+.map-pan-btn:hover,
+.map-center-btn:hover,
+.visor-logout-widget:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
+
+.app-dock-button:active,
+.open-visor-rail-toggle:active,
+.open-visor-app-button:active,
+.open-visor-expand-button:active,
+.open-visor-close-button:active,
+.space-nav-back-btn:active,
+.altitude-btn:active,
+.map-pan-btn:active,
+.map-center-btn:active,
+.visor-logout-widget:active {
+  transform: translateY(0);
+}
+
+.space-nav-back-btn:disabled,
+.altitude-btn:disabled,
+.app-dock-button:disabled {
+  opacity: 0.52;
+  filter: grayscale(0.3);
+}
+
+.space-nav-altimeter-step {
+  background: rgba(106, 240, 255, 0.52);
+  box-shadow: 0 0 7px rgba(106, 240, 255, 0.27);
+}
+
+.space-nav-altimeter-step--active {
+  background: rgba(233, 255, 255, 0.98);
+  box-shadow: 0 0 10px rgba(106, 240, 255, 0.36);
+}
+
+.altitude-pip {
+  background: rgba(255, 130, 235, 0.5);
+  box-shadow: 0 0 7px rgba(255, 130, 235, 0.28);
+}
+
+.altitude-pip--active {
+  background: rgba(255, 241, 252, 0.98);
+  box-shadow: 0 0 10px rgba(255, 130, 235, 0.38);
+}
+
+.map-readout-widget {
+  border-color: rgba(106, 240, 255, 0.56);
+  background: rgba(7, 46, 58, 0.3);
+}
+
+.spatial-mini-map-widget {
+  border-color: rgba(106, 240, 255, 0.56);
+  background: #000;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.spatial-mini-map-canvas {
+  border-color: transparent;
+  background-color: #000;
+  background-image:
+    linear-gradient(rgba(118, 227, 244, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(118, 227, 244, 0.08) 1px, transparent 1px);
+}
+
+.spatial-mini-map-boundary {
+  display: none;
+}
+
+.map-readout-key {
+  color: rgba(170, 241, 255, 0.92);
+}
+
+.map-readout-value {
+  font-family: var(--visor-mono-font);
+}
+
+.compass-widget {
+  border-color: rgba(194, 136, 255, 0.54);
+  background: rgba(41, 19, 62, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(239, 222, 255, 0.1),
+    0 0 14px rgba(194, 136, 255, 0.24);
+}
+
+.map-legend-widget {
+  border-color: rgba(82, 231, 255, 0.54);
+  background: rgba(6, 35, 54, 0.3);
+}
+
+.open-visor-app-icon,
+.map-legend-marker,
+.space-nav-altimeter-step,
+.altitude-pip,
+.map-readout-key {
+  opacity: 0.58;
+}
+
+.space-nav-altimeter-step--active,
+.altitude-pip--active,
+.open-visor-app-button--active .open-visor-app-icon {
+  opacity: 1;
+}
+
+.map-legend-marker .space-organism-dot {
+  box-shadow: 0 0 10px rgba(118, 239, 255, 0.24);
+}
+
+.open-visor-shell-actions,
+.open-visor-expanded-controls {
+  filter: drop-shadow(0 0 10px rgba(104, 239, 255, 0.22));
+}
+
+.open-visor-loading-orb {
+  border-color: rgba(111, 240, 255, 0.88);
+  background: rgba(7, 18, 32, 0.95);
+  box-shadow:
+    inset 0 0 0 1px rgba(222, 255, 255, 0.12),
+    0 0 15px rgba(111, 240, 255, 0.34);
+}
+
+/* Floating spatial nav text treatment: no panel chrome, orange halo lettering. */
+.space-nav-content {
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  overflow: visible;
+  padding: 0.18rem 0.12rem;
+}
+
+.space-nav-content::before {
+  display: none;
+}
+
+.space-nav-back-btn {
+  width: 1.08rem;
+  height: auto;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  border-radius: 0;
+  padding: 0 0.12rem;
+  color: rgba(248, 251, 255, 0.98);
+  font-size: 1rem;
+  line-height: 1;
+  -webkit-text-stroke: 0.65px rgba(255, 154, 58, 0.58);
+  text-shadow:
+    0 0 5px rgba(255, 154, 58, 0.4),
+    0 0 10px rgba(255, 154, 58, 0.2);
+}
+
+.space-nav-back-btn--hidden {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.space-nav-content .space-nav-label {
+  color: rgba(248, 251, 255, 0.98);
+  font-size: 0.94rem;
+  font-weight: 600;
+  line-height: 1;
+  -webkit-text-stroke: 0.56px rgba(255, 154, 58, 0.56);
+  text-shadow:
+    0 0 5px rgba(255, 154, 58, 0.4),
+    0 0 10px rgba(255, 154, 58, 0.2);
+}
+
+.space-nav-label-stack {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.space-nav-label-stack::before {
+  content: attr(data-glyph-overlay);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -52%);
+  pointer-events: none;
+  z-index: 0;
+  color: rgba(127, 134, 147, 0.48);
+  font-family: var(--visor-mono-font);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.17em;
+  text-transform: none;
+  white-space: nowrap;
+}
+
+.space-nav-label-stack .space-nav-altitude-label {
+  position: relative;
+  z-index: 1;
+}
+
+.space-nav-back-btn:hover,
+.space-nav-back-btn:active {
+  transform: none;
+  filter: brightness(1.06);
+}
+
+.space-nav-back-btn:disabled {
+  opacity: 0.46;
+  filter: none;
+}
+
+@media (max-width: 720px) {
+  .visor-widget-lane {
+    width: 9.8rem;
+  }
 }

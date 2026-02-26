@@ -3,29 +3,42 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { SpatialNavWidget } from './spatial-nav-widget.js';
 
-function renderNav(input: { altitude: 'high' | 'mid' | 'close'; contextLabel?: string | null; canGoBack: boolean }) {
+function renderNav(input: {
+  currentLabel: string;
+  upTargetLabel: string | null;
+  showUpControl: boolean;
+  canGoUp?: boolean;
+}) {
   return renderToStaticMarkup(
     createElement(SpatialNavWidget, {
-      altitude: input.altitude,
-      contextLabel: input.contextLabel,
-      canGoBack: input.canGoBack,
-      onGoBack: () => {},
+      currentLabel: input.currentLabel,
+      upTargetLabel: input.upTargetLabel,
+      showUpControl: input.showUpControl,
+      canGoUp: input.canGoUp ?? false,
+      onGoUp: () => {},
     }),
   );
 }
 
 describe('SpatialNavWidget', () => {
-  it('shows altitude label and altimeter in map context', () => {
-    const html = renderNav({ altitude: 'high', canGoBack: false });
-    expect(html).toContain('Wide view');
-    expect(html).toContain('space-nav-altimeter');
+  it('keeps the up slot but hides the button at world map level', () => {
+    const html = renderNav({ currentLabel: 'World Map', upTargetLabel: null, showUpControl: false });
+    expect(html).toContain('World Map');
+    expect(html).toContain('space-nav-back-btn');
+    expect(html).toContain('space-nav-back-btn--hidden');
     expect(html).toContain('disabled');
   });
 
-  it('shows custom context label and hides altimeter in interior context', () => {
-    const html = renderNav({ altitude: 'close', contextLabel: 'Organism interior', canGoBack: true });
-    expect(html).toContain('Organism interior');
-    expect(html).not.toContain('space-nav-altimeter');
+  it('shows up button and target aria label when one-level up is available', () => {
+    const html = renderNav({
+      currentLabel: 'Chord Atlas',
+      upTargetLabel: 'World Map',
+      showUpControl: true,
+      canGoUp: true,
+    });
+    expect(html).toContain('Chord Atlas');
+    expect(html).toContain('space-nav-back-btn');
+    expect(html).toContain('Go up to World Map');
     expect(html).not.toContain('disabled');
   });
 });

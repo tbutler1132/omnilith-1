@@ -4,6 +4,11 @@ export {
   appendState,
 } from './append-state.js';
 export {
+  type ChangeOpenTrunkDeps,
+  type ChangeOpenTrunkInput,
+  changeOpenTrunk,
+} from './change-open-trunk.js';
+export {
   type CreateOrganismDeps,
   type CreateOrganismInput,
   type CreateOrganismResult,

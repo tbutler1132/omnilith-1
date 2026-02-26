@@ -11,7 +11,10 @@ function renderHud(
     altitude: 'high' | 'mid' | 'close';
     showAltitudeControls: boolean;
     showCompass: boolean;
-    navigationLabel: string | null;
+    navigationCurrentLabel: string;
+    navigationUpTargetLabel: string | null;
+    showNavigationUpControl: boolean;
+    canGoUp: boolean;
   }> = {},
 ) {
   return renderToStaticMarkup(
@@ -24,10 +27,14 @@ function renderHud(
       showAltitudeControls: input.showAltitudeControls ?? true,
       showCompass: input.showCompass ?? true,
       showLogoutButton: true,
-      navigationLabel: input.navigationLabel ?? null,
-      canGoBack: true,
+      navigationCurrentLabel: input.navigationCurrentLabel ?? 'World Map',
+      navigationUpTargetLabel: input.navigationUpTargetLabel ?? null,
+      showNavigationUpControl: input.showNavigationUpControl ?? false,
+      canGoUp: input.canGoUp ?? false,
       onChangeAltitude: () => {},
-      onGoBack: () => {},
+      onCenterMap: () => {},
+      onPanMap: () => {},
+      onGoUp: () => {},
       onOpenApp: () => {},
       onOpenAppRequest: () => {},
       onCloseVisor: () => {},
@@ -40,6 +47,12 @@ describe('VisorHud', () => {
   it('renders closed HUD controls and map widgets', () => {
     const html = renderHud({ mode: 'closed', showCompass: true, showAltitudeControls: true });
     expect(html).toContain('Spatial navigation');
+    expect(html).toContain('Spatial mini-map');
+    expect(html).toContain('spatial-controls-slot');
+    expect(html).toContain('spatial-altitude-slot');
+    expect(html).toContain('Pan map up');
+    expect(html).toContain('Center map');
+    expect(html).toContain('Map readout');
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');
     expect(html).toContain('Open Profile app');
@@ -49,8 +62,15 @@ describe('VisorHud', () => {
   it('hides right-side widgets when compass lane is disabled', () => {
     const html = renderHud({ mode: 'closed', showCompass: false });
     expect(html).toContain('Log out');
+    expect(html).toContain('Map readout');
     expect(html).not.toContain('Map legend');
     expect(html).not.toContain('Compass pointing north');
+  });
+
+  it('hides altitude slot when spatial altitude controls are disabled', () => {
+    const html = renderHud({ mode: 'closed', showAltitudeControls: false });
+    expect(html).not.toContain('spatial-altitude-slot');
+    expect(html).not.toContain('Map readout');
   });
 
   it('renders open visor shell in open mode', () => {

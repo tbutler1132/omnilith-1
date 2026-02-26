@@ -13,6 +13,9 @@ import { platformConfig, users } from './db/schema.js';
 
 const WORLD_MAP_KEY = 'world_map_id';
 const SYSTEM_USER_ID = 'system' as UserId;
+const WORLD_MAP_WIDTH = 5_000;
+const WORLD_MAP_HEIGHT = 5_000;
+const WORLD_MAP_MIN_SEPARATION = 1;
 
 export async function seedWorldMap(container: Container): Promise<OrganismId> {
   // Check if world map already exists
@@ -68,7 +71,12 @@ async function createAndPersistWorldMap(container: Container, createdBy: UserId)
     {
       name: 'World Map',
       contentTypeId: 'spatial-map' as ContentTypeId,
-      payload: { entries: [], width: 5000, height: 5000 },
+      payload: {
+        entries: [],
+        width: WORLD_MAP_WIDTH,
+        height: WORLD_MAP_HEIGHT,
+        minSeparation: WORLD_MAP_MIN_SEPARATION,
+      },
       createdBy,
       openTrunk: true,
     },

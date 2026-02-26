@@ -10,6 +10,9 @@ import { useEffect, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
 import { resolvePublicApiPath } from '../api/public-api-path.js';
 
+const DEFAULT_WORLD_MAP_WIDTH = 5_000;
+const DEFAULT_WORLD_MAP_HEIGHT = 5_000;
+
 export interface SpatialMapEntry {
   readonly organismId: string;
   readonly x: number;
@@ -62,13 +65,13 @@ export function parseSpatialMapPayload(payload: unknown): {
   entries: ReadonlyArray<SpatialMapEntry>;
 } {
   if (!payload || typeof payload !== 'object') {
-    return { width: 5000, height: 5000, entries: [] };
+    return { width: DEFAULT_WORLD_MAP_WIDTH, height: DEFAULT_WORLD_MAP_HEIGHT, entries: [] };
   }
 
   const typed = payload as Record<string, unknown>;
 
-  const width = typeof typed.width === 'number' ? typed.width : 5000;
-  const height = typeof typed.height === 'number' ? typed.height : 5000;
+  const width = typeof typed.width === 'number' ? typed.width : DEFAULT_WORLD_MAP_WIDTH;
+  const height = typeof typed.height === 'number' ? typed.height : DEFAULT_WORLD_MAP_HEIGHT;
   const entries = parseEntries(typed.entries);
 
   return { width, height, entries };
@@ -76,8 +79,8 @@ export function parseSpatialMapPayload(payload: unknown): {
 
 export function useSpatialMap(mapId: string): SpatialMapState {
   const [state, setState] = useState<SpatialMapState>({
-    width: 5000,
-    height: 5000,
+    width: DEFAULT_WORLD_MAP_WIDTH,
+    height: DEFAULT_WORLD_MAP_HEIGHT,
     entries: [],
     entryCount: 0,
     loading: true,

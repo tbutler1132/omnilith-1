@@ -330,6 +330,17 @@ describe('visibility and access control', () => {
     expect(decision.allowed).toBe(true);
   });
 
+  it('the steward can change open-trunk mode', async () => {
+    const steward = testUserId('steward');
+    const { organism } = await createOrganism(
+      { name: 'Test', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      createDeps(),
+    );
+
+    const decision = await checkAccess(steward, organism.id, 'change-open-trunk', accessDeps());
+    expect(decision.allowed).toBe(true);
+  });
+
   it('the steward can record observations', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(

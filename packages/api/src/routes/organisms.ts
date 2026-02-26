@@ -7,6 +7,7 @@ import type {
   ComposeChildRequest,
   RecordObservationRequest,
   ThresholdOrganismRequest,
+  UpdateOpenTrunkRequest,
   UpdateVisibilityRequest,
 } from '@omnilith/api-contracts';
 import type {
@@ -20,6 +21,7 @@ import type {
 } from '@omnilith/kernel';
 import {
   appendState,
+  changeOpenTrunk,
   changeVisibility,
   composeOrganism,
   createOrganism,
@@ -43,8 +45,11 @@ interface SurfaceOrganismOnMapRequest {
   readonly x: number;
   readonly y: number;
   readonly emphasis?: number;
+  /** Legacy compatibility: accepted but ignored in unit-grid mode. */
+  readonly curationScale?: number;
 }
 
+const UNIT_GRID_MIN_SEPARATION = 1;
 const SURFACE_APPEND_MAX_ATTEMPTS = 3;
 const SURFACE_APPEND_CONFLICT_ERROR = 'Map changed concurrently while surfacing. Please retry.';
 
@@ -223,6 +228,12 @@ export function organismRoutes(container: Container) {
     if (body.emphasis !== undefined && (!isFiniteNumber(body.emphasis) || body.emphasis < 0 || body.emphasis > 1)) {
       return c.json({ error: 'emphasis must be between 0 and 1 when provided' }, 400);
     }
+    if (
+      body.curationScale !== undefined &&
+      (!isFiniteNumber(body.curationScale) || body.curationScale < 0.85 || body.curationScale > 1.15)
+    ) {
+      return c.json({ error: 'curationScale must be between 0.85 and 1.15 when provided' }, 400);
+    }
 
     const accessError = await requireOrganismAccess(c, container, userId, mapId, 'append-state');
     if (accessError) return accessError;
@@ -232,7 +243,7 @@ export function organismRoutes(container: Container) {
     if (!targetExists) return c.json({ error: `Organism not found: ${targetOrganismId}` }, 404);
 
     const derived = await deriveSurfaceEntrySize(
-      { organismId: targetOrganismId, mapOrganismId: mapId },
+      { organismId: targetOrganismId, mapOrganismId: mapId, curationScale: body.curationScale },
       {
         organismRepository: container.organismRepository,
         stateRepository: container.stateRepository,
@@ -241,10 +252,13 @@ export function organismRoutes(container: Container) {
       },
     );
 
+    const snappedX = Math.round(body.x);
+    const snappedY = Math.round(body.y);
+
     const entry = {
       organismId: targetOrganismId,
-      x: body.x,
-      y: body.y,
+      x: snappedX,
+      y: snappedY,
       size: derived.size,
       emphasis: body.emphasis,
     };
@@ -272,7 +286,7 @@ export function organismRoutes(container: Container) {
         entries: [...mapPayload.entries, entry],
         width: mapPayload.width,
         height: mapPayload.height,
-        ...(mapPayload.minSeparation !== undefined ? { minSeparation: mapPayload.minSeparation } : {}),
+        minSeparation: UNIT_GRID_MIN_SEPARATION,
       };
 
       try {
@@ -642,6 +656,41 @@ export function organismRoutes(container: Container) {
         },
       );
       return c.json({ ok: true });
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      throw err;
+    }
+  });
+
+  app.put('/:id/open-trunk', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const body = await parseJsonBody<UpdateOpenTrunkRequest>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (typeof body.openTrunk !== 'boolean') return c.json({ error: 'openTrunk must be a boolean' }, 400);
+
+    try {
+      const organism = await changeOpenTrunk(
+        {
+          organismId: id,
+          openTrunk: body.openTrunk,
+          changedBy: userId,
+        },
+        {
+          organismRepository: container.organismRepository,
+          visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({ organism });
     } catch (err) {
       const e = err as DomainError;
       if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);

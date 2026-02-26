@@ -24,6 +24,19 @@ export class InMemoryOrganismRepository implements OrganismRepository {
     return this.organisms.has(id);
   }
 
+  async setOpenTrunk(id: OrganismId, openTrunk: boolean): Promise<boolean> {
+    const organism = this.organisms.get(id);
+    if (!organism) {
+      return false;
+    }
+
+    this.organisms.set(id, {
+      ...organism,
+      openTrunk,
+    });
+    return true;
+  }
+
   /** Test infrastructure — not a port method. */
   getAll(): Organism[] {
     return [...this.organisms.values()];

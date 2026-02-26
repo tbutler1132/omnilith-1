@@ -134,7 +134,7 @@ describe('createOrganism', () => {
     ).rejects.toThrow(ContentTypeNotRegisteredError);
   });
 
-  it('an organism defaults to non-open-trunk', async () => {
+  it('an organism defaults to open-trunk', async () => {
     contentTypeRegistry.register(createPassthroughContentType());
 
     const result = await createOrganism(
@@ -147,7 +147,7 @@ describe('createOrganism', () => {
       deps(),
     );
 
-    expect(result.organism.openTrunk).toBe(false);
+    expect(result.organism.openTrunk).toBe(true);
   });
 
   it('an organism can be created with open-trunk configuration', async () => {

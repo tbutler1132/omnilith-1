@@ -68,6 +68,11 @@ export {
   appendState,
 } from './organism/append-state.js';
 export {
+  type ChangeOpenTrunkDeps,
+  type ChangeOpenTrunkInput,
+  changeOpenTrunk,
+} from './organism/change-open-trunk.js';
+export {
   type CreateOrganismDeps,
   type CreateOrganismInput,
   type CreateOrganismResult,

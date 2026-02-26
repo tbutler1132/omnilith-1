@@ -13,6 +13,7 @@ export interface SpatialMapEntrySnapshot {
   readonly y: number;
   readonly size?: number;
   readonly emphasis?: number;
+  readonly curationScale?: number;
 }
 
 export interface SpatialMapPayloadSnapshot {
@@ -51,6 +52,9 @@ export function parseSpatialMapPayload(payload: unknown): SpatialMapPayloadSnaps
     if (entry.emphasis !== undefined && !isFiniteNumber(entry.emphasis)) {
       return null;
     }
+    if (entry.curationScale !== undefined && !isFiniteNumber(entry.curationScale)) {
+      return null;
+    }
 
     parsedEntries.push({
       organismId: entry.organismId as OrganismId,
@@ -58,6 +62,7 @@ export function parseSpatialMapPayload(payload: unknown): SpatialMapPayloadSnaps
       y: entry.y,
       size: entry.size as number | undefined,
       emphasis: entry.emphasis as number | undefined,
+      curationScale: entry.curationScale as number | undefined,
     });
   }
 
