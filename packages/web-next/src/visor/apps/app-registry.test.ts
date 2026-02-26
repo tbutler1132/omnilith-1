@@ -31,7 +31,9 @@ describe('visor app registry', () => {
     expect(coreApps).toHaveLength(7);
     expect(coreApps.every((app) => app.registryTier === 'core')).toBe(true);
     expect(extraApps.every((app) => app.registryTier === 'extra')).toBe(true);
-    expect(extraApps.map((app) => app.id)).toEqual(expect.arrayContaining(['profile', 'organism', 'cadence']));
+    expect(extraApps.map((app) => app.id)).toEqual(
+      expect.arrayContaining(['profile', 'organism', 'cadence', 'text-editor']),
+    );
   });
 
   it('clears app-specific route params', () => {

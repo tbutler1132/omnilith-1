@@ -10,12 +10,14 @@ import { cadenceAppDefinition } from './cadence/index.js';
 import { coreVisorAppDefinitions } from './core/index.js';
 import { organismAppDefinition } from './organism/index.js';
 import { profileAppDefinition } from './profile/index.js';
+import { textEditorAppDefinition } from './text-editor/index.js';
 
 const VISOR_APPS: ReadonlyArray<VisorAppDefinition> = [
   ...coreVisorAppDefinitions,
   profileAppDefinition,
   organismAppDefinition as VisorAppDefinition,
   cadenceAppDefinition,
+  textEditorAppDefinition,
 ];
 
 function fallbackVisorApp(): VisorAppDefinition {

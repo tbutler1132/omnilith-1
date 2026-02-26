@@ -1,0 +1,70 @@
+.textEditorApp {
+  display: grid;
+  gap: 12px;
+}
+
+.textEditorTitle {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.textEditorStatus {
+  margin: 0;
+  color: rgba(222, 233, 240, 0.82);
+  font-size: 0.9rem;
+}
+
+.textEditorError {
+  margin: 0;
+  color: #ffb7b7;
+  font-size: 0.9rem;
+}
+
+.textEditorPanel {
+  display: grid;
+  gap: 10px;
+}
+
+.textEditorMeta {
+  margin: 0;
+  color: rgba(188, 200, 213, 0.9);
+  font-size: 0.85rem;
+}
+
+.textEditorTextarea {
+  min-height: 260px;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(190, 205, 220, 0.28);
+  background: rgba(11, 16, 20, 0.62);
+  color: rgba(238, 243, 247, 0.95);
+  padding: 12px;
+  font: 500 0.92rem/1.5 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  resize: vertical;
+}
+
+.textEditorTextarea:focus {
+  outline: 1px solid rgba(177, 220, 255, 0.55);
+  outline-offset: 1px;
+}
+
+.textEditorActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.textEditorActionButton {
+  border-radius: 8px;
+  border: 1px solid rgba(194, 210, 226, 0.32);
+  background: rgba(15, 22, 28, 0.82);
+  color: rgba(236, 242, 247, 0.94);
+  padding: 7px 12px;
+  font-size: 0.86rem;
+  cursor: pointer;
+}
+
+.textEditorActionButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
