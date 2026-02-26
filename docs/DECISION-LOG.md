@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 24, 2026  
+Updated: February 26, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -1149,6 +1149,28 @@ Architecture impact:
 The detailed decision record is captured in:
 
 - `docs/decisions/043-world-map-unit-grid-simplification-mode.md`
+
+### Move 55: Personal Organisms as Digital-Twin Boundaries
+
+Personal tending direction was clarified to avoid ambiguity about where cybernetic regulation should live.
+
+Direction:
+
+- personal organism remains the canonical boundary for personal regulation
+- regulation organisms for personal tending are composed inside that boundary (directly or via a regulation-bundle child)
+- threshold remains lightweight: personal organisms start simple, regulation composition is added incrementally
+- `user` remains infrastructure; personal organism represents practice/trajectory, not the person
+- top-level regulation organisms remain valid for intentional reuse patterns across multiple boundaries
+
+Architecture impact:
+
+- no kernel changes
+- direction is implemented through composition and rendering patterns
+- delegation and authority remain explicit and organism-local
+
+The detailed decision record is captured in:
+
+- `docs/decisions/044-personal-organisms-as-digital-twin-boundaries.md`
 
 ---
 
