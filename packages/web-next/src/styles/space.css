@@ -160,27 +160,34 @@
   transform: scale(1.14);
 }
 
+.space-organism-marker--high-altitude {
+  overflow: visible;
+}
+
 .space-organism-marker--high-altitude .space-organism-dot {
+  border-radius: 999px;
+  background: var(--space-marker-fill);
   box-shadow:
-    0 0 0 1px rgba(228, 242, 255, 0.4),
-    0 0 8px rgba(122, 181, 252, 0.42),
-    0 0 16px rgba(82, 147, 235, 0.28);
+    0 0 0 1px color-mix(in srgb, var(--space-marker-fill) 52%, rgba(228, 242, 255, 0.34)),
+    0 0 10px color-mix(in srgb, var(--space-marker-fill) 40%, transparent),
+    0 0 20px color-mix(in srgb, var(--space-marker-fill) 22%, transparent);
 }
 
 .space-organism-marker--high-altitude .space-organism-dot::after {
-  inset: -6px;
-  border-color: rgba(186, 214, 246, 0.38);
+  inset: -9px;
+  border-color: color-mix(in srgb, var(--space-marker-fill) 56%, rgba(190, 220, 250, 0.26));
 }
 
 .space-organism-marker--high-altitude.space-organism-marker--enterable:hover .space-organism-dot {
-  transform: scale(1.08);
+  transform: scale(1.1);
 }
 
 .space-organism-marker--high-altitude.space-organism-marker--focused .space-organism-dot {
+  background: var(--space-marker-focused-fill);
   box-shadow:
-    0 0 0 2px rgba(236, 248, 255, 0.35),
-    0 0 10px rgba(150, 206, 255, 0.44),
-    0 0 20px rgba(102, 175, 255, 0.32);
+    0 0 0 1px color-mix(in srgb, var(--space-marker-focused-fill) 58%, rgba(236, 248, 255, 0.34)),
+    0 0 12px color-mix(in srgb, var(--space-marker-focused-fill) 42%, transparent),
+    0 0 22px color-mix(in srgb, var(--space-marker-focused-fill) 28%, transparent);
 }
 
 .space-organism-marker--enterable:hover .space-organism-dot::after {
@@ -390,6 +397,12 @@
   100% {
     transform: scale(1.45);
     opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .space-organism-dot::after {
+    animation: none;
   }
 }
 
