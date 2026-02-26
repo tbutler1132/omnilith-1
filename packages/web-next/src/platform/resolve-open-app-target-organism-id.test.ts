@@ -61,4 +61,16 @@ describe('resolveOpenAppTargetOrganismId', () => {
 
     expect(resolved).toBe('org-entered');
   });
+
+  it('treats text editor as organism-scoped and falls back to boundary context', () => {
+    const resolved = resolveOpenAppTargetOrganismId({
+      appId: 'text-editor',
+      enteredOrganismId: null,
+      boundaryOrganismId: 'org-world-map',
+      visorOrganismId: null,
+      personalOrganismId: null,
+    });
+
+    expect(resolved).toBe('org-world-map');
+  });
 });
