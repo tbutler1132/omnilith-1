@@ -1,13 +1,12 @@
 /**
  * Space stage map surface for web-next Slice 1.
  *
- * Renders the world map grid with drag navigation plus lightweight organism
- * markers from spatial-map entries.
+ * Renders world map drag navigation plus lightweight organism markers from
+ * spatial-map entries.
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
-import { GroundPlane } from './ground-plane.js';
 import { OrganismInterior } from './interior/organism-interior.js';
 import { MapViewport } from './map-viewport.js';
 import { SpaceOrganismLayer } from './space-organism-layer.js';
@@ -15,13 +14,7 @@ import { resolveMarkerActivationIntent, shouldClearFocusedOrganism } from './spa
 import { useEntryOrganisms } from './use-entry-organisms.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
-import {
-  DEFAULT_ALTITUDE_ZOOM_PROFILE,
-  frameOrganism,
-  frameOrganismEnter,
-  frameOrganismFocus,
-  nextAltitude,
-} from './viewport-math.js';
+import { frameOrganism, frameOrganismEnter, frameOrganismFocus, nextAltitude } from './viewport-math.js';
 
 interface SpaceStageProps {
   readonly worldMapId: string;
@@ -65,6 +58,15 @@ export interface SpaceStageSpatialSnapshot {
   };
   readonly surfaceSelection: ReadonlyArray<string>;
   readonly boundaryPath: ReadonlyArray<string>;
+  readonly mapSize: {
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly mapEntries: ReadonlyArray<{
+    readonly organismId: string;
+    readonly x: number;
+    readonly y: number;
+  }>;
 }
 
 interface FocusPoint {
@@ -103,7 +105,6 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
-const ALTITUDE_RECALIBRATION_LEAD_MS = 240;
 
 function resolveSurfaceEntrySnapshot(
   organismId: string | null,
@@ -156,11 +157,9 @@ export function SpaceStage({
   const [hoveredOrganismId, setHoveredOrganismId] = useState<string | null>(null);
   const [cursorWorld, setCursorWorld] = useState<{ x: number; y: number } | null>(null);
   const [pendingFocusAfterSwitch, setPendingFocusAfterSwitch] = useState<FocusPoint | null>(null);
-  const [groundPlaneRecalibrationEpoch, setGroundPlaneRecalibrationEpoch] = useState(0);
   const [transitionPhase, setTransitionPhase] = useState<TransitionPhase>('idle');
   const [transitionOpacity, setTransitionOpacity] = useState(0);
   const fadeFrameRef = useRef<number | null>(null);
-  const altitudeDelayTimerRef = useRef<number | null>(null);
   const previousAltitudeRef = useRef<Altitude | null>(null);
   const interiorTransitioningRef = useRef(false);
 
@@ -194,7 +193,6 @@ export function SpaceStage({
       mapWidth: width,
       mapHeight: height,
     });
-  const mapZoomScale = altitudeZoomProfile.high / DEFAULT_ALTITUDE_ZOOM_PROFILE.high;
 
   const cancelFade = useCallback(() => {
     if (fadeFrameRef.current !== null) {
@@ -230,11 +228,6 @@ export function SpaceStage({
   );
 
   useEffect(() => {
-    if (altitudeDelayTimerRef.current !== null) {
-      window.clearTimeout(altitudeDelayTimerRef.current);
-      altitudeDelayTimerRef.current = null;
-    }
-
     setCurrentMapId(worldMapId);
     setMapHistory([]);
     setCurrentBoundaryOrganismId(null);
@@ -249,14 +242,6 @@ export function SpaceStage({
   }, [cancelFade, worldMapId]);
 
   useEffect(() => cancelFade, [cancelFade]);
-
-  useEffect(() => {
-    return () => {
-      if (altitudeDelayTimerRef.current !== null) {
-        window.clearTimeout(altitudeDelayTimerRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (!pendingFocusAfterSwitch) {
@@ -481,20 +466,12 @@ export function SpaceStage({
         return;
       }
 
-      if (altitudeDelayTimerRef.current !== null) {
-        return;
-      }
-
       const next = nextAltitude(altitude, direction);
       if (!next) {
         return;
       }
 
-      setGroundPlaneRecalibrationEpoch((previous) => previous + 1);
-      altitudeDelayTimerRef.current = window.setTimeout(() => {
-        changeAltitude(direction);
-        altitudeDelayTimerRef.current = null;
-      }, ALTITUDE_RECALIBRATION_LEAD_MS);
+      changeAltitude(direction);
     };
 
     onAltitudeControlReady(handleAltitudeControl);
@@ -533,20 +510,32 @@ export function SpaceStage({
       },
       surfaceSelection,
       boundaryPath,
+      mapSize: {
+        width,
+        height,
+      },
+      mapEntries: entries.map((entry) => ({
+        organismId: entry.organismId,
+        x: entry.x,
+        y: entry.y,
+      })),
     });
   }, [
     altitude,
     boundaryPath,
     cursorWorld,
     currentMapId,
+    height,
     focusedOrganismId,
     focusedEntry,
     hoveredEntry,
     onSpatialContextChange,
     surfaceSelection,
+    entries,
     viewport.x,
     viewport.y,
     viewport.zoom,
+    width,
   ]);
 
   useEffect(() => {
@@ -591,13 +580,6 @@ export function SpaceStage({
         onViewportChange={setViewport}
         onPointerWorldMove={setCursorWorld}
       >
-        <GroundPlane
-          width={width}
-          height={height}
-          altitude={altitude}
-          recalibrationEpoch={groundPlaneRecalibrationEpoch}
-          mapZoomScale={mapZoomScale}
-        />
         <SpaceOrganismLayer
           entries={entries}
           mapWidth={width}

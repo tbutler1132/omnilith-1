@@ -45,6 +45,7 @@ describe('VisorHud', () => {
   it('renders closed HUD controls and map widgets', () => {
     const html = renderHud({ mode: 'closed', showCompass: true, showAltitudeControls: true });
     expect(html).toContain('Spatial navigation');
+    expect(html).toContain('Spatial mini-map');
     expect(html).toContain('spatial-controls-slot');
     expect(html).toContain('spatial-altitude-slot');
     expect(html).toContain('Map readout');

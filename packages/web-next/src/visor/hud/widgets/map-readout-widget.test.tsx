@@ -21,6 +21,7 @@ describe('MapReadoutWidget', () => {
     expect(html).toContain('Map readout');
     expect(html).toContain('Map');
     expect(html).toContain('Cursor');
+    expect(html).toContain('Grid');
     expect(html).toContain('Hover');
     expect(html).toContain('Focus');
     expect(html).toContain('none');
@@ -29,6 +30,7 @@ describe('MapReadoutWidget', () => {
   it('renders cursor and organism telemetry when available', () => {
     const html = renderReadout({
       mapOrganismId: 'map-community-origin',
+      mapSize: { width: 5000, height: 5000 },
       cursorWorld: { x: 248.2, y: 912.8 },
       hoveredEntry: {
         organismId: 'organism-hovered',
@@ -50,6 +52,7 @@ describe('MapReadoutWidget', () => {
 
     expect(html).toContain('map-community-origin');
     expect(html).toContain('248, 913');
+    expect(html).toContain('C1 R2');
     expect(html).toContain('Text Organism');
     expect(html).toContain('s=0.5');
     expect(html).toContain('Community');

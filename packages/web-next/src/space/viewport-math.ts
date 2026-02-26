@@ -130,10 +130,26 @@ export function frameOrganismEnter(wx: number, wy: number): ViewportState {
   };
 }
 
+function resolveDevicePixelRatio(): number {
+  if (typeof window === 'undefined') {
+    return 1;
+  }
+
+  const ratio = window.devicePixelRatio;
+  return Number.isFinite(ratio) && ratio > 0 ? ratio : 1;
+}
+
+function snapScreenCoordinateToDevicePixel(value: number): number {
+  const ratio = resolveDevicePixelRatio();
+  return Math.round(value * ratio) / ratio;
+}
+
 export function getWorldTransform(viewport: ViewportState, screen: ScreenSize): string {
   const tx = screen.width / 2 - viewport.x * viewport.zoom;
   const ty = screen.height / 2 - viewport.y * viewport.zoom;
-  return `translate(${tx}px, ${ty}px) scale(${viewport.zoom})`;
+  const snappedTx = snapScreenCoordinateToDevicePixel(tx);
+  const snappedTy = snapScreenCoordinateToDevicePixel(ty);
+  return `translate3d(${snappedTx}px, ${snappedTy}px, 0) scale(${viewport.zoom})`;
 }
 
 export function applyPan(viewport: ViewportState, screenDx: number, screenDy: number): ViewportState {

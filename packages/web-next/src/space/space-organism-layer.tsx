@@ -194,6 +194,7 @@ export function SpaceOrganismLayer({
             type="button"
             className={[
               'space-organism-marker',
+              altitude === 'high' ? 'space-organism-marker--high-altitude' : null,
               markerVariant !== 'default' ? `space-organism-marker--${markerVariant}` : null,
               sizePolicy.haloVisible ? 'space-organism-marker--tiny' : null,
               isEnterable ? 'space-organism-marker--enterable' : null,

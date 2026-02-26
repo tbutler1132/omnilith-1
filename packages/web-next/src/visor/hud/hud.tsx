@@ -122,6 +122,7 @@ export function VisorHud({
       {showClosedHud ? (
         <>
           <SpatialControlsSlot
+            spatialContext={spatialContext}
             currentLabel={navigationCurrentLabel}
             upTargetLabel={navigationUpTargetLabel}
             onGoUp={onGoUp}

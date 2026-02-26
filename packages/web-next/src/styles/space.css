@@ -23,6 +23,8 @@
   top: 0;
   left: 0;
   will-change: transform;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
 }
 
 .map-crosshair {
@@ -156,6 +158,29 @@
 
 .space-organism-marker--enterable:hover .space-organism-dot {
   transform: scale(1.14);
+}
+
+.space-organism-marker--high-altitude .space-organism-dot {
+  box-shadow:
+    0 0 0 1px rgba(228, 242, 255, 0.4),
+    0 0 8px rgba(122, 181, 252, 0.42),
+    0 0 16px rgba(82, 147, 235, 0.28);
+}
+
+.space-organism-marker--high-altitude .space-organism-dot::after {
+  inset: -6px;
+  border-color: rgba(186, 214, 246, 0.38);
+}
+
+.space-organism-marker--high-altitude.space-organism-marker--enterable:hover .space-organism-dot {
+  transform: scale(1.08);
+}
+
+.space-organism-marker--high-altitude.space-organism-marker--focused .space-organism-dot {
+  box-shadow:
+    0 0 0 2px rgba(236, 248, 255, 0.35),
+    0 0 10px rgba(150, 206, 255, 0.44),
+    0 0 20px rgba(102, 175, 255, 0.32);
 }
 
 .space-organism-marker--enterable:hover .space-organism-dot::after {

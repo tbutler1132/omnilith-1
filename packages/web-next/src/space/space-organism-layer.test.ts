@@ -95,7 +95,7 @@ describe('resolveRenderedCoreSizeMultiplier', () => {
 
 describe('resolveHighAltitudeCircleSize', () => {
   it('uses a scaled fraction of the secondary grid cell when proportional dot size is smaller', () => {
-    expect(resolveHighAltitudeCircleSize(12, 700)).toBeCloseTo(157.5, 6);
+    expect(resolveHighAltitudeCircleSize(12, 700)).toBeCloseTo(136.5, 6);
   });
 
   it('preserves larger proportional size values', () => {

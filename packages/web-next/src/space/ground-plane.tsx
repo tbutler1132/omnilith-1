@@ -1,7 +1,7 @@
 /**
  * Ground plane map grid.
  *
- * Draws a sparse neon-style repeating grid with no outer border lines.
+ * Draws a sparse neon-style repeating grid with a luminous map boundary.
  */
 
 import { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
@@ -54,6 +54,17 @@ interface SecondaryGridProfile {
   strokeWidthScale: number;
 }
 
+interface AltitudeBorderProfile {
+  baseColor: string;
+  accentColor: string;
+  glowColor: string;
+  baseStrokeWidth: number;
+  accentStrokeWidth: number;
+  glowStdDevNear: number;
+  glowStdDevFar: number;
+  glowOpacity: number;
+}
+
 const ALTITUDE_GLOW_PROFILES: Readonly<Record<Altitude, AltitudeGlowProfile>> = {
   high: {
     lineColor: 'rgba(172, 172, 172, 0.82)',
@@ -90,6 +101,39 @@ const ALTITUDE_GLOW_PROFILES: Readonly<Record<Altitude, AltitudeGlowProfile>> = 
   },
 };
 
+const ALTITUDE_BORDER_PROFILES: Readonly<Record<Altitude, AltitudeBorderProfile>> = {
+  high: {
+    baseColor: 'rgba(174, 208, 242, 0.34)',
+    accentColor: 'rgba(220, 238, 255, 0.78)',
+    glowColor: '#9ed2ff',
+    baseStrokeWidth: 2.2,
+    accentStrokeWidth: 2.9,
+    glowStdDevNear: 2.8,
+    glowStdDevFar: 8.6,
+    glowOpacity: 0.6,
+  },
+  mid: {
+    baseColor: 'rgba(164, 196, 231, 0.29)',
+    accentColor: 'rgba(203, 225, 246, 0.64)',
+    glowColor: '#8bc3f7',
+    baseStrokeWidth: 1.9,
+    accentStrokeWidth: 2.4,
+    glowStdDevNear: 2.1,
+    glowStdDevFar: 6.8,
+    glowOpacity: 0.46,
+  },
+  close: {
+    baseColor: 'rgba(156, 186, 222, 0.26)',
+    accentColor: 'rgba(191, 216, 240, 0.56)',
+    glowColor: '#7ab6ee',
+    baseStrokeWidth: 1.7,
+    accentStrokeWidth: 2.1,
+    glowStdDevNear: 1.8,
+    glowStdDevFar: 5.6,
+    glowOpacity: 0.39,
+  },
+};
+
 const ALTITUDE_SECONDARY_GRID_PROFILES: Readonly<Record<Altitude, SecondaryGridProfile>> = {
   high: {
     subdivisionsPerPrimaryX: HIGH_ALTITUDE_SECONDARY_SUBDIVISIONS_X,
@@ -115,6 +159,10 @@ const ALTITUDE_ORDER: readonly Altitude[] = ['high', 'mid', 'close'];
 
 function resolveAltitudeGlowProfile(altitude: Altitude): AltitudeGlowProfile {
   return ALTITUDE_GLOW_PROFILES[altitude];
+}
+
+function resolveAltitudeBorderProfile(altitude: Altitude): AltitudeBorderProfile {
+  return ALTITUDE_BORDER_PROFILES[altitude];
 }
 
 function createIntersectionJunctionPath(x: number, y: number, gapHalf: number, curveInset: number): string {
@@ -149,6 +197,30 @@ function createFullHorizontalPath(
   return horizontalLines.map((y) => `M ${originX} ${y} L ${originX + fullGridWidth} ${y}`).join(' ');
 }
 
+function createBorderCornerPath(
+  borderX: number,
+  borderY: number,
+  borderWidth: number,
+  borderHeight: number,
+  cornerLength: number,
+): string {
+  if (borderWidth <= 0 || borderHeight <= 0) {
+    return '';
+  }
+
+  const maxX = borderX + borderWidth;
+  const maxY = borderY + borderHeight;
+  const resolvedCornerLengthX = Math.min(cornerLength, borderWidth / 2);
+  const resolvedCornerLengthY = Math.min(cornerLength, borderHeight / 2);
+
+  return [
+    `M ${borderX} ${borderY + resolvedCornerLengthY} L ${borderX} ${borderY} L ${borderX + resolvedCornerLengthX} ${borderY}`,
+    `M ${maxX - resolvedCornerLengthX} ${borderY} L ${maxX} ${borderY} L ${maxX} ${borderY + resolvedCornerLengthY}`,
+    `M ${maxX} ${maxY - resolvedCornerLengthY} L ${maxX} ${maxY} L ${maxX - resolvedCornerLengthX} ${maxY}`,
+    `M ${borderX + resolvedCornerLengthX} ${maxY} L ${borderX} ${maxY} L ${borderX} ${maxY - resolvedCornerLengthY}`,
+  ].join(' ');
+}
+
 export const GroundPlane = memo(function GroundPlane({
   width,
   height,
@@ -159,6 +231,7 @@ export const GroundPlane = memo(function GroundPlane({
   const svgId = useId().replace(/:/g, '');
   const glowFilterPrefix = `ground-grid-glow-${svgId}`;
   const glowProfile = useMemo(() => resolveAltitudeGlowProfile(altitude), [altitude]);
+  const borderProfile = useMemo(() => resolveAltitudeBorderProfile(altitude), [altitude]);
   const secondaryGridProfile = useMemo(() => ALTITUDE_SECONDARY_GRID_PROFILES[altitude], [altitude]);
   const secondaryGridLineColor = useMemo(
     () => `rgba(${SECONDARY_GRID_BASE_RGB}, ${secondaryGridProfile.opacity})`,
@@ -180,11 +253,20 @@ export const GroundPlane = memo(function GroundPlane({
     () => Math.max(0.16, scaledLineStrokeWidth * secondaryGridProfile.strokeWidthScale),
     [scaledLineStrokeWidth, secondaryGridProfile.strokeWidthScale],
   );
+  const scaledBorderStrokeWidth = useMemo(
+    () => Math.max(0.42, borderProfile.baseStrokeWidth * worldUnitsPerScreenPixel),
+    [borderProfile.baseStrokeWidth, worldUnitsPerScreenPixel],
+  );
+  const scaledBorderAccentStrokeWidth = useMemo(
+    () => Math.max(0.6, borderProfile.accentStrokeWidth * worldUnitsPerScreenPixel),
+    [borderProfile.accentStrokeWidth, worldUnitsPerScreenPixel],
+  );
   const scaledIntersectionCornerGap = useMemo(
     () => Math.max(2, glowProfile.intersectionCornerGap * worldUnitsPerScreenPixel),
     [glowProfile.intersectionCornerGap, worldUnitsPerScreenPixel],
   );
   const glowFilterId = `${glowFilterPrefix}-${altitude}`;
+  const borderGlowFilterId = `ground-grid-border-glow-${svgId}-${altitude}`;
   const glowStrengthRef = useRef(glowProfile.glowStrength);
   glowStrengthRef.current = glowProfile.glowStrength;
   const [glowOpacity, setGlowOpacity] = useState(0);
@@ -247,6 +329,33 @@ export const GroundPlane = memo(function GroundPlane({
     secondaryGridProfile.subdivisionsPerPrimaryY,
     width,
   ]);
+  const borderX = originX;
+  const borderY = originY;
+  const borderWidth = fullGridWidth;
+  const borderHeight = fullGridHeight;
+  const borderCornerLength = useMemo(() => {
+    const minDimension = Math.max(1, Math.min(borderWidth, borderHeight));
+    const minimumLength = 56 * worldUnitsPerScreenPixel;
+    const preferredLength = gridSpacing * 0.42;
+    const maximumLength = minDimension * 0.16;
+    return Math.max(minimumLength, Math.min(preferredLength, maximumLength));
+  }, [borderHeight, borderWidth, gridSpacing, worldUnitsPerScreenPixel]);
+  const borderCornerPath = useMemo(
+    () => createBorderCornerPath(borderX, borderY, borderWidth, borderHeight, borderCornerLength),
+    [borderCornerLength, borderHeight, borderWidth, borderX, borderY],
+  );
+  const normalizedBorderGlowStdDevNear = useMemo(
+    () => Math.max(0.001, borderProfile.glowStdDevNear * worldUnitsPerScreenPixel),
+    [borderProfile.glowStdDevNear, worldUnitsPerScreenPixel],
+  );
+  const normalizedBorderGlowStdDevFar = useMemo(
+    () => Math.max(0.001, borderProfile.glowStdDevFar * worldUnitsPerScreenPixel),
+    [borderProfile.glowStdDevFar, worldUnitsPerScreenPixel],
+  );
+  const borderGlowFilterMargin = useMemo(
+    () => Math.ceil(normalizedBorderGlowStdDevFar * 9 + scaledBorderAccentStrokeWidth * 6),
+    [normalizedBorderGlowStdDevFar, scaledBorderAccentStrokeWidth],
+  );
   const { horizontalSegments, verticalSegments } = useMemo(() => {
     const gapHalf = scaledIntersectionCornerGap / 2;
     const mapMaxX = originX + fullGridWidth;
@@ -376,8 +485,9 @@ export const GroundPlane = memo(function GroundPlane({
       return;
     }
 
+    // Keep glow stable during recalibration to avoid perceived flicker.
     setGlowTransitionMs(GLOW_DIP_FADE_MS);
-    setGlowOpacity(Math.max(0.015, glowStrengthRef.current * 0.06));
+    setGlowOpacity(glowStrengthRef.current);
   }, [recalibrationEpoch]);
 
   useEffect(() => {
@@ -439,6 +549,30 @@ export const GroundPlane = memo(function GroundPlane({
               </filter>
             );
           })}
+          <filter
+            id={borderGlowFilterId}
+            filterUnits="userSpaceOnUse"
+            x={borderX - borderGlowFilterMargin}
+            y={borderY - borderGlowFilterMargin}
+            width={borderWidth + borderGlowFilterMargin * 2}
+            height={borderHeight + borderGlowFilterMargin * 2}
+            colorInterpolationFilters="sRGB"
+          >
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation={normalizedBorderGlowStdDevNear}
+              floodColor={borderProfile.glowColor}
+              floodOpacity={borderProfile.glowOpacity * 0.72}
+            />
+            <feDropShadow
+              dx="0"
+              dy="0"
+              stdDeviation={normalizedBorderGlowStdDevFar}
+              floodColor={borderProfile.glowColor}
+              floodOpacity={borderProfile.glowOpacity * 0.4}
+            />
+          </filter>
         </defs>
         <g>
           <path
@@ -470,6 +604,42 @@ export const GroundPlane = memo(function GroundPlane({
             stroke={DARK_GRID_LINE_COLOR}
             strokeWidth={scaledLineStrokeWidth}
             strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+          />
+          <rect
+            x={borderX}
+            y={borderY}
+            width={borderWidth}
+            height={borderHeight}
+            stroke={borderProfile.baseColor}
+            strokeWidth={scaledBorderStrokeWidth}
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+            rx={scaledBorderStrokeWidth * 0.66}
+            ry={scaledBorderStrokeWidth * 0.66}
+          />
+        </g>
+        <g filter={`url(#${borderGlowFilterId})`}>
+          <rect
+            x={borderX}
+            y={borderY}
+            width={borderWidth}
+            height={borderHeight}
+            stroke={borderProfile.glowColor}
+            strokeOpacity={borderProfile.glowOpacity}
+            strokeWidth={scaledBorderStrokeWidth * 0.84}
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+            rx={scaledBorderStrokeWidth * 0.66}
+            ry={scaledBorderStrokeWidth * 0.66}
+          />
+          <path
+            d={borderCornerPath}
+            stroke={borderProfile.accentColor}
+            strokeWidth={scaledBorderAccentStrokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
             fill="none"
           />
