@@ -1,0 +1,255 @@
+.proposalWorkbenchApp {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.76rem;
+}
+
+.proposalWorkbenchTitle {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
+  color: rgba(243, 250, 255, 0.95);
+}
+
+.proposalWorkbenchTarget {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.42;
+  color: rgba(210, 231, 252, 0.9);
+}
+
+.proposalWorkbenchControls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+.proposalWorkbenchLegend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+}
+
+.proposalWorkbenchTabButton,
+.proposalWorkbenchFilterButton,
+.proposalWorkbenchActionButton {
+  border: 1px solid rgba(177, 206, 238, 0.26);
+  border-radius: 999px;
+  background: rgba(160, 208, 255, 0.08);
+  color: rgba(225, 239, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.3rem 0.52rem;
+  cursor: pointer;
+}
+
+.proposalWorkbenchTabButtonActive,
+.proposalWorkbenchFilterButtonActive {
+  border-color: rgba(211, 235, 255, 0.54);
+  background: rgba(158, 211, 255, 0.2);
+  color: rgba(245, 251, 255, 0.97);
+}
+
+.proposalWorkbenchCount {
+  margin: 0;
+  font-size: 0.64rem;
+  line-height: 1.4;
+  color: rgba(196, 223, 250, 0.92);
+}
+
+.proposalWorkbenchStatus,
+.proposalWorkbenchEmpty,
+.proposalWorkbenchSectionError,
+.proposalWorkbenchHint {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.9);
+}
+
+.proposalWorkbenchSectionError {
+  color: rgba(255, 206, 206, 0.94);
+}
+
+.proposalWorkbenchList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.proposalWorkbenchListItem {
+  border: 1px solid rgba(177, 206, 238, 0.2);
+  border-radius: 0.56rem;
+  background: rgba(5, 11, 20, 0.5);
+  padding: 0.5rem 0.56rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.proposalWorkbenchListButton {
+  all: unset;
+  cursor: pointer;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.proposalWorkbenchListButton:focus-visible {
+  outline: 2px solid rgba(214, 237, 255, 0.8);
+  outline-offset: 2px;
+  border-radius: 0.4rem;
+}
+
+.proposalWorkbenchPrimary {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: rgba(236, 247, 255, 0.95);
+}
+
+.proposalWorkbenchSecondary {
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: rgba(190, 218, 245, 0.9);
+}
+
+.proposalWorkbenchStatusBadge {
+  width: fit-content;
+  font-size: 0.56rem;
+  line-height: 1.2;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.16rem 0.36rem;
+  border-radius: 999px;
+  border: 1px solid rgba(179, 213, 245, 0.3);
+  color: rgba(214, 234, 255, 0.9);
+  background: rgba(138, 186, 239, 0.14);
+}
+
+.proposalWorkbenchStatusBadge[data-status='integrated'] {
+  border-color: rgba(129, 239, 167, 0.32);
+  color: rgba(198, 252, 216, 0.92);
+  background: rgba(59, 135, 84, 0.24);
+}
+
+.proposalWorkbenchStatusBadge[data-status='declined'] {
+  border-color: rgba(255, 148, 148, 0.34);
+  color: rgba(255, 214, 214, 0.92);
+  background: rgba(138, 64, 64, 0.26);
+}
+
+.proposalWorkbenchPanel {
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  padding: 0.68rem;
+  display: grid;
+  gap: 0.54rem;
+}
+
+.proposalWorkbenchMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.proposalWorkbenchMetaRow {
+  display: grid;
+  grid-template-columns: 6rem minmax(0, 1fr);
+  gap: 0.58rem;
+  align-items: baseline;
+}
+
+.proposalWorkbenchMetaRow dt {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(178, 206, 238, 0.84);
+}
+
+.proposalWorkbenchMetaRow dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(225, 239, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.proposalWorkbenchCompare {
+  display: grid;
+  gap: 0.46rem;
+}
+
+.proposalWorkbenchCompareMeta {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.4;
+  color: rgba(192, 222, 251, 0.92);
+}
+
+.proposalWorkbenchCompareGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.52rem;
+}
+
+.proposalWorkbenchComparePanel {
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  padding: 0.54rem;
+  display: grid;
+  gap: 0.32rem;
+}
+
+.proposalWorkbenchCompareTitle {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(178, 206, 238, 0.84);
+}
+
+.proposalWorkbenchCode {
+  margin: 0;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.6rem;
+  line-height: 1.48;
+  color: rgba(228, 242, 255, 0.92);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 16rem;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+@media (max-width: 780px) {
+  .proposalWorkbenchCompareGrid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

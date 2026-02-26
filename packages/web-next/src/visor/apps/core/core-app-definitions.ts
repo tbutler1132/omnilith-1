@@ -7,30 +7,15 @@
 
 import type { VisorAppDefinition } from '../app-contract.js';
 import { organismViewAppDefinition } from '../organism-view/index.js';
+import { proposalWorkbenchAppDefinition } from '../proposal-workbench/index.js';
 import { createCoreAppComponent } from './core-app.js';
 import {
   IntegrationQueueAppIcon,
   MapStudioAppIcon,
-  ProposalWorkbenchAppIcon,
   QueryExplorerAppIcon,
   SystemsViewAppIcon,
   VitalityEventStreamAppIcon,
 } from './core-app-icons.js';
-
-export const proposalWorkbenchAppDefinition: VisorAppDefinition = {
-  id: 'proposal-workbench',
-  label: 'Proposal Workbench',
-  description: 'Inspect and compare offered mutations before regulatory evaluation.',
-  icon: ProposalWorkbenchAppIcon,
-  component: createCoreAppComponent({
-    appName: 'Proposal Workbench',
-    purpose: 'Stage proposal review with explicit before/after state comparison.',
-    primaryFlow: 'Primary flow: open a proposal and inspect changes through content-type differ surfaces.',
-    secondaryFlow: 'Secondary flow: prepare decisions before moving to integrate or decline.',
-  }),
-  registryTier: 'core',
-  official: true,
-};
 
 export const integrationQueueAppDefinition: VisorAppDefinition = {
   id: 'integration-queue',
@@ -109,7 +94,7 @@ export const queryExplorerAppDefinition: VisorAppDefinition = {
 
 export const coreVisorAppDefinitions: ReadonlyArray<VisorAppDefinition> = [
   organismViewAppDefinition as VisorAppDefinition,
-  proposalWorkbenchAppDefinition,
+  proposalWorkbenchAppDefinition as VisorAppDefinition,
   integrationQueueAppDefinition,
   systemsViewAppDefinition,
   mapStudioAppDefinition,
