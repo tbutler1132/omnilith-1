@@ -15,7 +15,17 @@ interface ResolveOpenAppTargetOrganismIdInput {
 }
 
 function isOrganismScopedApp(appId: string): boolean {
-  return appId === 'organism' || appId === 'cadence';
+  return (
+    appId === 'organism' ||
+    appId === 'cadence' ||
+    appId === 'organism-view' ||
+    appId === 'proposal-workbench' ||
+    appId === 'integration-queue' ||
+    appId === 'systems-view' ||
+    appId === 'map-studio' ||
+    appId === 'vitality-event-stream' ||
+    appId === 'query-explorer'
+  );
 }
 
 export function resolveOpenAppTargetOrganismId(input: ResolveOpenAppTargetOrganismIdInput): string | null {

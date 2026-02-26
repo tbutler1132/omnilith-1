@@ -1,0 +1,195 @@
+.organismViewApp {
+  min-height: 100%;
+  display: grid;
+  align-content: start;
+  gap: 0.76rem;
+}
+
+.organismViewTitle {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.24;
+  letter-spacing: 0.02em;
+  font-weight: 620;
+  color: rgba(243, 250, 255, 0.95);
+}
+
+.organismViewTarget {
+  margin: 0;
+  font-size: 0.68rem;
+  line-height: 1.42;
+  color: rgba(210, 231, 252, 0.9);
+}
+
+.organismViewTabRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.38rem;
+}
+
+.organismViewTabButton {
+  border: 1px solid rgba(177, 206, 238, 0.26);
+  border-radius: 999px;
+  background: rgba(160, 208, 255, 0.08);
+  color: rgba(225, 239, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  padding: 0.3rem 0.52rem;
+  cursor: pointer;
+}
+
+.organismViewTabButtonActive {
+  border-color: rgba(211, 235, 255, 0.54);
+  background: rgba(158, 211, 255, 0.2);
+  color: rgba(245, 251, 255, 0.97);
+}
+
+.organismViewStatus,
+.organismViewEmpty,
+.organismViewSectionError {
+  margin: 0;
+  font-size: 0.7rem;
+  line-height: 1.52;
+  color: rgba(205, 224, 246, 0.9);
+}
+
+.organismViewSectionError {
+  color: rgba(255, 206, 206, 0.94);
+}
+
+.organismViewPanel {
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  padding: 0.68rem;
+  display: grid;
+  gap: 0.54rem;
+}
+
+.organismViewMeta {
+  margin: 0;
+  display: grid;
+  gap: 0.42rem;
+}
+
+.organismViewMetaRow {
+  display: grid;
+  grid-template-columns: 5.2rem minmax(0, 1fr);
+  gap: 0.58rem;
+  align-items: baseline;
+}
+
+.organismViewMetaRow dt {
+  margin: 0;
+  font-size: 0.62rem;
+  line-height: 1.2;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(178, 206, 238, 0.84);
+}
+
+.organismViewMetaRow dd {
+  margin: 0;
+  min-width: 0;
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: rgba(225, 239, 255, 0.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.organismViewPayload {
+  margin: 0;
+  padding: 0.68rem;
+  border: 1px solid rgba(177, 206, 238, 0.24);
+  border-radius: 0.58rem;
+  background: rgba(4, 8, 14, 0.72);
+  color: rgba(228, 242, 255, 0.92);
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.62rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  max-height: 18rem;
+  overflow: auto;
+  overflow-x: hidden;
+}
+
+.organismViewHistoryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.organismViewHistoryItem {
+  border: 1px solid rgba(177, 206, 238, 0.2);
+  border-radius: 0.56rem;
+  background: rgba(5, 11, 20, 0.5);
+  padding: 0.48rem 0.54rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.organismViewHistoryLinePrimary {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: rgba(236, 247, 255, 0.95);
+}
+
+.organismViewHistoryLineSecondary {
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: rgba(190, 218, 245, 0.9);
+}
+
+.organismViewActionButton {
+  width: fit-content;
+  border: 1px solid rgba(177, 206, 238, 0.26);
+  border-radius: 999px;
+  background: rgba(160, 208, 255, 0.08);
+  color: rgba(225, 239, 255, 0.9);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+  padding: 0.3rem 0.52rem;
+  cursor: pointer;
+}
+
+.organismViewChildrenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.4rem;
+}
+
+.organismViewChildItem {
+  border: 1px solid rgba(177, 206, 238, 0.2);
+  border-radius: 0.56rem;
+  background: rgba(5, 11, 20, 0.5);
+  padding: 0.48rem 0.54rem;
+  display: grid;
+  gap: 0.2rem;
+}
+
+.organismViewChildName {
+  font-size: 0.7rem;
+  line-height: 1.35;
+  color: rgba(236, 247, 255, 0.95);
+}
+
+.organismViewChildMeta {
+  font-size: 0.6rem;
+  line-height: 1.35;
+  color: rgba(190, 218, 245, 0.9);
+}

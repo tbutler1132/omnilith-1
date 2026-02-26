@@ -12,6 +12,8 @@ export const profileAppDefinition: VisorAppDefinition = {
   id: 'profile',
   label: 'Profile',
   description: 'Identity and practice snapshot app.',
+  registryTier: 'extra',
+  official: true,
   icon: ProfileAppIcon,
   component: ProfileApp,
 };
