@@ -17,6 +17,7 @@ export { CadenceApp, cadenceAppDefinition } from './cadence/index.js';
 export { coreVisorAppDefinitions } from './core/index.js';
 export { OrganismApp, organismAppDefinition } from './organism/index.js';
 export { OrganismViewApp, organismViewAppDefinition } from './organism-view/index.js';
+export { ProposalWorkbenchApp, proposalWorkbenchAppDefinition } from './proposal-workbench/index.js';
 export type {
   SpatialContextChangedListener,
   VisorAppSpatialContext,
