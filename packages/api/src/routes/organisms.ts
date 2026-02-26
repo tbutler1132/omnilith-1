@@ -7,6 +7,7 @@ import type {
   ComposeChildRequest,
   RecordObservationRequest,
   ThresholdOrganismRequest,
+  UpdateOpenTrunkRequest,
   UpdateVisibilityRequest,
 } from '@omnilith/api-contracts';
 import type {
@@ -20,6 +21,7 @@ import type {
 } from '@omnilith/kernel';
 import {
   appendState,
+  changeOpenTrunk,
   changeVisibility,
   composeOrganism,
   createOrganism,
@@ -654,6 +656,41 @@ export function organismRoutes(container: Container) {
         },
       );
       return c.json({ ok: true });
+    } catch (err) {
+      const e = err as DomainError;
+      if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);
+      if (e.kind === 'OrganismNotFoundError') return c.json({ error: e.message }, 404);
+      throw err;
+    }
+  });
+
+  app.put('/:id/open-trunk', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const body = await parseJsonBody<UpdateOpenTrunkRequest>(c);
+
+    if (!body) return c.json({ error: 'Invalid JSON body' }, 400);
+    if (typeof body.openTrunk !== 'boolean') return c.json({ error: 'openTrunk must be a boolean' }, 400);
+
+    try {
+      const organism = await changeOpenTrunk(
+        {
+          organismId: id,
+          openTrunk: body.openTrunk,
+          changedBy: userId,
+        },
+        {
+          organismRepository: container.organismRepository,
+          visibilityRepository: container.visibilityRepository,
+          surfaceRepository: container.surfaceRepository,
+          relationshipRepository: container.relationshipRepository,
+          compositionRepository: container.compositionRepository,
+          eventPublisher: container.eventPublisher,
+          identityGenerator: container.identityGenerator,
+        },
+      );
+
+      return c.json({ organism });
     } catch (err) {
       const e = err as DomainError;
       if (e.kind === 'AccessDeniedError') return c.json({ error: e.message }, 403);

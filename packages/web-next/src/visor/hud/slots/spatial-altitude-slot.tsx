@@ -8,21 +8,37 @@
 
 import type { Altitude } from '../../../contracts/altitude.js';
 import { AltitudeControlsWidget } from './altitude-controls-widget.js';
+import { CenterMapWidget } from './center-map-widget.js';
+import { PanControlsWidget } from './pan-controls-widget.js';
+
+type PanDirection = 'up' | 'down' | 'left' | 'right';
 
 interface SpatialAltitudeSlotProps {
   readonly altitude: Altitude;
   readonly showAltitudeControls: boolean;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+  readonly onCenterMap: () => void;
+  readonly onPanMap: (direction: PanDirection) => void;
 }
 
-export function SpatialAltitudeSlot({ altitude, showAltitudeControls, onChangeAltitude }: SpatialAltitudeSlotProps) {
+export function SpatialAltitudeSlot({
+  altitude,
+  showAltitudeControls,
+  onChangeAltitude,
+  onCenterMap,
+  onPanMap,
+}: SpatialAltitudeSlotProps) {
   if (!showAltitudeControls) {
     return null;
   }
 
   return (
     <div className="spatial-altitude-slot">
-      <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} />
+      <div className="spatial-altitude-controls-group">
+        <CenterMapWidget onCenterMap={onCenterMap} />
+        <PanControlsWidget onPan={onPanMap} />
+        <AltitudeControlsWidget altitude={altitude} onChangeAltitude={onChangeAltitude} />
+      </div>
     </div>
   );
 }

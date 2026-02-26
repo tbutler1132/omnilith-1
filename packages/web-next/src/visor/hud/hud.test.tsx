@@ -32,6 +32,8 @@ function renderHud(
       showNavigationUpControl: input.showNavigationUpControl ?? false,
       canGoUp: input.canGoUp ?? false,
       onChangeAltitude: () => {},
+      onCenterMap: () => {},
+      onPanMap: () => {},
       onGoUp: () => {},
       onOpenApp: () => {},
       onOpenAppRequest: () => {},
@@ -48,6 +50,8 @@ describe('VisorHud', () => {
     expect(html).toContain('Spatial mini-map');
     expect(html).toContain('spatial-controls-slot');
     expect(html).toContain('spatial-altitude-slot');
+    expect(html).toContain('Pan map up');
+    expect(html).toContain('Center map');
     expect(html).toContain('Map readout');
     expect(html).toContain('Log out');
     expect(html).toContain('Map legend');

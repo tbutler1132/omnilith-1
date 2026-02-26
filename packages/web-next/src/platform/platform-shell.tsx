@@ -29,6 +29,8 @@ import {
   isSecretLoginShortcut,
 } from './secret-login-shortcut.js';
 
+type PanDirection = 'up' | 'down' | 'left' | 'right';
+
 interface LoadState {
   readonly worldMapId: string | null;
   readonly loading: boolean;
@@ -54,6 +56,8 @@ export function PlatformShell() {
   const [enteredOrganismId, setEnteredOrganismId] = useState<string | null>(null);
   const [boundaryOrganismId, setBoundaryOrganismId] = useState<string | null>(null);
   const [changeAltitudeHandler, setChangeAltitudeHandler] = useState<((direction: 'in' | 'out') => void) | null>(null);
+  const [centerMapHandler, setCenterMapHandler] = useState<(() => void) | null>(null);
+  const [panMapHandler, setPanMapHandler] = useState<((direction: PanDirection) => void) | null>(null);
   const [backHandler, setBackHandler] = useState<(() => void) | null>(null);
   const [state, setState] = useState<LoadState>({
     worldMapId: null,
@@ -119,11 +123,30 @@ export function PlatformShell() {
     setBackHandler(() => handler);
   }, []);
 
+  const handleCenterMapControlReady = useCallback((handler: (() => void) | null) => {
+    setCenterMapHandler(() => handler);
+  }, []);
+
+  const handlePanMapControlReady = useCallback((handler: ((direction: PanDirection) => void) | null) => {
+    setPanMapHandler(() => handler);
+  }, []);
+
   const handleAltitudeChangeRequested = useCallback(
     (direction: 'in' | 'out') => {
       changeAltitudeHandler?.(direction);
     },
     [changeAltitudeHandler],
+  );
+
+  const handleCenterMapRequested = useCallback(() => {
+    centerMapHandler?.();
+  }, [centerMapHandler]);
+
+  const handlePanMapRequested = useCallback(
+    (direction: PanDirection) => {
+      panMapHandler?.(direction);
+    },
+    [panMapHandler],
   );
 
   const handleBackRequested = useCallback(() => {
@@ -456,6 +479,8 @@ export function PlatformShell() {
         worldMapId={state.worldMapId}
         onAltitudeChange={setAltitude}
         onAltitudeControlReady={handleAltitudeControlReady}
+        onCenterControlReady={handleCenterMapControlReady}
+        onPanControlReady={handlePanMapControlReady}
         onBackControlReady={handleBackControlReady}
         onInteriorChange={setIsInInterior}
         onEnteredOrganismChange={setEnteredOrganismId}
@@ -476,6 +501,8 @@ export function PlatformShell() {
         navigationCurrentLabel={navigationCurrentLabel}
         navigationUpTargetLabel={navigationUpTargetLabel}
         onChangeAltitude={handleAltitudeChangeRequested}
+        onCenterMap={handleCenterMapRequested}
+        onPanMap={handlePanMapRequested}
         onGoUp={handleBackRequested}
         showNavigationUpControl={showNavigationUpControl}
         canGoUp={canGoUp}

@@ -244,6 +244,7 @@ describe('organism routes', () => {
     expect(res.status).toBe(201);
     const body = await res.json();
     expect(body.organism).toBeDefined();
+    expect(body.organism.openTrunk).toBe(true);
     expect(body.initialState).toBeDefined();
     expect(body.initialState.sequenceNumber).toBe(1);
   });
@@ -387,6 +388,30 @@ describe('organism routes', () => {
     });
 
     expect(res.status).toBe(403);
+  });
+
+  it('PUT /organisms/:id/open-trunk updates regulatory mode for the steward', async () => {
+    const created = await createTestOrganism(app, { openTrunk: true });
+    const organismId = created.organism.id as string;
+
+    const updateRes = await app.request(`/organisms/${organismId}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(updateRes.status).toBe(200);
+    const updateBody = await updateRes.json();
+    expect(updateBody.organism.openTrunk).toBe(false);
+
+    const appendRes = await app.request(`/organisms/${organismId}/states`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contentTypeId: 'text',
+        payload: { content: 'v2', format: 'plaintext' },
+      }),
+    });
+    expect(appendRes.status).toBe(403);
   });
 
   it('POST /organisms/:id/states rejects spatial-map appends in favor of surface route', async () => {
@@ -1309,6 +1334,24 @@ describe('authorization enforcement', () => {
       method: 'DELETE',
     });
     expect(decomposeDenied.status).toBe(403);
+  });
+
+  it('changing open-trunk mode requires stewardship', async () => {
+    const { organism } = await createTestOrganism(ownerApp, { name: 'Draft', openTrunk: true });
+
+    const denied = await outsiderApp.request(`/organisms/${organism.id}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(denied.status).toBe(403);
+
+    const allowed = await ownerApp.request(`/organisms/${organism.id}/open-trunk`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ openTrunk: false }),
+    });
+    expect(allowed.status).toBe(200);
   });
 
   it('opening and listing proposals require organism access', async () => {

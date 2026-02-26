@@ -35,7 +35,8 @@ export type ActionType =
   | 'decline-proposal'
   | 'compose'
   | 'decompose'
-  | 'change-visibility';
+  | 'change-visibility'
+  | 'change-open-trunk';
 
 export interface AccessDecision {
   readonly allowed: boolean;
@@ -133,6 +134,7 @@ async function checkMemberAccess(
  * compose: requires stewardship on the parent organism
  * decompose: requires stewardship on the parent organism
  * change-visibility: requires stewardship on the organism
+ * change-open-trunk: requires stewardship on the organism
  */
 async function checkActionPermission(
   userId: UserId,
@@ -222,6 +224,14 @@ async function checkActionPermission(
     case 'change-visibility': {
       const isStewardForVisibility = relationships.some((r) => r.type === 'stewardship');
       if (isStewardForVisibility) {
+        return { allowed: true };
+      }
+      return { allowed: false, reason: 'User does not have stewardship of this organism' };
+    }
+
+    case 'change-open-trunk': {
+      const isStewardForOpenTrunk = relationships.some((r) => r.type === 'stewardship');
+      if (isStewardForOpenTrunk) {
         return { allowed: true };
       }
       return { allowed: false, reason: 'User does not have stewardship of this organism' };

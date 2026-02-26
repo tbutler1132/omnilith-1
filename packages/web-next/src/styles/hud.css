@@ -54,6 +54,56 @@
   z-index: 21;
 }
 
+.spatial-altitude-controls-group {
+  display: inline-flex;
+  align-items: stretch;
+  gap: 0.42rem;
+}
+
+.map-pan-controls {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  gap: 0.18rem;
+  width: 4.7rem;
+  padding: 0.28rem;
+  border: 1px solid var(--visor-line);
+  border-radius: 0.55rem;
+  background: var(--visor-surface);
+  color: var(--visor-text);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
+}
+
+.map-pan-btn {
+  min-height: 1.26rem;
+  border: none;
+  border-radius: 0.42rem;
+  background: transparent;
+  color: inherit;
+  font-size: 0.84rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.map-pan-legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  overflow: hidden;
+}
+
+.map-pan-spacer {
+  display: block;
+}
+
 .app-dock-slot {
   position: fixed;
   left: 0.9rem;
@@ -770,6 +820,25 @@
   background: rgba(239, 249, 255, 0.96);
 }
 
+.map-center-btn {
+  min-width: 3.3rem;
+  min-height: 2.1rem;
+  border: 1px solid var(--visor-line);
+  border-radius: 0.55rem;
+  background: var(--visor-surface);
+  color: var(--visor-text);
+  backdrop-filter: blur(10px);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  padding: 0.38rem 0.52rem;
+  cursor: pointer;
+  box-shadow:
+    var(--visor-glow-inset),
+    var(--visor-glow-soft);
+}
+
 .map-readout-widget {
   align-items: flex-start;
   justify-content: flex-start;
@@ -1023,6 +1092,14 @@
     bottom: 0.7rem;
   }
 
+  .spatial-altitude-controls-group {
+    gap: 0.34rem;
+  }
+
+  .map-pan-controls {
+    width: 4.2rem;
+  }
+
   .visor-widget-lane {
     right: 0.7rem;
     top: 0.7rem;
@@ -1161,6 +1238,7 @@
 
 .space-nav-content,
 .altitude-controls,
+.map-pan-controls,
 .app-dock-shell,
 .visor-widget,
 .open-visor-shell-header,
@@ -1182,6 +1260,7 @@
 
 .space-nav-content::before,
 .altitude-controls::before,
+.map-pan-controls::before,
 .app-dock-shell::before,
 .visor-widget::before,
 .open-visor-shell-header::before,
@@ -1200,6 +1279,7 @@
 
 .space-nav-content > *,
 .altitude-controls > *,
+.map-pan-controls > *,
 .app-dock-shell > *,
 .visor-widget > *,
 .open-visor-shell-header > *,
@@ -1218,6 +1298,14 @@
 }
 
 .altitude-controls {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(50, 14, 58, 0.3);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 223, 251, 0.1),
+    0 0 16px rgba(255, 122, 232, 0.26);
+}
+
+.map-pan-controls {
   border-color: rgba(255, 122, 232, 0.56);
   background: rgba(50, 14, 58, 0.3);
   box-shadow:
@@ -1273,6 +1361,8 @@
 .open-visor-close-button,
 .space-nav-back-btn,
 .altitude-btn,
+.map-pan-btn,
+.map-center-btn,
 .visor-logout-widget {
   font-family: var(--visor-display-font);
   border-width: 2px;
@@ -1296,6 +1386,22 @@
 }
 
 .altitude-btn {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(60, 14, 64, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 251, 0.1),
+    0 0 12px rgba(255, 122, 232, 0.28);
+}
+
+.map-pan-btn {
+  border-color: rgba(255, 122, 232, 0.56);
+  background: rgba(60, 14, 64, 0.28);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 230, 251, 0.1),
+    0 0 12px rgba(255, 122, 232, 0.28);
+}
+
+.map-center-btn {
   border-color: rgba(255, 122, 232, 0.56);
   background: rgba(60, 14, 64, 0.28);
   box-shadow:
@@ -1359,6 +1465,8 @@
 .open-visor-close-button:hover,
 .space-nav-back-btn:hover,
 .altitude-btn:hover,
+.map-pan-btn:hover,
+.map-center-btn:hover,
 .visor-logout-widget:hover {
   transform: translateY(-1px);
   filter: brightness(1.08);
@@ -1371,6 +1479,8 @@
 .open-visor-close-button:active,
 .space-nav-back-btn:active,
 .altitude-btn:active,
+.map-pan-btn:active,
+.map-center-btn:active,
 .visor-logout-widget:active {
   transform: translateY(0);
 }

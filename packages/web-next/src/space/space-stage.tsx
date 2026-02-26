@@ -16,10 +16,14 @@ import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
 import { frameOrganism, frameOrganismEnter, frameOrganismFocus, nextAltitude } from './viewport-math.js';
 
+type PanDirection = 'up' | 'down' | 'left' | 'right';
+
 interface SpaceStageProps {
   readonly worldMapId: string;
   readonly onAltitudeChange: (altitude: Altitude) => void;
   readonly onAltitudeControlReady: (handler: ((direction: 'in' | 'out') => void) | null) => void;
+  readonly onCenterControlReady: (handler: (() => void) | null) => void;
+  readonly onPanControlReady: (handler: ((direction: PanDirection) => void) | null) => void;
   readonly onBackControlReady: (handler: (() => void) | null) => void;
   readonly onInteriorChange: (isInInterior: boolean) => void;
   readonly onEnteredOrganismChange: (organismId: string | null) => void;
@@ -105,6 +109,11 @@ const EXIT_TRANSITION_MS = 500;
 const FOCUS_TRANSITION_MS = 320;
 const INTERIOR_ENTER_TRANSITION_MS = 300;
 const INTERIOR_EXIT_TRANSITION_MS = 260;
+const CENTER_TRANSITION_MS = 420;
+const PAN_TRANSITION_MS = 260;
+const PAN_STEP_SCREEN_FRACTION = 0.16;
+const PAN_STEP_SCREEN_MIN_PX = 72;
+const PAN_STEP_SCREEN_MAX_PX = 180;
 
 function resolveSurfaceEntrySnapshot(
   organismId: string | null,
@@ -143,6 +152,8 @@ export function SpaceStage({
   worldMapId,
   onAltitudeChange,
   onAltitudeControlReady,
+  onCenterControlReady,
+  onPanControlReady,
   onBackControlReady,
   onInteriorChange,
   onEnteredOrganismChange,
@@ -477,6 +488,73 @@ export function SpaceStage({
     onAltitudeControlReady(handleAltitudeControl);
     return () => onAltitudeControlReady(null);
   }, [altitude, changeAltitude, onAltitudeControlReady, transitionPhase]);
+
+  useEffect(() => {
+    const handleCenterControl = () => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current || enteredOrganismId !== null) {
+        return;
+      }
+
+      if (width <= 0 || height <= 0) {
+        return;
+      }
+
+      animateTo(
+        {
+          x: width / 2,
+          y: height / 2,
+          zoom: viewport.zoom,
+        },
+        { durationMs: CENTER_TRANSITION_MS },
+      );
+    };
+
+    onCenterControlReady(handleCenterControl);
+    return () => onCenterControlReady(null);
+  }, [animateTo, enteredOrganismId, height, onCenterControlReady, transitionPhase, viewport.zoom, width]);
+
+  useEffect(() => {
+    const handlePanControl = (direction: PanDirection) => {
+      if (transitionPhase !== 'idle' || interiorTransitioningRef.current || enteredOrganismId !== null) {
+        return;
+      }
+
+      const baseDimension = Math.min(screenSize.width, screenSize.height);
+      if (baseDimension <= 0 || viewport.zoom <= 0) {
+        return;
+      }
+
+      const panStepScreenPx = Math.max(
+        PAN_STEP_SCREEN_MIN_PX,
+        Math.min(PAN_STEP_SCREEN_MAX_PX, baseDimension * PAN_STEP_SCREEN_FRACTION),
+      );
+      const panStepWorld = panStepScreenPx / viewport.zoom;
+      const dx = direction === 'left' ? -panStepWorld : direction === 'right' ? panStepWorld : 0;
+      const dy = direction === 'up' ? -panStepWorld : direction === 'down' ? panStepWorld : 0;
+
+      animateTo(
+        {
+          x: viewport.x + dx,
+          y: viewport.y + dy,
+          zoom: viewport.zoom,
+        },
+        { durationMs: PAN_TRANSITION_MS },
+      );
+    };
+
+    onPanControlReady(handlePanControl);
+    return () => onPanControlReady(null);
+  }, [
+    animateTo,
+    enteredOrganismId,
+    onPanControlReady,
+    screenSize.height,
+    screenSize.width,
+    transitionPhase,
+    viewport.x,
+    viewport.y,
+    viewport.zoom,
+  ]);
 
   useEffect(() => {
     onBackControlReady(canGoBack ? handleGoBack : null);

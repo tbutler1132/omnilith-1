@@ -16,6 +16,7 @@ import { VisorWidgetLane } from './widget-lane.js';
 import { CompassWidget, MapLegendWidget, MapReadoutWidget } from './widgets/index.js';
 
 type OpenVisorPhase = 'hidden' | 'opening' | 'open' | 'closing';
+type PanDirection = 'up' | 'down' | 'left' | 'right';
 
 const OPEN_VISOR_OPEN_MS = 520;
 const OPEN_VISOR_CLOSE_MS = 420;
@@ -34,6 +35,8 @@ interface VisorHudProps {
   readonly navigationCurrentLabel: string;
   readonly navigationUpTargetLabel: string | null;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
+  readonly onCenterMap: () => void;
+  readonly onPanMap: (direction: PanDirection) => void;
   readonly onGoUp: () => void;
   readonly showNavigationUpControl: boolean;
   readonly canGoUp: boolean;
@@ -58,6 +61,8 @@ export function VisorHud({
   navigationCurrentLabel,
   navigationUpTargetLabel,
   onChangeAltitude,
+  onCenterMap,
+  onPanMap,
   onGoUp,
   showNavigationUpControl,
   canGoUp,
@@ -133,6 +138,8 @@ export function VisorHud({
             altitude={altitude}
             showAltitudeControls={showAltitudeControls}
             onChangeAltitude={onChangeAltitude}
+            onCenterMap={onCenterMap}
+            onPanMap={onPanMap}
           />
           <AppDockSlot onOpenApp={onOpenApp} />
           {showWidgetLane ? (
