@@ -118,7 +118,7 @@ export function frameOrganismFocus(
   return {
     x: wx,
     y: wy,
-    zoom: zoomForAltitude('mid', zoomProfile),
+    zoom: zoomForAltitude('close', zoomProfile),
   };
 }
 

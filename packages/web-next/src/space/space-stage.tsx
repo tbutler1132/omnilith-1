@@ -600,6 +600,8 @@ export function SpaceStage({
         />
         <SpaceOrganismLayer
           entries={entries}
+          mapWidth={width}
+          mapHeight={height}
           altitude={altitude}
           zoom={viewport.zoom}
           altitudeZoomProfile={altitudeZoomProfile}

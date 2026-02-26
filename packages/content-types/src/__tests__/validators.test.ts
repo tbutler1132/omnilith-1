@@ -355,6 +355,28 @@ describe('spatial-map validator', () => {
 
     expect(result.valid).toBe(true);
   });
+
+  it('allows removing existing entries when map dimensions change', () => {
+    const result = validateSpatialMap(
+      {
+        entries: [{ organismId: 'org-1', x: 120, y: 100, size: 1 }],
+        width: 1200,
+        height: 1200,
+      },
+      {
+        previousPayload: {
+          entries: [
+            { organismId: 'org-1', x: 100, y: 100, size: 1 },
+            { organismId: 'org-2', x: 300, y: 300 },
+          ],
+          width: 1000,
+          height: 1000,
+        },
+      },
+    );
+
+    expect(result.valid).toBe(true);
+  });
 });
 
 describe('composition-reference validator', () => {

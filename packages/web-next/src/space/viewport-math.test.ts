@@ -64,13 +64,13 @@ describe('viewport math', () => {
     expect(createInitialViewport(2000, 2000, profile).zoom).toBeCloseTo(0.525);
   });
 
-  it('frames focused organisms at preview zoom instead of close zoom', () => {
+  it('frames focused organisms at close zoom', () => {
     const profile = createAltitudeZoomProfile(3.88);
 
     expect(frameOrganismFocus(100, 200, profile)).toEqual({
       x: 100,
       y: 200,
-      zoom: zoomForAltitude('mid', profile),
+      zoom: zoomForAltitude('close', profile),
     });
   });
 });

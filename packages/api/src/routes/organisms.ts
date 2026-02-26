@@ -43,9 +43,11 @@ interface SurfaceOrganismOnMapRequest {
   readonly x: number;
   readonly y: number;
   readonly emphasis?: number;
+  /** Legacy compatibility: accepted but ignored in unit-grid mode. */
   readonly curationScale?: number;
 }
 
+const UNIT_GRID_MIN_SEPARATION = 1;
 const SURFACE_APPEND_MAX_ATTEMPTS = 3;
 const SURFACE_APPEND_CONFLICT_ERROR = 'Map changed concurrently while surfacing. Please retry.';
 
@@ -248,13 +250,15 @@ export function organismRoutes(container: Container) {
       },
     );
 
+    const snappedX = Math.round(body.x);
+    const snappedY = Math.round(body.y);
+
     const entry = {
       organismId: targetOrganismId,
-      x: body.x,
-      y: body.y,
+      x: snappedX,
+      y: snappedY,
       size: derived.size,
       emphasis: body.emphasis,
-      curationScale: body.curationScale,
     };
 
     for (let attempt = 1; attempt <= SURFACE_APPEND_MAX_ATTEMPTS; attempt++) {
@@ -280,7 +284,7 @@ export function organismRoutes(container: Container) {
         entries: [...mapPayload.entries, entry],
         width: mapPayload.width,
         height: mapPayload.height,
-        ...(mapPayload.minSeparation !== undefined ? { minSeparation: mapPayload.minSeparation } : {}),
+        minSeparation: UNIT_GRID_MIN_SEPARATION,
       };
 
       try {

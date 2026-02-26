@@ -6,7 +6,6 @@
  */
 
 export type MarkerVariant =
-  | 'community'
   | 'song'
   | 'hero-journey-scene'
   | 'github-repository'
@@ -52,10 +51,6 @@ export function resolveMarkerVariant(input: MarkerVariantInput): MarkerVariant {
 
   if (input.contentTypeId === 'composition-reference' && input.name === 'Software System') {
     return 'system';
-  }
-
-  if (input.contentTypeId === 'community') {
-    return 'community';
   }
 
   if (input.contentTypeId === 'song') {

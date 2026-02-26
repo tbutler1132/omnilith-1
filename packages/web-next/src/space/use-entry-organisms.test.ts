@@ -31,29 +31,14 @@ describe('resolveEnterTargetMapId', () => {
     expect(resolveEnterTargetMapId(response)).toBe('map-root');
   });
 
-  it('returns linked map id for community states', () => {
+  it('returns null for community states in simplified world-map mode', () => {
     const response = createResponse({
       organismId: 'community-1',
       contentTypeId: 'community',
       payload: { mapOrganismId: 'map-child' },
     });
 
-    expect(resolveEnterTargetMapId(response)).toBe('map-child');
-  });
-
-  it('returns null when community map id is missing or invalid', () => {
-    const withoutId = createResponse({
-      organismId: 'community-1',
-      contentTypeId: 'community',
-      payload: { mapOrganismId: 42 },
-    });
-    const withNoPayload = createResponse({
-      organismId: 'community-1',
-      contentTypeId: 'community',
-    });
-
-    expect(resolveEnterTargetMapId(withoutId)).toBeNull();
-    expect(resolveEnterTargetMapId(withNoPayload)).toBeNull();
+    expect(resolveEnterTargetMapId(response)).toBeNull();
   });
 
   it('returns null for non-enterable states or missing state', () => {

@@ -1127,6 +1127,29 @@ The detailed decision record is captured in:
 
 - `docs/decisions/042-map-scale-neutral-grid-and-small-text-surface-sizing.md`
 
+### Move 54: World-Map Unit-Grid Simplification Mode
+
+To support a major restructuring window, map behavior was intentionally reduced to deterministic unit-grid rules.
+
+Direction:
+
+- every surfaced organism now occupies exactly one unit (`size = 1`)
+- spatial placement is treated as integer grid coordinates
+- world-map bounds are standardized to `5000 x 5000` with `minSeparation = 1`
+- `community` content type remains registered for compatibility but is removed from active surfaced seed/render paths
+- simplified seed profiles anchor governance with a parent Text boundary and an integration-policy organism
+- a dedicated migration path normalizes existing world-map entries and removes surfaced `community` entries
+
+Architecture impact:
+
+- no kernel changes
+- API surface-size derivation and seed profiles were simplified to unit-grid semantics
+- web-next marker/navigation behavior no longer depends on community map indirection for active world-map interaction
+
+The detailed decision record is captured in:
+
+- `docs/decisions/043-world-map-unit-grid-simplification-mode.md`
+
 ---
 
 ## Summary of What We're Building

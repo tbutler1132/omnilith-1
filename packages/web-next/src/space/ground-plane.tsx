@@ -7,6 +7,10 @@
 import { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { resolveGridSpacing } from './grid-spacing.js';
+import {
+  HIGH_ALTITUDE_SECONDARY_SUBDIVISIONS_X,
+  HIGH_ALTITUDE_SECONDARY_SUBDIVISIONS_Y,
+} from './high-altitude-grid-contract.js';
 
 interface GroundPlaneProps {
   readonly width: number;
@@ -18,7 +22,8 @@ interface GroundPlaneProps {
 
 const LINE_OFFSET = 0;
 const DARK_GRID_LINE_COLOR = 'rgba(74, 74, 74, 0.72)';
-const GRID_GLOW_COLOR = '#ffe4b3';
+const SECONDARY_GRID_BASE_RGB = '98, 98, 98';
+const GRID_GLOW_COLOR = '#ffffff';
 const GLOW_BOOT_DELAY_MS = 220;
 const GLOW_BOOT_FADE_MS = 1140;
 const GLOW_DIP_FADE_MS = 190;
@@ -40,6 +45,13 @@ interface LineSegment {
   y1: number;
   x2: number;
   y2: number;
+}
+
+interface SecondaryGridProfile {
+  subdivisionsPerPrimaryX: number;
+  subdivisionsPerPrimaryY: number;
+  opacity: number;
+  strokeWidthScale: number;
 }
 
 const ALTITUDE_GLOW_PROFILES: Readonly<Record<Altitude, AltitudeGlowProfile>> = {
@@ -75,6 +87,27 @@ const ALTITUDE_GLOW_PROFILES: Readonly<Record<Altitude, AltitudeGlowProfile>> = 
     glowOpacityFar: 0.31,
     glowReacquireFadeMs: 1320,
     intersectionCornerGap: 14,
+  },
+};
+
+const ALTITUDE_SECONDARY_GRID_PROFILES: Readonly<Record<Altitude, SecondaryGridProfile>> = {
+  high: {
+    subdivisionsPerPrimaryX: HIGH_ALTITUDE_SECONDARY_SUBDIVISIONS_X,
+    subdivisionsPerPrimaryY: HIGH_ALTITUDE_SECONDARY_SUBDIVISIONS_Y,
+    opacity: 0.3,
+    strokeWidthScale: 0.62,
+  },
+  mid: {
+    subdivisionsPerPrimaryX: 4,
+    subdivisionsPerPrimaryY: 4,
+    opacity: 0.14,
+    strokeWidthScale: 0.38,
+  },
+  close: {
+    subdivisionsPerPrimaryX: 4,
+    subdivisionsPerPrimaryY: 4,
+    opacity: 0.18,
+    strokeWidthScale: 0.42,
   },
 };
 
@@ -126,6 +159,11 @@ export const GroundPlane = memo(function GroundPlane({
   const svgId = useId().replace(/:/g, '');
   const glowFilterPrefix = `ground-grid-glow-${svgId}`;
   const glowProfile = useMemo(() => resolveAltitudeGlowProfile(altitude), [altitude]);
+  const secondaryGridProfile = useMemo(() => ALTITUDE_SECONDARY_GRID_PROFILES[altitude], [altitude]);
+  const secondaryGridLineColor = useMemo(
+    () => `rgba(${SECONDARY_GRID_BASE_RGB}, ${secondaryGridProfile.opacity})`,
+    [secondaryGridProfile.opacity],
+  );
   const normalizedMapZoomScale = useMemo(() => {
     if (!Number.isFinite(mapZoomScale) || mapZoomScale <= 0) {
       return 1;
@@ -137,6 +175,10 @@ export const GroundPlane = memo(function GroundPlane({
   const scaledLineStrokeWidth = useMemo(
     () => Math.max(0.35, glowProfile.lineStrokeWidth * worldUnitsPerScreenPixel),
     [glowProfile.lineStrokeWidth, worldUnitsPerScreenPixel],
+  );
+  const scaledSecondaryLineStrokeWidth = useMemo(
+    () => Math.max(0.16, scaledLineStrokeWidth * secondaryGridProfile.strokeWidthScale),
+    [scaledLineStrokeWidth, secondaryGridProfile.strokeWidthScale],
   );
   const scaledIntersectionCornerGap = useMemo(
     () => Math.max(2, glowProfile.intersectionCornerGap * worldUnitsPerScreenPixel),
@@ -151,7 +193,18 @@ export const GroundPlane = memo(function GroundPlane({
   const bootCompleteRef = useRef(false);
   const previousRecalibrationEpochRef = useRef(recalibrationEpoch);
   const gridSpacing = useMemo(() => resolveGridSpacing(width, height), [height, width]);
-  const { fullGridWidth, fullGridHeight, originX, originY, verticalLines, horizontalLines } = useMemo(() => {
+  const {
+    fullGridWidth,
+    fullGridHeight,
+    originX,
+    originY,
+    verticalLines,
+    horizontalLines,
+    secondaryVerticalLines,
+    secondaryHorizontalLines,
+  } = useMemo(() => {
+    const subdivisionsPerPrimaryX = secondaryGridProfile.subdivisionsPerPrimaryX;
+    const subdivisionsPerPrimaryY = secondaryGridProfile.subdivisionsPerPrimaryY;
     const columnCount = Math.floor(width / gridSpacing);
     const rowCount = Math.floor(height / gridSpacing);
     const resolvedFullGridWidth = columnCount * gridSpacing;
@@ -164,6 +217,18 @@ export const GroundPlane = memo(function GroundPlane({
     const resolvedHorizontalLines = Array.from({ length: Math.max(0, rowCount - 1) }, (_, index) => {
       return resolvedOriginY + (index + 1) * gridSpacing + LINE_OFFSET;
     });
+    const resolvedSecondaryVerticalLines = Array.from(
+      { length: Math.max(0, columnCount * subdivisionsPerPrimaryX - 1) },
+      (_, index) => index + 1,
+    )
+      .filter((step) => step % subdivisionsPerPrimaryX !== 0)
+      .map((step) => resolvedOriginX + (step * gridSpacing) / subdivisionsPerPrimaryX + LINE_OFFSET);
+    const resolvedSecondaryHorizontalLines = Array.from(
+      { length: Math.max(0, rowCount * subdivisionsPerPrimaryY - 1) },
+      (_, index) => index + 1,
+    )
+      .filter((step) => step % subdivisionsPerPrimaryY !== 0)
+      .map((step) => resolvedOriginY + (step * gridSpacing) / subdivisionsPerPrimaryY + LINE_OFFSET);
 
     return {
       fullGridWidth: resolvedFullGridWidth,
@@ -172,8 +237,16 @@ export const GroundPlane = memo(function GroundPlane({
       originY: resolvedOriginY,
       verticalLines: resolvedVerticalLines,
       horizontalLines: resolvedHorizontalLines,
+      secondaryVerticalLines: resolvedSecondaryVerticalLines,
+      secondaryHorizontalLines: resolvedSecondaryHorizontalLines,
     };
-  }, [gridSpacing, height, width]);
+  }, [
+    gridSpacing,
+    height,
+    secondaryGridProfile.subdivisionsPerPrimaryX,
+    secondaryGridProfile.subdivisionsPerPrimaryY,
+    width,
+  ]);
   const { horizontalSegments, verticalSegments } = useMemo(() => {
     const gapHalf = scaledIntersectionCornerGap / 2;
     const mapMaxX = originX + fullGridWidth;
@@ -255,6 +328,14 @@ export const GroundPlane = memo(function GroundPlane({
   const baseHorizontalPath = useMemo(
     () => createFullHorizontalPath(horizontalLines, originX, fullGridWidth),
     [fullGridWidth, horizontalLines, originX],
+  );
+  const secondaryVerticalPath = useMemo(
+    () => createFullVerticalPath(secondaryVerticalLines, originY, fullGridHeight),
+    [fullGridHeight, originY, secondaryVerticalLines],
+  );
+  const secondaryHorizontalPath = useMemo(
+    () => createFullHorizontalPath(secondaryHorizontalLines, originX, fullGridWidth),
+    [fullGridWidth, originX, secondaryHorizontalLines],
   );
   const glowVerticalPath = useMemo(() => createSegmentsPath(verticalSegments), [verticalSegments]);
   const glowHorizontalPath = useMemo(() => createSegmentsPath(horizontalSegments), [horizontalSegments]);
@@ -360,6 +441,22 @@ export const GroundPlane = memo(function GroundPlane({
           })}
         </defs>
         <g>
+          <path
+            d={secondaryVerticalPath}
+            stroke={secondaryGridLineColor}
+            strokeWidth={scaledSecondaryLineStrokeWidth}
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+          />
+          <path
+            d={secondaryHorizontalPath}
+            stroke={secondaryGridLineColor}
+            strokeWidth={scaledSecondaryLineStrokeWidth}
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+            fill="none"
+          />
           <path
             d={baseVerticalPath}
             stroke={DARK_GRID_LINE_COLOR}

@@ -168,6 +168,11 @@ export interface FetchOrganismResponse {
   readonly currentState: FetchOrganismStateRecord | null;
 }
 
+/** GET /public/organisms?ids=<id,id,...> */
+export interface FetchOrganismBatchResponse {
+  readonly organisms: ReadonlyArray<FetchOrganismResponse>;
+}
+
 /** GET /organisms */
 export interface FetchOrganismsResponse {
   readonly organisms: ReadonlyArray<OrganismWithState>;

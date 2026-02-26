@@ -32,6 +32,7 @@
     "db:reset:web-next": "pnpm run db:reset:world",
     "db:reset:v1-demo": "OMNILITH_ALLOW_DB_RESET=true OMNILITH_RUNTIME_ENV=local DATABASE_URL=postgres://localhost:5432/omnilith_dev OMNILITH_SEED_PROFILE=v1-demo pnpm --filter @omnilith/api db:reset",
     "db:reset:unified": "pnpm run db:reset:v1-demo",
+    "maps:migrate-unit-grid": "pnpm --filter @omnilith/api maps:migrate-unit-grid",
     "github:dispatch-issues": "pnpm --filter @omnilith/api github:dispatch-issues",
     "regulator:run": "pnpm --filter @omnilith/api regulator:run",
     "hooks:install": "git config core.hooksPath .githooks",

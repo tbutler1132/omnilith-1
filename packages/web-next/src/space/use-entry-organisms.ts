@@ -5,7 +5,7 @@
  * decide whether an entry is enterable and where it should route.
  */
 
-import type { FetchOrganismResponse } from '@omnilith/api-contracts';
+import type { FetchOrganismBatchResponse, FetchOrganismResponse } from '@omnilith/api-contracts';
 import { useEffect, useMemo, useState } from 'react';
 import { apiFetch } from '../api/api-client.js';
 import { resolvePublicApiPath } from '../api/public-api-path.js';
@@ -25,6 +25,46 @@ interface UseEntryOrganismsResult {
   readonly loading: boolean;
 }
 
+function createFallbackMetadata(organismId: string): EntryOrganismMetadata {
+  return {
+    organismId,
+    name: organismId,
+    contentTypeId: null,
+    currentPayload: null,
+    enterTargetMapId: null,
+  };
+}
+
+function toEntryOrganismMetadata(response: FetchOrganismResponse): EntryOrganismMetadata {
+  return {
+    organismId: response.organism.id,
+    name: response.organism.name,
+    contentTypeId: response.currentState?.contentTypeId ?? null,
+    currentPayload: response.currentState?.payload ?? null,
+    enterTargetMapId: resolveEnterTargetMapId(response),
+  };
+}
+
+async function fetchEntryOrganismsById(
+  ids: ReadonlyArray<string>,
+): Promise<Readonly<Record<string, EntryOrganismMetadata>>> {
+  if (ids.length === 0) {
+    return {};
+  }
+
+  const byId: Record<string, EntryOrganismMetadata> = Object.fromEntries(
+    ids.map((id) => [id, createFallbackMetadata(id)]),
+  );
+  const query = encodeURIComponent(ids.join(','));
+  const response = await apiFetch<FetchOrganismBatchResponse>(resolvePublicApiPath(`/organisms?ids=${query}`));
+
+  response.organisms.forEach((organismResponse) => {
+    byId[organismResponse.organism.id] = toEntryOrganismMetadata(organismResponse);
+  });
+
+  return byId;
+}
+
 export function resolveEnterTargetMapId(response: FetchOrganismResponse): string | null {
   const state = response.currentState;
   if (!state) {
@@ -33,12 +73,6 @@ export function resolveEnterTargetMapId(response: FetchOrganismResponse): string
 
   if (state.contentTypeId === 'spatial-map') {
     return response.organism.id;
-  }
-
-  if (state.contentTypeId === 'community') {
-    const payload = state.payload as Record<string, unknown> | null;
-    const mapOrganismId = payload?.mapOrganismId;
-    return typeof mapOrganismId === 'string' ? mapOrganismId : null;
   }
 
   return null;
@@ -60,40 +94,23 @@ export function useEntryOrganisms(ids: ReadonlyArray<string>): UseEntryOrganisms
     let cancelled = false;
     setState((previous) => ({ ...previous, loading: true }));
 
-    Promise.all(
-      uniqueIds.map(async (id) => {
-        try {
-          const response = await apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${id}`));
-          const metadata: EntryOrganismMetadata = {
-            organismId: response.organism.id,
-            name: response.organism.name,
-            contentTypeId: response.currentState?.contentTypeId ?? null,
-            currentPayload: response.currentState?.payload ?? null,
-            enterTargetMapId: resolveEnterTargetMapId(response),
-          };
-          return [id, metadata] as const;
-        } catch {
-          return [
-            id,
-            {
-              organismId: id,
-              name: id,
-              contentTypeId: null,
-              currentPayload: null,
-              enterTargetMapId: null,
-            } satisfies EntryOrganismMetadata,
-          ] as const;
-        }
-      }),
-    ).then((pairs) => {
-      if (cancelled) return;
+    fetchEntryOrganismsById(uniqueIds)
+      .then((byId) => {
+        if (cancelled) return;
 
-      const byId = Object.fromEntries(pairs);
-      setState({
-        byId,
-        loading: false,
+        setState({
+          byId,
+          loading: false,
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+
+        setState({
+          byId: Object.fromEntries(uniqueIds.map((id) => [id, createFallbackMetadata(id)])),
+          loading: false,
+        });
       });
-    });
 
     return () => {
       cancelled = true;

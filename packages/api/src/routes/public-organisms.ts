@@ -14,8 +14,55 @@ import type { Container } from '../container.js';
 import { regulatorActionExecutions } from '../db/schema.js';
 import { requirePublicOrganismView } from './access.js';
 
+const BATCH_IDS_MAX = 200;
+
+function parseBatchOrganismIds(raw: string | undefined): ReadonlyArray<OrganismId> {
+  if (!raw) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      raw
+        .split(',')
+        .map((value) => value.trim())
+        .filter((value) => value.length > 0),
+    ),
+  )
+    .slice(0, BATCH_IDS_MAX)
+    .map((value) => value as OrganismId);
+}
+
 export function publicOrganismRoutes(container: Container) {
   const app = new Hono();
+
+  app.get('/', async (c) => {
+    const ids = parseBatchOrganismIds(c.req.query('ids'));
+    if (ids.length === 0) {
+      return c.json({ organisms: [] });
+    }
+
+    const organisms = await Promise.all(
+      ids.map(async (id) => {
+        const accessError = await requirePublicOrganismView(c, container, id);
+        if (accessError) {
+          return null;
+        }
+
+        const organism = await container.organismRepository.findById(id);
+        if (!organism) {
+          return null;
+        }
+
+        const currentState = await container.stateRepository.findCurrentByOrganismId(id);
+        return { organism, currentState };
+      }),
+    );
+
+    return c.json({
+      organisms: organisms.filter((value): value is NonNullable<typeof value> => value !== null),
+    });
+  });
 
   app.get('/:id', async (c) => {
     const id = c.req.param('id') as OrganismId;

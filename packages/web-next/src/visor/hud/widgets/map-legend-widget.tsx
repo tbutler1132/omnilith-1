@@ -9,7 +9,7 @@ import type { MarkerVariant } from '../../../space/marker-variant.js';
 
 type MapLegendMarkerClass = Extract<
   MarkerVariant,
-  'community' | 'institution' | 'system' | 'song' | 'hero-journey-scene' | 'github-repository'
+  'institution' | 'system' | 'song' | 'hero-journey-scene' | 'github-repository'
 >;
 
 interface MapLegendEntry {
@@ -18,7 +18,6 @@ interface MapLegendEntry {
 }
 
 const MAP_LEGEND_ENTRIES: ReadonlyArray<MapLegendEntry> = [
-  { markerClass: 'community', label: 'Community' },
   { markerClass: 'institution', label: 'Institution' },
   { markerClass: 'system', label: 'System' },
   { markerClass: 'song', label: 'Song' },

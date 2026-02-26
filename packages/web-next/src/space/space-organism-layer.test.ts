@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { resolveMarkerSizePolicy } from './marker-size-policy.js';
-import { resolveRenderedCoreSizeMultiplier } from './space-organism-layer.js';
+import { resolveHighAltitudeCircleSize, resolveRenderedCoreSizeMultiplier } from './space-organism-layer.js';
 import { zoomForAltitude } from './viewport-math.js';
 
 describe('resolveMarkerSizePolicy', () => {
@@ -90,5 +90,15 @@ describe('resolveRenderedCoreSizeMultiplier', () => {
 
   it('keeps larger focused markers unchanged', () => {
     expect(resolveRenderedCoreSizeMultiplier(0.88, true)).toBe(0.88);
+  });
+});
+
+describe('resolveHighAltitudeCircleSize', () => {
+  it('uses a scaled fraction of the secondary grid cell when proportional dot size is smaller', () => {
+    expect(resolveHighAltitudeCircleSize(12, 700)).toBeCloseTo(157.5, 6);
+  });
+
+  it('preserves larger proportional size values', () => {
+    expect(resolveHighAltitudeCircleSize(800, 700)).toBe(800);
   });
 });

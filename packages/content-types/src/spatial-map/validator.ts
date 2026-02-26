@@ -154,7 +154,9 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
       for (const prev of previousEntries) {
         const next = nextById.get(prev.organismId);
         if (!next) {
-          issues.push(`existing entry removed: ${prev.organismId}`);
+          if (!dimensionsChanged) {
+            issues.push(`existing entry removed: ${prev.organismId}`);
+          }
           continue;
         }
         if (!dimensionsChanged && !samePosition(prev, next)) {

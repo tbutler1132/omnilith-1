@@ -1395,6 +1395,52 @@ describe('public read routes', () => {
     expect(contributionsRes.status).toBe(200);
   });
 
+  it('guest can batch-read public organisms and private entries are omitted', async () => {
+    const { organism: publicOrganism } = await createTestOrganism(ownerApp);
+    const { organism: privateOrganism } = await createTestOrganism(ownerApp, {
+      name: 'Private Organism',
+    });
+
+    await container.visibilityRepository.save({
+      organismId: privateOrganism.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const mapRes = await ownerApp.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Batch Public Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 4000, height: 4000 },
+        openTrunk: true,
+      }),
+    });
+    expect(mapRes.status).toBe(201);
+    const mapBody = await mapRes.json();
+    const map = mapBody.organism as { id: string };
+
+    const surfaceRes = await ownerApp.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: publicOrganism.id,
+        x: 300,
+        y: 300,
+      }),
+    });
+    expect(surfaceRes.status).toBe(201);
+
+    const batchRes = await publicApp.request(
+      `/public/organisms?ids=${publicOrganism.id},${privateOrganism.id},missing-organism`,
+    );
+    expect(batchRes.status).toBe(200);
+    const body = await batchRes.json();
+    expect(body.organisms).toHaveLength(1);
+    expect(body.organisms[0]?.organism.id).toBe(publicOrganism.id);
+  });
+
   it('guest can read composed children with state via /public routes', async () => {
     const parentRes = await ownerApp.request('/organisms', {
       method: 'POST',
