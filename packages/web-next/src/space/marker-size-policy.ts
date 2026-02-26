@@ -6,17 +6,18 @@
  */
 
 import type { Altitude } from '../contracts/altitude.js';
+import { ORGANISM_SIZE_RENDER_CONTRACT } from './organism-size-render-contract.js';
 import { type AltitudeZoomProfile, zoomForAltitude } from './viewport-math.js';
 
-const MIN_SIZE_MULTIPLIER = 0.000001;
-const WORLD_MAP_BOOST_EXPONENT = 0.82;
-const WORLD_MAP_BOOST_MIN = 0.08;
-const WORLD_MAP_BOOST_MAX = 3.2;
-const WORLD_MAP_INTERACTION_MIN = 0.28;
-const WORLD_MAP_DETAIL_CARD_MIN = 0.35;
-const WORLD_MAP_HALO_THRESHOLD = 0.18;
-const WORLD_MAP_HALO_MIN = 0.24;
-const WORLD_MAP_HALO_MAX = 0.7;
+const MIN_SIZE_MULTIPLIER = ORGANISM_SIZE_RENDER_CONTRACT.minPositiveSize;
+const WORLD_MAP_BOOST_EXPONENT = ORGANISM_SIZE_RENDER_CONTRACT.worldMapBoostExponent;
+const WORLD_MAP_BOOST_MIN = ORGANISM_SIZE_RENDER_CONTRACT.worldMapBoostMin;
+const WORLD_MAP_BOOST_MAX = ORGANISM_SIZE_RENDER_CONTRACT.worldMapBoostMax;
+const WORLD_MAP_INTERACTION_MIN = ORGANISM_SIZE_RENDER_CONTRACT.interactionSizeMin;
+const WORLD_MAP_DETAIL_CARD_MIN = ORGANISM_SIZE_RENDER_CONTRACT.detailCardSizeMin;
+const WORLD_MAP_HALO_THRESHOLD = ORGANISM_SIZE_RENDER_CONTRACT.haloThreshold;
+const WORLD_MAP_HALO_MIN = ORGANISM_SIZE_RENDER_CONTRACT.haloStrengthMin;
+const WORLD_MAP_HALO_MAX = ORGANISM_SIZE_RENDER_CONTRACT.haloStrengthMax;
 
 export interface MarkerSizePolicyInput {
   readonly entrySize: number | undefined;

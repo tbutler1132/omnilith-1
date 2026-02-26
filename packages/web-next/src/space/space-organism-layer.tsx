@@ -11,6 +11,7 @@ import type { Altitude } from '../contracts/altitude.js';
 import { MarkerPreview } from './marker-preview.js';
 import { type MarkerNormalizationContext, resolveMarkerSizePolicy } from './marker-size-policy.js';
 import { resolveMarkerVariant } from './marker-variant.js';
+import { ORGANISM_SIZE_RENDER_CONTRACT } from './organism-size-render-contract.js';
 import type { EntryOrganismMetadata } from './use-entry-organisms.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
 import type { AltitudeZoomProfile } from './viewport-math.js';
@@ -35,7 +36,6 @@ interface SpaceOrganismLayerProps {
 const BASE_MARKER_SIZE = 16;
 const BASE_MARKER_FRAME_SIZE = 160;
 const HALO_OPACITY_CSS_VARIABLE = '--space-marker-tiny-halo-opacity';
-const FOCUSED_CORE_SIZE_MIN = 0.24;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
@@ -95,7 +95,7 @@ export function resolveRenderedCoreSizeMultiplier(coreSizeMultiplier: number, is
     return coreSizeMultiplier;
   }
 
-  return Math.max(coreSizeMultiplier, FOCUSED_CORE_SIZE_MIN);
+  return Math.max(coreSizeMultiplier, ORGANISM_SIZE_RENDER_CONTRACT.focusedCoreSizeMin);
 }
 
 export function SpaceOrganismLayer({
