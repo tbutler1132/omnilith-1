@@ -24,18 +24,19 @@ describe('parseSpatialMapPayload', () => {
       width: 2400,
       height: 1700,
       entries: [
-        { organismId: 'org_a', x: 100, y: 200, size: 1.1, emphasis: 0.8 },
+        { organismId: 'org_a', x: 100, y: 200, size: 1.1, emphasis: 0.8, curationScale: 1.08 },
         { organismId: 'org_b', x: 350, y: 420 },
         { organismId: 'org_bad_1', x: '100', y: 200 },
         { organismId: 'org_bad_2', x: 100 },
         { organismId: 'org_bad_3', x: 100, y: 100, size: 'large' },
+        { organismId: 'org_bad_4', x: 100, y: 100, curationScale: 'large' },
       ],
     });
 
     expect(parsed.width).toBe(2400);
     expect(parsed.height).toBe(1700);
     expect(parsed.entries).toEqual([
-      { organismId: 'org_a', x: 100, y: 200, size: 1.1, emphasis: 0.8 },
+      { organismId: 'org_a', x: 100, y: 200, size: 1.1, emphasis: 0.8, curationScale: 1.08 },
       { organismId: 'org_b', x: 350, y: 420 },
     ]);
   });

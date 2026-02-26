@@ -21,6 +21,8 @@ const DEV_USER_EMAIL = 'dev@omnilith.local';
 const DEV_USER_PASSWORD = 'dev';
 const SIZE_EPSILON = 1e-6;
 const WORLD_MAP_SIZE_STABILIZATION_MAX_PASSES = 6;
+const CAPITAL_BASELINE_MAP_WIDTH = 913;
+const CAPITAL_BASELINE_MAP_HEIGHT = 913;
 
 type CreateOrganismDeps = Parameters<typeof createOrganism>[1];
 type ComposeOrganismDeps = Parameters<typeof composeOrganism>[1];
@@ -431,8 +433,8 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [],
-        width: 2000,
-        height: 2000,
+        width: CAPITAL_BASELINE_MAP_WIDTH,
+        height: CAPITAL_BASELINE_MAP_HEIGHT,
       },
       createdBy: SYSTEM_USER_ID,
       openTrunk: true,
@@ -541,14 +543,14 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
         entries: [
           {
             organismId: capitalCommunityMapFieldNote.organism.id,
-            x: 1060,
-            y: 980,
+            x: 484,
+            y: 447,
             size: capitalCommunityMapFieldNoteSize.size,
             emphasis: 0.68,
           },
         ],
-        width: 2000,
-        height: 2000,
+        width: CAPITAL_BASELINE_MAP_WIDTH,
+        height: CAPITAL_BASELINE_MAP_HEIGHT,
       },
       appendedBy: SYSTEM_USER_ID,
     },
@@ -568,7 +570,7 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [
-          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
+          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 0.19, emphasis: 0.9 },
           { organismId: capitalFieldNote.organism.id, x: 2850, y: 2850, size: 1.1, emphasis: 0.72 },
         ],
         width: 5000,

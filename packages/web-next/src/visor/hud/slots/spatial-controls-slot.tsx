@@ -1,25 +1,34 @@
 /**
  * Spatial controls slot.
  *
- * Reserves the top-left HUD slot for map navigation.
- * This slice anchors orientation while directional controls and telemetry
- * render in dedicated HUD lanes.
+ * Reserves the top-left HUD slot for one-level spatial boundary navigation.
  */
-
-import type { Altitude } from '../../../contracts/altitude.js';
 import { SpatialNavWidget } from './spatial-nav-widget.js';
 
 interface SpatialControlsSlotProps {
-  readonly altitude: Altitude;
-  readonly navigationLabel?: string | null;
-  readonly onGoBack: () => void;
-  readonly canGoBack: boolean;
+  readonly currentLabel: string;
+  readonly upTargetLabel: string | null;
+  readonly onGoUp: () => void;
+  readonly showUpControl: boolean;
+  readonly canGoUp: boolean;
 }
 
-export function SpatialControlsSlot({ altitude, navigationLabel, onGoBack, canGoBack }: SpatialControlsSlotProps) {
+export function SpatialControlsSlot({
+  currentLabel,
+  upTargetLabel,
+  onGoUp,
+  showUpControl,
+  canGoUp,
+}: SpatialControlsSlotProps) {
   return (
     <div className="spatial-controls-slot">
-      <SpatialNavWidget altitude={altitude} contextLabel={navigationLabel} onGoBack={onGoBack} canGoBack={canGoBack} />
+      <SpatialNavWidget
+        currentLabel={currentLabel}
+        upTargetLabel={upTargetLabel}
+        onGoUp={onGoUp}
+        showUpControl={showUpControl}
+        canGoUp={canGoUp}
+      />
     </div>
   );
 }

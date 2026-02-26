@@ -1105,6 +1105,28 @@ The detailed decision record is captured in:
 
 - `docs/decisions/038-web-next-visor-app-spatial-context-contract.md`
 
+### Move 53: Map-Scale-Neutral Grid Rendering and Small-Text Surface Sizing
+
+Map sizing and spatial rendering were tightened to preserve proportional truth and visual consistency.
+
+Direction:
+
+- reduce compositional map-context inflation so short text organisms derive as genuinely small entries
+- clamp target-map capacity normalization to avoid upscaling on smaller maps
+- apply migration/backfill so existing map entries reflect updated derivation
+- normalize ground-plane glow and stroke geometry against map zoom scale to reduce world/community thickness mismatch
+- keep focus framing at preview zoom so focused organisms remain contextual rather than over-zoomed
+
+Architecture impact:
+
+- no kernel changes
+- changes are constrained to API surface-size derivation/migration and `web-next` rendering-layer ground-plane/focus behavior
+- map semantics and rendering behavior remain separated: derivation owns size truth, rendering owns perceptual consistency
+
+The detailed decision record is captured in:
+
+- `docs/decisions/042-map-scale-neutral-grid-and-small-text-surface-sizing.md`
+
 ---
 
 ## Summary of What We're Building

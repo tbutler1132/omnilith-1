@@ -27,6 +27,8 @@ const DEV_SESSION_ID = 'dev-session-00000000';
 const PROJECT_GITHUB_OWNER = 'tbutler1132';
 const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
 const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
+const CAPITAL_BASELINE_MAP_WIDTH = 1054;
+const CAPITAL_BASELINE_MAP_HEIGHT = 791;
 
 type CreateOrganismDeps = Parameters<typeof createOrganism>[1];
 type ComposeOrganismDeps = Parameters<typeof composeOrganism>[1];
@@ -615,8 +617,8 @@ export async function seedV1Demo(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [],
-        width: 2000,
-        height: 2000,
+        width: CAPITAL_BASELINE_MAP_WIDTH,
+        height: CAPITAL_BASELINE_MAP_HEIGHT,
       },
       createdBy: devUserId,
       openTrunk: true,
@@ -1401,27 +1403,27 @@ export async function seedV1Demo(container: Container): Promise<void> {
       payload: {
         entries: [
           // Civic district
-          { organismId: capitalGovernment.organism.id, x: 900, y: 1400, size: 1.22, emphasis: 0.92 },
-          { organismId: capitalTreasury.organism.id, x: 900, y: 2300, size: 1.15, emphasis: 0.9 },
-          { organismId: capitalMembership.organism.id, x: 1300, y: 1850, size: 1.08, emphasis: 0.88 },
-          { organismId: capitalCommons.organism.id, x: 500, y: 1850, size: 1.08, emphasis: 0.88 },
-          { organismId: communityForum.organism.id, x: 1300, y: 1200, size: 1.06, emphasis: 0.86 },
-          { organismId: capitalCommunityWhy.organism.id, x: 1650, y: 1600, size: 0.96, emphasis: 0.78 },
+          { organismId: capitalGovernment.organism.id, x: 158, y: 246, size: 1.22, emphasis: 0.92 },
+          { organismId: capitalTreasury.organism.id, x: 158, y: 404, size: 1.15, emphasis: 0.9 },
+          { organismId: capitalMembership.organism.id, x: 228, y: 325, size: 1.08, emphasis: 0.88 },
+          { organismId: capitalCommons.organism.id, x: 88, y: 325, size: 1.08, emphasis: 0.88 },
+          { organismId: communityForum.organism.id, x: 228, y: 211, size: 1.06, emphasis: 0.86 },
+          { organismId: capitalCommunityWhy.organism.id, x: 290, y: 281, size: 0.96, emphasis: 0.78 },
           // Cultural district
-          { organismId: communityText.organism.id, x: 1700, y: 3400, size: 1.04, emphasis: 0.84 },
-          { organismId: communityAudio.organism.id, x: 2300, y: 3800, size: 1.12, emphasis: 0.9 },
-          { organismId: heroJourney.sceneOrganismId, x: 3000, y: 2250, size: 1.18, emphasis: 0.95 },
-          { organismId: weeklyUpdates.organism.id, x: 3400, y: 3900, size: 1.04, emphasis: 0.82 },
+          { organismId: communityText.organism.id, x: 299, y: 598, size: 1.04, emphasis: 0.84 },
+          { organismId: communityAudio.organism.id, x: 404, y: 668, size: 1.12, emphasis: 0.9 },
+          { organismId: heroJourney.sceneOrganismId, x: 527, y: 396, size: 1.18, emphasis: 0.95 },
+          { organismId: weeklyUpdates.organism.id, x: 597, y: 686, size: 1.04, emphasis: 0.82 },
           // Technology district
-          { organismId: capitalTechnology.organism.id, x: 4300, y: 1600, size: 1.16, emphasis: 0.9 },
-          { organismId: capitalTechnologyWhy.organism.id, x: 4620, y: 1120, size: 0.96, emphasis: 0.78 },
-          { organismId: softwareSystem.organism.id, x: 5050, y: 1900, size: 1.04, emphasis: 0.84 },
-          { organismId: softwareSystemWhy.organism.id, x: 5380, y: 1600, size: 0.94, emphasis: 0.76 },
-          { organismId: projectRepository.organism.id, x: 5650, y: 2150, size: 0.98, emphasis: 0.8 },
-          { organismId: repositoryWhy.organism.id, x: 5880, y: 2550, size: 0.9, emphasis: 0.74 },
+          { organismId: capitalTechnology.organism.id, x: 755, y: 281, size: 1.16, emphasis: 0.9 },
+          { organismId: capitalTechnologyWhy.organism.id, x: 812, y: 197, size: 0.96, emphasis: 0.78 },
+          { organismId: softwareSystem.organism.id, x: 887, y: 334, size: 1.04, emphasis: 0.84 },
+          { organismId: softwareSystemWhy.organism.id, x: 945, y: 281, size: 0.94, emphasis: 0.76 },
+          { organismId: projectRepository.organism.id, x: 993, y: 378, size: 0.98, emphasis: 0.8 },
+          { organismId: repositoryWhy.organism.id, x: 1033, y: 448, size: 0.9, emphasis: 0.74 },
         ],
-        width: 6000,
-        height: 4500,
+        width: CAPITAL_BASELINE_MAP_WIDTH,
+        height: CAPITAL_BASELINE_MAP_HEIGHT,
       },
       appendedBy: devUserId,
     },
@@ -1472,7 +1474,7 @@ export async function seedV1Demo(container: Container): Promise<void> {
         entries: [
           { organismId: heroJourney.sceneOrganismId, x: 2440, y: 2360, size: 1.6, emphasis: 0.96 },
           { organismId: weeklyUpdates.organism.id, x: 2920, y: 2620, size: 1.2, emphasis: 0.82 },
-          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 1.35, emphasis: 0.9 },
+          { organismId: capitalCommunity.organism.id, x: 2650, y: 2910, size: 0.19, emphasis: 0.9 },
         ],
         width: 5000,
         height: 5000,

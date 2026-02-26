@@ -15,7 +15,13 @@ import { resolveMarkerActivationIntent, shouldClearFocusedOrganism } from './spa
 import { useEntryOrganisms } from './use-entry-organisms.js';
 import { useSpatialMap } from './use-spatial-map.js';
 import { useViewport } from './use-viewport.js';
-import { frameOrganism, frameOrganismEnter, nextAltitude } from './viewport-math.js';
+import {
+  DEFAULT_ALTITUDE_ZOOM_PROFILE,
+  frameOrganism,
+  frameOrganismEnter,
+  frameOrganismFocus,
+  nextAltitude,
+} from './viewport-math.js';
 
 interface SpaceStageProps {
   readonly worldMapId: string;
@@ -183,10 +189,12 @@ export function SpaceStage({
     () => resolveSurfaceEntrySnapshot(focusedOrganismId, entriesById, entryOrganismsById),
     [entriesById, entryOrganismsById, focusedOrganismId],
   );
-  const { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude } = useViewport({
-    mapWidth: width,
-    mapHeight: height,
-  });
+  const { viewport, screenSize, altitude, altitudeZoomProfile, containerRef, setViewport, animateTo, changeAltitude } =
+    useViewport({
+      mapWidth: width,
+      mapHeight: height,
+    });
+  const mapZoomScale = altitudeZoomProfile.high / DEFAULT_ALTITUDE_ZOOM_PROFILE.high;
 
   const cancelFade = useCallback(() => {
     if (fadeFrameRef.current !== null) {
@@ -259,12 +267,12 @@ export function SpaceStage({
       return;
     }
 
-    animateTo(frameOrganism(pendingFocusAfterSwitch.x, pendingFocusAfterSwitch.y), {
+    animateTo(frameOrganismFocus(pendingFocusAfterSwitch.x, pendingFocusAfterSwitch.y, altitudeZoomProfile), {
       durationMs: FOCUS_TRANSITION_MS,
     });
     setFocusedOrganismId(null);
     setPendingFocusAfterSwitch(null);
-  }, [animateTo, loading, pendingFocusAfterSwitch]);
+  }, [altitudeZoomProfile, animateTo, loading, pendingFocusAfterSwitch]);
 
   const runExitTransition = useCallback(
     (afterEnterComplete: () => void) => {
@@ -344,13 +352,13 @@ export function SpaceStage({
     setEnteredOrganismId(null);
     setFocusedOrganismId(null);
     setHoveredOrganismId(null);
-    animateTo(frameOrganism(exitX, exitY), {
+    animateTo(frameOrganism(exitX, exitY, altitudeZoomProfile), {
       durationMs: INTERIOR_EXIT_TRANSITION_MS,
       onComplete: () => {
         interiorTransitioningRef.current = false;
       },
     });
-  }, [animateTo, transitionPhase, viewport.x, viewport.y]);
+  }, [altitudeZoomProfile, animateTo, transitionPhase, viewport.x, viewport.y]);
 
   const handleGoBack = useCallback(() => {
     if (transitionPhase !== 'idle' || interiorTransitioningRef.current) {
@@ -429,9 +437,9 @@ export function SpaceStage({
       }
 
       setFocusedOrganismId(input.organismId);
-      animateTo(frameOrganism(input.x, input.y), { durationMs: FOCUS_TRANSITION_MS });
+      animateTo(frameOrganismFocus(input.x, input.y, altitudeZoomProfile), { durationMs: FOCUS_TRANSITION_MS });
     },
-    [altitude, animateTo, focusedOrganismId, handleEnterMap, handleEnterOrganism, transitionPhase],
+    [altitude, altitudeZoomProfile, animateTo, focusedOrganismId, handleEnterMap, handleEnterOrganism, transitionPhase],
   );
 
   const canGoBack = (enteredOrganismId !== null || mapHistory.length > 0) && transitionPhase === 'idle';
@@ -588,11 +596,13 @@ export function SpaceStage({
           height={height}
           altitude={altitude}
           recalibrationEpoch={groundPlaneRecalibrationEpoch}
+          mapZoomScale={mapZoomScale}
         />
         <SpaceOrganismLayer
           entries={entries}
           altitude={altitude}
           zoom={viewport.zoom}
+          altitudeZoomProfile={altitudeZoomProfile}
           entryOrganismsById={entryOrganismsById}
           focusedOrganismId={focusedOrganismId}
           onHoverOrganismChange={setHoveredOrganismId}

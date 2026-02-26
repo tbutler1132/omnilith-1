@@ -466,6 +466,46 @@ describe('organism routes', () => {
     expect(typeof payload.entries[0]?.size).toBe('number');
   });
 
+  it('POST /organisms/:id/surface rejects out-of-range curation scale', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Field Note',
+        contentTypeId: 'text',
+        payload: { content: 'hello world', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const surfaceRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        organismId: target.id,
+        x: 100,
+        y: 120,
+        curationScale: 1.4,
+      }),
+    });
+
+    expect(surfaceRes.status).toBe(400);
+    const body = await surfaceRes.json();
+    expect(body.error).toContain('curationScale');
+  });
+
   it('POST /organisms/:id/surface is idempotent for already surfaced organisms', async () => {
     const mapRes = await app.request('/organisms', {
       method: 'POST',

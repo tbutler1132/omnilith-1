@@ -27,6 +27,8 @@ const DEFAULT_SEED_PROFILE = 'world-map-only';
 const PROJECT_GITHUB_OWNER = 'tbutler1132';
 const PROJECT_GITHUB_REPOSITORY = 'omnilith-1';
 const PROJECT_GITHUB_REPOSITORY_URL = `https://github.com/${PROJECT_GITHUB_OWNER}/${PROJECT_GITHUB_REPOSITORY}`;
+const COMMUNITY_BASELINE_MAP_WIDTH = 913;
+const COMMUNITY_BASELINE_MAP_HEIGHT = 913;
 
 function hashPassword(password: string): string {
   const salt = randomBytes(16).toString('hex');
@@ -685,8 +687,8 @@ export async function seedDev(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [],
-        width: 2000,
-        height: 2000,
+        width: COMMUNITY_BASELINE_MAP_WIDTH,
+        height: COMMUNITY_BASELINE_MAP_HEIGHT,
       },
       createdBy: devUserId,
       openTrunk: true,
@@ -771,11 +773,11 @@ export async function seedDev(container: Container): Promise<void> {
       contentTypeId: 'spatial-map' as ContentTypeId,
       payload: {
         entries: [
-          { organismId: communityText.organism.id, x: 800, y: 900, size: 1.0, emphasis: 0.8 },
-          { organismId: communityAudio.organism.id, x: 1200, y: 1100, size: 1.1, emphasis: 0.9 },
+          { organismId: communityText.organism.id, x: 365, y: 411, size: 1.0, emphasis: 0.8 },
+          { organismId: communityAudio.organism.id, x: 548, y: 502, size: 1.1, emphasis: 0.9 },
         ],
-        width: 2000,
-        height: 2000,
+        width: COMMUNITY_BASELINE_MAP_WIDTH,
+        height: COMMUNITY_BASELINE_MAP_HEIGHT,
       },
       appendedBy: devUserId,
     },
@@ -821,7 +823,7 @@ export async function seedDev(container: Container): Promise<void> {
     { organismId: projectRepository.organism.id, x: 3600, y: 2450, size: 0.95, emphasis: 0.66 },
 
     // Community
-    { organismId: undergrowth.organism.id, x: 1900, y: 2800, size: 1.5, emphasis: 0.95 },
+    { organismId: undergrowth.organism.id, x: 1900, y: 2800, size: 0.19, emphasis: 0.95 },
   ];
 
   await appendState(

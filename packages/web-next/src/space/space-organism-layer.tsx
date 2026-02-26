@@ -6,17 +6,20 @@
  */
 
 import type { CSSProperties } from 'react';
+import { useMemo } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
 import { MarkerPreview } from './marker-preview.js';
-import { resolveMarkerSizePolicy } from './marker-size-policy.js';
+import { type MarkerNormalizationContext, resolveMarkerSizePolicy } from './marker-size-policy.js';
 import { resolveMarkerVariant } from './marker-variant.js';
 import type { EntryOrganismMetadata } from './use-entry-organisms.js';
 import type { SpatialMapEntry } from './use-spatial-map.js';
+import type { AltitudeZoomProfile } from './viewport-math.js';
 
 interface SpaceOrganismLayerProps {
   readonly entries: ReadonlyArray<SpatialMapEntry>;
   readonly altitude: Altitude;
   readonly zoom: number;
+  readonly altitudeZoomProfile: AltitudeZoomProfile;
   readonly entryOrganismsById: Readonly<Record<string, EntryOrganismMetadata>>;
   readonly focusedOrganismId: string | null;
   readonly onHoverOrganismChange: (organismId: string | null) => void;
@@ -32,9 +35,51 @@ interface SpaceOrganismLayerProps {
 const BASE_MARKER_SIZE = 16;
 const BASE_MARKER_FRAME_SIZE = 160;
 const HALO_OPACITY_CSS_VARIABLE = '--space-marker-tiny-halo-opacity';
+const FOCUSED_CORE_SIZE_MIN = 0.24;
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value));
+}
+
+function finitePositiveSize(size: number | undefined): number | null {
+  if (typeof size !== 'number' || !Number.isFinite(size) || size <= 0) {
+    return null;
+  }
+
+  return size;
+}
+
+function quantile(sorted: ReadonlyArray<number>, q: number): number {
+  if (sorted.length === 0) {
+    return 1;
+  }
+
+  const normalizedQ = clamp(q, 0, 1);
+  const position = (sorted.length - 1) * normalizedQ;
+  const lowerIndex = Math.floor(position);
+  const upperIndex = Math.ceil(position);
+  const lower = sorted[lowerIndex];
+  const upper = sorted[upperIndex] ?? lower;
+  const t = position - lowerIndex;
+  return lower + (upper - lower) * t;
+}
+
+function resolveNormalizationContext(entries: ReadonlyArray<SpatialMapEntry>): MarkerNormalizationContext | undefined {
+  const sizes = entries
+    .map((entry) => finitePositiveSize(entry.size))
+    .filter((size): size is number => size !== null)
+    .sort((a, b) => a - b);
+
+  if (sizes.length < 3) {
+    return undefined;
+  }
+
+  return {
+    qLow: quantile(sizes, 0.1),
+    qHigh: quantile(sizes, 0.9),
+    median: quantile(sizes, 0.5),
+    count: sizes.length,
+  };
 }
 
 function formatLabel(organismId: string): string {
@@ -45,15 +90,26 @@ function formatLabel(organismId: string): string {
   return `${organismId.slice(0, 8)}...${organismId.slice(-4)}`;
 }
 
+export function resolveRenderedCoreSizeMultiplier(coreSizeMultiplier: number, isFocused: boolean): number {
+  if (!isFocused) {
+    return coreSizeMultiplier;
+  }
+
+  return Math.max(coreSizeMultiplier, FOCUSED_CORE_SIZE_MIN);
+}
+
 export function SpaceOrganismLayer({
   entries,
   altitude,
   zoom,
+  altitudeZoomProfile,
   entryOrganismsById,
   focusedOrganismId,
   onHoverOrganismChange,
   onActivateMarker,
 }: SpaceOrganismLayerProps) {
+  const normalizationContext = useMemo(() => resolveNormalizationContext(entries), [entries]);
+
   return (
     <section className="space-organism-layer" aria-label="Map organisms">
       {entries.map((entry) => {
@@ -72,8 +128,10 @@ export function SpaceOrganismLayer({
           entrySize: entry.size,
           zoom,
           altitude,
+          zoomProfile: altitudeZoomProfile,
+          normalizationContext,
         });
-        const sizeMultiplier = sizePolicy.coreSizeMultiplier;
+        const sizeMultiplier = resolveRenderedCoreSizeMultiplier(sizePolicy.coreSizeMultiplier, isFocused);
         const emphasis = clamp(entry.emphasis ?? 0.72, 0, 1);
         const showDetailCard = sizePolicy.showDetailCard;
         const dotSize = BASE_MARKER_SIZE * sizeMultiplier;

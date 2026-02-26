@@ -6,11 +6,14 @@
  * discrete altitude state and transitions for HUD controls.
  */
 
-import { type RefObject, useCallback, useEffect, useRef, useState } from 'react';
+import { type RefObject, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
+import { GRID_SPACING_MAX, resolveGridSpacing } from './grid-spacing.js';
 import {
+  type AltitudeZoomProfile,
   altitudeFromZoom,
   clampToMap,
+  createAltitudeZoomProfile,
   createInitialViewport,
   interpolateViewport,
   nextAltitude,
@@ -28,6 +31,7 @@ interface UseViewportResult {
   readonly viewport: ViewportState;
   readonly screenSize: ScreenSize;
   readonly altitude: Altitude;
+  readonly altitudeZoomProfile: AltitudeZoomProfile;
   readonly containerRef: RefObject<HTMLDivElement | null>;
   readonly setViewport: (next: ViewportState | ((previous: ViewportState) => ViewportState)) => void;
   readonly animateTo: (target: ViewportState, options?: { durationMs?: number; onComplete?: () => void }) => void;
@@ -40,8 +44,15 @@ const ALTITUDE_ANIMATION_DURATION_OUT_MS = 620;
 
 export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseViewportResult {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const gridSpacing = useMemo(() => resolveGridSpacing(mapWidth, mapHeight), [mapHeight, mapWidth]);
+  const zoomScale = useMemo(() => GRID_SPACING_MAX / gridSpacing, [gridSpacing]);
+  const altitudeZoomProfile = useMemo(() => createAltitudeZoomProfile(zoomScale), [zoomScale]);
+  const altitudeZoomProfileRef = useRef(altitudeZoomProfile);
+  altitudeZoomProfileRef.current = altitudeZoomProfile;
 
-  const [viewport, setViewportRaw] = useState<ViewportState>(() => createInitialViewport(mapWidth, mapHeight));
+  const [viewport, setViewportRaw] = useState<ViewportState>(() =>
+    createInitialViewport(mapWidth, mapHeight, altitudeZoomProfile),
+  );
   const [screenSize, setScreenSize] = useState<ScreenSize>({ width: 0, height: 0 });
 
   const screenSizeRef = useRef(screenSize);
@@ -104,12 +115,12 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
     [cancelAnimation, setViewportClamped],
   );
 
-  const altitude = altitudeFromZoom(viewport.zoom);
+  const altitude = altitudeFromZoom(viewport.zoom, altitudeZoomProfile);
 
   const changeAltitude = useCallback(
     (direction: 'in' | 'out') => {
       const current = viewportRef.current;
-      const currentAltitude = altitudeFromZoom(current.zoom);
+      const currentAltitude = altitudeFromZoom(current.zoom, altitudeZoomProfileRef.current);
       const next = nextAltitude(currentAltitude, direction);
       if (!next) return;
 
@@ -117,7 +128,7 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
       animateTo(
         {
           ...current,
-          zoom: zoomForAltitude(next),
+          zoom: zoomForAltitude(next, altitudeZoomProfileRef.current),
         },
         { durationMs },
       );
@@ -126,8 +137,8 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
   );
 
   useEffect(() => {
-    setViewport(createInitialViewport(mapWidth, mapHeight));
-  }, [mapWidth, mapHeight, setViewport]);
+    setViewport(createInitialViewport(mapWidth, mapHeight, altitudeZoomProfile));
+  }, [altitudeZoomProfile, mapHeight, mapWidth, setViewport]);
 
   useEffect(() => {
     const element = containerRef.current;
@@ -153,5 +164,5 @@ export function useViewport({ mapWidth, mapHeight }: UseViewportOptions): UseVie
 
   useEffect(() => cancelAnimation, [cancelAnimation]);
 
-  return { viewport, screenSize, altitude, containerRef, setViewport, animateTo, changeAltitude };
+  return { viewport, screenSize, altitude, altitudeZoomProfile, containerRef, setViewport, animateTo, changeAltitude };
 }

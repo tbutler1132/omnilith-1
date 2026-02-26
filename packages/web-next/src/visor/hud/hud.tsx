@@ -31,10 +31,12 @@ interface VisorHudProps {
   readonly showAltitudeControls: boolean;
   readonly showCompass: boolean;
   readonly showLogoutButton: boolean;
-  readonly navigationLabel?: string | null;
+  readonly navigationCurrentLabel: string;
+  readonly navigationUpTargetLabel: string | null;
   readonly onChangeAltitude: (direction: 'in' | 'out') => void;
-  readonly onGoBack: () => void;
-  readonly canGoBack: boolean;
+  readonly onGoUp: () => void;
+  readonly showNavigationUpControl: boolean;
+  readonly canGoUp: boolean;
   readonly onOpenApp: (appId: string) => void;
   readonly onOpenAppRequest: (request: VisorAppOpenRequest) => void;
   readonly onChangeAppRouteState?: (nextState: unknown) => void;
@@ -53,10 +55,12 @@ export function VisorHud({
   showAltitudeControls,
   showCompass,
   showLogoutButton,
-  navigationLabel,
+  navigationCurrentLabel,
+  navigationUpTargetLabel,
   onChangeAltitude,
-  onGoBack,
-  canGoBack,
+  onGoUp,
+  showNavigationUpControl,
+  canGoUp,
   onOpenApp,
   onOpenAppRequest,
   onChangeAppRouteState,
@@ -118,10 +122,11 @@ export function VisorHud({
       {showClosedHud ? (
         <>
           <SpatialControlsSlot
-            altitude={altitude}
-            navigationLabel={navigationLabel}
-            onGoBack={onGoBack}
-            canGoBack={canGoBack}
+            currentLabel={navigationCurrentLabel}
+            upTargetLabel={navigationUpTargetLabel}
+            onGoUp={onGoUp}
+            showUpControl={showNavigationUpControl}
+            canGoUp={canGoUp}
           />
           <SpatialAltitudeSlot
             altitude={altitude}

@@ -246,6 +246,17 @@ describe('spatial-map validator', () => {
     expect(result.issues).toContain('entries[0] overlaps entries[1]');
   });
 
+  it('rejects invalid curation scale on entries', () => {
+    const result = validateSpatialMap({
+      entries: [{ organismId: 'org-1', x: 100, y: 100, curationScale: 1.4 }],
+      width: 1000,
+      height: 1000,
+    });
+
+    expect(result.valid).toBe(false);
+    expect(result.issues).toContain('entries[0].curationScale must be a number between 0.85 and 1.15 when provided');
+  });
+
   it('rejects removing existing entry during transition validation', () => {
     const result = validateSpatialMap(
       {
@@ -318,6 +329,31 @@ describe('spatial-map validator', () => {
 
     expect(result.valid).toBe(false);
     expect(result.issues).toContain('existing entry moved: org-1');
+  });
+
+  it('allows moving existing entries when map dimensions change', () => {
+    const result = validateSpatialMap(
+      {
+        entries: [
+          { organismId: 'org-1', x: 120, y: 100, size: 1 },
+          { organismId: 'org-2', x: 330, y: 320 },
+        ],
+        width: 1200,
+        height: 1200,
+      },
+      {
+        previousPayload: {
+          entries: [
+            { organismId: 'org-1', x: 100, y: 100, size: 1 },
+            { organismId: 'org-2', x: 300, y: 300 },
+          ],
+          width: 1000,
+          height: 1000,
+        },
+      },
+    );
+
+    expect(result.valid).toBe(true);
   });
 });
 

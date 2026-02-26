@@ -8,24 +8,31 @@
 
 import type {
   CompositionRepository,
+  ContentTypeId,
   OrganismId,
   OrganismRepository,
   OrganismState,
   StateRepository,
   SurfaceRepository,
 } from '@omnilith/kernel';
+import { resolveTypedContentMass } from './content-mass.js';
 import { parseSpatialMapPayload } from './spatial-map-payload.js';
 
-const COMMUNITY_MIN_SIZE = 0.75;
+const COMMUNITY_MIN_SIZE = 0.12;
 const COMMUNITY_MAX_SIZE = 6.0;
-const COMMUNITY_REFERENCE_MAP_AREA = 2000 * 2000;
+const DEFAULT_WORLD_MAP_WIDTH = 5000;
+const DEFAULT_WORLD_MAP_HEIGHT = 5000;
+const DEFAULT_WORLD_MAP_AREA = DEFAULT_WORLD_MAP_WIDTH * DEFAULT_WORLD_MAP_HEIGHT;
+const CAPITAL_TARGET_WORLD_AREA_SHARE = 1 / 30;
 const DEFAULT_MIN_SIZE = 0.75;
 const DEFAULT_MAX_SIZE = 4.5;
 const CAPACITY_DENSITY_FACTOR = 0.65;
 const REFERENCE_MIN_SEPARATION = 48;
 const REFERENCE_CAPACITY_UNITS = Math.floor(
-  (COMMUNITY_REFERENCE_MAP_AREA / (REFERENCE_MIN_SEPARATION * REFERENCE_MIN_SEPARATION)) * CAPACITY_DENSITY_FACTOR,
+  (DEFAULT_WORLD_MAP_AREA / (REFERENCE_MIN_SEPARATION * REFERENCE_MIN_SEPARATION)) * CAPACITY_DENSITY_FACTOR,
 );
+const MIN_CURATION_SCALE = 0.85;
+const MAX_CURATION_SCALE = 1.15;
 
 const MIN_DERIVED_SIZE = 0.000001;
 
@@ -40,6 +47,13 @@ export interface DerivedSurfaceEntrySize {
 export interface DeriveSurfaceEntrySizeInput {
   readonly organismId: OrganismId;
   readonly mapOrganismId?: OrganismId;
+  readonly curationScale?: number;
+  readonly targetMapOverride?: {
+    readonly mapWidth: number;
+    readonly mapHeight: number;
+    readonly minSeparation?: number;
+    readonly entrySizes?: ReadonlyMap<OrganismId, number>;
+  };
 }
 
 export interface DeriveSurfaceEntrySizeDeps {
@@ -70,17 +84,28 @@ function parseCommunityPayload(payload: unknown): CommunityPayloadLike | null {
   return payload as CommunityPayloadLike;
 }
 
+function resolveCurationScale(curationScale: number | undefined): number {
+  if (typeof curationScale !== 'number' || !Number.isFinite(curationScale)) {
+    return 1;
+  }
+
+  return clamp(MIN_CURATION_SCALE, MAX_CURATION_SCALE, curationScale);
+}
+
 interface CommunityMapAreaSignals {
   readonly size: number;
   readonly mapOrganismId: string;
   readonly mapWidth: number;
   readonly mapHeight: number;
   readonly mapArea: number;
+  readonly worldArea: number;
+  readonly worldAreaShare: number;
 }
 
 interface CompositionalSelfSignals {
+  readonly contentTypeId: ContentTypeId;
+  readonly typedContentMass: number;
   readonly payloadBytes: number;
-  readonly intrinsicMass: number;
   readonly stateCount: number;
   readonly historyMass: number;
   readonly rawSelfSize: number;
@@ -115,6 +140,7 @@ interface SourceBoundaryCommunity {
 
 async function tryDeriveCommunityMapAreaSize(
   currentState: OrganismState,
+  worldArea: number,
   deps: Pick<DeriveSurfaceEntrySizeDeps, 'stateRepository'>,
 ): Promise<CommunityMapAreaSignals | null> {
   if (currentState.contentTypeId !== 'community') {
@@ -138,7 +164,9 @@ async function tryDeriveCommunityMapAreaSize(
   }
 
   const area = mapPayload.width * mapPayload.height;
-  const normalized = Math.sqrt(area / COMMUNITY_REFERENCE_MAP_AREA);
+  const normalizedWorldArea = Math.max(1, worldArea);
+  const worldAreaShare = area / normalizedWorldArea;
+  const normalized = Math.sqrt(Math.max(0, worldAreaShare));
   const size = clamp(COMMUNITY_MIN_SIZE, COMMUNITY_MAX_SIZE, normalized);
 
   return {
@@ -147,6 +175,8 @@ async function tryDeriveCommunityMapAreaSize(
     mapWidth: mapPayload.width,
     mapHeight: mapPayload.height,
     mapArea: area,
+    worldArea: normalizedWorldArea,
+    worldAreaShare,
   };
 }
 
@@ -160,14 +190,42 @@ function calculateCapacityUnits(width: number, height: number, minSeparation: nu
   return Math.max(1, capacity);
 }
 
+function normalizeCapacityFactor(capacityUnits: number): number {
+  return Math.min(1, REFERENCE_CAPACITY_UNITS / capacityUnits);
+}
+
 async function resolveMapSignals(
   mapOrganismId: OrganismId | undefined,
   deps: Pick<DeriveSurfaceEntrySizeDeps, 'stateRepository'>,
+  targetMapOverride?: DeriveSurfaceEntrySizeInput['targetMapOverride'],
 ): Promise<TargetMapSignals> {
+  if (targetMapOverride) {
+    const mapWidth = Number.isFinite(targetMapOverride.mapWidth)
+      ? Math.max(1, targetMapOverride.mapWidth)
+      : DEFAULT_WORLD_MAP_WIDTH;
+    const mapHeight = Number.isFinite(targetMapOverride.mapHeight)
+      ? Math.max(1, targetMapOverride.mapHeight)
+      : DEFAULT_WORLD_MAP_HEIGHT;
+    const minSeparation = targetMapOverride.minSeparation ?? REFERENCE_MIN_SEPARATION;
+    const capacityUnits = calculateCapacityUnits(mapWidth, mapHeight, minSeparation);
+    const entrySizes = targetMapOverride.entrySizes
+      ? new Map<OrganismId, number>(targetMapOverride.entrySizes)
+      : new Map<OrganismId, number>();
+    return {
+      mapOrganismId,
+      mapWidth,
+      mapHeight,
+      minSeparation,
+      capacityUnits,
+      normalizedCapacityFactor: normalizeCapacityFactor(capacityUnits),
+      entrySizes,
+    };
+  }
+
   if (!mapOrganismId) {
     return {
-      mapWidth: 2000,
-      mapHeight: 2000,
+      mapWidth: DEFAULT_WORLD_MAP_WIDTH,
+      mapHeight: DEFAULT_WORLD_MAP_HEIGHT,
       minSeparation: REFERENCE_MIN_SEPARATION,
       capacityUnits: REFERENCE_CAPACITY_UNITS,
       normalizedCapacityFactor: 1,
@@ -179,8 +237,8 @@ async function resolveMapSignals(
   if (!mapState || mapState.contentTypeId !== 'spatial-map') {
     return {
       mapOrganismId,
-      mapWidth: 2000,
-      mapHeight: 2000,
+      mapWidth: DEFAULT_WORLD_MAP_WIDTH,
+      mapHeight: DEFAULT_WORLD_MAP_HEIGHT,
       minSeparation: REFERENCE_MIN_SEPARATION,
       capacityUnits: REFERENCE_CAPACITY_UNITS,
       normalizedCapacityFactor: 1,
@@ -192,8 +250,8 @@ async function resolveMapSignals(
   if (!mapPayload) {
     return {
       mapOrganismId,
-      mapWidth: 2000,
-      mapHeight: 2000,
+      mapWidth: DEFAULT_WORLD_MAP_WIDTH,
+      mapHeight: DEFAULT_WORLD_MAP_HEIGHT,
       minSeparation: REFERENCE_MIN_SEPARATION,
       capacityUnits: REFERENCE_CAPACITY_UNITS,
       normalizedCapacityFactor: 1,
@@ -213,7 +271,7 @@ async function resolveMapSignals(
     mapHeight: mapPayload.height,
     minSeparation,
     capacityUnits,
-    normalizedCapacityFactor: REFERENCE_CAPACITY_UNITS / capacityUnits,
+    normalizedCapacityFactor: normalizeCapacityFactor(capacityUnits),
     entrySizes,
   };
 }
@@ -251,6 +309,7 @@ async function resolveSourceBoundaryCommunity(
 
 async function deriveSelfUnits(
   currentState: OrganismState,
+  worldArea: number,
   deps: Pick<DeriveSurfaceEntrySizeDeps, 'stateRepository'>,
 ): Promise<
   | {
@@ -264,7 +323,7 @@ async function deriveSelfUnits(
       readonly compositionalSignals: CompositionalSelfSignals;
     }
 > {
-  const communitySignals = await tryDeriveCommunityMapAreaSize(currentState, deps);
+  const communitySignals = await tryDeriveCommunityMapAreaSize(currentState, worldArea, deps);
   if (communitySignals) {
     return {
       strategy: 'community-map-area',
@@ -273,19 +332,20 @@ async function deriveSelfUnits(
     };
   }
 
+  const typedContentMass = resolveTypedContentMass(currentState.contentTypeId as ContentTypeId, currentState.payload);
   const bytes = payloadByteLength(currentState.payload);
   const stateCount = currentState.sequenceNumber;
-  const intrinsicMass = Math.max(1, bytes / 1200);
-  const historyMass = 0.35 * Math.log2(1 + stateCount);
-  const rawSelfSize = 0.7 + 0.5 * Math.log2(1 + intrinsicMass) + historyMass;
-  const selfUnits = Math.max(DEFAULT_MIN_SIZE * DEFAULT_MIN_SIZE, rawSelfSize * rawSelfSize);
+  const historyMass = 0.12 * Math.log2(1 + stateCount);
+  const rawSelfSize = 0.22 + 0.46 * Math.log2(1 + typedContentMass) + historyMass;
+  const selfUnits = Math.max(MIN_DERIVED_SIZE, rawSelfSize * rawSelfSize);
 
   return {
     strategy: 'compositional-mass',
     selfUnits,
     compositionalSignals: {
+      contentTypeId: currentState.contentTypeId,
+      typedContentMass,
       payloadBytes: bytes,
-      intrinsicMass,
       stateCount,
       historyMass,
       rawSelfSize,
@@ -295,6 +355,7 @@ async function deriveSelfUnits(
 
 async function deriveRecursiveMassSignals(
   organismId: OrganismId,
+  worldArea: number,
   deps: Pick<DeriveSurfaceEntrySizeDeps, 'stateRepository' | 'compositionRepository'>,
   surfacedOrganismIds: ReadonlySet<OrganismId>,
 ): Promise<RecursiveMassSignals> {
@@ -315,7 +376,7 @@ async function deriveRecursiveMassSignals(
       return { effectiveUnits: 0, unsurfacedDescendantCount: 0 };
     }
 
-    const childSelf = await deriveSelfUnits(childState, deps);
+    const childSelf = await deriveSelfUnits(childState, worldArea, deps);
     const childChildren = await deps.compositionRepository.findChildren(childId);
     let childDescendantUnits = 0;
     let childDescendantCount = 0;
@@ -375,10 +436,12 @@ export async function deriveSurfaceEntrySize(
   }
 
   const surfacedOrganismIds = await deps.surfaceRepository.listSurfacedOrganismIds();
-  const targetMap = await resolveMapSignals(input.mapOrganismId, deps);
-  const selfSignals = await deriveSelfUnits(currentState, deps);
-  const recursiveSignals = await deriveRecursiveMassSignals(input.organismId, deps, surfacedOrganismIds);
+  const targetMap = await resolveMapSignals(input.mapOrganismId, deps, input.targetMapOverride);
+  const worldArea = Math.max(1, targetMap.mapWidth * targetMap.mapHeight);
+  const selfSignals = await deriveSelfUnits(currentState, worldArea, deps);
+  const recursiveSignals = await deriveRecursiveMassSignals(input.organismId, worldArea, deps, surfacedOrganismIds);
   const effectiveUnits = selfSignals.selfUnits + recursiveSignals.unsurfacedDescendantUnits;
+  const curationScale = resolveCurationScale(input.curationScale);
 
   if (selfSignals.strategy === 'compositional-mass' && input.mapOrganismId) {
     const sourceBoundary = await resolveSourceBoundaryCommunity(input.organismId, deps);
@@ -391,13 +454,16 @@ export async function deriveSurfaceEntrySize(
         const boundaryAreaOnTarget = communityIconSize * communityIconSize;
         const transferredArea = Math.max(0, boundaryShare * boundaryAreaOnTarget);
         const transferredSize = Math.sqrt(transferredArea);
+        const curatedTransferredSize = Math.max(MIN_DERIVED_SIZE, transferredSize * curationScale);
 
         return {
-          size: Math.max(MIN_DERIVED_SIZE, transferredSize),
+          size: curatedTransferredSize,
           strategy: 'boundary-proportional-transfer',
           inputs: {
+            curationScale,
             payloadBytes: selfSignals.compositionalSignals.payloadBytes,
-            intrinsicMass: selfSignals.compositionalSignals.intrinsicMass,
+            typedContentMass: selfSignals.compositionalSignals.typedContentMass,
+            contentTypeId: selfSignals.compositionalSignals.contentTypeId,
             stateCount: selfSignals.compositionalSignals.stateCount,
             historyMass: selfSignals.compositionalSignals.historyMass,
             rawSelfSize: selfSignals.compositionalSignals.rawSelfSize,
@@ -415,6 +481,7 @@ export async function deriveSurfaceEntrySize(
             targetCommunityIconSize: communityIconSize,
             transferredArea,
             transferredSize,
+            curatedTransferredSize,
           },
         };
       }
@@ -436,18 +503,22 @@ export async function deriveSurfaceEntrySize(
       : input.mapOrganismId
         ? Number.POSITIVE_INFINITY
         : DEFAULT_MAX_SIZE;
-  const size = clamp(minSize, maxSize, rawSize);
+  const unclampedCuratedSize = rawSize * curationScale;
+  const size = clamp(minSize, maxSize, unclampedCuratedSize);
 
   if (selfSignals.strategy === 'community-map-area') {
     return {
       size,
       strategy: 'community-map-area',
       inputs: {
+        curationScale,
         mapOrganismId: selfSignals.communitySignals.mapOrganismId,
         mapWidth: selfSignals.communitySignals.mapWidth,
         mapHeight: selfSignals.communitySignals.mapHeight,
         mapArea: selfSignals.communitySignals.mapArea,
-        referenceMapArea: COMMUNITY_REFERENCE_MAP_AREA,
+        worldArea: selfSignals.communitySignals.worldArea,
+        worldAreaShare: selfSignals.communitySignals.worldAreaShare,
+        capitalTargetWorldAreaShare: CAPITAL_TARGET_WORLD_AREA_SHARE,
         baseUnits: selfSignals.selfUnits,
         unsurfacedDescendantUnits: recursiveSignals.unsurfacedDescendantUnits,
         unsurfacedDescendantCount: recursiveSignals.unsurfacedDescendantCount,
@@ -469,8 +540,10 @@ export async function deriveSurfaceEntrySize(
     size,
     strategy: 'compositional-mass',
     inputs: {
+      curationScale,
+      contentTypeId: selfSignals.compositionalSignals.contentTypeId,
+      typedContentMass: selfSignals.compositionalSignals.typedContentMass,
       payloadBytes: selfSignals.compositionalSignals.payloadBytes,
-      intrinsicMass: selfSignals.compositionalSignals.intrinsicMass,
       stateCount: selfSignals.compositionalSignals.stateCount,
       historyMass: selfSignals.compositionalSignals.historyMass,
       rawSelfSize: selfSignals.compositionalSignals.rawSelfSize,

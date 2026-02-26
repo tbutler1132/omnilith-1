@@ -16,6 +16,7 @@ export interface SpatialMapEntry {
   readonly y: number;
   readonly size?: number;
   readonly emphasis?: number;
+  readonly curationScale?: number;
 }
 
 interface SpatialMapState {
@@ -49,6 +50,9 @@ function parseEntries(payload: unknown): ReadonlyArray<SpatialMapEntry> {
     }
 
     if (entry.emphasis !== undefined && typeof entry.emphasis !== 'number') {
+      return false;
+    }
+    if (entry.curationScale !== undefined && typeof entry.curationScale !== 'number') {
       return false;
     }
 

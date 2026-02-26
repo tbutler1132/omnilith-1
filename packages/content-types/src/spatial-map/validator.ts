@@ -16,6 +16,7 @@ interface SpatialMapEntryLike {
   readonly y: number;
   readonly size?: number;
   readonly emphasis?: number;
+  readonly curationScale?: number;
 }
 
 function isEntryLike(value: unknown): value is SpatialMapEntryLike {
@@ -26,7 +27,8 @@ function isEntryLike(value: unknown): value is SpatialMapEntryLike {
     typeof entry.x === 'number' &&
     typeof entry.y === 'number' &&
     (entry.size === undefined || typeof entry.size === 'number') &&
-    (entry.emphasis === undefined || typeof entry.emphasis === 'number')
+    (entry.emphasis === undefined || typeof entry.emphasis === 'number') &&
+    (entry.curationScale === undefined || typeof entry.curationScale === 'number')
   );
 }
 
@@ -35,6 +37,18 @@ function readEntriesFromPayload(payload: unknown): SpatialMapEntryLike[] {
   const maybeEntries = (payload as Record<string, unknown>).entries;
   if (!Array.isArray(maybeEntries)) return [];
   return maybeEntries.filter(isEntryLike);
+}
+
+function readDimensionsFromPayload(payload: unknown): { width?: number; height?: number } {
+  if (!payload || typeof payload !== 'object') {
+    return {};
+  }
+
+  const typed = payload as Record<string, unknown>;
+  return {
+    width: typeof typed.width === 'number' ? typed.width : undefined,
+    height: typeof typed.height === 'number' ? typed.height : undefined,
+  };
 }
 
 function samePosition(a: SpatialMapEntryLike, b: SpatialMapEntryLike): boolean {
@@ -77,6 +91,12 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
       ) {
         issues.push(`entries[${i}].emphasis must be a number between 0 and 1 when provided`);
       }
+      if (
+        entry.curationScale !== undefined &&
+        (typeof entry.curationScale !== 'number' || entry.curationScale < 0.85 || entry.curationScale > 1.15)
+      ) {
+        issues.push(`entries[${i}].curationScale must be a number between 0.85 and 1.15 when provided`);
+      }
       if (entry.organismId && seen.has(entry.organismId)) {
         issues.push(`entries[${i}].organismId is a duplicate: ${entry.organismId}`);
       }
@@ -115,6 +135,15 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
     // Transition guard: appends/proposals must preserve existing entries unless explicitly handled elsewhere.
     const previousEntries = readEntriesFromPayload(context?.previousPayload);
     if (previousEntries.length > 0) {
+      const previousDimensions = readDimensionsFromPayload(context?.previousPayload);
+      const dimensionsChanged =
+        typeof previousDimensions.width === 'number' &&
+        typeof previousDimensions.height === 'number' &&
+        previousDimensions.width > 0 &&
+        previousDimensions.height > 0 &&
+        typeof p.width === 'number' &&
+        typeof p.height === 'number' &&
+        (previousDimensions.width !== p.width || previousDimensions.height !== p.height);
       const nextById = new Map<string, SpatialMapEntryLike>();
       for (const entry of p.entries) {
         if (isEntryLike(entry)) {
@@ -128,7 +157,7 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
           issues.push(`existing entry removed: ${prev.organismId}`);
           continue;
         }
-        if (!samePosition(prev, next)) {
+        if (!dimensionsChanged && !samePosition(prev, next)) {
           issues.push(`existing entry moved: ${prev.organismId}`);
         }
       }

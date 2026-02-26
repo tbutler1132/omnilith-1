@@ -11,7 +11,10 @@ function renderHud(
     altitude: 'high' | 'mid' | 'close';
     showAltitudeControls: boolean;
     showCompass: boolean;
-    navigationLabel: string | null;
+    navigationCurrentLabel: string;
+    navigationUpTargetLabel: string | null;
+    showNavigationUpControl: boolean;
+    canGoUp: boolean;
   }> = {},
 ) {
   return renderToStaticMarkup(
@@ -24,10 +27,12 @@ function renderHud(
       showAltitudeControls: input.showAltitudeControls ?? true,
       showCompass: input.showCompass ?? true,
       showLogoutButton: true,
-      navigationLabel: input.navigationLabel ?? null,
-      canGoBack: true,
+      navigationCurrentLabel: input.navigationCurrentLabel ?? 'World Map',
+      navigationUpTargetLabel: input.navigationUpTargetLabel ?? null,
+      showNavigationUpControl: input.showNavigationUpControl ?? false,
+      canGoUp: input.canGoUp ?? false,
       onChangeAltitude: () => {},
-      onGoBack: () => {},
+      onGoUp: () => {},
       onOpenApp: () => {},
       onOpenAppRequest: () => {},
       onCloseVisor: () => {},

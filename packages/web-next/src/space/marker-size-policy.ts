@@ -6,7 +6,7 @@
  */
 
 import type { Altitude } from '../contracts/altitude.js';
-import { zoomForAltitude } from './viewport-math.js';
+import { type AltitudeZoomProfile, zoomForAltitude } from './viewport-math.js';
 
 const MIN_SIZE_MULTIPLIER = 0.000001;
 const WORLD_MAP_BOOST_EXPONENT = 0.82;
@@ -22,6 +22,15 @@ export interface MarkerSizePolicyInput {
   readonly entrySize: number | undefined;
   readonly zoom: number;
   readonly altitude: Altitude;
+  readonly zoomProfile?: AltitudeZoomProfile;
+  readonly normalizationContext?: MarkerNormalizationContext;
+}
+
+export interface MarkerNormalizationContext {
+  readonly qLow: number;
+  readonly qHigh: number;
+  readonly median: number;
+  readonly count: number;
 }
 
 export interface MarkerSizePolicyOutput {
@@ -60,13 +69,13 @@ function normalizeSizeMultiplier(entrySize: number | undefined): number {
   return Math.max(entrySize, MIN_SIZE_MULTIPLIER);
 }
 
-function resolveWorldMapBlend(zoom: number, altitude: Altitude): number {
+function resolveWorldMapBlend(zoom: number, altitude: Altitude, zoomProfile?: AltitudeZoomProfile): number {
   if (altitude === 'close') {
     return 1;
   }
 
-  const midZoom = zoomForAltitude('mid');
-  const closeZoom = zoomForAltitude('close');
+  const midZoom = zoomForAltitude('mid', zoomProfile);
+  const closeZoom = zoomForAltitude('close', zoomProfile);
   const closeEntryZoom = (midZoom + closeZoom) / 2;
   const normalized = (zoom - midZoom) / (closeEntryZoom - midZoom);
   return smoothstep(normalized);
@@ -75,6 +84,39 @@ function resolveWorldMapBlend(zoom: number, altitude: Altitude): number {
 function resolveWorldMapBoostedSize(sizeMultiplier: number): number {
   const boosted = sizeMultiplier ** WORLD_MAP_BOOST_EXPONENT;
   return clamp(boosted, WORLD_MAP_BOOST_MIN, WORLD_MAP_BOOST_MAX);
+}
+
+function resolveNormalizationStrength(altitude: Altitude): number {
+  if (altitude === 'high') {
+    return 0.58;
+  }
+
+  if (altitude === 'mid') {
+    return 0.34;
+  }
+
+  return 0.12;
+}
+
+function resolveReadableSizeMultiplier(
+  proportionalSizeMultiplier: number,
+  altitude: Altitude,
+  normalizationContext?: MarkerNormalizationContext,
+): number {
+  if (!normalizationContext || normalizationContext.count < 3) {
+    return resolveWorldMapBoostedSize(proportionalSizeMultiplier);
+  }
+
+  const strength = resolveNormalizationStrength(altitude);
+  const qLow = Math.max(MIN_SIZE_MULTIPLIER, normalizationContext.qLow);
+  const qHigh = Math.max(qLow, normalizationContext.qHigh);
+  const median = Math.max(MIN_SIZE_MULTIPLIER, normalizationContext.median);
+  const winsorized = clamp(proportionalSizeMultiplier, qLow, qHigh);
+  const logDelta = Math.log(winsorized / median);
+  const compressionFactor = 1 - 0.56 * strength;
+  const compressed = median * Math.exp(logDelta * compressionFactor);
+  const blended = lerp(proportionalSizeMultiplier, compressed, strength);
+  return clamp(blended, WORLD_MAP_BOOST_MIN, WORLD_MAP_BOOST_MAX);
 }
 
 function resolveWorldMapHaloStrength(coreSizeMultiplier: number): number {
@@ -89,8 +131,12 @@ function resolveWorldMapHaloStrength(coreSizeMultiplier: number): number {
 export function resolveMarkerSizePolicy(input: MarkerSizePolicyInput): MarkerSizePolicyOutput {
   const proportionalSizeMultiplier = normalizeSizeMultiplier(input.entrySize);
 
-  const boostedSizeMultiplier = resolveWorldMapBoostedSize(proportionalSizeMultiplier);
-  const blend = resolveWorldMapBlend(input.zoom, input.altitude);
+  const boostedSizeMultiplier = resolveReadableSizeMultiplier(
+    proportionalSizeMultiplier,
+    input.altitude,
+    input.normalizationContext,
+  );
+  const blend = resolveWorldMapBlend(input.zoom, input.altitude, input.zoomProfile);
   const coreSizeMultiplier = lerp(boostedSizeMultiplier, proportionalSizeMultiplier, blend);
   const interactionSizeMultiplier = Math.max(coreSizeMultiplier, WORLD_MAP_INTERACTION_MIN);
   const haloStrength = resolveWorldMapHaloStrength(coreSizeMultiplier);

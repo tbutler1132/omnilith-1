@@ -5,12 +5,13 @@
  * then renders the plain map slice with the minimal closed HUD scaffold.
  */
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { fetchSession, loginWithPassword, logoutSession } from '../api/auth.js';
 import { fetchWorldMap } from '../api/fetch-world-map.js';
 import { clearSessionId, readSessionId } from '../api/session.js';
 import type { Altitude } from '../contracts/altitude.js';
 import { SpaceStage, type SpaceStageSpatialSnapshot } from '../space/space-stage.js';
+import { useEntryOrganisms } from '../space/use-entry-organisms.js';
 import {
   clearVisorAppRoutes,
   createEmptySpatialContext,
@@ -36,6 +37,7 @@ interface LoadState {
 
 const ARRIVAL_OVERLAY_MS = 1400;
 const INITIAL_LOADING_MIN_MS = 900;
+const WORLD_MAP_LABEL = 'World Map';
 
 function readVisorRouteFromWindow(): VisorRoute {
   if (typeof window === 'undefined') {
@@ -68,6 +70,30 @@ export function PlatformShell() {
     typeof window !== 'undefined' && visorRoute.mode === 'open' && activeApp.routeCodec
       ? activeApp.routeCodec.parseRoute(new URLSearchParams(window.location.search))
       : null;
+  const boundaryPath = spatialContext.boundaryPath;
+  const currentBoundaryPathId = boundaryPath.length > 0 ? boundaryPath[boundaryPath.length - 1] : null;
+  const parentBoundaryPathId = boundaryPath.length > 1 ? boundaryPath[boundaryPath.length - 2] : null;
+  const isWorldMapLevel = enteredOrganismId === null && currentBoundaryPathId === null;
+  const currentNavOrganismId = enteredOrganismId ?? currentBoundaryPathId;
+  const parentNavOrganismId = enteredOrganismId ? currentBoundaryPathId : parentBoundaryPathId;
+  const navOrganismIds = useMemo(() => {
+    const nextIds = [currentNavOrganismId, parentNavOrganismId].filter(
+      (organismId): organismId is string => typeof organismId === 'string' && organismId.length > 0,
+    );
+    return Array.from(new Set(nextIds));
+  }, [currentNavOrganismId, parentNavOrganismId]);
+  const { byId: navOrganismsById } = useEntryOrganisms(navOrganismIds);
+  const navigationCurrentLabel = isWorldMapLevel
+    ? WORLD_MAP_LABEL
+    : currentNavOrganismId
+      ? (navOrganismsById[currentNavOrganismId]?.name ?? currentNavOrganismId)
+      : WORLD_MAP_LABEL;
+  const navigationUpTargetLabel =
+    parentNavOrganismId === null
+      ? WORLD_MAP_LABEL
+      : (navOrganismsById[parentNavOrganismId]?.name ?? parentNavOrganismId);
+  const showNavigationUpControl = !isWorldMapLevel;
+  const canGoUp = Boolean(backHandler);
 
   const renderArrivalOverlay = (mode: 'loading' | 'arrival') => (
     <div
@@ -445,10 +471,12 @@ export function PlatformShell() {
         showAltitudeControls={!isInInterior}
         showCompass={!isInInterior}
         showLogoutButton={isAuthenticated}
-        navigationLabel={isInInterior ? 'Organism interior' : null}
+        navigationCurrentLabel={navigationCurrentLabel}
+        navigationUpTargetLabel={navigationUpTargetLabel}
         onChangeAltitude={handleAltitudeChangeRequested}
-        onGoBack={handleBackRequested}
-        canGoBack={Boolean(backHandler)}
+        onGoUp={handleBackRequested}
+        showNavigationUpControl={showNavigationUpControl}
+        canGoUp={canGoUp}
         onOpenApp={handleOpenApp}
         onOpenAppRequest={handleOpenAppRequest}
         onChangeAppRouteState={handleChangeAppRouteState}

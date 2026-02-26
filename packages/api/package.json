@@ -11,6 +11,7 @@
     "dev": "tsx watch src/index.ts",
     "github:dispatch-issues": "tsx src/github/run-github-issue-dispatch-worker.ts",
     "maps:backfill-derived-size": "tsx src/backfill-derived-surface-sizes.ts",
+    "maps:migrate-capacity-semantics": "tsx src/migrate-map-capacity-semantics.ts",
     "regulator:run": "tsx src/regulator/run-regulator-cycle.ts",
     "start": "node dist/index.js",
     "test": "vitest run",

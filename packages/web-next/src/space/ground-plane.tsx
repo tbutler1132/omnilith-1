@@ -6,15 +6,16 @@
 
 import { memo, useEffect, useId, useMemo, useRef, useState } from 'react';
 import type { Altitude } from '../contracts/altitude.js';
+import { resolveGridSpacing } from './grid-spacing.js';
 
 interface GroundPlaneProps {
   readonly width: number;
   readonly height: number;
   readonly altitude: Altitude;
   readonly recalibrationEpoch: number;
+  readonly mapZoomScale?: number;
 }
 
-const GRID_SPACING = 700;
 const LINE_OFFSET = 0;
 const DARK_GRID_LINE_COLOR = 'rgba(74, 74, 74, 0.72)';
 const GRID_GLOW_COLOR = '#ffe4b3';
@@ -120,10 +121,27 @@ export const GroundPlane = memo(function GroundPlane({
   height,
   altitude,
   recalibrationEpoch,
+  mapZoomScale = 1,
 }: GroundPlaneProps) {
   const svgId = useId().replace(/:/g, '');
   const glowFilterPrefix = `ground-grid-glow-${svgId}`;
   const glowProfile = useMemo(() => resolveAltitudeGlowProfile(altitude), [altitude]);
+  const normalizedMapZoomScale = useMemo(() => {
+    if (!Number.isFinite(mapZoomScale) || mapZoomScale <= 0) {
+      return 1;
+    }
+
+    return mapZoomScale;
+  }, [mapZoomScale]);
+  const worldUnitsPerScreenPixel = useMemo(() => 1 / normalizedMapZoomScale, [normalizedMapZoomScale]);
+  const scaledLineStrokeWidth = useMemo(
+    () => Math.max(0.35, glowProfile.lineStrokeWidth * worldUnitsPerScreenPixel),
+    [glowProfile.lineStrokeWidth, worldUnitsPerScreenPixel],
+  );
+  const scaledIntersectionCornerGap = useMemo(
+    () => Math.max(2, glowProfile.intersectionCornerGap * worldUnitsPerScreenPixel),
+    [glowProfile.intersectionCornerGap, worldUnitsPerScreenPixel],
+  );
   const glowFilterId = `${glowFilterPrefix}-${altitude}`;
   const glowStrengthRef = useRef(glowProfile.glowStrength);
   glowStrengthRef.current = glowProfile.glowStrength;
@@ -132,18 +150,19 @@ export const GroundPlane = memo(function GroundPlane({
   const bootTimerRef = useRef<number | null>(null);
   const bootCompleteRef = useRef(false);
   const previousRecalibrationEpochRef = useRef(recalibrationEpoch);
+  const gridSpacing = useMemo(() => resolveGridSpacing(width, height), [height, width]);
   const { fullGridWidth, fullGridHeight, originX, originY, verticalLines, horizontalLines } = useMemo(() => {
-    const columnCount = Math.floor(width / GRID_SPACING);
-    const rowCount = Math.floor(height / GRID_SPACING);
-    const resolvedFullGridWidth = columnCount * GRID_SPACING;
-    const resolvedFullGridHeight = rowCount * GRID_SPACING;
+    const columnCount = Math.floor(width / gridSpacing);
+    const rowCount = Math.floor(height / gridSpacing);
+    const resolvedFullGridWidth = columnCount * gridSpacing;
+    const resolvedFullGridHeight = rowCount * gridSpacing;
     const resolvedOriginX = (width - resolvedFullGridWidth) / 2;
     const resolvedOriginY = (height - resolvedFullGridHeight) / 2;
     const resolvedVerticalLines = Array.from({ length: Math.max(0, columnCount - 1) }, (_, index) => {
-      return resolvedOriginX + (index + 1) * GRID_SPACING + LINE_OFFSET;
+      return resolvedOriginX + (index + 1) * gridSpacing + LINE_OFFSET;
     });
     const resolvedHorizontalLines = Array.from({ length: Math.max(0, rowCount - 1) }, (_, index) => {
-      return resolvedOriginY + (index + 1) * GRID_SPACING + LINE_OFFSET;
+      return resolvedOriginY + (index + 1) * gridSpacing + LINE_OFFSET;
     });
 
     return {
@@ -154,9 +173,9 @@ export const GroundPlane = memo(function GroundPlane({
       verticalLines: resolvedVerticalLines,
       horizontalLines: resolvedHorizontalLines,
     };
-  }, [width, height]);
+  }, [gridSpacing, height, width]);
   const { horizontalSegments, verticalSegments } = useMemo(() => {
-    const gapHalf = glowProfile.intersectionCornerGap / 2;
+    const gapHalf = scaledIntersectionCornerGap / 2;
     const mapMaxX = originX + fullGridWidth;
     const mapMaxY = originY + fullGridHeight;
     const resolvedHorizontalSegments: Array<LineSegment> = [];
@@ -216,17 +235,9 @@ export const GroundPlane = memo(function GroundPlane({
       horizontalSegments: resolvedHorizontalSegments,
       verticalSegments: resolvedVerticalSegments,
     };
-  }, [
-    fullGridHeight,
-    fullGridWidth,
-    glowProfile.intersectionCornerGap,
-    horizontalLines,
-    originX,
-    originY,
-    verticalLines,
-  ]);
+  }, [fullGridHeight, fullGridWidth, horizontalLines, originX, originY, scaledIntersectionCornerGap, verticalLines]);
   const intersectionJunctionPath = useMemo(() => {
-    const gapHalf = glowProfile.intersectionCornerGap / 2;
+    const gapHalf = scaledIntersectionCornerGap / 2;
     const curveInset = gapHalf * 0.12;
 
     return verticalLines
@@ -236,7 +247,7 @@ export const GroundPlane = memo(function GroundPlane({
         });
       })
       .join(' ');
-  }, [glowProfile.intersectionCornerGap, horizontalLines, verticalLines]);
+  }, [horizontalLines, scaledIntersectionCornerGap, verticalLines]);
   const baseVerticalPath = useMemo(
     () => createFullVerticalPath(verticalLines, originY, fullGridHeight),
     [fullGridHeight, originY, verticalLines],
@@ -316,7 +327,9 @@ export const GroundPlane = memo(function GroundPlane({
         <defs>
           {ALTITUDE_ORDER.map((level) => {
             const profile = ALTITUDE_GLOW_PROFILES[level];
-            const glowFilterMargin = Math.ceil(profile.glowStdDevFar * 10 + profile.lineStrokeWidth * 6);
+            const normalizedStdDevNear = Math.max(0.001, profile.glowStdDevNear * worldUnitsPerScreenPixel);
+            const normalizedStdDevFar = Math.max(0.001, profile.glowStdDevFar * worldUnitsPerScreenPixel);
+            const glowFilterMargin = Math.ceil(normalizedStdDevFar * 10 + profile.lineStrokeWidth * 6);
             return (
               <filter
                 key={`${glowFilterPrefix}-${level}`}
@@ -331,14 +344,14 @@ export const GroundPlane = memo(function GroundPlane({
                 <feDropShadow
                   dx="0"
                   dy="0"
-                  stdDeviation={profile.glowStdDevNear}
+                  stdDeviation={normalizedStdDevNear}
                   floodColor={GRID_GLOW_COLOR}
                   floodOpacity={profile.glowOpacityNear}
                 />
                 <feDropShadow
                   dx="0"
                   dy="0"
-                  stdDeviation={profile.glowStdDevFar}
+                  stdDeviation={normalizedStdDevFar}
                   floodColor={GRID_GLOW_COLOR}
                   floodOpacity={profile.glowOpacityFar}
                 />
@@ -350,7 +363,7 @@ export const GroundPlane = memo(function GroundPlane({
           <path
             d={baseVerticalPath}
             stroke={DARK_GRID_LINE_COLOR}
-            strokeWidth={glowProfile.lineStrokeWidth}
+            strokeWidth={scaledLineStrokeWidth}
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
             fill="none"
@@ -358,7 +371,7 @@ export const GroundPlane = memo(function GroundPlane({
           <path
             d={baseHorizontalPath}
             stroke={DARK_GRID_LINE_COLOR}
-            strokeWidth={glowProfile.lineStrokeWidth}
+            strokeWidth={scaledLineStrokeWidth}
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
             fill="none"
@@ -374,7 +387,7 @@ export const GroundPlane = memo(function GroundPlane({
           <path
             d={glowVerticalPath}
             stroke={glowProfile.lineColor}
-            strokeWidth={glowProfile.lineStrokeWidth}
+            strokeWidth={scaledLineStrokeWidth}
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
             fill="none"
@@ -382,7 +395,7 @@ export const GroundPlane = memo(function GroundPlane({
           <path
             d={glowHorizontalPath}
             stroke={glowProfile.lineColor}
-            strokeWidth={glowProfile.lineStrokeWidth}
+            strokeWidth={scaledLineStrokeWidth}
             strokeLinecap="round"
             vectorEffect="non-scaling-stroke"
             fill="none"
@@ -391,7 +404,7 @@ export const GroundPlane = memo(function GroundPlane({
             d={intersectionJunctionPath}
             fill={glowProfile.lineColor}
             stroke={glowProfile.lineColor}
-            strokeWidth={glowProfile.lineStrokeWidth * 0.7}
+            strokeWidth={scaledLineStrokeWidth * 0.7}
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
           />

@@ -43,6 +43,7 @@ interface SurfaceOrganismOnMapRequest {
   readonly x: number;
   readonly y: number;
   readonly emphasis?: number;
+  readonly curationScale?: number;
 }
 
 const SURFACE_APPEND_MAX_ATTEMPTS = 3;
@@ -223,6 +224,12 @@ export function organismRoutes(container: Container) {
     if (body.emphasis !== undefined && (!isFiniteNumber(body.emphasis) || body.emphasis < 0 || body.emphasis > 1)) {
       return c.json({ error: 'emphasis must be between 0 and 1 when provided' }, 400);
     }
+    if (
+      body.curationScale !== undefined &&
+      (!isFiniteNumber(body.curationScale) || body.curationScale < 0.85 || body.curationScale > 1.15)
+    ) {
+      return c.json({ error: 'curationScale must be between 0.85 and 1.15 when provided' }, 400);
+    }
 
     const accessError = await requireOrganismAccess(c, container, userId, mapId, 'append-state');
     if (accessError) return accessError;
@@ -232,7 +239,7 @@ export function organismRoutes(container: Container) {
     if (!targetExists) return c.json({ error: `Organism not found: ${targetOrganismId}` }, 404);
 
     const derived = await deriveSurfaceEntrySize(
-      { organismId: targetOrganismId, mapOrganismId: mapId },
+      { organismId: targetOrganismId, mapOrganismId: mapId, curationScale: body.curationScale },
       {
         organismRepository: container.organismRepository,
         stateRepository: container.stateRepository,
@@ -247,6 +254,7 @@ export function organismRoutes(container: Container) {
       y: body.y,
       size: derived.size,
       emphasis: body.emphasis,
+      curationScale: body.curationScale,
     };
 
     for (let attempt = 1; attempt <= SURFACE_APPEND_MAX_ATTEMPTS; attempt++) {

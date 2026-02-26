@@ -36,7 +36,7 @@ describe('deriveSurfaceEntrySize', () => {
     resetIdCounter();
   });
 
-  it('derives baseline community size from a 2000x2000 map', async () => {
+  it('derives community size as world-relative area share', async () => {
     const organismRepository = new InMemoryOrganismRepository();
     const stateRepository = new InMemoryStateRepository();
     const compositionRepository = new InMemoryCompositionRepository();
@@ -94,10 +94,10 @@ describe('deriveSurfaceEntrySize', () => {
     );
 
     expect(derived.strategy).toBe('community-map-area');
-    expect(derived.size).toBeCloseTo(1, 8);
+    expect(derived.size).toBeCloseTo(0.4, 8);
   });
 
-  it('derives larger community size for larger map area', async () => {
+  it('derives larger community size for larger map area share', async () => {
     const organismRepository = new InMemoryOrganismRepository();
     const stateRepository = new InMemoryStateRepository();
     const compositionRepository = new InMemoryCompositionRepository();
@@ -155,7 +155,7 @@ describe('deriveSurfaceEntrySize', () => {
     );
 
     expect(derived.strategy).toBe('community-map-area');
-    expect(derived.size).toBeCloseTo(2, 8);
+    expect(derived.size).toBeCloseTo(0.8, 8);
   });
 
   it('uses compositional mass for non-community organisms', async () => {
@@ -226,7 +226,73 @@ describe('deriveSurfaceEntrySize', () => {
     expect(largeSize.size).toBeGreaterThan(smallSize.size);
   });
 
-  it('normalizes size against the target map capacity', async () => {
+  it('applies bounded curation scale at derivation time', async () => {
+    const organismRepository = new InMemoryOrganismRepository();
+    const stateRepository = new InMemoryStateRepository();
+    const compositionRepository = new InMemoryCompositionRepository();
+    const surfaceRepository = new InMemorySurfaceRepository(stateRepository);
+    const relationshipRepository = new InMemoryRelationshipRepository();
+    const eventPublisher = new InMemoryEventPublisher();
+    const identityGenerator = createTestIdentityGenerator();
+    const contentTypeRegistry = createRegistry();
+
+    const text = await createOrganism(
+      {
+        name: 'Curated text',
+        contentTypeId: 'text' as ContentTypeId,
+        payload: { content: 'x'.repeat(8_000), format: 'plaintext' },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
+    const map = await createOrganism(
+      {
+        name: 'Target map',
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: { entries: [], width: 5000, height: 5000, minSeparation: 48 },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
+    const baseline = await deriveSurfaceEntrySize(
+      { organismId: text.organism.id, mapOrganismId: map.organism.id },
+      {
+        organismRepository,
+        stateRepository,
+        compositionRepository,
+        surfaceRepository,
+      },
+    );
+    const curated = await deriveSurfaceEntrySize(
+      { organismId: text.organism.id, mapOrganismId: map.organism.id, curationScale: 1.1 },
+      {
+        organismRepository,
+        stateRepository,
+        compositionRepository,
+        surfaceRepository,
+      },
+    );
+
+    expect(curated.size).toBeGreaterThan(baseline.size);
+  });
+
+  it('does not upscale smaller maps and downscales oversized maps', async () => {
     const organismRepository = new InMemoryOrganismRepository();
     const stateRepository = new InMemoryStateRepository();
     const compositionRepository = new InMemoryCompositionRepository();
@@ -270,11 +336,28 @@ describe('deriveSurfaceEntrySize', () => {
       },
     );
 
-    const largeMap = await createOrganism(
+    const referenceMap = await createOrganism(
       {
-        name: 'Large map',
+        name: 'Reference map',
         contentTypeId: 'spatial-map' as ContentTypeId,
         payload: { entries: [], width: 5000, height: 5000, minSeparation: 48 },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
+    const oversizedMap = await createOrganism(
+      {
+        name: 'Oversized map',
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: { entries: [], width: 8000, height: 8000, minSeparation: 48 },
         createdBy: TEST_USER,
       },
       {
@@ -296,8 +379,17 @@ describe('deriveSurfaceEntrySize', () => {
         surfaceRepository,
       },
     );
-    const onLargeMap = await deriveSurfaceEntrySize(
-      { organismId: text.organism.id, mapOrganismId: largeMap.organism.id },
+    const onReferenceMap = await deriveSurfaceEntrySize(
+      { organismId: text.organism.id, mapOrganismId: referenceMap.organism.id },
+      {
+        organismRepository,
+        stateRepository,
+        compositionRepository,
+        surfaceRepository,
+      },
+    );
+    const onOversizedMap = await deriveSurfaceEntrySize(
+      { organismId: text.organism.id, mapOrganismId: oversizedMap.organism.id },
       {
         organismRepository,
         stateRepository,
@@ -306,7 +398,8 @@ describe('deriveSurfaceEntrySize', () => {
       },
     );
 
-    expect(onSmallMap.size).toBeGreaterThan(onLargeMap.size);
+    expect(onSmallMap.size).toBeCloseTo(onReferenceMap.size, 8);
+    expect(onReferenceMap.size).toBeGreaterThan(onOversizedMap.size);
   });
 
   it('allows true sub-floor sizes when deriving on a map', async () => {
@@ -373,7 +466,64 @@ describe('deriveSurfaceEntrySize', () => {
     );
 
     expect(withoutMapContext.size).toBeGreaterThanOrEqual(0.75);
-    expect(withMapContext.size).toBeLessThan(0.75);
+    expect(withMapContext.size).toBeLessThan(withoutMapContext.size);
+  });
+
+  it('keeps short text organisms small on map surfaces', async () => {
+    const organismRepository = new InMemoryOrganismRepository();
+    const stateRepository = new InMemoryStateRepository();
+    const compositionRepository = new InMemoryCompositionRepository();
+    const surfaceRepository = new InMemorySurfaceRepository(stateRepository);
+    const relationshipRepository = new InMemoryRelationshipRepository();
+    const eventPublisher = new InMemoryEventPublisher();
+    const identityGenerator = createTestIdentityGenerator();
+    const contentTypeRegistry = createRegistry();
+
+    const text = await createOrganism(
+      {
+        name: 'Short text',
+        contentTypeId: 'text' as ContentTypeId,
+        payload: { content: 'Two short lines.', format: 'plaintext' },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
+    const map = await createOrganism(
+      {
+        name: 'Reference map',
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: { entries: [], width: 5000, height: 5000, minSeparation: 48 },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
+    const size = await deriveSurfaceEntrySize(
+      { organismId: text.organism.id, mapOrganismId: map.organism.id },
+      {
+        organismRepository,
+        stateRepository,
+        compositionRepository,
+        surfaceRepository,
+      },
+    );
+
+    expect(size.size).toBeLessThan(0.5);
   });
 
   it('preserves source-boundary occupancy share when transferring to world map', async () => {
@@ -646,8 +796,25 @@ describe('deriveSurfaceEntrySize', () => {
       composedBy: TEST_USER,
     });
 
+    const targetMap = await createOrganism(
+      {
+        name: 'Target map',
+        contentTypeId: 'spatial-map' as ContentTypeId,
+        payload: { entries: [], width: 5000, height: 5000, minSeparation: 48 },
+        createdBy: TEST_USER,
+      },
+      {
+        organismRepository,
+        stateRepository,
+        contentTypeRegistry,
+        eventPublisher,
+        relationshipRepository,
+        identityGenerator,
+      },
+    );
+
     const unsurfacedChildSize = await deriveSurfaceEntrySize(
-      { organismId: root.organism.id },
+      { organismId: root.organism.id, mapOrganismId: targetMap.organism.id },
       {
         organismRepository,
         stateRepository,
@@ -678,7 +845,7 @@ describe('deriveSurfaceEntrySize', () => {
     );
 
     const surfacedChildSize = await deriveSurfaceEntrySize(
-      { organismId: root.organism.id },
+      { organismId: root.organism.id, mapOrganismId: targetMap.organism.id },
       {
         organismRepository,
         stateRepository,
