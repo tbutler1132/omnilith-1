@@ -163,6 +163,7 @@ export function PlatformShell() {
   const handleSpatialContextChange = useCallback((snapshot: SpaceStageSpatialSnapshot) => {
     setSpatialContext({
       mapOrganismId: snapshot.mapOrganismId,
+      enteredOrganismId: snapshot.enteredOrganismId,
       mapSize: snapshot.mapSize,
       mapEntries: snapshot.mapEntries,
       focusedOrganismId: snapshot.focusedOrganismId,
