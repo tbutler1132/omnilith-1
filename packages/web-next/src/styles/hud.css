@@ -791,6 +791,10 @@
   justify-content: center;
 }
 
+.spatial-controls-slot .visor-widget.spatial-mini-map-widget {
+  align-self: flex-start;
+}
+
 .space-nav-back-btn {
   width: 1.8rem;
   height: 1.45rem;
@@ -951,7 +955,7 @@
   pointer-events: none;
 }
 
-.spatial-mini-map-widget {
+.visor-widget.spatial-mini-map-widget {
   width: 8.4rem;
   height: 8.4rem;
   min-height: 8.4rem;
@@ -1184,7 +1188,7 @@
     gap: 0.4rem;
   }
 
-  .spatial-mini-map-widget {
+  .visor-widget.spatial-mini-map-widget {
     width: 7.8rem;
     height: 7.8rem;
     min-height: 7.8rem;
@@ -1755,7 +1759,7 @@
 }
 
 .space-nav-back-btn--hidden {
-  visibility: hidden;
+  display: none;
   pointer-events: none;
 }
 
