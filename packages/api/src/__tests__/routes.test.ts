@@ -665,6 +665,44 @@ describe('organism routes', () => {
     expect(children[0].childId).toBe(child.id);
   });
 
+  it('GET /organisms/:id/access returns compose decision for steward', async () => {
+    const parentRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Boundary',
+        contentTypeId: 'text',
+        payload: { content: 'boundary', format: 'plaintext' },
+      }),
+    });
+    const { organism: parent } = await parentRes.json();
+
+    const res = await app.request(`/organisms/${parent.id}/access?action=compose`);
+    expect(res.status).toBe(200);
+
+    const body = await res.json();
+    expect(body.action).toBe('compose');
+    expect(body.allowed).toBe(true);
+    expect(body.reason).toBeNull();
+  });
+
+  it('GET /organisms/:id/access requires organism view access', async () => {
+    const parentRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Private Boundary',
+        contentTypeId: 'text',
+        payload: { content: 'private', format: 'plaintext' },
+      }),
+    });
+    const { organism: parent } = await parentRes.json();
+
+    const outsiderApp = createTestApp(container, 'outsider-user' as UserId).app;
+    const deniedRes = await outsiderApp.request(`/organisms/${parent.id}/access?action=compose`);
+    expect(deniedRes.status).toBe(403);
+  });
+
   it('GET /organisms/:id/children-with-state returns composed children with organism and current state', async () => {
     const parentRes = await app.request('/organisms', {
       method: 'POST',

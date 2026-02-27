@@ -5,12 +5,14 @@
 import type {
   AppendStateRequest,
   ComposeChildRequest,
+  FetchOrganismAccessResponse,
   RecordObservationRequest,
   ThresholdOrganismRequest,
   UpdateOpenTrunkRequest,
   UpdateVisibilityRequest,
 } from '@omnilith/api-contracts';
 import type {
+  ActionType,
   ContentTypeId,
   DomainError,
   EventType,
@@ -23,6 +25,7 @@ import {
   appendState,
   changeOpenTrunk,
   changeVisibility,
+  checkAccess,
   composeOrganism,
   createOrganism,
   decomposeOrganism,
@@ -83,6 +86,23 @@ function isStateSequenceConflictError(error: unknown): boolean {
   return (
     typeof candidate.message === 'string' && candidate.message.includes('organism_states_organism_sequence_unique')
   );
+}
+
+const ACCESS_ACTIONS: ReadonlySet<ActionType> = new Set([
+  'view',
+  'append-state',
+  'record-observation',
+  'open-proposal',
+  'integrate-proposal',
+  'decline-proposal',
+  'compose',
+  'decompose',
+  'change-visibility',
+  'change-open-trunk',
+]);
+
+function isActionType(value: string): value is ActionType {
+  return ACCESS_ACTIONS.has(value as ActionType);
 }
 
 export function organismRoutes(container: Container) {
@@ -157,6 +177,36 @@ export function organismRoutes(container: Container) {
 
     const currentState = await container.stateRepository.findCurrentByOrganismId(id);
     return c.json({ organism, currentState });
+  });
+
+  // Access decision for a specific action
+  app.get('/:id/access', async (c) => {
+    const userId = c.get('userId');
+    const id = c.req.param('id') as OrganismId;
+    const actionParam = c.req.query('action');
+
+    if (!actionParam || !isActionType(actionParam)) {
+      return c.json({ error: 'Query parameter "action" is required and must be a valid action type.' }, 400);
+    }
+
+    const accessError = await requireOrganismAccess(c, container, userId, id, 'view');
+    if (accessError) return accessError;
+
+    const decision = await checkAccess(userId, id, actionParam, {
+      visibilityRepository: container.visibilityRepository,
+      surfaceRepository: container.surfaceRepository,
+      relationshipRepository: container.relationshipRepository,
+      compositionRepository: container.compositionRepository,
+      organismRepository: container.organismRepository,
+    });
+
+    const response: FetchOrganismAccessResponse = {
+      action: actionParam,
+      allowed: decision.allowed,
+      reason: decision.reason ?? null,
+    };
+
+    return c.json(response);
   });
 
   // State history

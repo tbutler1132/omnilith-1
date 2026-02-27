@@ -144,6 +144,57 @@
   margin-top: 0.3rem;
 }
 
+.systemsViewFormRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.6rem;
+  align-items: end;
+}
+
+.systemsViewFormField {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.systemsViewFormLabel {
+  margin: 0;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(156, 190, 172, 0.8);
+}
+
+.systemsViewFormInput,
+.systemsViewFormTextarea,
+.systemsViewFormSelect {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(92, 132, 108, 0.52);
+  background: rgba(7, 12, 9, 0.72);
+  color: rgba(226, 240, 233, 0.95);
+  font-size: 0.78rem;
+  padding: 0.42rem 0.48rem;
+}
+
+.systemsViewFormTextarea {
+  min-height: 7.5rem;
+  resize: vertical;
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New',
+    monospace;
+}
+
+.systemsViewFormCheckbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.34rem;
+  font-size: 0.74rem;
+  color: rgba(201, 225, 212, 0.92);
+}
+
+.systemsViewFormCheckbox input {
+  accent-color: rgba(142, 214, 169, 0.86);
+}
+
 .systemsViewActionButton {
   appearance: none;
   border: 1px solid rgba(121, 160, 137, 0.44);
@@ -168,4 +219,9 @@
 .systemsViewActionButton:focus-visible {
   outline: 2px solid rgba(154, 233, 182, 0.8);
   outline-offset: 1px;
+}
+
+.systemsViewActionButton:disabled {
+  opacity: 0.56;
+  cursor: default;
 }

@@ -18,6 +18,17 @@ export type VisibilityLevel = 'public' | 'members' | 'private';
 export type RelationshipType = 'membership' | 'integration-authority' | 'stewardship';
 export type MembershipRole = 'founder' | 'member';
 export type ProposalStatus = 'open' | 'integrated' | 'declined';
+export type AccessAction =
+  | 'view'
+  | 'append-state'
+  | 'record-observation'
+  | 'open-proposal'
+  | 'integrate-proposal'
+  | 'decline-proposal'
+  | 'compose'
+  | 'decompose'
+  | 'change-visibility'
+  | 'change-open-trunk';
 
 export type EventType =
   | 'organism.created'
@@ -167,6 +178,13 @@ interface FetchOrganismStateRecord {
 export interface FetchOrganismResponse {
   readonly organism: FetchOrganismRecord;
   readonly currentState: FetchOrganismStateRecord | null;
+}
+
+/** GET /organisms/:id/access?action=<action> */
+export interface FetchOrganismAccessResponse {
+  readonly action: AccessAction;
+  readonly allowed: boolean;
+  readonly reason: string | null;
 }
 
 /** GET /public/organisms?ids=<id,id,...> */

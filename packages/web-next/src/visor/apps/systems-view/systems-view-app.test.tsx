@@ -11,6 +11,7 @@ interface MockSystemsViewState {
   readonly loading: boolean;
   readonly error: Error | null;
   readonly sectionErrors: SystemsViewSectionErrors;
+  readonly reload: () => void;
 }
 
 const EMPTY_SECTION_ERRORS: SystemsViewSectionErrors = {
@@ -22,6 +23,7 @@ let mockState: MockSystemsViewState = {
   loading: true,
   error: null,
   sectionErrors: EMPTY_SECTION_ERRORS,
+  reload: () => {},
 };
 let requestedTargetOrganismId: string | null = null;
 
@@ -74,6 +76,7 @@ describe('SystemsViewApp', () => {
       loading: true,
       error: null,
       sectionErrors: EMPTY_SECTION_ERRORS,
+      reload: () => {},
     };
     requestedTargetOrganismId = null;
   });
@@ -115,10 +118,13 @@ describe('SystemsViewApp', () => {
           createChild({ id: 'child-1', name: 'Child One', position: 1, contentTypeId: 'text' }),
           createChild({ id: 'child-2', name: 'Child Two', position: 2, contentTypeId: 'image' }),
         ],
+        canCompose: true,
+        composeDeniedReason: null,
       },
       loading: false,
       error: null,
       sectionErrors: EMPTY_SECTION_ERRORS,
+      reload: () => {},
     };
 
     const html = renderToStaticMarkup(
@@ -134,6 +140,8 @@ describe('SystemsViewApp', () => {
     expect(html).toContain('Parent Boundary');
     expect(html).toContain('Target Boundary');
     expect(html).toContain('Composed Children');
+    expect(html).toContain('Create and compose child');
+    expect(html).toContain('Threshold and compose');
     expect(html).toContain('Child One');
     expect(html).toContain('Focus child');
     expect(requestedTargetOrganismId).toBe('org-1');
@@ -157,10 +165,13 @@ describe('SystemsViewApp', () => {
           createChild({ id: 'child-1', name: 'Child One', position: 1, contentTypeId: 'text' }),
           createChild({ id: 'child-2', name: 'Child Two', position: 2, contentTypeId: 'image' }),
         ],
+        canCompose: true,
+        composeDeniedReason: null,
       },
       loading: false,
       error: null,
       sectionErrors: EMPTY_SECTION_ERRORS,
+      reload: () => {},
     };
 
     const html = renderToStaticMarkup(
@@ -178,5 +189,42 @@ describe('SystemsViewApp', () => {
 
     expect(html).toContain('Selected');
     expect(html).toContain('Child Two');
+  });
+
+  it('shows compose access denial reason when user cannot compose in boundary', () => {
+    mockState = {
+      data: {
+        targetOrganismId: 'org-1',
+        organism: {
+          id: 'org-1',
+          name: 'Boundary Organism',
+          openTrunk: false,
+        },
+        currentState: {
+          contentTypeId: 'text',
+          payload: { content: 'state' },
+        },
+        parent: null,
+        children: [],
+        canCompose: false,
+        composeDeniedReason: 'User does not have stewardship of this organism',
+      },
+      loading: false,
+      error: null,
+      sectionErrors: EMPTY_SECTION_ERRORS,
+      reload: () => {},
+    };
+
+    const html = renderToStaticMarkup(
+      createElement(SystemsViewApp, {
+        onRequestClose: () => {},
+        organismId: 'org-1',
+        spatialContext: createEmptySpatialContext(),
+        onSpatialContextChanged: () => () => {},
+      }),
+    );
+
+    expect(html).toContain('User does not have stewardship of this organism');
+    expect(html).toContain('disabled');
   });
 });
