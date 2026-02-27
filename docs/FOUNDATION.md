@@ -230,9 +230,9 @@ The primary instance of the fundamental pattern at the content level.
 - Has zero or more **branches** — named pointers to non-trunk head versions
 - Has a **statement of orientation** — a lightweight, revisable articulation of what this work is reaching toward. Not a definition. A hypothesis. Revisable when the artifact reveals through its evolution what it actually is.
 - Has a **visibility level**: `public`, `members`, `private`
-  - Surfacing gates effective visibility. Unsurfaced artifacts resolve as private. Public or members visibility only becomes effective once surfaced.
+  - In Phase 1, all artifacts are surfaced at threshold. Visibility remains independent: surfaced artifacts can still be private.
 - Has an optional **integrator** assignment (a User). This records who currently holds integration authority for this artifact. If unset, the founder holds it. This is the Phase 1 configuration of the artifact's regulatory function — the simplest version that works with a small group. The regulatory function itself is the design; single-user assignment is its cheapest implementation.
-- Has an **open-trunk flag**. New artifacts begin open-trunk so a steward can shape initial coherence freely before first surfacing. If false, trunk is protected and proposals are required.
+- Has an **open-trunk flag**. New artifacts begin open-trunk so a steward can shape initial coherence freely before broader collaboration. If false, trunk is protected and proposals are required.
 - Has an optional **forkedFromId** preserving lineage across nodes.
 - Can compose other artifacts through versioned references. The parent's committed version pins specific versions of children.
 

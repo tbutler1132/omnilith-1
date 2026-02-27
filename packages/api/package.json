@@ -10,6 +10,8 @@
     "lint": "biome check src/",
     "dev": "tsx watch src/index.ts",
     "github:dispatch-issues": "tsx src/github/run-github-issue-dispatch-worker.ts",
+    "maps:migrate-mandatory-surfacing": "tsx src/migrate-mandatory-surfacing.ts",
+    "maps:spread-world-map": "tsx src/migrate-spread-world-map-entries.ts",
     "maps:migrate-unit-grid": "tsx src/migrate-unit-grid-world-map.ts",
     "regulator:run": "tsx src/regulator/run-regulator-cycle.ts",
     "start": "node dist/index.js",

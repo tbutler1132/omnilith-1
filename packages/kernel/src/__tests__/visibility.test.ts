@@ -81,10 +81,10 @@ describe('visibility and access control', () => {
     expect(decision.allowed).toBe(true);
   });
 
-  it('an unsurfaced organism resolves as private for guest view checks', async () => {
+  it('guest view checks use configured visibility even when surface data is unavailable', async () => {
     const steward = testUserId('steward');
     const { organism } = await createOrganism(
-      { name: 'Hidden Draft', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
+      { name: 'Surfaced Work', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
       createDeps(),
     );
 
@@ -96,28 +96,6 @@ describe('visibility and access control', () => {
         },
         async listSurfacedOrganismIds() {
           return new Set();
-        },
-      },
-    });
-
-    expect(decision.allowed).toBe(false);
-  });
-
-  it('a surfaced organism keeps configured public visibility for guest view checks', async () => {
-    const steward = testUserId('steward');
-    const { organism } = await createOrganism(
-      { name: 'Surfaced Work', contentTypeId: testContentTypeId(), payload: {}, createdBy: steward },
-      createDeps(),
-    );
-
-    const decision = await checkAccess(null, organism.id, 'view', {
-      ...accessDeps(),
-      surfaceRepository: {
-        async isSurfaced() {
-          return true;
-        },
-        async listSurfacedOrganismIds() {
-          return new Set([organism.id]);
         },
       },
     });

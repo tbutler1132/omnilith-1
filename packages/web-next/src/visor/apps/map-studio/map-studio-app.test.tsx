@@ -59,7 +59,7 @@ describe('MapStudioApp', () => {
     expect(requestedTargetMapId).toBeNull();
   });
 
-  it('renders candidate list and surfacing action when ready', () => {
+  it('renders candidate list and reposition action when ready', () => {
     mockState = {
       data: {
         targetMapId: 'map-ctx',
@@ -78,6 +78,24 @@ describe('MapStudioApp', () => {
         },
         mapEntries: [{ organismId: 'surfaced-1', x: 100, y: 200 }],
         myOrganisms: [
+          {
+            organism: {
+              id: 'surfaced-1',
+              name: 'Surfaced Organism',
+              createdAt: 1,
+              createdBy: 'user-1',
+              openTrunk: false,
+            },
+            currentState: {
+              id: 'state-surfaced-1',
+              organismId: 'surfaced-1',
+              contentTypeId: 'text',
+              payload: {},
+              createdAt: 1,
+              createdBy: 'user-1',
+              sequenceNumber: 1,
+            },
+          },
           {
             organism: {
               id: 'org-1',
@@ -120,8 +138,8 @@ describe('MapStudioApp', () => {
 
     expect(html).toContain('Map Studio');
     expect(html).toContain('World Map');
-    expect(html).toContain('Alpha Organism');
-    expect(html).toContain('Surface onto map');
+    expect(html).toContain('Surfaced Organism');
+    expect(html).toContain('Move on map');
     expect(requestedTargetMapId).toBe('map-ctx');
   });
 
@@ -160,7 +178,7 @@ describe('MapStudioApp', () => {
       }),
     );
 
-    expect(html).toContain('Sign in to surface your organisms onto this map.');
+    expect(html).toContain('Sign in to reposition your surfaced organisms on this map.');
   });
 
   it('shows unsupported status when target is not a spatial-map', () => {
@@ -201,7 +219,7 @@ describe('MapStudioApp', () => {
     expect(html).toContain('Map Studio requires a spatial-map target organism.');
   });
 
-  it('requires explicit cursor placement before surfacing', () => {
+  it('requires explicit cursor placement before repositioning', () => {
     mockState = {
       data: {
         targetMapId: 'map-ctx',
@@ -218,7 +236,7 @@ describe('MapStudioApp', () => {
           width: 5000,
           height: 5000,
         },
-        mapEntries: [],
+        mapEntries: [{ organismId: 'org-1', x: 50, y: 60 }],
         myOrganisms: [
           {
             organism: {

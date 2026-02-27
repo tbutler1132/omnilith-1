@@ -64,9 +64,7 @@ export async function checkAccess(
 
   // Step 1: Visibility check
   const visibility = await deps.visibilityRepository.findByOrganismId(organismId);
-  const configuredLevel = visibility?.level ?? 'public';
-  const isSurfaced = deps.surfaceRepository ? await deps.surfaceRepository.isSurfaced(organismId) : true;
-  const level: VisibilityLevel = isSurfaced ? configuredLevel : 'private';
+  const level: VisibilityLevel = visibility?.level ?? 'public';
 
   // Guest caller path: unauthenticated users can only view public organisms.
   if (userId === null) {

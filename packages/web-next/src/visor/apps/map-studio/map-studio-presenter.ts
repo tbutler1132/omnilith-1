@@ -1,12 +1,13 @@
 /**
  * Map Studio presenter.
  *
- * Normalizes map studio status, surfacing candidates, and placement intent so
+ * Normalizes map studio status, reposition candidates, and placement intent so
  * rendering remains deterministic and write actions stay predictable.
  */
 
 import type { FetchUserOrganismsResponse } from '@omnilith/api-contracts';
 import { ApiError } from '../../../api/api-client.js';
+import type { SpatialMapEntry } from '../../../space/use-spatial-map.js';
 
 export type MapStudioStatus = 'loading' | 'auth-required' | 'error' | 'unsupported-target' | 'empty' | 'ready';
 
@@ -28,11 +29,13 @@ export interface MapStudioCandidate {
   readonly id: string;
   readonly name: string;
   readonly contentTypeId: string | null;
+  readonly x: number;
+  readonly y: number;
 }
 
 export interface PresentMapStudioCandidatesInput {
   readonly organisms: FetchUserOrganismsResponse['organisms'];
-  readonly surfacedOrganismIds: ReadonlySet<string>;
+  readonly mapEntries: ReadonlyArray<SpatialMapEntry>;
   readonly excludedOrganismIds?: ReadonlySet<string>;
   readonly mapOrganismId: string | null;
 }
@@ -69,7 +72,7 @@ export function presentMapStudioStatus(input: PresentMapStudioStatusInput): Pres
   if (isAuthRequiredError(input.error)) {
     return {
       status: 'auth-required',
-      message: 'Log in to surface organisms with Map Studio.',
+      message: 'Log in to reposition organisms with Map Studio.',
     };
   }
 
@@ -97,14 +100,14 @@ export function presentMapStudioStatus(input: PresentMapStudioStatusInput): Pres
   if (input.requiresSignIn) {
     return {
       status: 'auth-required',
-      message: 'Sign in to surface your organisms onto this map.',
+      message: 'Sign in to reposition your surfaced organisms on this map.',
     };
   }
 
   if (input.candidateCount === 0) {
     return {
       status: 'empty',
-      message: 'No unsurfaced organisms are available for this map.',
+      message: 'No surfaced organisms from your practice are available on this map.',
     };
   }
 
@@ -116,29 +119,42 @@ export function presentMapStudioStatus(input: PresentMapStudioStatusInput): Pres
 
 export function presentMapStudioCandidates(input: PresentMapStudioCandidatesInput): ReadonlyArray<MapStudioCandidate> {
   const excluded = input.excludedOrganismIds ?? new Set<string>();
+  const myById = new Map(
+    input.organisms.map((entry) => [
+      entry.organism.id,
+      {
+        name: entry.organism.name,
+        contentTypeId: entry.currentState?.contentTypeId ?? null,
+      },
+    ]),
+  );
 
-  return [...input.organisms]
+  return [...input.mapEntries]
     .filter((entry) => {
-      const organismId = entry.organism.id;
-      if (input.mapOrganismId && organismId === input.mapOrganismId) {
+      if (input.mapOrganismId && entry.organismId === input.mapOrganismId) {
         return false;
       }
 
-      if (input.surfacedOrganismIds.has(organismId)) {
+      if (!myById.has(entry.organismId)) {
         return false;
       }
 
-      if (excluded.has(organismId)) {
+      if (excluded.has(entry.organismId)) {
         return false;
       }
 
       return true;
     })
-    .map((entry) => ({
-      id: entry.organism.id,
-      name: entry.organism.name,
-      contentTypeId: entry.currentState?.contentTypeId ?? null,
-    }))
+    .map((entry) => {
+      const myEntry = myById.get(entry.organismId);
+      return {
+        id: entry.organismId,
+        name: myEntry?.name ?? entry.organismId,
+        contentTypeId: myEntry?.contentTypeId ?? null,
+        x: entry.x,
+        y: entry.y,
+      };
+    })
     .sort((a, b) => {
       const nameSort = a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
       if (nameSort !== 0) {

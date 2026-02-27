@@ -305,7 +305,7 @@ describe('spatial-map validator', () => {
     expect(result.valid).toBe(true);
   });
 
-  it('rejects moving an existing entry during transition validation', () => {
+  it('allows moving an existing entry during transition validation', () => {
     const result = validateSpatialMap(
       {
         entries: [
@@ -327,8 +327,7 @@ describe('spatial-map validator', () => {
       },
     );
 
-    expect(result.valid).toBe(false);
-    expect(result.issues).toContain('existing entry moved: org-1');
+    expect(result.valid).toBe(true);
   });
 
   it('allows moving existing entries when map dimensions change', () => {

@@ -1,7 +1,7 @@
 /**
  * Map Studio app route codec.
  *
- * Persists map targeting and candidate selection so surfacing workflow can be
+ * Persists map targeting and candidate selection so reposition workflow can be
  * resumed directly from the visor URL.
  */
 

@@ -161,6 +161,17 @@ export interface ThresholdOrganismRequest {
 export interface ThresholdOrganismResponse {
   readonly organism: Organism;
   readonly initialState: OrganismState;
+  readonly surface?: {
+    readonly mapOrganismId: ApiId;
+    readonly status: 'surfaced' | 'already-surfaced';
+    readonly entry: {
+      readonly organismId: ApiId;
+      readonly x: number;
+      readonly y: number;
+      readonly size?: number;
+      readonly emphasis?: number;
+    };
+  };
 }
 
 /** GET /organisms/:id */

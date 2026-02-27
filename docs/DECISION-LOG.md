@@ -1,7 +1,7 @@
 # Omnilith — Decision Log: The Organism Model Sessions
 
 Status: Active canonical  
-Updated: February 26, 2026  
+Updated: February 27, 2026  
 Audience: Founders, maintainers, agents  
 Canonicality: Core source of truth (priority 3)
 
@@ -1171,6 +1171,28 @@ Architecture impact:
 The detailed decision record is captured in:
 
 - `docs/decisions/044-personal-organisms-as-digital-twin-boundaries.md`
+
+### Move 56: Phase 1 Mandatory Surfacing with Private Visibility
+
+To resolve ambiguity between private incubation and spatial legibility, Phase 1 map semantics were simplified.
+
+Direction:
+
+- every organism is surfaced on the world `map` at `threshold`
+- surfacing and visibility are explicitly decoupled: surfaced organisms may remain `private`
+- governance/composition participation requires surfaced presence
+- operational unsurfaced behavior is removed in Phase 1
+- scaling path is boundary-map introduction (`personal organism`, then `community`) rather than hidden placeless operation
+
+Architecture impact:
+
+- no kernel changes
+- direction is implemented through map policy/adapter behavior and rendering/query semantics
+- reduces governance edge cases and keeps finite-space discipline intact
+
+The detailed decision record is captured in:
+
+- `docs/decisions/045-phase1-mandatory-surfacing-with-private-visibility.md`
 
 ---
 

@@ -2,6 +2,7 @@
  * Server — Hono application with all routes wired.
  */
 
+import type { OrganismId } from '@omnilith/kernel';
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
 import { logger } from 'hono/logger';
@@ -54,7 +55,10 @@ export function createServer(container: Container, config?: ServerConfig) {
   // Authenticated routes
   const authenticated = new Hono<AuthEnv>();
   authenticated.use('*', authMiddleware(container.db));
-  authenticated.route('/organisms', organismRoutes(container));
+  authenticated.route(
+    '/organisms',
+    organismRoutes(container, { worldMapId: config?.worldMapId as OrganismId | undefined }),
+  );
   authenticated.route('/users', userRoutes(container));
   authenticated.route('/templates', templateRoutes(container));
   authenticated.route('/', proposalRoutes(container));
