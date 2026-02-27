@@ -7,10 +7,11 @@
 
 import type {
   FetchChildrenWithStateResponse,
+  FetchOrganismAccessResponse,
   FetchOrganismResponse,
   FetchParentResponse,
 } from '@omnilith/api-contracts';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { apiFetch } from '../../../api/api-client.js';
 import { fetchWorldMap } from '../../../api/fetch-world-map.js';
 import { resolvePublicApiPath } from '../../../api/public-api-path.js';
@@ -21,6 +22,8 @@ export interface SystemsViewData {
   readonly currentState: FetchOrganismResponse['currentState'];
   readonly parent: FetchParentResponse['parent'];
   readonly children: FetchChildrenWithStateResponse['children'];
+  readonly canCompose: boolean;
+  readonly composeDeniedReason: string | null;
 }
 
 export interface SystemsViewSectionErrors {
@@ -32,6 +35,7 @@ interface UseSystemsViewDataResult {
   readonly loading: boolean;
   readonly error: Error | null;
   readonly sectionErrors: SystemsViewSectionErrors;
+  readonly reload: () => void;
 }
 
 const EMPTY_SECTION_ERRORS: SystemsViewSectionErrors = {
@@ -39,15 +43,21 @@ const EMPTY_SECTION_ERRORS: SystemsViewSectionErrors = {
 };
 
 export function useSystemsViewData(targetedOrganismId: string | null): UseSystemsViewDataResult {
-  const [state, setState] = useState<UseSystemsViewDataResult>({
+  const [reloadCount, setReloadCount] = useState(0);
+  const [state, setState] = useState<Omit<UseSystemsViewDataResult, 'reload'>>({
     data: null,
     loading: true,
     error: null,
     sectionErrors: EMPTY_SECTION_ERRORS,
   });
 
+  const reload = useCallback(() => {
+    setReloadCount((count) => count + 1);
+  }, []);
+
   useEffect(() => {
     let cancelled = false;
+    void reloadCount;
 
     setState({
       data: null,
@@ -80,6 +90,9 @@ export function useSystemsViewData(targetedOrganismId: string | null): UseSystem
           apiFetch<FetchChildrenWithStateResponse>(
             resolvePublicApiPath(`/organisms/${targetOrganismId}/children-with-state`),
           ),
+          apiFetch<FetchOrganismAccessResponse>(
+            resolvePublicApiPath(`/organisms/${targetOrganismId}/access?action=compose`),
+          ),
         ]);
 
         if (cancelled) {
@@ -88,6 +101,7 @@ export function useSystemsViewData(targetedOrganismId: string | null): UseSystem
 
         const parentResult = sectionRequests[0];
         const childrenResult = sectionRequests[1];
+        const composeAccessResult = sectionRequests[2];
 
         const compositionError =
           parentResult.status === 'rejected'
@@ -103,6 +117,11 @@ export function useSystemsViewData(targetedOrganismId: string | null): UseSystem
             currentState: organism.currentState,
             parent: parentResult.status === 'fulfilled' ? parentResult.value.parent : null,
             children: childrenResult.status === 'fulfilled' ? childrenResult.value.children : [],
+            canCompose: composeAccessResult.status === 'fulfilled' ? composeAccessResult.value.allowed : false,
+            composeDeniedReason:
+              composeAccessResult.status === 'fulfilled'
+                ? (composeAccessResult.value.reason ?? null)
+                : 'Unable to resolve compose authority for this boundary.',
           },
           loading: false,
           error: null,
@@ -127,9 +146,12 @@ export function useSystemsViewData(targetedOrganismId: string | null): UseSystem
     return () => {
       cancelled = true;
     };
-  }, [targetedOrganismId]);
+  }, [targetedOrganismId, reloadCount]);
 
-  return state;
+  return {
+    ...state,
+    reload,
+  };
 }
 
 function toError(error: unknown, fallbackMessage: string): Error {
