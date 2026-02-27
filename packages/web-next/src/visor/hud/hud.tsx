@@ -123,7 +123,7 @@ export function VisorHud({
   const openPhaseForShell: Exclude<OpenVisorPhase, 'hidden'> = openVisorPhase === 'hidden' ? 'open' : openVisorPhase;
 
   return (
-    <div className="visor-hud-layer">
+    <div className="visor-hud-layer" data-mode={mode}>
       {showClosedHud ? (
         <>
           <SpatialControlsSlot
