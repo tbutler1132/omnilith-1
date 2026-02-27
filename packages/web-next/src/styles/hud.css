@@ -678,7 +678,62 @@
 .open-visor-shell-actions {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 0.42rem;
+}
+
+.open-visor-theme-toggle {
+  position: relative;
+  min-width: 9.4rem;
+  height: 2.1rem;
+  border: 1px solid rgba(212, 234, 255, 0.3);
+  border-radius: 0.56rem;
+  background: rgba(160, 208, 255, 0.1);
+  padding: 0.22rem;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: center;
+  gap: 0;
+  cursor: pointer;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(92, 150, 224, 0.18);
+  transition: border-color 170ms ease, box-shadow 170ms ease, background-color 170ms ease;
+}
+
+.open-visor-theme-toggle::after {
+  content: '';
+  position: absolute;
+  top: 0.22rem;
+  left: 0.22rem;
+  width: calc(50% - 0.22rem);
+  height: calc(100% - 0.44rem);
+  border-radius: 0.42rem;
+  background: rgba(255, 255, 255, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  transition: transform 220ms cubic-bezier(0.22, 0.72, 0.22, 1);
+}
+
+.open-visor-theme-toggle[data-theme='colorful']::after {
+  transform: translateX(100%);
+}
+
+.open-visor-theme-option {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  font-size: 0.56rem;
+  line-height: 1;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: rgba(204, 225, 248, 0.68);
+  transition: color 180ms ease;
+}
+
+.open-visor-theme-toggle[data-theme='monochrome'] .open-visor-theme-option--monochrome,
+.open-visor-theme-toggle[data-theme='colorful'] .open-visor-theme-option--colorful {
+  color: rgba(242, 250, 255, 0.98);
 }
 
 .open-visor-expanded-controls {
@@ -1416,6 +1471,7 @@
 }
 
 .app-dock-button,
+.open-visor-theme-toggle,
 .open-visor-rail-toggle,
 .open-visor-app-button,
 .open-visor-expand-button,
@@ -1484,6 +1540,14 @@
   box-shadow:
     inset 0 0 0 1px rgba(255, 230, 190, 0.1),
     0 0 12px rgba(255, 170, 69, 0.28);
+}
+
+.open-visor-theme-toggle {
+  border-color: rgba(240, 248, 255, 0.72);
+  background: rgba(20, 36, 52, 0.4);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    0 0 12px rgba(233, 245, 255, 0.3);
 }
 
 .open-visor-app-button {
@@ -1824,14 +1888,14 @@
 }
 
 /* Open visor monochrome pass: keep shell surfaces neutral while HUD stays colorful. */
-.visor-hud-layer[data-mode='open']::before {
+.visor-hud-layer[data-mode='open']:has(.open-visor-shell[data-theme='monochrome'])::before {
   background: rgba(255, 255, 255, 0.05);
   opacity: 0.58;
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-shell-header,
-.visor-hud-layer[data-mode='open'] .open-visor-rail,
-.visor-hud-layer[data-mode='open'] .open-visor-app-pane {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-shell-header,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-rail,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-app-pane {
   border-color: rgba(255, 255, 255, 0.52);
   background: rgba(0, 0, 0, 0.8);
   box-shadow:
@@ -1839,24 +1903,25 @@
     0 0 14px rgba(255, 255, 255, 0.14);
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-shell-kicker,
-.visor-hud-layer[data-mode='open'] .open-visor-shell-description,
-.visor-hud-layer[data-mode='open'] .open-visor-app-group-label,
-.visor-hud-layer[data-mode='open'] .open-visor-loading-label {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-shell-kicker,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-shell-description,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-app-group-label,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-loading-label {
   color: rgba(255, 255, 255, 0.74);
   text-shadow: none;
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-shell-title,
-.visor-hud-layer[data-mode='open'] .open-visor-app-label {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-shell-title,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-app-label {
   color: rgba(255, 255, 255, 0.94);
   text-shadow: none;
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-rail-toggle,
-.visor-hud-layer[data-mode='open'] .open-visor-app-button,
-.visor-hud-layer[data-mode='open'] .open-visor-expand-button,
-.visor-hud-layer[data-mode='open'] .open-visor-close-button {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-theme-toggle,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-rail-toggle,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-app-button,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-expand-button,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-close-button {
   border-color: rgba(255, 255, 255, 0.46);
   background: rgba(255, 255, 255, 0.08);
   color: rgba(255, 255, 255, 0.94);
@@ -1866,7 +1931,22 @@
     0 0 10px rgba(255, 255, 255, 0.14);
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-app-button--active {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-theme-toggle::after {
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-theme-option {
+  color: rgba(255, 255, 255, 0.64);
+  text-shadow: none;
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-theme-toggle[data-theme='monochrome'] .open-visor-theme-option--monochrome,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-theme-toggle[data-theme='colorful'] .open-visor-theme-option--colorful {
+  color: rgba(255, 255, 255, 0.98);
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-app-button--active {
   border-color: rgba(255, 255, 255, 0.72);
   background: rgba(255, 255, 255, 0.24);
   box-shadow:
@@ -1874,12 +1954,12 @@
     0 0 14px rgba(255, 255, 255, 0.2);
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-shell-actions,
-.visor-hud-layer[data-mode='open'] .open-visor-expanded-controls {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-shell-actions,
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-expanded-controls {
   filter: drop-shadow(0 0 9px rgba(255, 255, 255, 0.18));
 }
 
-.visor-hud-layer[data-mode='open'] .open-visor-loading-orb {
+.visor-hud-layer[data-mode='open'] .open-visor-shell[data-theme='monochrome'] .open-visor-loading-orb {
   border-color: rgba(255, 255, 255, 0.8);
   background: rgba(0, 0, 0, 0.92);
   box-shadow:
