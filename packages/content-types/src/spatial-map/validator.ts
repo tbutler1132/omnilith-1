@@ -51,10 +51,6 @@ function readDimensionsFromPayload(payload: unknown): { width?: number; height?:
   };
 }
 
-function samePosition(a: SpatialMapEntryLike, b: SpatialMapEntryLike): boolean {
-  return a.x === b.x && a.y === b.y;
-}
-
 export function validateSpatialMap(payload: unknown, context?: ValidationContext): ValidationResult {
   const issues: string[] = [];
   const p = payload as Partial<SpatialMapPayload>;
@@ -132,7 +128,8 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
       }
     }
 
-    // Transition guard: appends/proposals must preserve existing entries unless explicitly handled elsewhere.
+    // Transition guard: appends/proposals must preserve entry membership.
+    // Existing entries may be repositioned by map-specific flows.
     const previousEntries = readEntriesFromPayload(context?.previousPayload);
     if (previousEntries.length > 0) {
       const previousDimensions = readDimensionsFromPayload(context?.previousPayload);
@@ -157,10 +154,6 @@ export function validateSpatialMap(payload: unknown, context?: ValidationContext
           if (!dimensionsChanged) {
             issues.push(`existing entry removed: ${prev.organismId}`);
           }
-          continue;
-        }
-        if (!dimensionsChanged && !samePosition(prev, next)) {
-          issues.push(`existing entry moved: ${prev.organismId}`);
         }
       }
     }

@@ -1,8 +1,8 @@
 /**
  * Map Studio app.
  *
- * Provides a surface-first map curation workspace that lets signed-in users
- * place unsurfaced organisms onto the current map boundary.
+ * Provides a map curation workspace that lets signed-in users reposition
+ * their already surfaced organisms within the current map boundary.
  */
 
 import { useEffect, useMemo, useState } from 'react';
@@ -31,24 +31,18 @@ export function MapStudioApp({
   const requestedMapId = currentMapContextId ?? routeState.targetedOrganismId;
   const { data, loading, error, requiresSignIn, sectionErrors } = useMapStudioData(requestedMapId);
 
-  const [locallySurfacedIds, setLocallySurfacedIds] = useState<ReadonlySet<string>>(new Set());
-  const [pendingSurfaceOrganismId, setPendingSurfaceOrganismId] = useState<string | null>(null);
-  const [surfaceError, setSurfaceError] = useState<string | null>(null);
-  const [surfaceNotice, setSurfaceNotice] = useState<string | null>(null);
+  const [pendingMoveOrganismId, setPendingMoveOrganismId] = useState<string | null>(null);
+  const [moveError, setMoveError] = useState<string | null>(null);
+  const [moveNotice, setMoveNotice] = useState<string | null>(null);
 
-  const surfacedIds = useMemo(
-    () => new Set(data?.mapEntries.map((entry) => entry.organismId) ?? []),
-    [data?.mapEntries],
-  );
   const candidates = useMemo(
     () =>
       presentMapStudioCandidates({
         organisms: data?.myOrganisms ?? [],
-        surfacedOrganismIds: surfacedIds,
-        excludedOrganismIds: locallySurfacedIds,
+        mapEntries: data?.mapEntries ?? [],
         mapOrganismId: data?.mapOrganism.id ?? null,
       }),
-    [data?.mapOrganism.id, data?.myOrganisms, locallySurfacedIds, surfacedIds],
+    [data?.mapEntries, data?.mapOrganism.id, data?.myOrganisms],
   );
   const selectedCandidate = routeState.selectedCandidateId
     ? (candidates.find((entry) => entry.id === routeState.selectedCandidateId) ?? null)
@@ -71,17 +65,15 @@ export function MapStudioApp({
 
   useEffect(() => {
     if (loadedTargetMapId === null) {
-      setLocallySurfacedIds(new Set());
-      setPendingSurfaceOrganismId(null);
-      setSurfaceError(null);
-      setSurfaceNotice(null);
+      setPendingMoveOrganismId(null);
+      setMoveError(null);
+      setMoveNotice(null);
       return;
     }
 
-    setLocallySurfacedIds(new Set());
-    setPendingSurfaceOrganismId(null);
-    setSurfaceError(null);
-    setSurfaceNotice(null);
+    setPendingMoveOrganismId(null);
+    setMoveError(null);
+    setMoveNotice(null);
   }, [loadedTargetMapId]);
 
   useEffect(() => {
@@ -140,22 +132,22 @@ export function MapStudioApp({
   };
 
   const handleSelectCandidate = (candidateId: string) => {
-    setSurfaceError(null);
-    setSurfaceNotice(null);
+    setMoveError(null);
+    setMoveNotice(null);
     setRouteState({
       targetedOrganismId: routeState.targetedOrganismId,
       selectedCandidateId: candidateId,
     });
   };
 
-  const handleSurfaceCandidate = async () => {
+  const handleMoveCandidate = async () => {
     if (!data || !selectedCandidate || !placement) {
       return;
     }
 
-    setPendingSurfaceOrganismId(selectedCandidate.id);
-    setSurfaceError(null);
-    setSurfaceNotice(null);
+    setPendingMoveOrganismId(selectedCandidate.id);
+    setMoveError(null);
+    setMoveNotice(null);
 
     try {
       const response = await surfaceMapStudioCandidate({
@@ -165,16 +157,17 @@ export function MapStudioApp({
         y: placement.y,
       });
 
-      setLocallySurfacedIds((previous) => new Set([...previous, selectedCandidate.id]));
-      setSurfaceNotice(
-        response.status === 'already-surfaced'
-          ? `${selectedCandidate.name} is already surfaced on this map.`
-          : `Surfaced ${selectedCandidate.name} at (${response.entry.x}, ${response.entry.y}).`,
-      );
+      if (response.status === 'already-surfaced') {
+        setMoveNotice(`${selectedCandidate.name} is already at (${response.entry.x}, ${response.entry.y}).`);
+      } else if (response.status === 'repositioned') {
+        setMoveNotice(`Moved ${selectedCandidate.name} to (${response.entry.x}, ${response.entry.y}).`);
+      } else {
+        setMoveNotice(`Placed ${selectedCandidate.name} at (${response.entry.x}, ${response.entry.y}).`);
+      }
     } catch (nextError) {
-      setSurfaceError(nextError instanceof Error ? nextError.message : 'Failed to surface organism.');
+      setMoveError(nextError instanceof Error ? nextError.message : 'Failed to move organism.');
     } finally {
-      setPendingSurfaceOrganismId(null);
+      setPendingMoveOrganismId(null);
     }
   };
 
@@ -198,7 +191,7 @@ export function MapStudioApp({
           </div>
           <div className={styles.mapStudioMetaRow}>
             <dt>Surfaced</dt>
-            <dd>{data.mapEntries.length + locallySurfacedIds.size}</dd>
+            <dd>{data.mapEntries.length}</dd>
           </div>
           <div className={styles.mapStudioMetaRow}>
             <dt>Placement</dt>
@@ -222,7 +215,7 @@ export function MapStudioApp({
       {(presentedStatus.status === 'ready' || (presentedStatus.status === 'empty' && candidates.length > 0)) && (
         <div className={styles.mapStudioWorkspace}>
           <section className={styles.mapStudioLane}>
-            <h3 className={styles.mapStudioLaneTitle}>Surfacing candidates</h3>
+            <h3 className={styles.mapStudioLaneTitle}>Reposition candidates</h3>
             <ul className={styles.mapStudioList}>
               {candidates.map((candidate) => (
                 <li key={candidate.id} className={styles.mapStudioListItem}>
@@ -233,6 +226,9 @@ export function MapStudioApp({
                   >
                     <span className={styles.mapStudioPrimary}>{candidate.name}</span>
                     <span className={styles.mapStudioSecondary}>{candidate.id}</span>
+                    <span className={styles.mapStudioSecondary}>
+                      {Math.round(candidate.x)}, {Math.round(candidate.y)}
+                    </span>
                     <span className={styles.mapStudioSecondary}>{candidate.contentTypeId ?? 'no current state'}</span>
                   </button>
                 </li>
@@ -241,34 +237,37 @@ export function MapStudioApp({
           </section>
 
           <section className={styles.mapStudioLane}>
-            <h3 className={styles.mapStudioLaneTitle}>Surface selected organism</h3>
+            <h3 className={styles.mapStudioLaneTitle}>Move selected organism</h3>
             {selectedCandidate ? (
               <article className={styles.mapStudioCandidatePanel}>
                 <p className={styles.mapStudioPrimary}>{selectedCandidate.name}</p>
                 <p className={styles.mapStudioSecondary}>{selectedCandidate.id}</p>
+                <p className={styles.mapStudioSecondary}>
+                  Current: {Math.round(selectedCandidate.x)}, {Math.round(selectedCandidate.y)}
+                </p>
                 <p className={styles.mapStudioSecondary}>{selectedCandidate.contentTypeId ?? 'no current state'}</p>
                 <button
                   type="button"
                   className={styles.mapStudioActionButton}
-                  disabled={pendingSurfaceOrganismId !== null || placement === null}
-                  onClick={() => void handleSurfaceCandidate()}
+                  disabled={pendingMoveOrganismId !== null || placement === null}
+                  onClick={() => void handleMoveCandidate()}
                 >
-                  {pendingSurfaceOrganismId === selectedCandidate.id
-                    ? 'Surfacing...'
+                  {pendingMoveOrganismId === selectedCandidate.id
+                    ? 'Repositioning...'
                     : placement === null
                       ? 'Pick map spot first'
-                      : 'Surface onto map'}
+                      : 'Move on map'}
                 </button>
               </article>
             ) : (
-              <p className={styles.mapStudioEmpty}>Select an organism candidate to surface.</p>
+              <p className={styles.mapStudioEmpty}>Select a surfaced organism to reposition.</p>
             )}
           </section>
         </div>
       )}
 
-      {surfaceNotice ? <p className={styles.mapStudioNotice}>{surfaceNotice}</p> : null}
-      {surfaceError ? <p className={styles.mapStudioSectionError}>{surfaceError}</p> : null}
+      {moveNotice ? <p className={styles.mapStudioNotice}>{moveNotice}</p> : null}
+      {moveError ? <p className={styles.mapStudioSectionError}>{moveError}</p> : null}
     </section>
   );
 }

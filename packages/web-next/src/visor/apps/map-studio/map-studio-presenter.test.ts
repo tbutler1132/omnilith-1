@@ -46,7 +46,7 @@ describe('presentMapStudioStatus', () => {
       }),
     ).toEqual({
       status: 'auth-required',
-      message: 'Sign in to surface your organisms onto this map.',
+      message: 'Sign in to reposition your surfaced organisms on this map.',
     });
   });
 
@@ -68,7 +68,7 @@ describe('presentMapStudioStatus', () => {
 });
 
 describe('presentMapStudioCandidates', () => {
-  it('filters surfaced organisms, map organism, and locally surfaced organisms', () => {
+  it('returns my surfaced map entries while excluding map/self and local exclusions', () => {
     const result = presentMapStudioCandidates({
       organisms: [
         createUserOrganism({ id: 'org-c', name: 'C Lumen' }),
@@ -76,7 +76,12 @@ describe('presentMapStudioCandidates', () => {
         createUserOrganism({ id: 'org-b', name: 'B Current', contentTypeId: 'image' }),
         createUserOrganism({ id: 'map-1', name: 'Boundary Map', contentTypeId: 'spatial-map' }),
       ],
-      surfacedOrganismIds: new Set(['org-b']),
+      mapEntries: [
+        { organismId: 'org-a', x: 10, y: 11 },
+        { organismId: 'org-b', x: 12, y: 13 },
+        { organismId: 'org-z', x: 20, y: 21 },
+        { organismId: 'map-1', x: 30, y: 31 },
+      ],
       excludedOrganismIds: new Set(['org-c']),
       mapOrganismId: 'map-1',
     });
@@ -86,6 +91,15 @@ describe('presentMapStudioCandidates', () => {
         id: 'org-a',
         name: 'A Root',
         contentTypeId: 'text',
+        x: 10,
+        y: 11,
+      },
+      {
+        id: 'org-b',
+        name: 'B Current',
+        contentTypeId: 'image',
+        x: 12,
+        y: 13,
       },
     ]);
   });

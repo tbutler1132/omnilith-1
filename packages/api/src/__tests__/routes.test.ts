@@ -8,6 +8,7 @@
 
 import { allContentTypes } from '@omnilith/content-types';
 import type {
+  ContentTypeId,
   ContentTypeRegistry,
   OrganismId,
   OrganismState,
@@ -17,6 +18,7 @@ import type {
   Timestamp,
   UserId,
 } from '@omnilith/kernel';
+import { createOrganism } from '@omnilith/kernel';
 import {
   createTestIdentityGenerator,
   InMemoryCompositionRepository,
@@ -82,14 +84,18 @@ function createTestContainer(): Container {
   };
 }
 
-function createTestApp(container: Container, testUserId: UserId = 'test-user' as UserId) {
+function createTestApp(
+  container: Container,
+  testUserId: UserId = 'test-user' as UserId,
+  options?: { worldMapId?: OrganismId },
+) {
   // Create app with a mock auth middleware that injects a fixed userId
   const app = new Hono<AuthEnv>();
   app.use('*', async (c, next) => {
     c.set('userId', testUserId);
     await next();
   });
-  app.route('/organisms', organismRoutes(container));
+  app.route('/organisms', organismRoutes(container, { worldMapId: options?.worldMapId }));
   app.route('/users', userRoutes(container));
   app.route('/', proposalRoutes(container));
 
@@ -126,6 +132,39 @@ function createTestApp(container: Container, testUserId: UserId = 'test-user' as
   });
 
   return { app, testUserId };
+}
+
+async function createWorldMap(container: Container, createdBy: UserId): Promise<OrganismId> {
+  const worldMap = await createOrganism(
+    {
+      name: 'World Map',
+      contentTypeId: 'spatial-map' as ContentTypeId,
+      payload: {
+        entries: [],
+        width: 5_000,
+        height: 5_000,
+        minSeparation: 1,
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    {
+      organismRepository: container.organismRepository,
+      stateRepository: container.stateRepository,
+      contentTypeRegistry: container.contentTypeRegistry,
+      eventPublisher: container.eventPublisher,
+      relationshipRepository: container.relationshipRepository,
+      identityGenerator: container.identityGenerator,
+    },
+  );
+
+  await container.visibilityRepository.save({
+    organismId: worldMap.organism.id,
+    level: 'public',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+
+  return worldMap.organism.id;
 }
 
 function createPublicReadApp(container: Container) {
@@ -222,11 +261,13 @@ class ConcurrentMapWriteStateRepository implements StateRepository {
 describe('organism routes', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    const setup = createTestApp(container);
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    const setup = createTestApp(container, 'test-user' as UserId, { worldMapId });
     app = setup.app;
   });
 
@@ -247,6 +288,71 @@ describe('organism routes', () => {
     expect(body.organism.openTrunk).toBe(true);
     expect(body.initialState).toBeDefined();
     expect(body.initialState.sequenceNumber).toBe(1);
+    expect(body.surface.mapOrganismId).toBe(worldMapId);
+    expect(body.surface.status).toBe('surfaced');
+
+    const worldMapRes = await app.request(`/organisms/${worldMapId}`);
+    expect(worldMapRes.status).toBe(200);
+    const worldMapBody = await worldMapRes.json();
+    const mapPayload = worldMapBody.currentState.payload as { entries: Array<{ organismId: string }> };
+    expect(mapPayload.entries.map((entry) => entry.organismId)).toContain(body.organism.id);
+  });
+
+  it('POST /organisms auto-placement uses steward footprint when available', async () => {
+    const firstRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'First',
+        contentTypeId: 'text',
+        payload: { content: 'first', format: 'plaintext' },
+      }),
+    });
+    expect(firstRes.status).toBe(201);
+    const firstBody = await firstRes.json();
+
+    const secondRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Second',
+        contentTypeId: 'text',
+        payload: { content: 'second', format: 'plaintext' },
+      }),
+    });
+    expect(secondRes.status).toBe(201);
+    const secondBody = await secondRes.json();
+
+    const firstX = firstBody.surface.entry.x as number;
+    const firstY = firstBody.surface.entry.y as number;
+    const secondX = secondBody.surface.entry.x as number;
+    const secondY = secondBody.surface.entry.y as number;
+
+    expect(firstX).toBe(2500);
+    expect(firstY).toBe(2500);
+    expect(secondX === firstX && secondY === firstY).toBe(false);
+
+    const dx = secondX - firstX;
+    const dy = secondY - firstY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    expect(distance).toBeGreaterThanOrEqual(24);
+  });
+
+  it('POST /organisms returns 503 when world-map pointer is unavailable', async () => {
+    const appWithoutWorldMap = createTestApp(container, 'test-user' as UserId).app;
+    const res = await appWithoutWorldMap.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Hello World',
+        contentTypeId: 'text',
+        payload: { content: '# Hello World', format: 'markdown' },
+      }),
+    });
+
+    expect(res.status).toBe(503);
+    const body = await res.json();
+    expect(body.error).toContain('World map pointer is unavailable');
   });
 
   it('POST /organisms validates new song-related content types', async () => {
@@ -577,6 +683,56 @@ describe('organism routes', () => {
     expect(statesBody.states).toHaveLength(2);
   });
 
+  it('POST /organisms/:id/surface repositions an already surfaced organism', async () => {
+    const mapRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Map',
+        contentTypeId: 'spatial-map',
+        payload: { entries: [], width: 5000, height: 5000 },
+        openTrunk: true,
+      }),
+    });
+    const { organism: map } = await mapRes.json();
+
+    const targetRes = await app.request('/organisms', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Target',
+        contentTypeId: 'text',
+        payload: { content: 'a', format: 'plaintext' },
+      }),
+    });
+    const { organism: target } = await targetRes.json();
+
+    const firstRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organismId: target.id, x: 200, y: 240 }),
+    });
+    expect(firstRes.status).toBe(201);
+
+    const repositionRes = await app.request(`/organisms/${map.id}/surface`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ organismId: target.id, x: 260, y: 300 }),
+    });
+    expect(repositionRes.status).toBe(200);
+    const repositionBody = await repositionRes.json();
+    expect(repositionBody.status).toBe('repositioned');
+    expect(repositionBody.entry.x).toBe(260);
+    expect(repositionBody.entry.y).toBe(300);
+
+    const mapStateRes = await app.request(`/organisms/${map.id}`);
+    expect(mapStateRes.status).toBe(200);
+    const mapBody = await mapStateRes.json();
+    const payload = mapBody.currentState.payload as { entries: Array<{ organismId: string; x: number; y: number }> };
+    expect(payload.entries).toHaveLength(1);
+    expect(payload.entries[0]).toMatchObject({ organismId: target.id, x: 260, y: 300 });
+  });
+
   it('POST /organisms/:id/surface retries with latest map state when a concurrent write lands first', async () => {
     const mapRes = await app.request('/organisms', {
       method: 'POST',
@@ -698,7 +854,13 @@ describe('organism routes', () => {
     });
     const { organism: parent } = await parentRes.json();
 
-    const outsiderApp = createTestApp(container, 'outsider-user' as UserId).app;
+    await container.visibilityRepository.save({
+      organismId: parent.id,
+      level: 'private',
+      updatedAt: container.identityGenerator.timestamp(),
+    });
+
+    const outsiderApp = createTestApp(container, 'outsider-user' as UserId, { worldMapId }).app;
     const deniedRes = await outsiderApp.request(`/organisms/${parent.id}/access?action=compose`);
     expect(deniedRes.status).toBe(403);
   });
@@ -796,7 +958,7 @@ describe('organism routes', () => {
   });
 
   it('POST /organisms/:id/observations denies non-stewards', async () => {
-    const stewardSetup = createTestApp(container, 'steward-user' as UserId);
+    const stewardSetup = createTestApp(container, 'steward-user' as UserId, { worldMapId });
     const stewardApp = stewardSetup.app;
 
     const sensorRes = await stewardApp.request('/organisms', {
@@ -826,7 +988,7 @@ describe('organism routes', () => {
     });
     const { organism: target } = await targetRes.json();
 
-    const outsiderSetup = createTestApp(container, 'outsider-user' as UserId);
+    const outsiderSetup = createTestApp(container, 'outsider-user' as UserId, { worldMapId });
     const outsiderApp = outsiderSetup.app;
     const observeRes = await outsiderApp.request(`/organisms/${sensor.id}/observations`, {
       method: 'POST',
@@ -846,11 +1008,13 @@ describe('organism routes', () => {
 describe('proposal routes', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    const setup = createTestApp(container);
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    const setup = createTestApp(container, 'test-user' as UserId, { worldMapId });
     app = setup.app;
   });
 
@@ -1020,11 +1184,13 @@ describe('proposal routes', () => {
 describe('error handling', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    const setup = createTestApp(container);
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    const setup = createTestApp(container, 'test-user' as UserId, { worldMapId });
     app = setup.app;
   });
 
@@ -1069,11 +1235,13 @@ describe('query and listing routes', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
   let testUserId: UserId;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    const setup = createTestApp(container);
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    const setup = createTestApp(container, 'test-user' as UserId, { worldMapId });
     app = setup.app;
     testUserId = setup.testUserId;
   });
@@ -1082,7 +1250,7 @@ describe('query and listing routes', () => {
     await createTestOrganism(app);
     await createTestOrganism(app);
 
-    const res = await app.request('/organisms');
+    const res = await app.request('/organisms?createdBy=test-user');
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.organisms).toHaveLength(2);
@@ -1108,7 +1276,7 @@ describe('query and listing routes', () => {
     await createTestOrganism(app, { name: 'Second' });
     await createTestOrganism(app, { name: 'Third' });
 
-    const res = await app.request('/organisms?limit=1&offset=1');
+    const res = await app.request('/organisms?createdBy=test-user&limit=1&offset=1');
     expect(res.status).toBe(200);
     const body = await res.json();
     expect(body.organisms).toHaveLength(1);
@@ -1255,16 +1423,18 @@ describe('authorization enforcement', () => {
   let ownerUserId: UserId;
   let outsiderUserId: UserId;
   let memberUserId: UserId;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
     ownerUserId = 'owner-user' as UserId;
     outsiderUserId = 'outsider-user' as UserId;
     memberUserId = 'member-user' as UserId;
-    ownerApp = createTestApp(container, ownerUserId).app;
-    outsiderApp = createTestApp(container, outsiderUserId).app;
-    memberApp = createTestApp(container, memberUserId).app;
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    ownerApp = createTestApp(container, ownerUserId, { worldMapId }).app;
+    outsiderApp = createTestApp(container, outsiderUserId, { worldMapId }).app;
+    memberApp = createTestApp(container, memberUserId, { worldMapId }).app;
   });
 
   it('private organism endpoints deny unrelated users', async () => {
@@ -1429,11 +1599,13 @@ describe('public read routes', () => {
   let container: Container;
   let ownerApp: Hono<AuthEnv>;
   let publicApp: Hono;
+  let worldMapId: OrganismId;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    ownerApp = createTestApp(container, 'owner-user' as UserId).app;
+    worldMapId = await createWorldMap(container, 'system-user' as UserId);
+    ownerApp = createTestApp(container, 'owner-user' as UserId, { worldMapId }).app;
     publicApp = createPublicReadApp(container);
   });
 
@@ -1616,10 +1788,10 @@ describe('public read routes', () => {
     expect(contributionsRes.status).toBe(404);
   });
 
-  it('guest receives 404 for unsurfaced organisms even without explicit private visibility', async () => {
+  it('guest can read default-public organisms after threshold surfacing', async () => {
     const { organism } = await createTestOrganism(ownerApp);
 
     const res = await publicApp.request(`/public/organisms/${organism.id}`);
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(200);
   });
 });

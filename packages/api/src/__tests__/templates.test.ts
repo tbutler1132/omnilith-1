@@ -3,7 +3,13 @@
  */
 
 import { allContentTypes } from '@omnilith/content-types';
-import type { ContentTypeRegistry, OrganismId, UserId } from '@omnilith/kernel';
+import {
+  type ContentTypeId,
+  type ContentTypeRegistry,
+  createOrganism,
+  type OrganismId,
+  type UserId,
+} from '@omnilith/kernel';
 import {
   createTestIdentityGenerator,
   InMemoryCompositionRepository,
@@ -67,7 +73,7 @@ function createTestContainer(): Container {
   };
 }
 
-function createTestApp(container: Container) {
+function createTestApp(container: Container, worldMapId: OrganismId) {
   const testUserId = 'test-user' as UserId;
 
   const app = new Hono<AuthEnv>();
@@ -75,20 +81,54 @@ function createTestApp(container: Container) {
     c.set('userId', testUserId);
     await next();
   });
-  app.route('/organisms', organismRoutes(container));
+  app.route('/organisms', organismRoutes(container, { worldMapId }));
   app.route('/templates', templateRoutes(container));
 
   return { app, testUserId };
+}
+
+async function createWorldMap(container: Container, createdBy: UserId): Promise<OrganismId> {
+  const worldMap = await createOrganism(
+    {
+      name: 'World Map',
+      contentTypeId: 'spatial-map' as ContentTypeId,
+      payload: {
+        entries: [],
+        width: 5_000,
+        height: 5_000,
+        minSeparation: 1,
+      },
+      createdBy,
+      openTrunk: true,
+    },
+    {
+      organismRepository: container.organismRepository,
+      stateRepository: container.stateRepository,
+      contentTypeRegistry: container.contentTypeRegistry,
+      eventPublisher: container.eventPublisher,
+      relationshipRepository: container.relationshipRepository,
+      identityGenerator: container.identityGenerator,
+    },
+  );
+
+  await container.visibilityRepository.save({
+    organismId: worldMap.organism.id,
+    level: 'public',
+    updatedAt: container.identityGenerator.timestamp(),
+  });
+
+  return worldMap.organism.id;
 }
 
 describe('template instantiation', () => {
   let container: Container;
   let app: Hono<AuthEnv>;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     resetIdCounter();
     container = createTestContainer();
-    const setup = createTestApp(container);
+    const worldMapId = await createWorldMap(container, 'test-user' as UserId);
+    const setup = createTestApp(container, worldMapId);
     app = setup.app;
   });
 

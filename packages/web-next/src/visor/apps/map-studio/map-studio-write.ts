@@ -15,7 +15,7 @@ export interface SurfaceMapStudioCandidateInput {
 }
 
 export interface SurfaceMapStudioCandidateResponse {
-  readonly status: 'surfaced' | 'already-surfaced';
+  readonly status: 'surfaced' | 'already-surfaced' | 'repositioned';
   readonly entry: {
     readonly organismId: string;
     readonly x: number;

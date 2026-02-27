@@ -72,12 +72,6 @@ async function normalizeWorldMapToUnitGrid(container: Container, worldMapId: Org
   let changedEntries = false;
 
   for (const entry of mapPayload.entries) {
-    const entryState = await container.stateRepository.findCurrentByOrganismId(entry.organismId);
-    if (entryState?.contentTypeId === 'community') {
-      changedEntries = true;
-      continue;
-    }
-
     const nextX = roundCoordinate(entry.x);
     const nextY = roundCoordinate(entry.y);
     if (nextX !== entry.x || nextY !== entry.y || sizeDiffers(entry.size, UNIT_SIZE)) {
@@ -94,9 +88,8 @@ async function normalizeWorldMapToUnitGrid(container: Container, worldMapId: Org
 
   const dimensionsChanged = mapPayload.width !== WORLD_MAP_WIDTH || mapPayload.height !== WORLD_MAP_HEIGHT;
   const minSeparationChanged = mapPayload.minSeparation !== WORLD_MAP_MIN_SEPARATION;
-  const entryCountChanged = nextEntries.length !== mapPayload.entries.length;
 
-  if (!changedEntries && !dimensionsChanged && !minSeparationChanged && !entryCountChanged) {
+  if (!changedEntries && !dimensionsChanged && !minSeparationChanged) {
     return;
   }
 
@@ -125,7 +118,7 @@ async function normalizeWorldMapToUnitGrid(container: Container, worldMapId: Org
   );
 
   console.log(
-    `[world-map-only] normalized world map ${worldMapId}: removed-community=${entryCountChanged ? 'yes' : 'no'}, changed=${changedEntries || dimensionsChanged || minSeparationChanged}`,
+    `[world-map-only] normalized world map ${worldMapId}: changed=${changedEntries || dimensionsChanged || minSeparationChanged}`,
   );
 }
 
@@ -191,7 +184,7 @@ export async function seedWorldMapOnly(container: Container): Promise<void> {
           '',
           '- Governs surfaced organisms through a single integrator policy.',
           '- World map uses unit-grid semantics (1 organism = 1 grid unit).',
-          '- Legacy community entries are intentionally unsurfaced.',
+          '- Legacy entries are normalized in-place during seed reconciliation.',
         ].join('\n'),
         format: 'markdown',
       },

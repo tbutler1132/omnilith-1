@@ -14,7 +14,7 @@ describe('map studio write helpers', () => {
     apiFetchMock.mockReset();
   });
 
-  it('surfaces an organism on a map', async () => {
+  it('posts map upsert for organism placement', async () => {
     apiFetchMock.mockResolvedValueOnce({
       status: 'surfaced',
       entry: {

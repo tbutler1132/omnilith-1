@@ -2,7 +2,7 @@
  * Map Studio read data hook.
  *
  * Loads one targeted map organism plus the signed-in user's organisms so
- * map surfacing can be curated from boundary context.
+ * map repositioning can be curated from boundary context.
  */
 
 import type { FetchOrganismResponse, FetchUserOrganismsResponse } from '@omnilith/api-contracts';
