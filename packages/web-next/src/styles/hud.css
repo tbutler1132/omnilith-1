@@ -1822,3 +1822,67 @@
     align-items: stretch;
   }
 }
+
+/* Open visor monochrome pass: keep shell surfaces neutral while HUD stays colorful. */
+.visor-hud-layer[data-mode='open']::before {
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.58;
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell-header,
+.visor-hud-layer[data-mode='open'] .open-visor-rail,
+.visor-hud-layer[data-mode='open'] .open-visor-app-pane {
+  border-color: rgba(255, 255, 255, 0.52);
+  background: rgba(0, 0, 0, 0.8);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+    0 0 14px rgba(255, 255, 255, 0.14);
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell-kicker,
+.visor-hud-layer[data-mode='open'] .open-visor-shell-description,
+.visor-hud-layer[data-mode='open'] .open-visor-app-group-label,
+.visor-hud-layer[data-mode='open'] .open-visor-loading-label {
+  color: rgba(255, 255, 255, 0.74);
+  text-shadow: none;
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell-title,
+.visor-hud-layer[data-mode='open'] .open-visor-app-label {
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: none;
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-rail-toggle,
+.visor-hud-layer[data-mode='open'] .open-visor-app-button,
+.visor-hud-layer[data-mode='open'] .open-visor-expand-button,
+.visor-hud-layer[data-mode='open'] .open-visor-close-button {
+  border-color: rgba(255, 255, 255, 0.46);
+  background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.94);
+  text-shadow: none;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 0 10px rgba(255, 255, 255, 0.14);
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-app-button--active {
+  border-color: rgba(255, 255, 255, 0.72);
+  background: rgba(255, 255, 255, 0.24);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14),
+    0 0 14px rgba(255, 255, 255, 0.2);
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-shell-actions,
+.visor-hud-layer[data-mode='open'] .open-visor-expanded-controls {
+  filter: drop-shadow(0 0 9px rgba(255, 255, 255, 0.18));
+}
+
+.visor-hud-layer[data-mode='open'] .open-visor-loading-orb {
+  border-color: rgba(255, 255, 255, 0.8);
+  background: rgba(0, 0, 0, 0.92);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+    0 0 14px rgba(255, 255, 255, 0.24);
+}
