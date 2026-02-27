@@ -33,6 +33,7 @@ interface SpaceStageProps {
 
 export interface SpaceStageSpatialSnapshot {
   readonly mapOrganismId: string;
+  readonly enteredOrganismId: string | null;
   readonly focusedOrganismId: string | null;
   readonly cursorWorld: {
     readonly x: number;
@@ -576,6 +577,7 @@ export function SpaceStage({
   useEffect(() => {
     onSpatialContextChange({
       mapOrganismId: currentMapId,
+      enteredOrganismId,
       focusedOrganismId,
       cursorWorld,
       hoveredEntry,
@@ -603,6 +605,7 @@ export function SpaceStage({
     boundaryPath,
     cursorWorld,
     currentMapId,
+    enteredOrganismId,
     height,
     focusedOrganismId,
     focusedEntry,

@@ -14,6 +14,19 @@ function renderWidget(context: Partial<VisorAppSpatialContext> = {}) {
 }
 
 describe('SpatialMiniMapWidget', () => {
+  it('renders an entered organism mini preview when inside an organism', () => {
+    const html = renderWidget({
+      enteredOrganismId: 'organism-inside',
+      mapSize: { width: 1000, height: 500 },
+      mapEntries: [{ organismId: 'org-a', x: 250, y: 125 }],
+    });
+
+    expect(html).toContain('Organism mini preview');
+    expect(html).toContain('Loading organism...');
+    expect(html).not.toContain('spatial-mini-map-entry');
+    expect(html).not.toContain('spatial-mini-map-marker--cursor');
+  });
+
   it('renders fallback text when map telemetry is unavailable', () => {
     const html = renderWidget();
     expect(html).toContain('Spatial mini-map');

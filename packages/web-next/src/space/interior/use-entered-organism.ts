@@ -24,6 +24,52 @@ interface UseEnteredOrganismResult {
   readonly error: string | null;
 }
 
+const enteredOrganismCacheById = new Map<string, EnteredOrganismData>();
+const enteredOrganismLoadById = new Map<string, Promise<EnteredOrganismData>>();
+
+function toEnteredOrganismData(response: FetchOrganismResponse): EnteredOrganismData {
+  return {
+    organism: response.organism,
+    currentState: response.currentState,
+  };
+}
+
+function readCachedEnteredOrganism(organismId: string): EnteredOrganismData | null {
+  return enteredOrganismCacheById.get(organismId) ?? null;
+}
+
+export function clearEnteredOrganismCache(): void {
+  enteredOrganismCacheById.clear();
+  enteredOrganismLoadById.clear();
+}
+
+export async function loadEnteredOrganismById(organismId: string): Promise<EnteredOrganismData> {
+  const cached = readCachedEnteredOrganism(organismId);
+  if (cached) {
+    return cached;
+  }
+
+  const inFlight = enteredOrganismLoadById.get(organismId);
+  if (inFlight) {
+    return inFlight;
+  }
+
+  const loadPromise = apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${organismId}`))
+    .then((response) => {
+      const data = toEnteredOrganismData(response);
+      enteredOrganismCacheById.set(organismId, data);
+      enteredOrganismLoadById.delete(organismId);
+      return data;
+    })
+    .catch((error) => {
+      enteredOrganismLoadById.delete(organismId);
+      throw error;
+    });
+
+  enteredOrganismLoadById.set(organismId, loadPromise);
+  return loadPromise;
+}
+
 export function useEnteredOrganism(organismId: string | null): UseEnteredOrganismResult {
   const [state, setState] = useState<UseEnteredOrganismResult>({
     data: null,
@@ -41,6 +87,16 @@ export function useEnteredOrganism(organismId: string | null): UseEnteredOrganis
       return;
     }
 
+    const cached = readCachedEnteredOrganism(organismId);
+    if (cached) {
+      setState({
+        data: cached,
+        loading: false,
+        error: null,
+      });
+      return;
+    }
+
     let cancelled = false;
     setState((previous) => ({
       ...previous,
@@ -48,15 +104,12 @@ export function useEnteredOrganism(organismId: string | null): UseEnteredOrganis
       error: null,
     }));
 
-    apiFetch<FetchOrganismResponse>(resolvePublicApiPath(`/organisms/${organismId}`))
-      .then((response) => {
+    loadEnteredOrganismById(organismId)
+      .then((data) => {
         if (cancelled) return;
 
         setState({
-          data: {
-            organism: response.organism,
-            currentState: response.currentState,
-          },
+          data,
           loading: false,
           error: null,
         });

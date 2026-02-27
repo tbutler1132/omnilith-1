@@ -5,6 +5,8 @@
  * can keep cursor and focus orientation without relying on map grid lines.
  */
 
+import { OrganismRenderer } from '../../../space/interior/renderers/organism-renderer.js';
+import { useEnteredOrganism } from '../../../space/interior/use-entered-organism.js';
 import type { VisorAppSpatialContext, VisorAppSpatialPoint } from '../../apps/spatial-context-contract.js';
 
 interface SpatialMiniMapWidgetProps {
@@ -107,7 +109,36 @@ function renderMarker(className: string, point: NormalizedPoint | null) {
   );
 }
 
+function EnteredOrganismMiniPreview({ organismId }: { organismId: string }) {
+  const { data, loading, error } = useEnteredOrganism(organismId);
+  const hasCurrentState = Boolean(data?.currentState);
+  const isPending = loading || (!data && !error);
+
+  return (
+    <div className="spatial-mini-map-canvas spatial-mini-map-canvas--organism" aria-hidden="true">
+      {isPending ? <p className="spatial-mini-map-organism-status">Loading organism...</p> : null}
+      {!isPending && error ? <p className="spatial-mini-map-organism-status">Preview unavailable</p> : null}
+      {!isPending && !error && !hasCurrentState ? (
+        <p className="spatial-mini-map-organism-status">No current state</p>
+      ) : null}
+      {!isPending && !error && hasCurrentState && data?.currentState ? (
+        <div className="spatial-mini-map-organism-preview">
+          <OrganismRenderer contentTypeId={data.currentState.contentTypeId} payload={data.currentState.payload} />
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function SpatialMiniMapWidget({ spatialContext }: SpatialMiniMapWidgetProps) {
+  if (spatialContext.enteredOrganismId) {
+    return (
+      <section className="visor-widget spatial-mini-map-widget" aria-label="Organism mini preview">
+        <EnteredOrganismMiniPreview organismId={spatialContext.enteredOrganismId} />
+      </section>
+    );
+  }
+
   const mapSize = spatialContext.mapSize;
   const hasMapSize = Boolean(
     mapSize &&

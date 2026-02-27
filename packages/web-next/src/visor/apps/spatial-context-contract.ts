@@ -31,6 +31,7 @@ export interface VisorAppSurfaceEntrySnapshot extends VisorAppSpatialPoint {
 
 export interface VisorAppSpatialContext {
   readonly mapOrganismId: string | null;
+  readonly enteredOrganismId: string | null;
   readonly mapSize: {
     readonly width: number;
     readonly height: number;
@@ -56,6 +57,7 @@ export type SpatialContextChangedListener = (context: VisorAppSpatialContext) =>
 export function createEmptySpatialContext(): VisorAppSpatialContext {
   return {
     mapOrganismId: null,
+    enteredOrganismId: null,
     mapSize: null,
     mapEntries: [],
     focusedOrganismId: null,
