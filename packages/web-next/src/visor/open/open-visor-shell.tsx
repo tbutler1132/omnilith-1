@@ -11,7 +11,7 @@ import type { VisorAppOpenRequest } from '../apps/app-contract.js';
 import { listCoreVisorApps, listExtraVisorApps, resolveVisorApp } from '../apps/index.js';
 import { createSpatialContextChannel } from '../apps/spatial-context-channel.js';
 import type { SpatialContextChangedListener, VisorAppSpatialContext } from '../apps/spatial-context-contract.js';
-import { OpenVisorHeader } from './open-visor-header.js';
+import { OpenVisorHeader, type OpenVisorTheme } from './open-visor-header.js';
 
 const DEFAULT_APP_BOOT_MS = 520;
 
@@ -43,6 +43,7 @@ export function OpenVisorShell({
   const [railCollapsed, setRailCollapsed] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
   const [isBootingApp, setIsBootingApp] = useState(true);
+  const [theme, setTheme] = useState<OpenVisorTheme>('monochrome');
   const appPaneRef = useRef<HTMLDivElement | null>(null);
   const spatialContextChannelRef = useRef(createSpatialContextChannel(spatialContext));
   const appBootTimerRef = useRef<number | null>(null);
@@ -91,11 +92,14 @@ export function OpenVisorShell({
       className="open-visor-shell"
       data-phase={phase}
       data-expanded={isExpanded ? 'true' : 'false'}
+      data-theme={theme}
       aria-label="Open visor"
     >
       <OpenVisorHeader
         appLabel={activeApp.label}
         appDescription={activeApp.description}
+        theme={theme}
+        onToggleTheme={() => setTheme((current) => (current === 'monochrome' ? 'colorful' : 'monochrome'))}
         isExpanded={isExpanded}
         onToggleExpanded={() => setIsExpanded((current) => !current)}
         onRequestClose={onRequestClose}

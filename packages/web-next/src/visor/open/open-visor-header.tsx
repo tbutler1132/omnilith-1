@@ -5,9 +5,13 @@
  * close control so individual apps can stay focused on their own content.
  */
 
+export type OpenVisorTheme = 'monochrome' | 'colorful';
+
 interface OpenVisorHeaderProps {
   readonly appLabel: string;
   readonly appDescription: string;
+  readonly theme: OpenVisorTheme;
+  readonly onToggleTheme: () => void;
   readonly isExpanded: boolean;
   readonly onToggleExpanded: () => void;
   readonly onRequestClose: () => void;
@@ -16,6 +20,8 @@ interface OpenVisorHeaderProps {
 export function OpenVisorHeader({
   appLabel,
   appDescription,
+  theme,
+  onToggleTheme,
   isExpanded,
   onToggleExpanded,
   onRequestClose,
@@ -30,6 +36,18 @@ export function OpenVisorHeader({
         <p className="open-visor-shell-description">{appDescription}</p>
       </div>
       <div className="open-visor-shell-actions">
+        <button
+          type="button"
+          className="open-visor-theme-toggle"
+          data-theme={theme}
+          aria-label="Open visor theme"
+          aria-pressed={theme === 'monochrome'}
+          onClick={onToggleTheme}
+          title={`Switch to ${theme === 'monochrome' ? 'colorful' : 'monochrome'}`}
+        >
+          <span className="open-visor-theme-option open-visor-theme-option--monochrome">Monochrome</span>
+          <span className="open-visor-theme-option open-visor-theme-option--colorful">Colorful</span>
+        </button>
         <button
           type="button"
           className="open-visor-expand-button"

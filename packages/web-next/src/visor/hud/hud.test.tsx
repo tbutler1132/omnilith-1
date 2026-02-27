@@ -77,8 +77,12 @@ describe('VisorHud', () => {
   it('renders open visor shell in open mode', () => {
     const html = renderHud({ mode: 'open', appId: 'profile' });
     expect(html).toContain('Open visor');
+    expect(html).toContain('data-theme="monochrome"');
     expect(html).toContain('Visor apps');
     expect(html).toContain('Booting Profile');
+    expect(html).toContain('Open visor theme');
+    expect(html).toContain('Monochrome');
+    expect(html).toContain('Colorful');
     expect(html).toContain('Expand');
     expect(html).toContain('Collapse app rail');
     expect(html).toContain('aria-expanded="true"');
