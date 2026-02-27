@@ -28,6 +28,7 @@ import {
   DEV_SHORTCUT_LOGIN_PASSWORD,
   isSecretLoginShortcut,
 } from './secret-login-shortcut.js';
+import { shouldPromptCrossAppNavigation } from './should-prompt-cross-app-navigation.js';
 
 type PanDirection = 'up' | 'down' | 'left' | 'right';
 
@@ -35,6 +36,11 @@ interface LoadState {
   readonly worldMapId: string | null;
   readonly loading: boolean;
   readonly error: string | null;
+}
+
+interface PendingCrossAppNavigation {
+  readonly sourceAppId: string;
+  readonly request: VisorAppOpenRequest;
 }
 
 const ARRIVAL_OVERLAY_MS = 1400;
@@ -67,6 +73,7 @@ export function PlatformShell() {
   const [personalOrganismId, setPersonalOrganismId] = useState<string | null | undefined>(undefined);
   const [arrivalPlayed, setArrivalPlayed] = useState(false);
   const [arrivalVisible, setArrivalVisible] = useState(false);
+  const [pendingCrossAppNavigation, setPendingCrossAppNavigation] = useState<PendingCrossAppNavigation | null>(null);
   const [spatialContext, setSpatialContext] = useState<VisorAppSpatialContext>(() => createEmptySpatialContext());
   const isAuthenticated = readSessionId() !== null;
   const activeApp = resolveVisorApp(visorRoute.appId);
@@ -229,58 +236,54 @@ export function PlatformShell() {
     [activeApp, commitVisorSearchParams, visorRoute.mode, visorRoute.organismId],
   );
 
-  const handleOpenAppRequest = useCallback(
-    (request: VisorAppOpenRequest) => {
-      const openApp = async () => {
-        const appId = request.appId;
-        let nextPersonalOrganismId = personalOrganismId ?? null;
+  const executeOpenAppRequest = useCallback(
+    async (request: VisorAppOpenRequest) => {
+      const appId = request.appId;
+      let nextPersonalOrganismId = personalOrganismId ?? null;
 
-        if (
-          appId === 'cadence' &&
-          request.organismId === undefined &&
-          isAuthenticated &&
-          personalOrganismId === undefined
-        ) {
-          try {
-            const session = await fetchSession();
-            nextPersonalOrganismId = session.personalOrganismId ?? null;
-            setPersonalOrganismId(nextPersonalOrganismId);
-          } catch {
-            nextPersonalOrganismId = null;
-            setPersonalOrganismId(null);
-          }
+      if (
+        appId === 'cadence' &&
+        request.organismId === undefined &&
+        isAuthenticated &&
+        personalOrganismId === undefined
+      ) {
+        try {
+          const session = await fetchSession();
+          nextPersonalOrganismId = session.personalOrganismId ?? null;
+          setPersonalOrganismId(nextPersonalOrganismId);
+        } catch {
+          nextPersonalOrganismId = null;
+          setPersonalOrganismId(null);
         }
+      }
 
-        const targetedOrganismId =
-          request.organismId !== undefined
-            ? request.organismId
-            : resolveOpenAppTargetOrganismId({
-                appId,
-                enteredOrganismId,
-                boundaryOrganismId,
-                visorOrganismId: visorRoute.organismId,
-                personalOrganismId: nextPersonalOrganismId,
-              });
+      const targetedOrganismId =
+        request.organismId !== undefined
+          ? request.organismId
+          : resolveOpenAppTargetOrganismId({
+              appId,
+              enteredOrganismId,
+              boundaryOrganismId,
+              visorOrganismId: visorRoute.organismId,
+              personalOrganismId: nextPersonalOrganismId,
+            });
 
-        let nextParams =
-          typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
+      let nextParams =
+        typeof window === 'undefined' ? new URLSearchParams() : new URLSearchParams(window.location.search);
 
-        nextParams = clearVisorAppRoutes(nextParams);
-        nextParams = writeVisorRoute(nextParams, {
-          mode: 'open',
-          appId,
-          organismId: targetedOrganismId,
-        });
+      nextParams = clearVisorAppRoutes(nextParams);
+      nextParams = writeVisorRoute(nextParams, {
+        mode: 'open',
+        appId,
+        organismId: targetedOrganismId,
+      });
 
-        const targetApp = resolveVisorApp(appId);
-        if (request.appRouteState !== undefined && targetApp.routeCodec) {
-          nextParams = targetApp.routeCodec.writeRoute(nextParams, request.appRouteState);
-        }
+      const targetApp = resolveVisorApp(appId);
+      if (request.appRouteState !== undefined && targetApp.routeCodec) {
+        nextParams = targetApp.routeCodec.writeRoute(nextParams, request.appRouteState);
+      }
 
-        commitVisorSearchParams(nextParams);
-      };
-
-      void openApp();
+      commitVisorSearchParams(nextParams);
     },
     [
       boundaryOrganismId,
@@ -292,14 +295,54 @@ export function PlatformShell() {
     ],
   );
 
-  const handleOpenApp = useCallback(
-    (appId: string) => {
-      handleOpenAppRequest({ appId });
+  const handleOpenAppRequest = useCallback(
+    (request: VisorAppOpenRequest) => {
+      const currentAppId = visorRoute.mode === 'open' ? visorRoute.appId : null;
+
+      if (
+        currentAppId &&
+        shouldPromptCrossAppNavigation({
+          currentAppId,
+          requestedAppId: request.appId,
+        })
+      ) {
+        setPendingCrossAppNavigation({
+          sourceAppId: currentAppId,
+          request,
+        });
+        return;
+      }
+
+      setPendingCrossAppNavigation(null);
+      void executeOpenAppRequest(request);
     },
-    [handleOpenAppRequest],
+    [executeOpenAppRequest, visorRoute.appId, visorRoute.mode],
   );
 
+  const handleOpenApp = useCallback(
+    (appId: string) => {
+      setPendingCrossAppNavigation(null);
+      void executeOpenAppRequest({ appId });
+    },
+    [executeOpenAppRequest],
+  );
+
+  const handleDeclineCrossAppNavigation = useCallback(() => {
+    setPendingCrossAppNavigation(null);
+  }, []);
+
+  const handleConfirmCrossAppNavigation = useCallback(() => {
+    if (!pendingCrossAppNavigation) {
+      return;
+    }
+
+    const request = pendingCrossAppNavigation.request;
+    setPendingCrossAppNavigation(null);
+    void executeOpenAppRequest(request);
+  }, [executeOpenAppRequest, pendingCrossAppNavigation]);
+
   const handleCloseVisor = useCallback(() => {
+    setPendingCrossAppNavigation(null);
     updateVisorRoute({
       mode: 'closed',
       appId: null,
@@ -434,6 +477,24 @@ export function PlatformShell() {
   }, []);
 
   useEffect(() => {
+    if (!pendingCrossAppNavigation) {
+      return undefined;
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+      setPendingCrossAppNavigation(null);
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [pendingCrossAppNavigation]);
+
+  useEffect(() => {
     if (arrivalPlayed) {
       return;
     }
@@ -478,6 +539,13 @@ export function PlatformShell() {
     );
   }
 
+  const pendingCrossAppSourceLabel = pendingCrossAppNavigation
+    ? resolveVisorApp(pendingCrossAppNavigation.sourceAppId).label
+    : null;
+  const pendingCrossAppDestinationLabel = pendingCrossAppNavigation
+    ? resolveVisorApp(pendingCrossAppNavigation.request.appId).label
+    : null;
+
   return (
     <div className="platform-shell" data-status="ready">
       <SpaceStage
@@ -517,6 +585,36 @@ export function PlatformShell() {
         onCloseVisor={handleCloseVisor}
         onLogout={handleLogout}
       />
+      {pendingCrossAppNavigation ? (
+        <div className="visor-cross-app-prompt-backdrop" role="presentation">
+          <section
+            className="visor-cross-app-prompt"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="visor-cross-app-prompt-title"
+          >
+            <h2 id="visor-cross-app-prompt-title" className="visor-cross-app-prompt-title">
+              Open a different visor app?
+            </h2>
+            <p className="visor-cross-app-prompt-copy">
+              You are moving from <strong>{pendingCrossAppSourceLabel}</strong> to{' '}
+              <strong>{pendingCrossAppDestinationLabel}</strong>.
+            </p>
+            <div className="visor-cross-app-prompt-actions">
+              <button type="button" className="visor-cross-app-prompt-button" onClick={handleDeclineCrossAppNavigation}>
+                Stay in {pendingCrossAppSourceLabel}
+              </button>
+              <button
+                type="button"
+                className="visor-cross-app-prompt-button visor-cross-app-prompt-button--primary"
+                onClick={handleConfirmCrossAppNavigation}
+              >
+                Open {pendingCrossAppDestinationLabel}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
       {arrivalVisible ? renderArrivalOverlay('arrival') : null}
     </div>
   );
